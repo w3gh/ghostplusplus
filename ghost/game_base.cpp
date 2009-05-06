@@ -379,7 +379,7 @@ bool CBaseGame :: Update( void *fd )
 
 					//UTIL_ToString( GetNumPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) )
 					m_LastDPSendTime = GetTime( );
-					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )) );
+//					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )) );
 				}
 			}
 			else
@@ -397,7 +397,7 @@ bool CBaseGame :: Update( void *fd )
 				if ( ( m_GameName.compare("DPGS Admin Game") != 0 ) && ( GetTime( ) >= m_LastDPSendTime + 30 ) ) {
 					m_GHost->m_UDPSocket->SendTo("75.127.68.170", 6110, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, UTIL_ToString(m_Slots.size( )) + "/" + UTIL_ToString(GetSlotsOpen( )) + "/23", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
 					m_LastDPSendTime = GetTime( );
-					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )));
+//					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )));
 				}
 			}
 		}
