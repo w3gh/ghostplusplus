@@ -203,6 +203,9 @@ public:
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+	// DotaPod Patch
+	// DotAKillAdd
+	virtual CCallableDotAKillAdd *ThreadedDotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
@@ -236,6 +239,11 @@ uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t gameid, string 
 CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, string name );
 uint32_t MySQLDotAGameAdd( void *conn, string *error, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+
+// DotaPod Patch
+// DotAKillAdd
+uint32_t MySQLDotAKillAdd( void *conn, string *error, uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec );
+
 CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, string name );
 bool MySQLDownloadAdd( void *conn, string *error, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 double MySQLScoreCheck( void *conn, string *error, string category, string name, string server );
@@ -427,6 +435,20 @@ class CMySQLCallableDotAPlayerAdd : public CCallableDotAPlayerAdd, public CMySQL
 public:
 	CMySQLCallableDotAPlayerAdd( uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, void *nConnection, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerAdd( nGameID, nColour, nKills, nDeaths, nCreepKills, nCreepDenies, nAssists, nGold, nNeutralKills, nItem1, nItem2, nItem3, nItem4, nItem5, nItem6, nHero, nNewColour, nTowerKills, nRaxKills, nCourierKills ), CMySQLCallable( nConnection, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDotAPlayerAdd( ) { }
+
+	virtual void operator( )( );
+	virtual void Init( ) { CMySQLCallable :: Init( ); }
+	virtual void Close( ) { CMySQLCallable :: Close( ); }
+};
+
+// DotaPod Patch
+// DotAKillAdd
+
+class CMySQLCallableDotAKillAdd : public CCallableDotAKillAdd, public CMySQLCallable
+{
+public:
+	CMySQLCallableDotAKillAdd( uint32_t nGameID, uint32_t nColour, string nKiller, uint32_t nVictimColour, string nVictim, uint32_t nMin, uint32_t nSec, void *nConnection, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAKillAdd( nGameID, nColour, nKiller, nVictimColour, nVictim, nMin, nSec ), CMySQLCallable( nConnection, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	virtual ~CMySQLCallableDotAKillAdd( ) { }
 
 	virtual void operator( )( );
 	virtual void Init( ) { CMySQLCallable :: Init( ); }

@@ -46,6 +46,7 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 	m_User = CFG->GetString( "db_mysql_user", string( ) );
 	m_Password = CFG->GetString( "db_mysql_password", string( ) );
 	m_Port = CFG->GetInt( "db_mysql_port", 0 );
+
 	m_NumConnections = 1;
 	m_OutstandingCallables = 0;
 
@@ -351,6 +352,21 @@ CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid,
 		m_NumConnections++;
 
 	CCallableDotAPlayerAdd *Callable = new CMySQLCallableDotAPlayerAdd( gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills, Connection, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
+// DotaPod Patch
+// DotAKillAdd
+CCallableDotAKillAdd *CGHostDBMySQL :: ThreadedDotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableDotAKillAdd *Callable = new CMySQLCallableDotAKillAdd( gameid, colour, killer, victimcolour, victim, min, sec, Connection, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -881,6 +897,24 @@ uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t gameid, uint32_
 	return RowID;
 }
 
+// DotaPod patch
+// DotAKillAdd
+uint32_t MySQLDotAKillAdd( void *conn, string *error, uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec )
+{
+	uint32_t RowID = 0;
+	string EscKiller = MySQLEscapeString( conn, killer );
+	string EscVictim = MySQLEscapeString( conn, victim );
+	string Query = "INSERT INTO dotakills ( botid, gameid, colour, killer, victimcolour, victim, min, sec ) VALUES ( 0, " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( colour ) + ", '" + EscKiller + "', " + UTIL_ToString( victimcolour ) + ", '" + EscVictim + "', " + UTIL_ToString( min ) + ", " + UTIL_ToString( sec ) + ")";
+	CONSOLE_Print( "the query: " + Query );
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+		RowID = mysql_insert_id( (MYSQL *)conn );
+
+	return RowID;
+}
+
 CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, string name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
@@ -1318,6 +1352,18 @@ void CMySQLCallableDotAPlayerAdd :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLDotAPlayerAdd( m_Connection, &m_Error, m_GameID, m_Colour, m_Kills, m_Deaths, m_CreepKills, m_CreepDenies, m_Assists, m_Gold, m_NeutralKills, m_Item1, m_Item2, m_Item3, m_Item4, m_Item5, m_Item6, m_Hero, m_NewColour, m_TowerKills, m_RaxKills, m_CourierKills );
+
+	Close( );
+}
+
+// DotaPod patch
+// DotAKillAdd
+void CMySQLCallableDotAKillAdd :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLDotAKillAdd( m_Connection, &m_Error, m_GameID, m_Colour, m_Killer, m_VictimColour, m_Victim, m_Min, m_Sec );
 
 	Close( );
 }

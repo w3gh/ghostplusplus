@@ -137,6 +137,13 @@ uint32_t CGHostDB :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t k
 	return 0;
 }
 
+// DotaPod Patch
+// DotAKillAdd
+uint32_t CGHostDB :: DotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec )
+{
+	return 0;
+}
+
 uint32_t CGHostDB :: DotAPlayerCount( string name )
 {
 	return 0;
@@ -267,6 +274,13 @@ CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, uint
 	return NULL;
 }
 
+// DotaPod patch
+// DotAKillAdd
+CCallableDotAKillAdd *CGHostDB :: ThreadedDotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec )
+{
+	return NULL;
+}
+
 CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( string name )
 {
 	return NULL;
@@ -388,6 +402,13 @@ CCallableDotAGameAdd :: ~CCallableDotAGameAdd( )
 }
 
 CCallableDotAPlayerAdd :: ~CCallableDotAPlayerAdd( )
+{
+
+}
+
+// DotaPod patch
+// DotAKillAdd
+CCallableDotAKillAdd :: ~CCallableDotAKillAdd( )
 {
 
 }

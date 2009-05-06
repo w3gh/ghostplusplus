@@ -111,8 +111,24 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
 
-								if( Killer && Victim )
+												
+// DotaPod Patch												
+// DotAKillAdd							
+//								if( Killer && Victim )
+//									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
+								if( Killer && Victim ) {
+
+									// calculate timestamp
+
+									//string MinString = UTIL_ToString( ( m_Game->m_GameTicks / 1000 ) / 60 );
+									//string SecString = UTIL_ToString( ( m_Game->m_GameTicks / 1000 ) % 60 );
+
 									CONSOLE_Print( "[STATSDOTA: %s] player [%s] killed player [%s]", m_Game->GetGameName( ).c_str(), Killer->GetName( ).c_str(), Victim->GetName( ).c_str() );
+									m_Game->m_GHost->m_Callables.push_back( m_Game->m_GHost->m_DB->ThreadedDotAKillAdd( 0, ValueInt, Killer->GetName( ), VictimColour, Victim->GetName( ), (( m_Game->m_GameTicks / 1000 ) / 60 ), ( ( m_Game->m_GameTicks / 1000 ) % 60 ) ) );
+
+									//m_Stats->Save( m_GHost, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
+									//GHost->m_Callables.push_back( DB->ThreadedDotAGameAdd( GameID, m_Winner, m_Min, m_Sec ) );
+								}
 								else if( Victim )
 								{
 									if( ValueInt == 0 )
@@ -424,6 +440,8 @@ void CStatsDOTA :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 			if( m_Players[i] )
 			{
 				GHost->m_Callables.push_back( DB->ThreadedDotAPlayerAdd( GameID, m_Players[i]->GetColour( ), m_Players[i]->GetKills( ), m_Players[i]->GetDeaths( ), m_Players[i]->GetCreepKills( ), m_Players[i]->GetCreepDenies( ), m_Players[i]->GetAssists( ), m_Players[i]->GetGold( ), m_Players[i]->GetNeutralKills( ), m_Players[i]->GetItem( 0 ), m_Players[i]->GetItem( 1 ), m_Players[i]->GetItem( 2 ), m_Players[i]->GetItem( 3 ), m_Players[i]->GetItem( 4 ), m_Players[i]->GetItem( 5 ), m_Players[i]->GetHero( ), m_Players[i]->GetNewColour( ), m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ) ) );
+				// DotaPod Patch
+				// DotAKillAdd
 				Players++;
 			}
 		}

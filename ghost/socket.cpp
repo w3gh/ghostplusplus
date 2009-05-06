@@ -267,7 +267,8 @@ void CTCPSocket :: DoRecv( fd_set *fd )
 		{
 			// the other end closed the connection
 
-			CONSOLE_Print( "[TCPSOCKET] closed by remote host" );
+			// dotapod patch
+//			CONSOLE_Print( "[TCPSOCKET] closed by remote host" );
 			m_Connected = false;
 		}
 		else if( c > 0 )

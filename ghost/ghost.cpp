@@ -151,7 +151,11 @@ int main( int argc, char **argv )
 
 	// print something for logging purposes
 
-	CONSOLE_Print( "[GHOST] starting up" );
+	// CONSOLE_Print( "[GHOST] starting up" );
+
+	// DotaPod Patch
+	CONSOLE_Print( "Welcome to DotaPod Game Server (DPGS)!" );
+	CONSOLE_Print( " " );
 
 	// catch SIGABRT and SIGINT
 
@@ -270,7 +274,10 @@ CGHost :: CGHost( CConfig *CFG )
 	m_CRC->Initialize( );
 	m_SHA = new CSHA1( );
 	m_CurrentGame = NULL;
-	string DBType = CFG->GetString( "db_type", "sqlite3" );
+	//string DBType = CFG->GetString( "db_type", "sqlite3" );
+	// dotapod patch
+	string DBType = CFG->GetString( "db_type", "mysql" );
+
 	CONSOLE_Print( "[GHOST] opening primary database" );
 
 	if( DBType == "mysql" )
@@ -314,13 +321,21 @@ CGHost :: CGHost( CConfig *CFG )
 	m_MapPath = CFG->GetString( "bot_mappath", string( ) );
 	m_SaveReplays = CFG->GetInt( "bot_savereplays", 0 ) == 0 ? false : true;
 	m_ReplayPath = CFG->GetString( "bot_replaypath", string( ) );
-	m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0GHost" );
-	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 0 ) == 0 ? false : true;
+	//m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0GHost" );
+	// DotaPod Patch
+	m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0DPBot" );
+	// DotaPod Patch
+//	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 0 ) == 0 ? false : true;
+	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 1 ) == 0 ? false : true;
+
 	m_CheckMultipleIPUsage = CFG->GetInt( "bot_checkmultipleipusage", 1 ) == 0 ? false : true;
 
 	if( m_VirtualHostName.size( ) > 15 )
 	{
-		m_VirtualHostName = "|cFF4080C0GHost";
+		//m_VirtualHostName = "|cFF4080C0GHost";
+		// DotaPod Patch
+		m_VirtualHostName = "|cFF4080C0DPBot";
+
 		CONSOLE_Print( "[GHOST] warning - bot_virtualhostname is longer than 15 characters, using default virtual host name" );
 	}
 
@@ -350,10 +365,18 @@ CGHost :: CGHost( CConfig *CFG )
 	m_MOTDFile = CFG->GetString( "bot_motdfile", "motd.txt" );
 	m_GameLoadedFile = CFG->GetString( "bot_gameloadedfile", "gameloaded.txt" );
 	m_GameOverFile = CFG->GetString( "bot_gameoverfile", "gameover.txt" );
-	m_AdminGameCreate = CFG->GetInt( "admingame_create", 0 ) == 0 ? false : true;
-	m_AdminGamePort = CFG->GetInt( "admingame_port", 6113 );
+	//m_AdminGameCreate = CFG->GetInt( "admingame_create", 0 ) == 0 ? false : true;
+	// DotaPod Patch
+	m_AdminGameCreate = CFG->GetInt( "admingame_create", 1 ) == 0 ? false : true;
+
+	//m_AdminGamePort = CFG->GetInt( "admingame_port", 6113 );
+	// DotaPod Patch
+	m_AdminGamePort = CFG->GetInt( "admingame_port", 6111 );
+
 	m_AdminGamePassword = CFG->GetString( "admingame_password", string( ) );
 
+	// DotaPod Patch
+	/*
 	// load the battle.net connections
 	// we're just loading the config data and creating the CBNET classes here, the connections are established later (in the Update function)
 
@@ -424,7 +447,7 @@ CGHost :: CGHost( CConfig *CFG )
 
 	if( m_BNETs.empty( ) )
 		CONSOLE_Print( "[GHOST] warning - no battle.net connections found in config file" );
-
+*/
 	// extract common.j and blizzard.j from War3Patch.mpq if we can
 	// these two files are necessary for calculating "map_crc" when loading maps so we make sure to do it before loading the default map
 	// see CMap :: Load for more information
@@ -447,8 +470,12 @@ CGHost :: CGHost( CConfig *CFG )
 
 	if( m_AdminGameCreate )
 	{
-		CONSOLE_Print( "[GHOST] creating admin game" );
-		m_AdminGame = new CAdminGame( this, m_AdminMap, NULL, m_AdminGamePort, 0, "GHost++ Admin Game", m_AdminGamePassword );
+		//CONSOLE_Print( "[GHOST] creating admin game" );
+		// DotaPod Patch
+		CONSOLE_Print( "[GHOST] creating DPGS admin game" );
+
+		//m_AdminGame = new CAdminGame( this, m_AdminMap, NULL, m_AdminGamePort, 0, "GHost++ Admin Game", m_AdminGamePassword );
+		m_AdminGame = new CAdminGame( this, m_AdminMap, NULL, m_AdminGamePort, 0, "DPGS Admin Game", m_AdminGamePassword );
 
 		if( m_AdminGamePort == m_HostPort )
 			CONSOLE_Print( "[GHOST] warning - admingame_port and bot_hostport are set to the same value, you won't be able to host any games" );
@@ -458,11 +485,13 @@ CGHost :: CGHost( CConfig *CFG )
 
 	if( m_BNETs.empty( ) && !m_AdminGame )
 		CONSOLE_Print( "[GHOST] warning - no battle.net connections found and no admin game created" );
-
+	// DotaPod Patch
 #ifdef GHOST_MYSQL
-	CONSOLE_Print( "[GHOST] GHost++ Version %s (with MySQL support)", m_Version.c_str() );
+	//CONSOLE_Print( "[GHOST] GHost++ Version %s (with MySQL support)", m_Version.c_str() );
+	CONSOLE_Print( "[DPGS] DPGS Version v0.6 w/ GHost++ %s (with MySQL support)", m_Version.c_str() );
 #else
-	CONSOLE_Print( "[GHOST] GHost++ Version %s (without MySQL support)", m_Version.c_str() );
+	//CONSOLE_Print( "[GHOST] GHost++ Version %s (without MySQL support)", m_Version.c_str() );
+	CONSOLE_Print( "[DPGS] DPGS Version v0.6 w/ GHost++ %s (without MySQL support)", m_Version.c_str() );
 #endif
 }
 

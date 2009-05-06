@@ -105,6 +105,10 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_AutoSave = m_GHost->m_AutoSave;
 	m_MatchMaking = false;
 
+	// DotaPod Patch
+	m_LastDPSendTime = 0;
+
+
 	if( m_SaveGame )
 	{
 		m_Slots = m_SaveGame->GetSlots( );
@@ -364,7 +368,19 @@ bool CBaseGame :: Update( void *fd )
 				BYTEARRAY MapHeight;
 				MapHeight.push_back( 0 );
 				MapHeight.push_back( 0 );
-				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+//				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+				// DotaPod Patch
+				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, UTIL_ToString(m_Slots.size( )) + "/" + UTIL_ToString(GetSlotsOpen( )) + "/23", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+
+				// DotaPod Patch
+				// if not admin game
+				if ( ( m_GameName.compare("DPGS Admin Game") != 0 ) && ( GetTime( ) >= m_LastDPSendTime + 30 ) ) {
+					m_GHost->m_UDPSocket->SendTo("75.127.68.170", 6110, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, UTIL_ToString(m_Slots.size( )) + "/" + UTIL_ToString(GetSlotsOpen( )) + "/23", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+
+					//UTIL_ToString( GetNumPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) )
+					m_LastDPSendTime = GetTime( );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )) );
+				}
 			}
 			else
 			{
@@ -372,7 +388,17 @@ bool CBaseGame :: Update( void *fd )
 				MapGameType.push_back( 0 );
 				MapGameType.push_back( 0 );
 				MapGameType.push_back( 0 );
-				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+//				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+				// DotaPod Patch		
+				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, UTIL_ToString(m_Slots.size( )) + "/" + UTIL_ToString(GetSlotsOpen( )) + "/23", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+
+				// DotaPod Patch
+				// if not admin game
+				if ( ( m_GameName.compare("DPGS Admin Game") != 0 ) && ( GetTime( ) >= m_LastDPSendTime + 30 ) ) {
+					m_GHost->m_UDPSocket->SendTo("75.127.68.170", 6110, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, UTIL_ToString(m_Slots.size( )) + "/" + UTIL_ToString(GetSlotsOpen( )) + "/23", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+					m_LastDPSendTime = GetTime( );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] MAXSLOTS: " + UTIL_ToString(m_Slots.size( )) + " OPENSLOTS: " + UTIL_ToString(GetSlotsOpen( )));
+				}
 			}
 		}
 
@@ -993,8 +1019,23 @@ void CBaseGame :: SendWelcomeMessage( CGamePlayer *player )
 
 	if( in.fail( ) )
 	{
+		// DotaPod Patch
 		// default welcome message
 
+		SendChat( player, " " );
+		SendChat( player, " " );
+		SendChat( player, " " );
+		SendChat( player, " " );
+
+		SendChat( player, "Hello!!" );
+		SendChat( player, "This is a DotaPod Game Server (DPGS)." );
+
+		SendChat( player, "This game is 2X faster than normal games, 5X faster than BNet!" );
+		SendChat( player, "You will feel like YOU ARE the game host!" );
+		SendChat( player, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" );
+		SendChat( player, "Commands for use: !checkme !stats [user] !statsdota [user] !version");
+
+		/*
 		SendChat( player, " " );
 		SendChat( player, " " );
 		SendChat( player, " " );
@@ -1002,6 +1043,7 @@ void CBaseGame :: SendWelcomeMessage( CGamePlayer *player )
 		SendChat( player, "GHost++                                        http://forum.codelain.com/" );
 		SendChat( player, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" );
 		SendChat( player, "          Game Name:     " + m_GameName );
+		*/
 	}
 	else
 	{

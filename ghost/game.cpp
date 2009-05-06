@@ -1375,7 +1375,11 @@ void CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						BYTEARRAY MapHeight;
 						MapHeight.push_back( 0 );
 						MapHeight.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+//						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+
+						//DotaPod.com patch
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "DotaPod.com", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+
 					}
 					else
 					{
@@ -1383,7 +1387,10 @@ void CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						MapGameType.push_back( 0 );
 						MapGameType.push_back( 0 );
 						MapGameType.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+//						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+						// DotaPod patch
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "DotaPod.com", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+
 					}
 				}
 			}
@@ -1606,9 +1613,13 @@ void CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	if( Command == "version" )
 	{
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			SendChat( player, m_GHost->m_Language->VersionAdmin( m_GHost->m_Version ) );
+//			SendChat( player, m_GHost->m_Language->VersionAdmin( m_GHost->m_Version ) );
+			// DotaPod Patch
+			SendChat( player, m_GHost->m_Language->VersionAdmin( "DotaPod Game Server (DPGS)" + m_GHost->m_Version ) );
 		else
-			SendChat( player, m_GHost->m_Language->VersionNotAdmin( m_GHost->m_Version ) );
+//			SendChat( player, m_GHost->m_Language->VersionNotAdmin( m_GHost->m_Version ) );
+			// DotaPod Patch
+			SendChat( player, m_GHost->m_Language->VersionNotAdmin( "DotaPod Game Server (DPGS)" + m_GHost->m_Version ) );
 	}
 
 	//
@@ -1750,12 +1761,21 @@ void CAdminGame :: SendWelcomeMessage( CGamePlayer *player )
 {
 	SendChat( player, " " );
 	SendChat( player, " " );
-	SendChat( player, "GHost++ Admin Game                    http://forum.codelain.com/" );
+
+	// DotaPod Patch
+	SendChat( player, "DotaPod Admin Game                       http://www.dotapod.com/" );
+	//SendChat( player, "GHost++ Admin Game                    http://forum.codelain.com/" );
+
 	SendChat( player, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" );
 	SendChat( player, "Commands: addadmin, autohost, checkadmin, countadmins, deladmin" );
 	SendChat( player, "Commands: disable, enable, end, exit, getgame, getgames" );
 	SendChat( player, "Commands: hostsg, load, loadsg, map, password, priv, privby" );
 	SendChat( player, "Commands: pub, pubby, quit, saygame, saygames, unhost" );
+
+	// DotaPod Patch
+	SendChat( player, "Tip #1: To begin, type: !password <yourpassword>" );
+	SendChat( player, "Tip #2: To start hosting: !autohost <numberOfGames> <minPlayers> <message>" );
+
 }
 
 void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer )

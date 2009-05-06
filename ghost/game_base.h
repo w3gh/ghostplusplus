@@ -44,8 +44,14 @@ class CBaseGame
 {
 public:
 	CGHost *m_GHost;
+	// DotaPod patch
+	uint32_t m_GameTicks;							// ingame ticks
+
 
 protected:
+	// DotaPod patch
+	uint32_t m_LastDPSendTime;					// GetTime when the last ping was sent
+
 	CTCPServer *m_Socket;							// listening socket
 	CGameProtocol *m_Protocol;						// game protocol
 	vector<CGameSlot> m_Slots;						// vector of slots
@@ -76,7 +82,8 @@ protected:
 	uint32_t m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
 	uint32_t m_SyncLimit;							// the maximum number of packets a player can fall out of sync before starting the lag screen
 	uint32_t m_MaxSyncCounter;						// the largest number of keepalives received from any one player (for determining if anyone is lagging)
-	uint32_t m_GameTicks;							// ingame ticks
+	// DotaPod patch
+	//uint32_t m_GameTicks;							// ingame ticks
 	uint32_t m_CreationTime;						// GetTime when the game was created
 	uint32_t m_LastPingTime;						// GetTime when the last ping was sent
 	uint32_t m_LastRefreshTime;						// GetTime when the last game refresh was sent

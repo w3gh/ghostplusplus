@@ -41,6 +41,11 @@ class CCallableGamePlayerAdd;
 class CCallableGamePlayerSummaryCheck;
 class CCallableDotAGameAdd;
 class CCallableDotAPlayerAdd;
+
+// DotaPod Patch
+// DotAKillAdd
+class CCallableDotAKillAdd;
+
 class CCallableDotAPlayerSummaryCheck;
 class CCallableDownloadAdd;
 class CCallableScoreCheck;
@@ -91,6 +96,9 @@ public:
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
 	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual uint32_t DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+	// DotaPod Patch
+	// DotAKillAdd
+	virtual uint32_t DotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec );
 	virtual uint32_t DotAPlayerCount( string name );
 	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( string name );
 	virtual string FromCheck( uint32_t ip );
@@ -120,6 +128,11 @@ public:
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+
+	// DotaPod Patch
+	// DotAKillAdd
+	virtual CCallableDotAKillAdd *ThreadedDotAKillAdd( uint32_t gameid, uint32_t colour, string killer, uint32_t victimcolour, string victim, uint32_t min, uint32_t sec );
+
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
@@ -446,6 +459,29 @@ protected:
 public:
 	CCallableDotAPlayerAdd( uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills ) : CBaseCallable( ), m_GameID( nGameID ), m_Colour( nColour ), m_Kills( nKills ), m_Deaths( nDeaths ), m_CreepKills( nCreepKills ), m_CreepDenies( nCreepDenies ), m_Assists( nAssists ), m_Gold( nGold ), m_NeutralKills( nNeutralKills ), m_Item1( nItem1 ), m_Item2( nItem2 ), m_Item3( nItem3 ), m_Item4( nItem4 ), m_Item5( nItem5 ), m_Item6( nItem6 ), m_Hero( nHero ), m_NewColour( nNewColour ), m_TowerKills( nTowerKills ), m_RaxKills( nRaxKills ), m_CourierKills( nCourierKills ), m_Result( 0 ) { }
 	virtual ~CCallableDotAPlayerAdd( );
+
+	virtual uint32_t GetResult( )				{ return m_Result; }
+	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+};
+
+// DotaPod Patch
+// DotAKillAdd
+
+class CCallableDotAKillAdd : virtual public CBaseCallable
+{
+protected:
+	uint32_t m_GameID;
+	uint32_t m_Colour;
+	string m_Killer;
+	uint32_t m_VictimColour;
+	string m_Victim;
+	uint32_t m_Min;
+	uint32_t m_Sec;
+	uint32_t m_Result;
+
+public:
+	CCallableDotAKillAdd( uint32_t nGameID, uint32_t nColour, string nKiller, uint32_t nVictimColour, string nVictim, uint32_t nMin, uint32_t nSec ) : CBaseCallable( ), m_GameID( nGameID ), m_Colour( nColour ), m_Killer( nKiller ), m_VictimColour( nVictimColour ), m_Victim( nVictim ), m_Min( nMin ), m_Sec( nSec ), m_Result( 0 ) { }
+	virtual ~CCallableDotAKillAdd( );
 
 	virtual uint32_t GetResult( )				{ return m_Result; }
 	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
