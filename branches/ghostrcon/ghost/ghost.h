@@ -72,6 +72,7 @@ void DEBUG_Print( BYTEARRAY b );
 // CGHost
 //
 
+class CRemoteConsole;
 class CUDPSocket;
 class CCRC32;
 class CSHA1;
@@ -88,6 +89,7 @@ class CConfig;
 class CGHost
 {
 public:
+	CRemoteConsole *m_RConsole;				// remote console using an UDP socket for sending/receiving
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's

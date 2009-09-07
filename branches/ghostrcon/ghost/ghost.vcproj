@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="ghost"
 	ProjectGUID="{B57A04BC-13D4-4CAD-B835-C046B9D66269}"
 	RootNamespace="ghost"
@@ -424,6 +424,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\rcon.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\replay.cpp"
 				>
 			</File>
@@ -559,6 +563,10 @@
 			</File>
 			<File
 				RelativePath=".\packed.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rcon.h"
 				>
 			</File>
 			<File

@@ -553,6 +553,17 @@ CUDPSocket :: ~CUDPSocket( )
 
 }
 
+bool CUDPSocket :: SendTo( struct sockaddr_in sin, string message )
+{
+	if( m_Socket == INVALID_SOCKET || m_HasError )
+		return false;
+
+	if( sendto( m_Socket, message.c_str( ), message.size( ), 0, (struct sockaddr *)&sin, sizeof( sin ) ) == -1 )
+		return false;
+
+	return true;
+}
+
 bool CUDPSocket :: SendTo( struct sockaddr_in sin, BYTEARRAY message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
@@ -743,9 +754,12 @@ void CUDPServer :: RecvFrom( fd_set *fd, struct sockaddr_in *sin, string *messag
 		int c = recvfrom( m_Socket, buffer, 1024, 0, (struct sockaddr *)sin, (socklen_t *)&AddrLen );
 #endif
 
-		if( c == SOCKET_ERROR && GetLastError( ) != EWOULDBLOCK )
+		if( c == SOCKET_ERROR && GetLastError( ) != EWOULDBLOCK && GetLastError( ) != ECONNRESET)
 		{
 			// receive error
+			// we don't do anything in case of an error since we are a connectionless
+			// listener and we don't want to stop listening for commands just because one client
+			// disconnected
 
 			m_HasError = true;
 			m_Error = GetLastError( );

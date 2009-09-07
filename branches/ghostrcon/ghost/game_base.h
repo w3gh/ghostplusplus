@@ -22,6 +22,7 @@
 #define GAME_BASE_H
 
 #include "gameslot.h"
+#include "socket.h"
 
 //
 // CBaseGame
@@ -168,6 +169,7 @@ public:
 
 	// functions to send packets to players
 
+	virtual void SendGame( CUDPSocket *socket, sockaddr_in &target );
 	virtual void SendChat( unsigned char fromPID, CGamePlayer *player, string message );
 	virtual void SendChat( unsigned char fromPID, unsigned char toPID, string message );
 	virtual void SendChat( CGamePlayer *player, string message );

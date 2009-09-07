@@ -18,6 +18,7 @@
 
 */
 
+#include "rcon.h"
 #include "ghost.h"
 #include "util.h"
 #include "crc32.h"
@@ -248,6 +249,10 @@ void CONSOLE_Print( string message )
 {
 	cout << message << endl;
 
+	// output to remote console
+	if( gGHost && gGHost->m_RConsole )
+		gGHost->m_RConsole->Send( message );
+
 	// logging
 
 	if( !gLogFile.empty( ) )
@@ -290,6 +295,8 @@ void DEBUG_Print( BYTEARRAY b )
 
 CGHost :: CGHost( CConfig *CFG )
 {
+	// fire up the remote console
+	m_RConsole = new CRemoteConsole( this, CFG );
 	m_UDPSocket = new CUDPSocket( );
 	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
@@ -687,6 +694,10 @@ bool CGHost :: Update( long usecBlock )
 
 	for( vector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
 		NumFDs += (*i)->SetFD( &fd, &send_fd, &nfds );
+		
+	// 5. the remote console
+	if ( m_RConsole )
+		NumFDs += m_RConsole->SetFD( &fd, &send_fd, &nfds );
 
 	struct timeval tv;
 	tv.tv_sec = 0;
@@ -714,6 +725,10 @@ bool CGHost :: Update( long usecBlock )
 
 	bool AdminExit = false;
 	bool BNETExit = false;
+	
+	// update remote console
+	if ( m_RConsole )
+		m_RConsole->Update( &fd );
 
 	// update current game
 
