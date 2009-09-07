@@ -29,7 +29,7 @@ ifeq ($(SYSTEM),Darwin)
 CFLAGS += -I../mysql/include/
 endif
 
-OBJS = bncsutilinterface.o bnet.o bnetprotocol.o bnlsclient.o bnlsprotocol.o commandpacket.o config.o crc32.o csvparser.o game.o game_admin.o game_base.o gameplayer.o gameprotocol.o gameslot.o ghost.o ghostdb.o ghostdbmysql.o ghostdbsqlite.o language.o map.o packed.o replay.o savegame.o sha1.o socket.o stats.o statsdota.o statsw3mmd.o util.o
+OBJS = bncsutilinterface.o bnet.o bnetprotocol.o bnlsclient.o bnlsprotocol.o commandpacket.o config.o crc32.o csvparser.o game.o game_admin.o game_base.o gameplayer.o gameprotocol.o gameslot.o ghost.o ghostdb.o ghostdbmysql.o ghostdbsqlite.o language.o map.o packed.o rcon.o replay.o savegame.o sha1.o socket.o stats.o statsdota.o statsw3mmd.o util.o
 COBJS = sqlite3.o
 PROGS = ./ghost++
 
@@ -73,6 +73,7 @@ ghostdbsqlite.o: ghost.h util.h config.h ghostdb.h ghostdbsqlite.h
 language.o: ghost.h config.h language.h
 map.o: ghost.h util.h crc32.h sha1.h config.h map.h
 packed.o: ghost.h util.h crc32.h packed.h
+rcon.o: rcon.h ghost.h util.h gameplayer.h gameprotocol.h game_base.h game.h language.h config.h socket.h bnetprotocol.h
 replay.o: ghost.h util.h packed.h replay.h gameprotocol.h
 savegame.o: ghost.h util.h packed.h savegame.h
 sha1.o: sha1.h

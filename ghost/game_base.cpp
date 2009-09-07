@@ -43,6 +43,38 @@
 // CBaseGame
 //
 
+void CBaseGame :: SendGame( CUDPSocket *socket, sockaddr_in &target )
+{
+	if( m_GameLoading || m_GameLoaded )
+		return;
+	BYTEARRAY MapGameType;
+
+	// construct the correct W3GS_GAMEINFO packet
+
+	if( m_SaveGame )
+	{
+		MapGameType.push_back( 0 );
+		MapGameType.push_back( 2 );
+		MapGameType.push_back( 0 );
+		MapGameType.push_back( 0 );
+		BYTEARRAY MapWidth;
+		MapWidth.push_back( 0 );
+		MapWidth.push_back( 0 );
+		BYTEARRAY MapHeight;
+		MapHeight.push_back( 0 );
+		MapHeight.push_back( 0 );
+		socket->SendTo( target, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+	}
+	else
+	{
+		MapGameType.push_back( m_Map->GetMapGameType( ) );
+		MapGameType.push_back( 0 );
+		MapGameType.push_back( 0 );
+		MapGameType.push_back( 0 );
+		socket->SendTo( target, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+	}
+}
+
 CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer )
 {
 	m_GHost = nGHost;
@@ -958,7 +990,7 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, string m
 			if( SID < m_Slots.size( ) )
 				ExtraFlags[0] = 3 + m_Slots[SID].GetColour( );
 
-			if( message.size( ) > 127 )
+			if( message.size( ) > 127 )
 				message = message.substr( 0, 127 );
 
 			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateByteArray( player->GetPID( ) ), 32, UTIL_CreateByteArray( ExtraFlags, 4 ), message ) );
