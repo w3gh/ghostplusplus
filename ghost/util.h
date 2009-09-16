@@ -59,6 +59,7 @@ uint32_t UTIL_ToUInt32( string &s );
 int16_t UTIL_ToInt16( string &s );
 int32_t UTIL_ToInt32( string &s );
 double UTIL_ToDouble( string &s );
+string UTIL_MSToString( uint32_t ms );
 
 // files
 
@@ -67,6 +68,7 @@ string UTIL_FileRead( string file, uint32_t start, uint32_t length );
 string UTIL_FileRead( string file );
 bool UTIL_FileWrite( string file, unsigned char *data, uint32_t length );
 string UTIL_FileSafeName( string fileName );
+string UTIL_AddPathSeperator( string path );
 
 // stat strings
 

@@ -380,6 +380,20 @@ double UTIL_ToDouble( string &s )
 	return result;
 }
 
+string UTIL_MSToString( uint32_t ms )
+{
+	string MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
+	string SecString = UTIL_ToString( ( ms / 1000 ) % 60 );
+
+	if( MinString.size( ) == 1 )
+		MinString.insert( 0, "0" );
+
+	if( SecString.size( ) == 1 )
+		SecString.insert( 0, "0" );
+
+	return MinString + "m" + SecString + "s";
+}
+
 bool UTIL_FileExists( string file )
 {
 	struct stat fileinfo;
@@ -484,6 +498,23 @@ string UTIL_FileSafeName( string fileName )
 	}
 
 	return fileName;
+}
+
+string UTIL_AddPathSeperator( string path )
+{
+	if( path.empty( ) )
+		return string( );
+
+#ifdef WIN32
+	char Seperator = '\\';
+#else
+	char Seperator = '/';
+#endif
+
+	if( *(path.end( ) - 1) == Seperator )
+		return path;
+	else
+		return path + string( 1, Seperator );
 }
 
 BYTEARRAY UTIL_EncodeStatString( BYTEARRAY &data )

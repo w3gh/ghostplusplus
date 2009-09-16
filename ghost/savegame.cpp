@@ -27,9 +27,10 @@
 // CSaveGame
 //
 
-CSaveGame :: CSaveGame( CGHost *nGHost ) : CPacked( nGHost )
+CSaveGame :: CSaveGame( ) : CPacked( )
 {
-
+	m_NumSlots = 0;
+	m_RandomSeed = 0;
 }
 
 CSaveGame :: ~CSaveGame( )
@@ -37,18 +38,31 @@ CSaveGame :: ~CSaveGame( )
 
 }
 
+#define READB( x, y, z )	(x).read( (char *)(y), (z) )
+#define READSTR( x, y )		getline( (x), (y), '\0' )
+
 void CSaveGame :: ParseSaveGame( )
 {
 	m_MapPath.clear( );
+	m_GameName.clear( );
+	m_NumSlots = 0;
 	m_Slots.clear( );
+	m_RandomSeed = 0;
 	m_MagicNumber.clear( );
+
+	if( m_Flags != 0 )
+	{
+		CONSOLE_Print( "[SAVEGAME] invalid replay (flags mismatch)" );
+		m_Valid = false;
+		return;
+	}
 
 	istringstream ISS( m_Decompressed );
 
 	// savegame format figured out by Varlock:
 	// string		-> map path
 	// 0 (string?)	-> ??? (no idea what this is)
-	// string		-> original game name
+	// string		-> game name
 	// 0 (string?)	-> ??? (maybe original game password)
 	// string		-> stat string
 	// 4 bytes		-> ??? (seems to be # of slots)
@@ -57,49 +71,48 @@ void CSaveGame :: ParseSaveGame( )
 	// slot structure
 	// 4 bytes		-> magic number
 
+	unsigned char Garbage1;
+	uint16_t Garbage2;
+	uint32_t Garbage4;
 	string GarbageString;
-	unsigned char NumSlots;
 	uint32_t MagicNumber;
 
-	getline( ISS, m_MapPath, '\0' );		// map path
-	getline( ISS, GarbageString, '\0' );	// ???
-	getline( ISS, GarbageString, '\0' );	// original game name
-	getline( ISS, GarbageString, '\0' );	// ???
-	getline( ISS, GarbageString, '\0' );	// stat string
-	ISS.seekg( 4, ios :: cur );				// ???
-	ISS.seekg( 4, ios :: cur );				// ???
-	ISS.seekg( 2, ios :: cur );				// ???
-	ISS.read( (char *)&NumSlots, 1 );		// number of slots
+	READSTR( ISS, m_MapPath );				// map path
+	READSTR( ISS, GarbageString );			// ???
+	READSTR( ISS, m_GameName );				// game name
+	READSTR( ISS, GarbageString );			// ???
+	READSTR( ISS, GarbageString );			// stat string
+	READB( ISS, &Garbage4, 4 );				// ???
+	READB( ISS, &Garbage4, 4 );				// ???
+	READB( ISS, &Garbage2, 2 );				// ???
+	READB( ISS, &m_NumSlots, 1 );			// number of slots
 
-	if( NumSlots > 12 )
+	if( m_NumSlots > 12 )
 	{
-		CONSOLE_Print( "[SAVEGAME] too many slots in decompressed data" );
+		CONSOLE_Print( "[SAVEGAME] invalid savegame (too many slots)" );
 		m_Valid = false;
 		return;
 	}
 
-	CONSOLE_Print( "[SAVEGAME] found " + UTIL_ToString( NumSlots ) + " slots" );
-
-	for( unsigned char i = 0; i < NumSlots; i++ )
+	for( unsigned char i = 0; i < m_NumSlots; i++ )
 	{
 		unsigned char SlotData[9];
-		ISS.read( (char *)SlotData, 9 );	// slot data
+		READB( ISS, SlotData, 9 );			// slot data
 		m_Slots.push_back( CGameSlot( SlotData[0], SlotData[1], SlotData[2], SlotData[3], SlotData[4], SlotData[5], SlotData[6], SlotData[7], SlotData[8] ) );
 	}
 
-	ISS.seekg( 4, ios :: cur );				// GetTicks
-	ISS.seekg( 1, ios :: cur );				// GameType
-	ISS.seekg( 1, ios :: cur );				// number of player slots (non observer)
-	ISS.read( (char *)&MagicNumber, 4 );	// magic number
+	READB( ISS, &m_RandomSeed, 4 );			// random seed
+	READB( ISS, &Garbage1, 1 );				// GameType
+	READB( ISS, &Garbage1, 1 );				// number of player slots (non observer)
+	READB( ISS, &MagicNumber, 4 );			// magic number
 
-	if( ISS.fail( ) )
+	if( ISS.eof( ) || ISS.fail( ) )
 	{
-		CONSOLE_Print( "[SAVEGAME] failed to parse decompressed data" );
+		CONSOLE_Print( "[SAVEGAME] failed to parse savegame header" );
 		m_Valid = false;
 		return;
 	}
 
 	m_MagicNumber = UTIL_CreateByteArray( MagicNumber, false );
-	CONSOLE_Print( "[SAVEGAME] found map path [" + m_MapPath + "]" );
-	CONSOLE_Print( "[SAVEGAME] found magic number [" + UTIL_ToString( m_MagicNumber[0] ) + " " + UTIL_ToString( m_MagicNumber[1] ) + " " + UTIL_ToString( m_MagicNumber[2] ) + " " + UTIL_ToString( m_MagicNumber[3] ) + "]" );
+	m_Valid = true;
 }

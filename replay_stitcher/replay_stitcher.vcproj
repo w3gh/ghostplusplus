@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="update_w3mmd_elo"
-	ProjectGUID="{67FB5DB9-6F09-4F1A-BB70-66CD585599FC}"
-	RootNamespace="update_w3mmd_elo"
+	Name="replay_stitcher"
+	ProjectGUID="{CAEE9C95-9B13-4088-8223-781B3A819041}"
+	RootNamespace="replay_stitcher"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ghost;..\mysql\include"
+				AdditionalIncludeDirectories="..\ghost;..\zlib\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib libmysql.lib"
+				AdditionalDependencies="zdll.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\mysql\lib\opt"
+				AdditionalLibraryDirectories="..\zlib\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\ghost;..\mysql\include"
+				AdditionalIncludeDirectories="..\ghost;..\zlib\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -136,9 +136,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib libmysql.lib"
+				AdditionalDependencies="zdll.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\mysql\lib\opt"
+				AdditionalLibraryDirectories="..\zlib\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -177,15 +177,31 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\ghost\config.cpp"
+				RelativePath="..\ghost\crc32.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\elo.cpp"
+				RelativePath="..\ghost\gameslot.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\update_w3mmd_elo.cpp"
+				RelativePath="..\ghost\packed.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\replay.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\replay_stitcher.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\savegame.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -195,11 +211,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ghost\config.h"
+				RelativePath="..\ghost\crc32.h"
 				>
 			</File>
 			<File
-				RelativePath=".\elo.h"
+				RelativePath="..\ghost\gameslot.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ghost.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\includes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\ms_stdint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\packed.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\replay.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\savegame.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ghost\util.h"
 				>
 			</File>
 		</Filter>
