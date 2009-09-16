@@ -388,7 +388,7 @@ CGHost :: CGHost( CConfig *CFG )
 	m_Exiting = false;
 	m_ExitingNice = false;
 	m_Enabled = true;
-	m_Version = "14.7";
+	m_Version = "15.0";
 	m_HostCounter = 1;
 	m_AutoHostMaximumGames = CFG->GetInt( "autohost_maxgames", 0 );
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
@@ -407,7 +407,7 @@ CGHost :: CGHost( CConfig *CFG )
 	m_AdminGameMap = CFG->GetString( "admingame_map", string( ) );
 	m_LANWar3Version = CFG->GetInt( "lan_war3version", 24 );
 	m_ReplayWar3Version = CFG->GetInt( "replay_war3version", 24 );
-	m_ReplayBuildNumber = CFG->GetInt( "replay_buildnumber", 6374 );
+	m_ReplayBuildNumber = CFG->GetInt( "replay_buildnumber", 6059 );
 	SetConfigs( CFG );
 
 	// load the battle.net connections
@@ -447,6 +447,7 @@ CGHost :: CGHost( CConfig *CFG )
 		BYTEARRAY EXEVersion = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversion", string( ) ), 4 );
 		BYTEARRAY EXEVersionHash = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversionhash", string( ) ), 4 );
 		string PasswordHashType = CFG->GetString( Prefix + "custom_passwordhashtype", string( ) );
+		string PVPGNRealmName = CFG->GetString( Prefix + "custom_pvpgnrealmname", "PvPGN Realm" );
 		uint32_t MaxMessageLength = CFG->GetInt( Prefix + "custom_maxmessagelength", 200 );
 
 		if( Server.empty( ) )
@@ -477,7 +478,7 @@ CGHost :: CGHost( CConfig *CFG )
 		}
 
 		CONSOLE_Print( "[GHOST] found battle.net connection #" + UTIL_ToString( i ) + " for server [" + Server + "]" );
-		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger[0], HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, MaxMessageLength, i ) );
+		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger[0], HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
 	}
 
 	if( m_BNETs.empty( ) )
@@ -528,7 +529,7 @@ CGHost :: CGHost( CConfig *CFG )
 	}
 
 	m_AutoHostMap = new CMap( *m_Map );
-	m_SaveGame = new CSaveGame( this );
+	m_SaveGame = new CSaveGame( );
 
 	// load the iptocountry data
 
@@ -1015,7 +1016,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_LanguageFile = CFG->GetString( "bot_language", "language.cfg" );
 	delete m_Language;
 	m_Language = new CLanguage( m_LanguageFile );
-	m_Warcraft3Path = CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" );
+	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) );
 	m_BindAddress = CFG->GetString( "bot_bindaddress", string( ) );
 	m_MaxGames = CFG->GetInt( "bot_maxgames", 5 );
 	string BotCommandTrigger = CFG->GetString( "bot_commandtrigger", "!" );
@@ -1024,11 +1025,11 @@ void CGHost :: SetConfigs( CConfig *CFG )
 		BotCommandTrigger = "!";
 
 	m_CommandTrigger = BotCommandTrigger[0];
-	m_MapCFGPath = CFG->GetString( "bot_mapcfgpath", string( ) );
-	m_SaveGamePath = CFG->GetString( "bot_savegamepath", string( ) );
-	m_MapPath = CFG->GetString( "bot_mappath", string( ) );
+	m_MapCFGPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mapcfgpath", string( ) ) );
+	m_SaveGamePath = UTIL_AddPathSeperator( CFG->GetString( "bot_savegamepath", string( ) ) );
+	m_MapPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mappath", string( ) ) );
 	m_SaveReplays = CFG->GetInt( "bot_savereplays", 0 ) == 0 ? false : true;
-	m_ReplayPath = CFG->GetString( "bot_replaypath", string( ) );
+	m_ReplayPath = UTIL_AddPathSeperator( CFG->GetString( "bot_replaypath", string( ) ) );
 	m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0GHost" );
 	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 0 ) == 0 ? false : true;
 	m_CheckMultipleIPUsage = CFG->GetInt( "bot_checkmultipleipusage", 1 ) == 0 ? false : true;
@@ -1276,6 +1277,8 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 
 		if( MapPath1 != MapPath2 )
 		{
+			CONSOLE_Print( "[GHOST] path mismatch, saved game path is [" + MapPath1 + "] but map path is [" + MapPath2 + "]" );
+
 			for( vector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 			{
 				if( (*i)->GetServer( ) == creatorServer )
@@ -1284,6 +1287,20 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 
 			if( m_AdminGame )
 				m_AdminGame->SendAllChat( m_Language->UnableToCreateGameSaveGameMapMismatch( gameName ) );
+
+			return;
+		}
+
+		if( m_EnforcePlayers.empty( ) )
+		{
+			for( vector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+			{
+				if( (*i)->GetServer( ) == creatorServer )
+					(*i)->QueueChatCommand( m_Language->UnableToCreateGameMustEnforceFirst( gameName ), creatorName, whisper );
+			}
+
+			if( m_AdminGame )
+				m_AdminGame->SendAllChat( m_Language->UnableToCreateGameMustEnforceFirst( gameName ) );
 
 			return;
 		}
@@ -1325,6 +1342,12 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		m_CurrentGame = new CGame( this, map, NULL, m_HostPort, gameState, gameName, ownerName, creatorName, creatorServer );
 
 	// todotodo: check if listening failed and report the error to the user
+
+	if( m_SaveGame )
+	{
+		m_CurrentGame->SetEnforcePlayers( m_EnforcePlayers );
+		m_EnforcePlayers.clear( );
+	}
 
 	for( vector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{

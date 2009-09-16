@@ -66,16 +66,26 @@ int tzuncompress( Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourc
 // CPacked
 //
 
-CPacked :: CPacked( CGHost *nGHost )
+CPacked :: CPacked( )
 {
-	m_GHost = nGHost;
+	m_CRC = new CCRC32( );
+	m_CRC->Initialize( );
 	m_Valid = true;
+	m_HeaderSize = 0;
+	m_CompressedSize = 0;
+	m_HeaderVersion = 0;
+	m_DecompressedSize = 0;
+	m_NumBlocks = 0;
+	m_War3Identifier = 0;
+	m_War3Version = 0;
+	m_BuildNumber = 0;
+	m_Flags = 0;
 	m_ReplayLength = 0;
 }
 
 CPacked :: ~CPacked( )
 {
-
+	delete m_CRC;
 }
 
 void CPacked :: Load( string fileName, bool allBlocks )
@@ -134,9 +144,6 @@ void CPacked :: Decompress( bool allBlocks )
 	m_Decompressed.clear( );
 	istringstream ISS( m_Compressed );
 	string GarbageString;
-	uint32_t HeaderVersion;
-	uint32_t DecompressedSize;
-	uint32_t NumBlocks;
 
 	// read header
 
@@ -149,25 +156,29 @@ void CPacked :: Decompress( bool allBlocks )
 		return;
 	}
 
-	ISS.seekg( 4, ios :: cur );						// header size
-	ISS.seekg( 4, ios :: cur );						// compressed file size
-	ISS.read( (char *)&HeaderVersion, 4 );			// header version
-	ISS.read( (char *)&DecompressedSize, 4 );		// decompressed file size
-	ISS.read( (char *)&NumBlocks, 4 );				// number of blocks
+	ISS.read( (char *)&m_HeaderSize, 4 );			// header size
+	ISS.read( (char *)&m_CompressedSize, 4 );		// compressed file size
+	ISS.read( (char *)&m_HeaderVersion, 4 );		// header version
+	ISS.read( (char *)&m_DecompressedSize, 4 );		// decompressed file size
+	ISS.read( (char *)&m_NumBlocks, 4 );			// number of blocks
 
-	if( HeaderVersion == 0 )
+	if( m_HeaderVersion == 0 )
 	{
 		ISS.seekg( 2, ios :: cur );					// unknown
 		ISS.seekg( 2, ios :: cur );					// version number
+
+		CONSOLE_Print( "[PACKED] header version is too old" );
+		m_Valid = false;
+		return;
 	}
 	else
 	{
-		ISS.seekg( 4, ios :: cur );					// version identifier
-		ISS.seekg( 4, ios :: cur );					// version number
+		ISS.read( (char *)&m_War3Identifier, 4 );	// version identifier
+		ISS.read( (char *)&m_War3Version, 4 );		// version number
 	}
 
-	ISS.seekg( 2, ios :: cur );						// build number
-	ISS.seekg( 2, ios :: cur );						// flags
+	ISS.read( (char *)&m_BuildNumber, 2 );			// build number
+	ISS.read( (char *)&m_Flags, 2 );				// flags
 	ISS.read( (char *)&m_ReplayLength, 4 );			// replay length
 	ISS.seekg( 4, ios :: cur );						// CRC
 
@@ -179,13 +190,13 @@ void CPacked :: Decompress( bool allBlocks )
 	}
 
 	if( allBlocks )
-		CONSOLE_Print( "[PACKED] reading " + UTIL_ToString( NumBlocks ) + " blocks" );
+		CONSOLE_Print( "[PACKED] reading " + UTIL_ToString( m_NumBlocks ) + " blocks" );
 	else
-		CONSOLE_Print( "[PACKED] reading 1/" + UTIL_ToString( NumBlocks ) + " blocks" );
+		CONSOLE_Print( "[PACKED] reading 1/" + UTIL_ToString( m_NumBlocks ) + " blocks" );
 
 	// read blocks
 
-	for( uint32_t i = 0; i < NumBlocks; i++ )
+	for( uint32_t i = 0; i < m_NumBlocks; i++ )
 	{
 		uint16_t BlockCompressed;
 		uint16_t BlockDecompressed;
@@ -254,9 +265,9 @@ void CPacked :: Decompress( bool allBlocks )
 
 	CONSOLE_Print( "[PACKED] decompressed " + UTIL_ToString( m_Decompressed.size( ) ) + " bytes" );
 
-	if( allBlocks || NumBlocks == 1 )
+	if( allBlocks || m_NumBlocks == 1 )
 	{
-		if( DecompressedSize > m_Decompressed.size( ) )
+		if( m_DecompressedSize > m_Decompressed.size( ) )
 		{
 			CONSOLE_Print( "[PACKED] not enough decompressed data" );
 			m_Valid = false;
@@ -265,8 +276,8 @@ void CPacked :: Decompress( bool allBlocks )
 
 		// the last block is padded with zeros, discard them
 
-		CONSOLE_Print( "[PACKED] discarding " + UTIL_ToString( m_Decompressed.size( ) - DecompressedSize ) + " bytes" );
-		m_Decompressed.erase( DecompressedSize );
+		CONSOLE_Print( "[PACKED] discarding " + UTIL_ToString( m_Decompressed.size( ) - m_DecompressedSize ) + " bytes" );
+		m_Decompressed.erase( m_DecompressedSize );
 	}
 }
 
@@ -313,9 +324,6 @@ void CPacked :: Compress( )
 	uint32_t HeaderSize = 68;
 	uint32_t HeaderCompressedSize = HeaderSize + CompressedSize + CompressedBlocks.size( ) * 8;
 	uint32_t HeaderVersion = 1;
-	uint32_t HeaderWar3Version = m_GHost->m_ReplayWar3Version;
-	uint16_t HeaderBuildNumber = m_GHost->m_ReplayBuildNumber;
-	uint16_t HeaderFlags = 32768;
 	BYTEARRAY Header;
 	UTIL_AppendByteArray( Header, "Warcraft III recorded game\x01A" );
 	UTIL_AppendByteArray( Header, HeaderSize, false );
@@ -327,9 +335,9 @@ void CPacked :: Compress( )
 	Header.push_back( 'X' );
 	Header.push_back( '3' );
 	Header.push_back( 'W' );
-	UTIL_AppendByteArray( Header, HeaderWar3Version, false );
-	UTIL_AppendByteArray( Header, HeaderBuildNumber, false );
-	UTIL_AppendByteArray( Header, HeaderFlags, false );
+	UTIL_AppendByteArray( Header, m_War3Version, false );
+	UTIL_AppendByteArray( Header, m_BuildNumber, false );
+	UTIL_AppendByteArray( Header, m_Flags, false );
 	UTIL_AppendByteArray( Header, m_ReplayLength, false );
 
 	// append zero header CRC
@@ -341,7 +349,7 @@ void CPacked :: Compress( )
 	// calculate header CRC
 
 	string HeaderString = string( Header.begin( ), Header.end( ) );
-	uint32_t CRC = m_GHost->m_CRC->FullCRC( (unsigned char *)HeaderString.c_str( ), HeaderString.size( ) );
+	uint32_t CRC = m_CRC->FullCRC( (unsigned char *)HeaderString.c_str( ), HeaderString.size( ) );
 
 	// overwrite the (currently zero) header CRC with the calculated CRC
 
@@ -367,9 +375,9 @@ void CPacked :: Compress( )
 		// calculate block header CRC
 
 		string BlockHeaderString = string( BlockHeader.begin( ), BlockHeader.end( ) );
-		uint32_t CRC1 = m_GHost->m_CRC->FullCRC( (unsigned char *)BlockHeaderString.c_str( ), BlockHeaderString.size( ) );
+		uint32_t CRC1 = m_CRC->FullCRC( (unsigned char *)BlockHeaderString.c_str( ), BlockHeaderString.size( ) );
 		CRC1 = CRC1 ^ ( CRC1 >> 16 );
-		uint32_t CRC2 = m_GHost->m_CRC->FullCRC( (unsigned char *)(*i).c_str( ), (*i).size( ) );
+		uint32_t CRC2 = m_CRC->FullCRC( (unsigned char *)(*i).c_str( ), (*i).size( ) );
 		CRC2 = CRC2 ^ ( CRC2 >> 16 );
 		uint32_t BlockCRC = ( CRC1 & 0xFFFF ) | ( CRC2 << 16 );
 

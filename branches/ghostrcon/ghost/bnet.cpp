@@ -32,6 +32,7 @@
 #include "map.h"
 #include "packed.h"
 #include "savegame.h"
+#include "replay.h"
 #include "gameprotocol.h"
 #include "game_base.h"
 
@@ -44,7 +45,7 @@ using namespace boost :: filesystem;
 // CBNET
 //
 
-CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
+CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
 
@@ -104,6 +105,7 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	m_EXEVersion = nEXEVersion;
 	m_EXEVersionHash = nEXEVersionHash;
 	m_PasswordHashType = nPasswordHashType;
+	m_PVPGNRealmName = nPVPGNRealmName;
 	m_MaxMessageLength = nMaxMessageLength;
 	m_HostCounterID = nHostCounterID;
 	m_NextConnectTime = GetTime( );
@@ -935,7 +937,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				// we don't look for the English part of the text anymore because we want this to work with multiple languages
 				// it's a pretty safe bet that anyone whispering the bot with a message containing the game name is a valid spoofcheck
 
-				if( m_PasswordHashType == "pvpgn" && User == "PvPGN Realm" )
+				if( m_PasswordHashType == "pvpgn" && User == m_PVPGNRealmName )
 				{
 					// the equivalent pvpgn message is: [PvPGN Realm] Your friend abc has entered a Warcraft III Frozen Throne game named "xyz".
 
@@ -1461,6 +1463,34 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 					else
 						QueueChatCommand( m_GHost->m_Language->GameNumberDoesntExist( Payload ), User, Whisper );
+				}
+
+				//
+				// !ENFORCESG
+				//
+
+				if( Command == "enforcesg" && !Payload.empty( ) )
+				{
+					// only load files in the current directory just to be safe
+
+					if( Payload.find( "/" ) != string :: npos || Payload.find( "\\" ) != string :: npos )
+						QueueChatCommand( m_GHost->m_Language->UnableToLoadReplaysOutside( ), User, Whisper );
+					else
+					{
+						string File = m_GHost->m_ReplayPath + Payload + ".w3g";
+
+						if( UTIL_FileExists( File ) )
+						{
+							QueueChatCommand( m_GHost->m_Language->LoadingReplay( File ), User, Whisper );
+							CReplay *Replay = new CReplay( );
+							Replay->Load( File, false );
+							Replay->ParseReplay( false );
+							m_GHost->m_EnforcePlayers = Replay->GetPlayers( );
+							delete Replay;
+						}
+						else
+							QueueChatCommand( m_GHost->m_Language->UnableToLoadReplayDoesntExist( File ), User, Whisper );
+					}
 				}
 
 				//
@@ -2171,19 +2201,14 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 			if( Message.find( "is using Warcraft III The Frozen Throne in game" ) != string :: npos || Message.find( "is using Warcraft III Frozen Throne and is currently in  game" ) != string :: npos )
 			{
-				if( Message.find( m_GHost->m_CurrentGame->GetGameName( ) ) != string :: npos )
+				// check both the current game name and the last game name against the /whois response
+				// this is because when the game is rehosted, players who joined recently will be in the previous game according to battle.net
+				// note: if the game is rehosted more than once it is possible (but unlikely) for a false positive because only two game names are checked
+
+				if( Message.find( m_GHost->m_CurrentGame->GetGameName( ) ) != string :: npos || Message.find( m_GHost->m_CurrentGame->GetLastGameName( ) ) != string :: npos )
 					m_GHost->m_CurrentGame->AddToSpoofed( m_Server, UserName, false );
-
-				// todotodo: we need to allow players who join the game just before the name changes (due to rehosting) to spoof check properly here
-				// e.g. store the previous game name and permit players to spoof check against that name for some amount of time, or even indefinitely
-				// it's not necessarily true that someone in a "different game" as determined by the current game name is name spoofing
-
-				/*
-
 				else
 					m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofDetectedIsInAnotherGame( UserName ) );
-
-				*/
 			}
 		}
 	}

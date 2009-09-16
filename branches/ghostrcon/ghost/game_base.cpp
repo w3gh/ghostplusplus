@@ -83,8 +83,8 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_Map = new CMap( *nMap );
 	m_SaveGame = nSaveGame;
 
-	if( m_GHost->m_SaveReplays && !m_SaveGame )
-		m_Replay = new CReplay( m_GHost );
+	if( m_GHost->m_SaveReplays )
+		m_Replay = new CReplay( );
 	else
 		m_Replay = NULL;
 
@@ -95,6 +95,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_VirtualHostPID = 255;
 	m_FakePlayerPID = 255;
 	m_GameName = nGameName;
+	m_LastGameName = nGameName;
 	m_VirtualHostName = m_GHost->m_VirtualHostName;
 	m_OwnerName = nOwnerName;
 	m_CreatorName = nCreatorName;
@@ -145,6 +146,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 	if( m_SaveGame )
 	{
+		m_EnforceSlots = m_SaveGame->GetSlots( );
 		m_Slots = m_SaveGame->GetSlots( );
 
 		// the savegame slots contain player entries
@@ -241,8 +243,12 @@ CBaseGame :: ~CBaseGame( )
 		if( SecString.size( ) == 1 )
 			SecString.insert( 0, "0" );
 
-		m_Replay->BuildReplay( m_GameName, m_StatString );
-		m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( "GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
+		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
+
+		if( m_SaveGame )
+			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( "Partial GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
+		else
+			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( "GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
 	}
 
 	delete m_Socket;
@@ -501,6 +507,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 		string GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
 		CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
+		m_LastGameName = m_GameName;
 		m_GameName = GameName;
 		m_HostCounter = m_GHost->m_HostCounter++;
 		m_RefreshError = false;
@@ -546,7 +553,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// send more map data
 
-	if( !m_GameLoading && !m_GameLoaded && GetTicks( ) >= m_LastDownloadTicks + 250 )
+	if( !m_GameLoading && !m_GameLoaded && GetTicks( ) >= m_LastDownloadTicks + 100 )
 	{
 		uint32_t Downloaders = 0;
 		uint32_t DownloadCounter = 0;
@@ -560,15 +567,23 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				if( m_GHost->m_MaxDownloaders > 0 && Downloaders > m_GHost->m_MaxDownloaders )
 					break;
 
-				// send up to 50 pieces of the map at once so that the download goes faster
+				// send up to 100 pieces of the map at once so that the download goes faster
 				// if we wait for each MAPPART packet to be acknowledged by the client it'll take a long time to download
 				// this is because we would have to wait the round trip time (the ping time) between sending every 1442 bytes of map data
-				// doing it this way allows us to send at least 70 KB in each round trip interval which is much more reasonable
-				// the theoretical throughput is [70 KB * 1000 / ping] in KB/sec so someone with 100 ping (round trip ping, not LC ping) could download at 700 KB/sec
+				// doing it this way allows us to send at least 140 KB in each round trip interval which is much more reasonable
+				// the theoretical throughput is [140 KB * 1000 / ping] in KB/sec so someone with 100 ping (round trip ping, not LC ping) could download at 1400 KB/sec
+				// note: this creates a queue of map data which clogs up the connection when the client is on a slower connection (e.g. dialup)
+				// in this case any changes to the lobby are delayed by the amount of time it takes to send the queued data (i.e. 140 KB, which could be 30 seconds or more)
+				// for example, players joining and leaving, slot changes, chat messages would all appear to happen much later for the low bandwidth player
+				// note: the throughput is also limited by the number of times this code is executed each second
+				// e.g. if we send the maximum amount (140 KB) 10 times per second the theoretical throughput is 1400 KB/sec
+				// therefore the maximum throughput is 1400 KB/sec regardless of ping and this value slowly diminishes as the player's ping increases
+				// in addition to this, the througput is limited by the configuration value bot_maxdownloadspeed
+				// in summary: the actual throughput is MIN( 140 * 1000 / ping, 1400, bot_maxdownloadspeed ) in KB/sec assuming only one player is downloading the map
 
 				uint32_t MapSize = UTIL_ByteArrayToUInt32( m_Map->GetMapSize( ), false );
 
-				while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 50 && (*i)->GetLastMapPartSent( ) < MapSize )
+				while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 100 && (*i)->GetLastMapPartSent( ) < MapSize )
 				{
 					if( (*i)->GetLastMapPartSent( ) == 0 )
 					{
@@ -579,9 +594,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 					}
 
 					// limit the download speed if we're sending too much data
-					// we divide by 4 because we run this code every 250ms (i.e. four times per second)
+					// we divide by 10 because we run this code every 100ms (i.e. ten times per second)
 
-					if( m_GHost->m_MaxDownloadSpeed > 0 && DownloadCounter > m_GHost->m_MaxDownloadSpeed * 1024 / 4 )
+					if( m_GHost->m_MaxDownloadSpeed > 0 && DownloadCounter > m_GHost->m_MaxDownloadSpeed * 1024 / 10 )
 						break;
 
 					Send( *i, m_Protocol->SEND_W3GS_MAPPART( GetHostPID( ), (*i)->GetPID( ), (*i)->GetLastMapPartSent( ), m_Map->GetMapData( ) ) );
@@ -990,7 +1005,8 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, string m
 			if( SID < m_Slots.size( ) )
 				ExtraFlags[0] = 3 + m_Slots[SID].GetColour( );
 
-			if( message.size( ) > 127 )
+			if( message.size( ) > 127 )
+
 				message = message.substr( 0, 127 );
 
 			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateByteArray( player->GetPID( ) ), 32, UTIL_CreateByteArray( ExtraFlags, 4 ), message ) );
@@ -1547,10 +1563,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		return;
 	}
 
-	// try to find an empty slot
-
-	unsigned char SID = GetEmptySlot( false );
-
 	// check if the player is an admin or root admin on any connected realm for determining reserved status
 	// we can't just use the spoof checked realm like in EventPlayerBotCommand because the player hasn't spoof checked yet
 
@@ -1567,20 +1579,99 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || AnyAdminCheck || IsOwner( joinPlayer->GetName( ) );
 
-	if( SID == 255 && Reserved )
+	// try to find a slot
+
+	unsigned char SID = 255;
+	unsigned char EnforcePID = 255;
+	unsigned char EnforceSID = 0;
+	CGameSlot EnforceSlot( 255, 0, 0, 0, 0, 0, 0 );
+
+	if( m_SaveGame )
 	{
-		// a reserved player is trying to join the game but it's full, try to find a reserved slot
+		// in a saved game we enforce the player layout and the slot layout
+		// unfortunately we don't know how to extract the player layout from the saved game so we use the data from a replay instead
+		// the !enforcesg command defines the player layout by parsing a replay
 
-		SID = GetEmptySlot( true );
-
-		if( SID != 255 )
+		for( vector<PIDPlayer> :: iterator i = m_EnforcePlayers.begin( ); i != m_EnforcePlayers.end( ); i++ )
 		{
+			if( (*i).second == joinPlayer->GetName( ) )
+				EnforcePID = (*i).first;
+		}
+
+		for( vector<CGameSlot> :: iterator i = m_EnforceSlots.begin( ); i != m_EnforceSlots.end( ); i++ )
+		{
+			if( (*i).GetPID( ) == EnforcePID )
+			{
+				EnforceSlot = *i;
+				break;
+			}
+
+			EnforceSID++;
+		}
+
+		if( EnforcePID == 255 || EnforceSlot.GetPID( ) == 255 || EnforceSID >= m_Slots.size( ) )
+		{
+			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but isn't in the enforced list" );
+			potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
+			potential->SetDeleteMe( true );
+			return;
+		}
+
+		SID = EnforceSID;
+	}
+	else
+	{
+		// try to find an empty slot
+
+		SID = GetEmptySlot( false );
+
+		if( SID == 255 && Reserved )
+		{
+			// a reserved player is trying to join the game but it's full, try to find a reserved slot
+
+			SID = GetEmptySlot( true );
+
+			if( SID != 255 )
+			{
+				CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
+
+				if( KickedPlayer )
+				{
+					KickedPlayer->SetDeleteMe( true );
+					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
+					KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
+
+					// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
+					// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
+
+					SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
+					KickedPlayer->SetLeftMessageSent( true );
+				}
+			}
+		}
+
+		if( SID == 255 && IsOwner( joinPlayer->GetName( ) ) )
+		{
+			// the owner player is trying to join the game but it's full and we couldn't even find a reserved slot, kick the player in the lowest numbered slot
+			// updated this to try to find a player slot so that we don't end up kicking a computer
+
+			SID = 0;
+
+			for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+			{
+				if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 )
+				{
+					SID = i;
+					break;
+				}
+			}
+
 			CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
 
 			if( KickedPlayer )
 			{
 				KickedPlayer->SetDeleteMe( true );
-				KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
+				KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
 				KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
 				// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
@@ -1589,38 +1680,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 				SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
 				KickedPlayer->SetLeftMessageSent( true );
 			}
-		}
-	}
-
-	if( SID == 255 && IsOwner( joinPlayer->GetName( ) ) )
-	{
-		// the owner player is trying to join the game but it's full and we couldn't even find a reserved slot, kick the player in the lowest numbered slot
-		// updated this to try to find a player slot so that we don't end up kicking a computer
-
-		SID = 0;
-
-		for( unsigned char i = 0; i < m_Slots.size( ); i++ )
-		{
-			if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 )
-			{
-				SID = i;
-				break;
-			}
-		}
-
-		CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
-
-		if( KickedPlayer )
-		{
-			KickedPlayer->SetDeleteMe( true );
-			KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
-			KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
-
-			// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
-			// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
-
-			SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
-			KickedPlayer->SetLeftMessageSent( true );
 		}
 	}
 
@@ -1634,7 +1693,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// we have a slot for the new player
 	// make room for them by deleting the virtual host player if we have to
 
-	if( GetNumPlayers( ) >= 11 )
+	if( GetNumPlayers( ) >= 11 || EnforcePID == m_VirtualHostPID )
 		DeleteVirtualHost( );
 
 	// turning the CPotentialPlayer into a CGamePlayer is a bit of a pain because we have to be careful not to close the socket
@@ -1642,7 +1701,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// we also have to be careful to not modify the m_Potentials vector since we're currently looping through it
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] joined the game" );
-	CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), Reserved );
+	CGamePlayer *Player = new CGamePlayer( potential, m_SaveGame ? EnforcePID : GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), Reserved );
 
 	// consider LAN players to have already spoof checked since they can't
 	// since so many people have trouble with this feature we now use the JoinedRealm to determine LAN status
@@ -1655,31 +1714,36 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	potential->SetSocket( NULL );
 	potential->SetDeleteMe( true );
 
-	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
-		m_Slots[SID] = CGameSlot( Player->GetPID( ), 255, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
+	if( m_SaveGame )
+		m_Slots[SID] = EnforceSlot;
 	else
 	{
-		m_Slots[SID] = CGameSlot( Player->GetPID( ), 255, SLOTSTATUS_OCCUPIED, 0, 12, 12, SLOTRACE_RANDOM );
-
-		// try to pick a team and colour
-		// make sure there aren't too many other players already
-
-		unsigned char NumOtherPlayers = 0;
-
-		for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+		if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
+			m_Slots[SID] = CGameSlot( Player->GetPID( ), 255, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
+		else
 		{
-			if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetTeam( ) != 12 )
-				NumOtherPlayers++;
-		}
+			m_Slots[SID] = CGameSlot( Player->GetPID( ), 255, SLOTSTATUS_OCCUPIED, 0, 12, 12, SLOTRACE_RANDOM );
 
-		if( NumOtherPlayers < m_Map->GetMapNumPlayers( ) )
-		{
-			if( SID < m_Map->GetMapNumPlayers( ) )
-				m_Slots[SID].SetTeam( SID );
-			else
-				m_Slots[SID].SetTeam( 0 );
+			// try to pick a team and colour
+			// make sure there aren't too many other players already
 
-			m_Slots[SID].SetColour( GetNewColour( ) );
+			unsigned char NumOtherPlayers = 0;
+
+			for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+			{
+				if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetTeam( ) != 12 )
+					NumOtherPlayers++;
+			}
+
+			if( NumOtherPlayers < m_Map->GetMapNumPlayers( ) )
+			{
+				if( SID < m_Map->GetMapNumPlayers( ) )
+					m_Slots[SID].SetTeam( SID );
+				else
+					m_Slots[SID].SetTeam( 0 );
+
+				m_Slots[SID].SetColour( GetNewColour( ) );
+			}
 		}
 	}
 
@@ -2538,6 +2602,9 @@ void CBaseGame :: EventPlayerChangeTeam( CGamePlayer *player, unsigned char team
 {
 	// player is requesting a team change
 
+	if( m_SaveGame )
+		return;
+
 	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 	{
 		unsigned char oldSID = GetSIDFromPID( player->GetPID( ) );
@@ -2601,6 +2668,9 @@ void CBaseGame :: EventPlayerChangeColour( CGamePlayer *player, unsigned char co
 {
 	// player is requesting a colour change
 
+	if( m_SaveGame )
+		return;
+
 	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 		return;
 
@@ -2624,6 +2694,9 @@ void CBaseGame :: EventPlayerChangeRace( CGamePlayer *player, unsigned char race
 {
 	// player is requesting a race change
 
+	if( m_SaveGame )
+		return;
+
 	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 		return;
 
@@ -2645,6 +2718,9 @@ void CBaseGame :: EventPlayerChangeRace( CGamePlayer *player, unsigned char race
 void CBaseGame :: EventPlayerChangeHandicap( CGamePlayer *player, unsigned char handicap )
 {
 	// player is requesting a handicap change
+
+	if( m_SaveGame )
+		return;
 
 	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 		return;
@@ -2913,6 +2989,28 @@ void CBaseGame :: EventGameStarted( )
 		m_Replay->SetRandomSeed( m_RandomSeed );
 		m_Replay->SetSelectMode( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM ? 3 : 0 );
 		m_Replay->SetStartSpotCount( m_Map->GetMapNumPlayers( ) );
+
+		/*
+		
+		BYTEARRAY MapGameType;
+
+		if( m_SaveGame )
+		{
+			MapGameType.push_back( 0 );
+			MapGameType.push_back( 2 );
+			MapGameType.push_back( 0 );
+			MapGameType.push_back( 0 );
+		}
+		else
+		{
+			MapGameType.push_back( m_Map->GetMapGameType( ) );
+			MapGameType.push_back( 0 );
+			MapGameType.push_back( 0 );
+			MapGameType.push_back( 0 );
+		}
+
+		*/
+
 		m_Replay->SetMapGameType( m_Map->GetMapGameType( ) );
 
 		if( !m_Players.empty( ) )
@@ -2932,7 +3030,12 @@ void CBaseGame :: EventGameStarted( )
 	StatString.push_back( 0 );
 	UTIL_AppendByteArray( StatString, m_Map->GetMapWidth( ) );
 	UTIL_AppendByteArray( StatString, m_Map->GetMapHeight( ) );
-	UTIL_AppendByteArray( StatString, m_Map->GetMapCRC( ) );
+
+	if( m_SaveGame )
+		UTIL_AppendByteArray( StatString, m_SaveGame->GetMagicNumber( ) );
+	else
+		UTIL_AppendByteArray( StatString, m_Map->GetMapCRC( ) );
+
 	UTIL_AppendByteArray( StatString, m_Map->GetMapPath( ) );
 	UTIL_AppendByteArray( StatString, "GHost++" );
 	StatString.push_back( 0 );
@@ -3225,7 +3328,7 @@ unsigned char CBaseGame :: GetHostPID( )
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( !(*i)->GetLeftMessageSent( ) && (*i)->GetName( ) == m_OwnerName )
+		if( !(*i)->GetLeftMessageSent( ) && IsOwner( (*i)->GetName( ) ) )
 			return (*i)->GetPID( );
 	}
 
@@ -3403,20 +3506,20 @@ void CBaseGame :: SwapSlots( unsigned char SID1, unsigned char SID2 )
 
 void CBaseGame :: OpenSlot( unsigned char SID, bool kick )
 {
-	if( kick )
-	{
-		CGamePlayer *Player = GetPlayerFromSID( SID );
-
-		if( Player )
-		{
-			Player->SetDeleteMe( true );
-			Player->SetLeftReason( "was kicked when opening a slot" );
-			Player->SetLeftCode( PLAYERLEAVE_LOBBY );
-		}
-	}
-
 	if( SID < m_Slots.size( ) )
 	{
+		if( kick )
+		{
+			CGamePlayer *Player = GetPlayerFromSID( SID );
+
+			if( Player )
+			{
+				Player->SetDeleteMe( true );
+				Player->SetLeftReason( "was kicked when opening a slot" );
+				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+			}
+		}
+
 		CGameSlot Slot = m_Slots[SID];
 		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) ); 
 		SendAllSlotInfo( );
@@ -3425,20 +3528,20 @@ void CBaseGame :: OpenSlot( unsigned char SID, bool kick )
 
 void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 {
-	if( kick )
-	{
-		CGamePlayer *Player = GetPlayerFromSID( SID );
-
-		if( Player )
-		{
-			Player->SetDeleteMe( true );
-			Player->SetLeftReason( "was kicked when closing a slot" );
-			Player->SetLeftCode( PLAYERLEAVE_LOBBY );
-		}
-	}
-
 	if( SID < m_Slots.size( ) )
 	{
+		if( kick )
+		{
+			CGamePlayer *Player = GetPlayerFromSID( SID );
+
+			if( Player )
+			{
+				Player->SetDeleteMe( true );
+				Player->SetLeftReason( "was kicked when closing a slot" );
+				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+			}
+		}
+
 		CGameSlot Slot = m_Slots[SID];
 		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_CLOSED, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) ); 
 		SendAllSlotInfo( );
@@ -3447,20 +3550,20 @@ void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 
 void CBaseGame :: ComputerSlot( unsigned char SID, unsigned char skill, bool kick )
 {
-	if( kick )
-	{
-		CGamePlayer *Player = GetPlayerFromSID( SID );
-
-		if( Player )
-		{
-			Player->SetDeleteMe( true );
-			Player->SetLeftReason( "was kicked when creating a computer in a slot" );
-			Player->SetLeftCode( PLAYERLEAVE_LOBBY );
-		}
-	}
-
 	if( SID < m_Slots.size( ) && skill < 3 )
 	{
+		if( kick )
+		{
+			CGamePlayer *Player = GetPlayerFromSID( SID );
+
+			if( Player )
+			{
+				Player->SetDeleteMe( true );
+				Player->SetLeftReason( "was kicked when creating a computer in a slot" );
+				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+			}
+		}
+
 		CGameSlot Slot = m_Slots[SID];
 		m_Slots[SID] = CGameSlot( 0, 100, SLOTSTATUS_OCCUPIED, 1, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ), skill );
 		SendAllSlotInfo( );
@@ -3597,7 +3700,7 @@ void CBaseGame :: ShuffleSlots( )
 
 	for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
-		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 )
+		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 )
 		{
 			Slots.push_back( *CurrentPlayer );
 			CurrentPlayer++;
@@ -3709,6 +3812,7 @@ void CBaseGame :: BalanceSlots( )
 	}
 
 	// setup the necessary variables for the balancing algorithm
+	// use an array of 13 elements for 12 players because GHost++ allocates PID's from 1-12 (i.e. excluding 0) and we use the PID to index the array
 
 	vector<unsigned char> PlayerIDs;
 	unsigned char TeamSizes[12];

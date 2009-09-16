@@ -27,8 +27,6 @@
 // CReplay
 //
 
-typedef pair<unsigned char,string> ReplayPlayer;
-
 class CIncomingAction;
 
 class CReplay : public CPacked
@@ -45,23 +43,41 @@ public:
 	};
 
 private:
-	vector<ReplayPlayer> m_Players;
+	unsigned char m_HostPID;
+	string m_HostName;
+	string m_GameName;
+	string m_StatString;
+	uint32_t m_PlayerCount;
+	unsigned char m_MapGameType;
+	vector<PIDPlayer> m_Players;
 	vector<CGameSlot> m_Slots;
-	queue<BYTEARRAY> m_LoadingBlocks;
-	queue<BYTEARRAY> m_Blocks;
-	queue<uint32_t> m_CheckSums;
 	uint32_t m_RandomSeed;
 	unsigned char m_SelectMode;
 	unsigned char m_StartSpotCount;
-	unsigned char m_MapGameType;
-	unsigned char m_HostPID;
-	string m_HostName;
+	queue<BYTEARRAY> m_LoadingBlocks;
+	queue<BYTEARRAY> m_Blocks;
+	queue<uint32_t> m_CheckSums;
 
 public:
-	CReplay( CGHost *nGHost );
+	CReplay( );
 	virtual ~CReplay( );
 
-	void AddPlayer( unsigned char nPID, string nName )		{ m_Players.push_back( ReplayPlayer( nPID, nName ) ); }
+	unsigned char GetHostPID( )				{ return m_HostPID; }
+	string GetHostName( )					{ return m_HostName; }
+	string GetGameName( )					{ return m_GameName; }
+	string GetStatString( )					{ return m_StatString; }
+	uint32_t GetPlayerCount( )				{ return m_PlayerCount; }
+	unsigned char GetMapGameType( )			{ return m_MapGameType; }
+	vector<PIDPlayer> GetPlayers( )			{ return m_Players; }
+	vector<CGameSlot> GetSlots( )			{ return m_Slots; }
+	uint32_t GetRandomSeed( )				{ return m_RandomSeed; }
+	unsigned char GetSelectMode( )			{ return m_SelectMode; }
+	unsigned char GetStartSpotCount( )		{ return m_StartSpotCount; }
+	queue<BYTEARRAY> *GetLoadingBlocks( )	{ return &m_LoadingBlocks; }
+	queue<BYTEARRAY> *GetBlocks( )			{ return &m_Blocks; }
+	queue<uint32_t> *GetCheckSums( )		{ return &m_CheckSums; }
+
+	void AddPlayer( unsigned char nPID, string nName )		{ m_Players.push_back( PIDPlayer( nPID, nName ) ); }
 	void SetSlots( vector<CGameSlot> nSlots )				{ m_Slots = nSlots; }
 	void SetRandomSeed( uint32_t nRandomSeed )				{ m_RandomSeed = nRandomSeed; }
 	void SetSelectMode( unsigned char nSelectMode )			{ m_SelectMode = nSelectMode; }
@@ -75,7 +91,11 @@ public:
 	void AddTimeSlot( uint16_t timeIncrement, queue<CIncomingAction *> actions );
 	void AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, string message );
 	void AddCheckSum( uint32_t checkSum );
-	void BuildReplay( string gameName, string statString );
+	void AddBlock( BYTEARRAY &block );
+	void AddLoadingBlock( BYTEARRAY &loadingBlock );
+	void BuildReplay( string gameName, string statString, uint32_t war3Version, uint16_t buildNumber );
+
+	void ParseReplay( bool parseBlocks );
 };
 
 #endif
