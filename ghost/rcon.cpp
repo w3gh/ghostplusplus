@@ -73,7 +73,7 @@ CRemoteConsole :: CRemoteConsole( CGHost *ghost, CConfig *cfg ) :
 			if( m_AnonymousAdminGame )
 				CONSOLE_Print( "[RCON] Anonymous Admin game [enabled]" );
 			else
-				CONSOLE_Print( "[RCON] Anonymous Admin game[disabled]" );
+				CONSOLE_Print( "[RCON] Anonymous Admin game [disabled]" );
 		}
 	}
 	else
@@ -172,8 +172,7 @@ bool CRemoteConsole :: Update( void *fd )
 				CONSOLE_Print("[RCON] User [" + client->GetIPString( ) + "] failed to authenticate");
 			}
 		}
-
-		if( client->IsBanned( ) )
+		else if( client->IsBanned( ) )
 		{
 			// we have seen this user before, but he is banned
 			CONSOLE_Print("[RCON] Banned user [" + client->GetIPString( ) + "] tried to execute command [" + recvString + "]");
