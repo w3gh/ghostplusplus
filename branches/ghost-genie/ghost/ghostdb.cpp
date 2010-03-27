@@ -27,7 +27,8 @@
 // CGHostDB
 //
 
-CGHostDB :: CGHostDB( CConfig *CFG )
+CGHostDB :: CGHostDB( MessageLogger *logger, CConfig *CFG )
+	: MessageLogger( logger )
 {
 	m_HasError = false;
 }

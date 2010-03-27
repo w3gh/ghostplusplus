@@ -21,6 +21,8 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#include "messagelogger.h"
+
 #ifdef WIN32
  #include <winsock2.h>
  #include <errno.h>
@@ -99,7 +101,7 @@
 // CSocket
 //
 
-class CSocket
+class CSocket : protected MessageLogger
 {
 protected:
 	SOCKET m_Socket;
@@ -108,8 +110,8 @@ protected:
 	int m_Error;
 
 public:
-	CSocket( );
-	CSocket( SOCKET nSocket, struct sockaddr_in nSIN );
+	CSocket( MessageLogger* logger );
+	CSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN );
 	~CSocket( );
 
 	virtual BYTEARRAY GetPort( );
@@ -140,8 +142,8 @@ private:
 	uint32_t m_LastSend;
 
 public:
-	CTCPSocket( );
-	CTCPSocket( SOCKET nSocket, struct sockaddr_in nSIN );
+	CTCPSocket( MessageLogger* logger );
+	CTCPSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN );
 	virtual ~CTCPSocket( );
 
 	virtual void Reset( );
@@ -170,7 +172,7 @@ protected:
 	bool m_Connecting;
 
 public:
-	CTCPClient( );
+	CTCPClient( MessageLogger* logger );
 	virtual ~CTCPClient( );
 
 	virtual void Reset( );
@@ -187,7 +189,7 @@ public:
 class CTCPServer : public CTCPSocket
 {
 public:
-	CTCPServer( );
+	CTCPServer( MessageLogger* logger );
 	virtual ~CTCPServer( );
 
 	virtual bool Listen( string address, uint16_t port );
@@ -203,7 +205,7 @@ class CUDPSocket : public CSocket
 protected:
 	struct in_addr m_BroadcastTarget;
 public:
-	CUDPSocket( );
+	CUDPSocket( MessageLogger* logger );
 	virtual ~CUDPSocket( );
 
 	virtual bool SendTo( struct sockaddr_in sin, BYTEARRAY message );
@@ -220,7 +222,7 @@ public:
 class CUDPServer : public CUDPSocket
 {
 public:
-	CUDPServer( );
+	CUDPServer( MessageLogger* logger );
 	virtual ~CUDPServer( );
 
 	virtual bool Bind( struct sockaddr_in sin );

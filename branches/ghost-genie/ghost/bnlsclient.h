@@ -21,6 +21,8 @@
 #ifndef BNLSCLIENT_H
 #define BNLSCLIENT_H
 
+#include "messagelogger.h"
+
 //
 // CBNLSClient
 //
@@ -29,7 +31,7 @@ class CTCPClient;
 class CBNLSProtocol;
 class CCommandPacket;
 
-class CBNLSClient
+class CBNLSClient : protected MessageLogger
 {
 private:
 	CTCPClient *m_Socket;							// the connection to the BNLS server
@@ -46,7 +48,7 @@ private:
 	uint32_t m_TotalWardenOut;
 
 public:
-	CBNLSClient( string nServer, uint16_t nPort, uint32_t nWardenCookie );
+	CBNLSClient( CBNET *bnet, string nServer, uint16_t nPort, uint32_t nWardenCookie );
 	~CBNLSClient( );
 
 	BYTEARRAY GetWardenResponse( );

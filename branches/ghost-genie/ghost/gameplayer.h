@@ -21,6 +21,8 @@
 #ifndef GAMEPLAYER_H
 #define GAMEPLAYER_H
 
+#include "messagelogger.h"
+
 class CTCPSocket;
 class CCommandPacket;
 class CGameProtocol;
@@ -31,7 +33,7 @@ class CIncomingJoinPlayer;
 // CPotentialPlayer
 //
 
-class CPotentialPlayer
+class CPotentialPlayer : protected MessageLogger
 {
 public:
 	CGameProtocol *m_Protocol;

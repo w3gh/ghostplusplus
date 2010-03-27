@@ -28,7 +28,7 @@
 // CReplay
 //
 
-CReplay :: CReplay( ) : CPacked( )
+CReplay :: CReplay( MessageLogger *logger ) : CPacked( logger )
 {
 	m_HostPID = 0;
 	m_PlayerCount = 0;

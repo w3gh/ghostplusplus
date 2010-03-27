@@ -21,11 +21,14 @@
 #ifndef BNLSPROTOCOL_H
 #define BNLSPROTOCOL_H
 
+#include "messagelogger.h"
+class CBNLSClient;
+
 //
 // CBNLSProtocol
 //
 
-class CBNLSProtocol
+class CBNLSProtocol : protected MessageLogger
 {
 public:
 	enum Protocol {
@@ -60,7 +63,7 @@ public:
 	};
 
 public:
-	CBNLSProtocol( );
+	CBNLSProtocol( CBNLSClient *parent );
 	~CBNLSProtocol( );
 
 	// receive functions

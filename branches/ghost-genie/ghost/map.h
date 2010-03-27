@@ -42,12 +42,13 @@
 #define MAPFLAG_RANDOMRACES		16
 
 #include "gameslot.h"
+#include "messagelogger.h"
 
 //
 // CMap
 //
 
-class CMap
+class CMap : protected MessageLogger
 {
 public:
 	CGHost *m_GHost;

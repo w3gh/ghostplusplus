@@ -22,6 +22,7 @@
 #define GAME_BASE_H
 
 #include "gameslot.h"
+#include "messagelogger.h"
 
 //
 // CBaseGame
@@ -40,7 +41,7 @@ class CIncomingChatPlayer;
 class CIncomingMapSize;
 class CCallableScoreCheck;
 
-class CBaseGame
+class CBaseGame : protected MessageLogger
 {
 public:
 	CGHost *m_GHost;

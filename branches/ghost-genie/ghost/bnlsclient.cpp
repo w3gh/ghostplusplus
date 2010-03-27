@@ -24,15 +24,17 @@
 #include "commandpacket.h"
 #include "bnlsprotocol.h"
 #include "bnlsclient.h"
+#include "bnet.h"
 
 //
 // CBNLSClient
 //
 
-CBNLSClient :: CBNLSClient( string nServer, uint16_t nPort, uint32_t nWardenCookie )
+CBNLSClient :: CBNLSClient( CBNET *bnet, string nServer, uint16_t nPort, uint32_t nWardenCookie )
+	: MessageLogger( bnet )
 {
-	m_Socket = new CTCPClient( );
-	m_Protocol = new CBNLSProtocol( );
+	m_Socket = new CTCPClient( this );
+	m_Protocol = new CBNLSProtocol( this );
 	m_WasConnected = false;
 	m_Server = nServer;
 	m_Port = nPort;

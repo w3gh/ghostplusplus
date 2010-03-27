@@ -21,6 +21,8 @@
 #ifndef STATS_H
 #define STATS_H
 
+#include "messagelogger.h"
+
 //
 // CStats
 //
@@ -35,7 +37,7 @@
 class CIncomingAction;
 class CGHostDB;
 
-class CStats
+class CStats : protected MessageLogger
 {
 protected:
 	CBaseGame *m_Game;

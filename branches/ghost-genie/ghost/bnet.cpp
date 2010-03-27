@@ -45,14 +45,15 @@ using namespace boost :: filesystem;
 //
 
 CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
+	: MessageLogger( nGHost )
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
 
 	m_GHost = nGHost;
-	m_Socket = new CTCPClient( );
-	m_Protocol = new CBNETProtocol( );
+	m_Socket = new CTCPClient( this );
+	m_Protocol = new CBNETProtocol( this );
 	m_BNLSClient = NULL;
-	m_BNCSUtil = new CBNCSUtilInterface( nUserName, nUserPassword );
+	m_BNCSUtil = new CBNCSUtilInterface( this, nUserName, nUserPassword );
 	m_CallableAdminList = m_GHost->m_DB->ThreadedAdminList( nServer );
 	m_CallableBanList = m_GHost->m_DB->ThreadedBanList( nServer );
 	m_Exiting = false;
@@ -770,7 +771,7 @@ void CBNET :: ProcessPackets( )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] creating BNLS client" );
 							delete m_BNLSClient;
-							m_BNLSClient = new CBNLSClient( m_BNLSServer, m_BNLSPort, m_BNLSWardenCookie );
+							m_BNLSClient = new CBNLSClient( this, m_BNLSServer, m_BNLSPort, m_BNLSWardenCookie );
 							m_BNLSClient->QueueWardenSeed( UTIL_ByteArrayToUInt32( m_BNCSUtil->GetKeyInfoROC( ), false, 16 ) );
 						}
 					}
@@ -1512,7 +1513,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						if( UTIL_FileExists( File ) )
 						{
 							QueueChatCommand( m_GHost->m_Language->LoadingReplay( File ), User, Whisper );
-							CReplay *Replay = new CReplay( );
+							CReplay *Replay = new CReplay( this );
 							Replay->Load( File, false );
 							Replay->ParseReplay( false );
 							m_GHost->m_EnforcePlayers = Replay->GetPlayers( );
@@ -1692,7 +1693,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 								{
 									string File = LastMatch.filename( );
 									QueueChatCommand( m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + File ), User, Whisper );
-									CConfig MapCFG;
+									CConfig MapCFG( this );
 									MapCFG.Read( LastMatch.string( ) );
 									m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
 								}
@@ -1806,7 +1807,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 									// hackhack: create a config file in memory with the required information to load the map
 
-									CConfig MapCFG;
+									CConfig MapCFG( this );
 									MapCFG.Set( "map_path", "Maps\\Download\\" + File );
 									MapCFG.Set( "map_localpath", File );
 									m_GHost->m_Map->Load( &MapCFG, File );

@@ -831,7 +831,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				if( UTIL_FileExists( File ) )
 				{
 					SendChat( player, m_GHost->m_Language->LoadingReplay( File ) );
-					CReplay *Replay = new CReplay( );
+					CReplay *Replay = new CReplay( this );
 					Replay->Load( File, false );
 					Replay->ParseReplay( false );
 					m_GHost->m_EnforcePlayers = Replay->GetPlayers( );
@@ -957,7 +957,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 						{
 							string File = LastMatch.filename( );
 							SendChat( player, m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + File ) );
-							CConfig MapCFG;
+							CConfig MapCFG( this );
 							MapCFG.Read( LastMatch.string( ) );
 							m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
 						}
@@ -1071,7 +1071,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 							// hackhack: create a config file in memory with the required information to load the map
 
-							CConfig MapCFG;
+							CConfig MapCFG( this );
 							MapCFG.Set( "map_path", "Maps\\Download\\" + File );
 							MapCFG.Set( "map_localpath", File );
 							m_GHost->m_Map->Load( &MapCFG, File );

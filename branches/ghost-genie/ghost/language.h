@@ -21,17 +21,19 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
+#include "messagelogger.h"
+
 //
 // CLanguage
 //
 
-class CLanguage
+class CLanguage : protected MessageLogger
 {
 private:
 	CConfig *m_CFG;
 
 public:
-	CLanguage( string nCFGFile );
+	CLanguage( MessageLogger *logger, string nCFGFile );
 	~CLanguage( );
 
 	string UnableToCreateGameTryAnotherName( string server, string gamename );

@@ -30,6 +30,7 @@
 //
 
 CGameProtocol :: CGameProtocol( CGHost *nGHost )
+	: MessageLogger( nGHost )
 {
 	m_GHost = nGHost;
 }

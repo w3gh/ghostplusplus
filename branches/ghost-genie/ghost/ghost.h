@@ -22,6 +22,7 @@
 #define GHOST_H
 
 #include "includes.h"
+#include "messagelogger.h"
 
 //
 // CGHost
@@ -43,7 +44,7 @@ class CMap;
 class CSaveGame;
 class CConfig;
 
-class CGHost
+class CGHost : protected MessageLogger
 {
 public:
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
@@ -134,7 +135,7 @@ public:
 	bool m_TCPNoDelay;						// config value: use Nagle's algorithm or not
 	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
 
-	CGHost( CConfig *CFG );
+	CGHost( MessageLogger *logger, CConfig *CFG );
 	~CGHost( );
 
 	// processing functions

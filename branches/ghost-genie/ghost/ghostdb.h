@@ -21,6 +21,8 @@
 #ifndef GHOSTDB_H
 #define GHOSTDB_H
 
+#include "messagelogger.h"
+
 //
 // CGHostDB
 //
@@ -54,14 +56,14 @@ class CDBDotAPlayerSummary;
 
 typedef pair<uint32_t,string> VarP;
 
-class CGHostDB
+class CGHostDB : protected MessageLogger
 {
 protected:
 	bool m_HasError;
 	string m_Error;
 
 public:
-	CGHostDB( CConfig *CFG );
+	CGHostDB( MessageLogger *logger, CConfig *CFG );
 	virtual ~CGHostDB( );
 
 	bool HasError( )			{ return m_HasError; }

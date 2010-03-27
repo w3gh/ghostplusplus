@@ -140,6 +140,8 @@ uint32_t GetTicks( )
 #endif
 }
 
+#ifndef GHOST_LIB
+
 void SignalCatcher2( int s )
 {
 	CONSOLE_Print( "[!!!] caught signal " + UTIL_ToString( s ) + ", exiting NOW" );
@@ -168,7 +170,7 @@ void SignalCatcher( int s )
 		exit( 1 );
 }
 
-void CONSOLE_Print( string message )
+void CONSOLE_Print( const string &message )
 {
 	cout << message << endl;
 
@@ -210,7 +212,7 @@ void CONSOLE_Print( string message )
 	}
 }
 
-void DEBUG_Print( string message )
+void DEBUG_Print( const string &message )
 {
 	cout << message << endl;
 }
@@ -231,6 +233,7 @@ void DEBUG_Print( BYTEARRAY b )
 
 int main( int argc, char **argv )
 {
+	MessageLogger logger( *CONSOLE_Print );
 	gCFGFile = "ghost.cfg";
 
 	if( argc > 1 && argv[1] )
@@ -238,7 +241,7 @@ int main( int argc, char **argv )
 
 	// read config file
 
-	CConfig CFG;
+	CConfig CFG( &logger );
 	CFG.Read( gCFGFile );
 	gLogFile = CFG.GetString( "bot_log", string( ) );
 	gLogMethod = CFG.GetInt( "bot_logmethod", 1 );
@@ -345,7 +348,7 @@ int main( int argc, char **argv )
 
 	// initialize ghost
 
-	gGHost = new CGHost( &CFG );
+	gGHost = new CGHost( &logger, &CFG );
 
 	while( 1 )
 	{
@@ -384,13 +387,16 @@ int main( int argc, char **argv )
 	return 0;
 }
 
+#endif //#ifdndef GHOST_LIB
+
 //
 // CGHost
 //
 
-CGHost :: CGHost( CConfig *CFG )
+CGHost :: CGHost( MessageLogger *logger, CConfig *CFG )
+	: MessageLogger( logger )
 {
-	m_UDPSocket = new CUDPSocket( );
+	m_UDPSocket = new CUDPSocket( this );
 	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
 	m_ReconnectSocket = NULL;
@@ -405,17 +411,17 @@ CGHost :: CGHost( CConfig *CFG )
 	if( DBType == "mysql" )
 	{
 #ifdef GHOST_MYSQL
-		m_DB = new CGHostDBMySQL( CFG );
+		m_DB = new CGHostDBMySQL( this, CFG );
 #else
 		CONSOLE_Print( "[GHOST] warning - this binary was not compiled with MySQL database support, using SQLite database instead" );
-		m_DB = new CGHostDBSQLite( CFG );
+		m_DB = new CGHostDBSQLite( this, CFG );
 #endif
 	}
 	else
-		m_DB = new CGHostDBSQLite( CFG );
+		m_DB = new CGHostDBSQLite( this, CFG );
 
 	CONSOLE_Print( "[GHOST] opening secondary (local) database" );
-	m_DBLocal = new CGHostDBSQLite( CFG );
+	m_DBLocal = new CGHostDBSQLite( this, CFG );
 
 	// get a list of local IP addresses
 	// this list is used elsewhere to determine if a player connecting to the bot is local or not
@@ -627,7 +633,7 @@ CGHost :: CGHost( CConfig *CFG )
 		CONSOLE_Print( "[GHOST] adding \".cfg\" to default map -> new default is [" + m_DefaultMap + "]" );
 	}
 
-	CConfig MapCFG;
+	CConfig MapCFG( this );
 	MapCFG.Read( m_MapCFGPath + m_DefaultMap );
 	m_Map = new CMap( this, &MapCFG, m_MapCFGPath + m_DefaultMap );
 
@@ -640,7 +646,7 @@ CGHost :: CGHost( CConfig *CFG )
 		}
 
 		CONSOLE_Print( "[GHOST] trying to load default admin game map" );
-		CConfig AdminMapCFG;
+		CConfig AdminMapCFG( this );
 		AdminMapCFG.Read( m_MapCFGPath + m_AdminGameMap );
 		m_AdminMap = new CMap( this, &AdminMapCFG, m_MapCFGPath + m_AdminGameMap );
 
@@ -658,7 +664,7 @@ CGHost :: CGHost( CConfig *CFG )
 	}
 
 	m_AutoHostMap = new CMap( *m_Map );
-	m_SaveGame = new CSaveGame( );
+	m_SaveGame = new CSaveGame( this );
 
 	// load the iptocountry data
 
@@ -815,7 +821,7 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if( !m_ReconnectSocket )
 		{
-			m_ReconnectSocket = new CTCPServer( );
+			m_ReconnectSocket = new CTCPServer( this );
 
 			if( m_ReconnectSocket->Listen( m_BindAddress, m_ReconnectPort ) )
 				CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
@@ -1310,7 +1316,7 @@ void CGHost :: EventGameDeleted( CBaseGame *game )
 
 void CGHost :: ReloadConfigs( )
 {
-	CConfig CFG;
+	CConfig CFG( this );
 	CFG.Read( gCFGFile );
 	SetConfigs( &CFG );
 }
@@ -1322,7 +1328,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 	m_LanguageFile = CFG->GetString( "bot_language", "language.cfg" );
 	delete m_Language;
-	m_Language = new CLanguage( m_LanguageFile );
+	m_Language = new CLanguage( this, m_LanguageFile );
 	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) );
 	m_BindAddress = CFG->GetString( "bot_bindaddress", string( ) );
 	m_ReconnectWaitTime = CFG->GetInt( "bot_reconnectwaittime", 3 );

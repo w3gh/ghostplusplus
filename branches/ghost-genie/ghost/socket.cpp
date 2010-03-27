@@ -32,7 +32,8 @@
 // CSocket
 //
 
-CSocket :: CSocket( )
+CSocket :: CSocket( MessageLogger* logger )
+	: MessageLogger( logger )
 {
 	m_Socket = INVALID_SOCKET;
 	memset( &m_SIN, 0, sizeof( m_SIN ) );
@@ -40,7 +41,8 @@ CSocket :: CSocket( )
 	m_Error = 0;
 }
 
-CSocket :: CSocket( SOCKET nSocket, struct sockaddr_in nSIN )
+CSocket :: CSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN )
+	: MessageLogger( logger )
 {
 	m_Socket = nSocket;
 	m_SIN = nSIN;
@@ -159,7 +161,7 @@ void CSocket :: Reset( )
 // CTCPSocket
 //
 
-CTCPSocket :: CTCPSocket( ) : CSocket( )
+CTCPSocket :: CTCPSocket( MessageLogger* logger ) : CSocket( logger )
 {
 	Allocate( SOCK_STREAM );
 	m_Connected = false;
@@ -176,7 +178,7 @@ CTCPSocket :: CTCPSocket( ) : CSocket( )
 #endif
 }
 
-CTCPSocket :: CTCPSocket( SOCKET nSocket, struct sockaddr_in nSIN ) : CSocket( nSocket, nSIN )
+CTCPSocket :: CTCPSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN ) : CSocket( logger, nSocket, nSIN )
 {
 	m_Connected = true;
 	m_LastRecv = GetTime( );
@@ -354,7 +356,7 @@ void CTCPSocket :: SetNoDelay( bool noDelay )
 // CTCPClient
 //
 
-CTCPClient :: CTCPClient( ) : CTCPSocket( )
+CTCPClient :: CTCPClient( MessageLogger* logger ) : CTCPSocket( logger )
 {
 	m_Connecting = false;
 }
@@ -479,7 +481,7 @@ bool CTCPClient :: CheckConnect( )
 // CTCPServer
 //
 
-CTCPServer :: CTCPServer( ) : CTCPSocket( )
+CTCPServer :: CTCPServer( MessageLogger* logger ) : CTCPSocket( logger )
 {
 	// set the socket to reuse the address in case it hasn't been released yet
 
@@ -560,7 +562,7 @@ CTCPSocket *CTCPServer :: Accept( fd_set *fd )
 		{
 			// success! return the new socket
 
-			return new CTCPSocket( NewSocket, Addr );
+			return new CTCPSocket( this, NewSocket, Addr );
 		}
 	}
 
@@ -571,7 +573,7 @@ CTCPSocket *CTCPServer :: Accept( fd_set *fd )
 // CUDPSocket
 //
 
-CUDPSocket :: CUDPSocket( ) : CSocket( )
+CUDPSocket :: CUDPSocket( MessageLogger* logger ) : CSocket( logger )
 {
 	Allocate( SOCK_DGRAM );
 
@@ -693,7 +695,7 @@ void CUDPSocket :: SetDontRoute( bool dontRoute )
 // CUDPServer
 //
 
-CUDPServer :: CUDPServer( ) : CUDPSocket( )
+CUDPServer :: CUDPServer( MessageLogger* logger ) : CUDPSocket( logger )
 {
 	// make socket non blocking
 

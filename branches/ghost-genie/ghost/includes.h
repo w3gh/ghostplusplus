@@ -64,9 +64,12 @@ uint32_t GetTicks( );		// milliseconds
 #define FD_SETSIZE 512
 
 // output
-
-void CONSOLE_Print( string message );
-void DEBUG_Print( string message );
+#ifndef GHOST_LIB
+void CONSOLE_Print( const string &message );
+#else
+#define CONSOLE_Print(a) WriteLine(a)
+#endif
+void DEBUG_Print( const string &message );
 void DEBUG_Print( BYTEARRAY b );
 
 #endif

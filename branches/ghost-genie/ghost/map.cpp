@@ -36,6 +36,7 @@
 //
 
 CMap :: CMap( CGHost *nGHost )
+	: MessageLogger( nGHost )
 {
 	CONSOLE_Print( "[MAP] using hardcoded Emerald Gardens map data for Warcraft 3 version 1.24 & 1.24b" );
 	m_GHost = nGHost;
@@ -70,6 +71,7 @@ CMap :: CMap( CGHost *nGHost )
 }
 
 CMap :: CMap( CGHost *nGHost, CConfig *CFG, string nCFGFile )
+	: MessageLogger( nGHost )
 {
 	m_GHost = nGHost;
 	Load( CFG, nCFGFile );

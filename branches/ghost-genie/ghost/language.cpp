@@ -27,9 +27,10 @@
 // CLanguage
 //
 
-CLanguage :: CLanguage( string nCFGFile )
+CLanguage :: CLanguage( MessageLogger *logger, string nCFGFile )
+	: MessageLogger( logger )
 {
-	m_CFG = new CConfig( );
+	m_CFG = new CConfig( this );
 	m_CFG->Read( nCFGFile );
 }
 
