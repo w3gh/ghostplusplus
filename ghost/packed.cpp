@@ -66,7 +66,8 @@ int tzuncompress( Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourc
 // CPacked
 //
 
-CPacked :: CPacked( )
+CPacked :: CPacked( MessageLogger *logger )
+	: MessageLogger( logger )
 {
 	m_CRC = new CCRC32( );
 	m_CRC->Initialize( );

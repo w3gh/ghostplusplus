@@ -39,7 +39,7 @@
 // CGHostDBMySQL
 //
 
-CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
+CGHostDBMySQL :: CGHostDBMySQL( MessageLogger *logger, CConfig *CFG ) : CGHostDB( logger, CFG )
 {
 	m_Server = CFG->GetString( "db_mysql_server", string( ) );
 	m_Database = CFG->GetString( "db_mysql_database", "ghost" );

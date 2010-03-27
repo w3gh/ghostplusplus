@@ -20,12 +20,14 @@
 
 #include "ghost.h"
 #include "stats.h"
+#include "game_base.h"
 
 //
 // CStats
 //
 
 CStats :: CStats( CBaseGame *nGame )
+	: MessageLogger( nGame )
 {
 	m_Game = nGame;
 }

@@ -21,6 +21,8 @@
 #ifndef GAMEPROTOCOL_H
 #define GAMEPROTOCOL_H
 
+#include "messagelogger.h"
+
 //
 // CGameProtocol
 //
@@ -56,7 +58,7 @@ class CIncomingAction;
 class CIncomingChatPlayer;
 class CIncomingMapSize;
 
-class CGameProtocol
+class CGameProtocol : protected MessageLogger
 {
 public:
 	CGHost *m_GHost;

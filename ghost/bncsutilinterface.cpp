@@ -24,11 +24,14 @@
 
 #include <bncsutil/bncsutil.h>
 
+#include "bnet.h"
+
 //
 // CBNCSUtilInterface
 //
 
-CBNCSUtilInterface :: CBNCSUtilInterface( string userName, string userPassword )
+CBNCSUtilInterface :: CBNCSUtilInterface( CBNET *bnet, string userName, string userPassword )
+	: MessageLogger( bnet )
 {
 	// m_nls = (void *)nls_init( userName.c_str( ), userPassword.c_str( ) );
 	m_NLS = new NLS( userName, userPassword );

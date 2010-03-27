@@ -21,6 +21,8 @@
 #ifndef BNET_H
 #define BNET_H
 
+#include "messagelogger.h"
+
 //
 // CBNET
 //
@@ -54,7 +56,7 @@ typedef pair<string,CCallableBanRemove *> PairedBanRemove;
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<string,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
-class CBNET
+class CBNET : protected MessageLogger
 {
 public:
 	CGHost *m_GHost;

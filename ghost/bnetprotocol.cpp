@@ -21,8 +21,10 @@
 #include "ghost.h"
 #include "util.h"
 #include "bnetprotocol.h"
+#include "bnet.h"
 
-CBNETProtocol :: CBNETProtocol( )
+CBNETProtocol :: CBNETProtocol( CBNET* bnet )
+	: MessageLogger( bnet )
 {
 	unsigned char ClientToken[] = { 220, 1, 203, 7 };
 	m_ClientToken = UTIL_CreateByteArray( ClientToken, 4 );

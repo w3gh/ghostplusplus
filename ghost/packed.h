@@ -21,13 +21,15 @@
 #ifndef PACKED_H
 #define PACKED_H
 
+#include "messagelogger.h"
+
 //
 // CPacked
 //
 
 class CCRC32;
 
-class CPacked
+class CPacked : protected MessageLogger
 {
 public:
 	CCRC32 *m_CRC;
@@ -48,7 +50,7 @@ protected:
 	uint32_t m_ReplayLength;
 
 public:
-	CPacked( );
+	CPacked( MessageLogger *logger );
 	virtual ~CPacked( );
 
 	virtual bool GetValid( )				{ return m_Valid; }

@@ -21,6 +21,9 @@
 #ifndef BNETPROTOCOL_H
 #define BNETPROTOCOL_H
 
+#include "messagelogger.h"
+class CBNET;
+
 //
 // CBNETProtocol
 //
@@ -32,7 +35,7 @@ class CIncomingChatEvent;
 class CIncomingFriendList;
 class CIncomingClanList;
 
-class CBNETProtocol
+class CBNETProtocol : protected MessageLogger
 {
 public:
 	enum Protocol {
@@ -101,7 +104,7 @@ private:
 	BYTEARRAY m_UniqueName;				// set in RECEIVE_SID_ENTERCHAT
 
 public:
-	CBNETProtocol( );
+	CBNETProtocol( CBNET *bnet );
 	~CBNETProtocol( );
 
 	BYTEARRAY GetClientToken( )				{ return m_ClientToken; }

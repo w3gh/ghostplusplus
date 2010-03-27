@@ -35,6 +35,7 @@
 //
 
 CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket )
+	: MessageLogger( nGame )
 {
 	m_Protocol = nProtocol;
 	m_Game = nGame;

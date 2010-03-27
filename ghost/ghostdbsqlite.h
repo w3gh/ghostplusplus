@@ -199,7 +199,7 @@ private:
 	void *FromAddStmt;
 
 public:
-	CGHostDBSQLite( CConfig *CFG );
+	CGHostDBSQLite( MessageLogger *logger, CConfig *CFG );
 	virtual ~CGHostDBSQLite( );
 
 	virtual void Upgrade1_2( );

@@ -59,7 +59,7 @@ private:
 	queue<uint32_t> m_CheckSums;
 
 public:
-	CReplay( );
+	CReplay( MessageLogger *logger );
 	virtual ~CReplay( );
 
 	unsigned char GetHostPID( )				{ return m_HostPID; }

@@ -21,17 +21,19 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "messagelogger.h"
+
 //
 // CConfig
 //
 
-class CConfig
+class CConfig : protected MessageLogger
 {
 private:
 	map<string, string> m_CFG;
 
 public:
-	CConfig( );
+	CConfig( MessageLogger* logger );
 	~CConfig( );
 
 	void Read( string file );

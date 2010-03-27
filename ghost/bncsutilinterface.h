@@ -21,11 +21,14 @@
 #ifndef BNCSUTIL_INTERFACE_H
 #define BNCSUTIL_INTERFACE_H
 
+#include "messagelogger.h"
+class CBNET;
+
 //
 // CBNCSUtilInterface
 //
 
-class CBNCSUtilInterface
+class CBNCSUtilInterface : protected MessageLogger
 {
 private:
 	void *m_NLS;
@@ -39,7 +42,7 @@ private:
 	BYTEARRAY m_PvPGNPasswordHash;	// set in HELP_PvPGNPasswordHash
 
 public:
-	CBNCSUtilInterface( string userName, string userPassword );
+	CBNCSUtilInterface( CBNET *bnet, string userName, string userPassword );
 	~CBNCSUtilInterface( );
 
 	BYTEARRAY GetEXEVersion( )								{ return m_EXEVersion; }

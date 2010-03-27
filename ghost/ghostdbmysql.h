@@ -178,7 +178,7 @@ private:
 	uint32_t m_OutstandingCallables;
 
 public:
-	CGHostDBMySQL( CConfig *CFG );
+	CGHostDBMySQL( MessageLogger *logger, CConfig *CFG );
 	virtual ~CGHostDBMySQL( );
 
 	virtual string GetStatus( );

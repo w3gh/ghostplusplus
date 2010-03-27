@@ -27,7 +27,8 @@
 // CConfig
 //
 
-CConfig :: CConfig( )
+CConfig :: CConfig( MessageLogger *logger )
+	: MessageLogger( logger )
 {
 
 }

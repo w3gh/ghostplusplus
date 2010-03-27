@@ -21,8 +21,10 @@
 #include "ghost.h"
 #include "util.h"
 #include "bnlsprotocol.h"
+#include "bnlsclient.h"
 
-CBNLSProtocol :: CBNLSProtocol( )
+CBNLSProtocol :: CBNLSProtocol( CBNLSClient *parent )
+	: MessageLogger( parent )
 {
 
 }
