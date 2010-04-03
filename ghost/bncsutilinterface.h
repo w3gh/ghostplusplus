@@ -30,7 +30,7 @@ class CBNET;
 
 class CBNCSUtilInterface : protected MessageLogger
 {
-private:
+protected:
 	void *m_NLS;
 	BYTEARRAY m_EXEVersion;			// set in HELP_SID_AUTH_CHECK
 	BYTEARRAY m_EXEVersionHash;		// set in HELP_SID_AUTH_CHECK
@@ -64,7 +64,7 @@ public:
 	bool HELP_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY salt, BYTEARRAY serverKey );
 	bool HELP_PvPGNPasswordHash( string userPassword );
 
-private:
+protected:
 	BYTEARRAY CreateKeyInfo( string key, uint32_t clientToken, uint32_t serverToken );
 };
 

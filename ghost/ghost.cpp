@@ -625,6 +625,9 @@ CGHost :: CGHost( MessageLogger *logger, CConfig *CFG )
 
 	ExtractScripts( );
 
+	if( m_DefaultMap.empty( ) )
+		SetEnabled( false );
+
 	// load the default maps (note: make sure to run ExtractScripts first)
 
 	if( m_DefaultMap.size( ) < 4 || m_DefaultMap.substr( m_DefaultMap.size( ) - 4 ) != ".cfg" )
@@ -636,6 +639,7 @@ CGHost :: CGHost( MessageLogger *logger, CConfig *CFG )
 	CConfig MapCFG( this );
 	MapCFG.Read( m_MapCFGPath + m_DefaultMap );
 	m_Map = new CMap( this, &MapCFG, m_MapCFGPath + m_DefaultMap );
+	SetEnabled( true );
 
 	if( !m_AdminGameMap.empty( ) )
 	{
@@ -668,7 +672,7 @@ CGHost :: CGHost( MessageLogger *logger, CConfig *CFG )
 
 	// load the iptocountry data
 
-	LoadIPToCountryData( );
+	//LoadIPToCountryData( );
 
 	// create the admin game
 
