@@ -61,7 +61,7 @@ class CBNET : protected MessageLogger
 public:
 	CGHost *m_GHost;
 
-private:
+protected:
 	CTCPClient *m_Socket;							// the connection to battle.net
 	CBNETProtocol *m_Protocol;						// battle.net protocol
 	CBNLSClient *m_BNLSClient;						// the BNLS client (for external warden handling)
@@ -154,9 +154,9 @@ public:
 
 	unsigned int SetFD( void *fd, void *send_fd, int *nfds );
 	bool Update( void *fd, void *send_fd );
-	void ExtractPackets( );
+	virtual void ExtractPackets( );
 	void ProcessPackets( );
-	void ProcessChatEvent( CIncomingChatEvent *chatEvent );
+	virtual void ProcessChatEvent( CIncomingChatEvent *chatEvent );
 
 	// functions to send packets to battle.net
 
@@ -166,7 +166,7 @@ public:
 	void QueueEnterChat( );
 	void QueueChatCommand( string chatCommand );
 	void QueueChatCommand( string chatCommand, string user, bool whisper );
-	void QueueGameCreate( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
+	virtual void QueueGameCreate( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
 	void QueueGameRefresh( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter );
 	void QueueGameUncreate( );
 

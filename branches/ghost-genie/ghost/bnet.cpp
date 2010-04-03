@@ -937,12 +937,18 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 		if( Event == CBNETProtocol :: EID_WHISPER )
 		{
 			CONSOLE_Print( "[WHISPER: " + m_ServerAlias + "] [" + User + "] " + Message );
-			m_GHost->EventBNETWhisper( this, User, Message );
+			// magic code, don't show these
+			// user sent those fake whispers
+			if( chatEvent->GetPing( ) != 13371337 )
+				m_GHost->EventBNETWhisper( this, User, Message );
 		}
 		else
 		{
 			CONSOLE_Print( "[LOCAL: " + m_ServerAlias + "] [" + User + "] " + Message );
-			m_GHost->EventBNETChat( this, User, Message );
+			// magic code, don't show these
+			// user sent those fake whispers
+			if( chatEvent->GetPing( ) != 13371337 )
+				m_GHost->EventBNETChat( this, User, Message );
 		}
 
 		// handle spoof checking for current game

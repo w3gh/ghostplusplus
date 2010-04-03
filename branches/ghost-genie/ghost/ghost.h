@@ -44,7 +44,7 @@ class CMap;
 class CSaveGame;
 class CConfig;
 
-class CGHost : protected MessageLogger
+class CGHost : public MessageLogger
 {
 public:
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
@@ -144,25 +144,25 @@ public:
 
 	// events
 
-	void EventBNETConnecting( CBNET *bnet );
-	void EventBNETConnected( CBNET *bnet );
-	void EventBNETDisconnected( CBNET *bnet );
-	void EventBNETLoggedIn( CBNET *bnet );
-	void EventBNETGameRefreshed( CBNET *bnet );
-	void EventBNETGameRefreshFailed( CBNET *bnet );
-	void EventBNETConnectTimedOut( CBNET *bnet );
-	void EventBNETWhisper( CBNET *bnet, string user, string message );
-	void EventBNETChat( CBNET *bnet, string user, string message );
-	void EventBNETEmote( CBNET *bnet, string user, string message );
-	void EventGameDeleted( CBaseGame *game );
+	virtual void EventBNETConnecting( CBNET *bnet );
+	virtual void EventBNETConnected( CBNET *bnet );
+	virtual void EventBNETDisconnected( CBNET *bnet );
+	virtual void EventBNETLoggedIn( CBNET *bnet );
+	virtual void EventBNETGameRefreshed( CBNET *bnet );
+	virtual void EventBNETGameRefreshFailed( CBNET *bnet );
+	virtual void EventBNETConnectTimedOut( CBNET *bnet );
+	virtual void EventBNETWhisper( CBNET *bnet, string user, string message );
+	virtual void EventBNETChat( CBNET *bnet, string user, string message );
+	virtual void EventBNETEmote( CBNET *bnet, string user, string message );
+	virtual void EventGameDeleted( CBaseGame *game );
 
 	// other functions
 
 	void ReloadConfigs( );
 	void SetConfigs( CConfig *CFG );
 	void ExtractScripts( );
-	void LoadIPToCountryData( );
-	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
+	virtual void LoadIPToCountryData( );
+	virtual void CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
 };
 
 #endif
