@@ -150,9 +150,11 @@ public:
 	uint32_t GetOutPacketsQueued( )		{ return m_OutPackets.size( ); }
 	BYTEARRAY GetUniqueName( );
 
-	vector<pair<string, char> > GetOnlineFriends( );
-	vector<pair<string, char> > GetOnlineClans( );
+	vector<pair<string, int> > GetFriends( );
+	vector<pair<string, int> > GetClan( );
 	string GetReplyTarget( )			{ return m_ReplyTarget; }
+
+	uint32_t GetRealmId( )				{ return m_HostCounterID - 1; }
 
 	// processing functions
 

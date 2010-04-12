@@ -172,18 +172,18 @@ void SignalCatcher( int s )
 
 void CONSOLE_Print( string message )
 {
-	CONSOLE_Print( message, "", true );
+	CONSOLE_Print( message, 0, true );
 }
 
 void CONSOLE_Print( string message, bool toMainBuffer )
 {
-	CONSOLE_Print( message, "", toMainBuffer );
+	CONSOLE_Print( message, 0, toMainBuffer );
 }
 
-void CONSOLE_Print( string message, string realmAlias, bool toMainBuffer )
+void CONSOLE_Print( string message, uint32_t realmId, bool toMainBuffer )
 {
 	if ( gCurses )
-		gCurses->Print( message, realmAlias, toMainBuffer );
+		gCurses->Print( message, realmId, toMainBuffer );
 	else
 		cout << message << endl;
 
@@ -240,40 +240,40 @@ void DEBUG_Print( BYTEARRAY b )
 	cout << "}" << endl;
 }
 
-void CONSOLE_ChangeChannel( string channel, string realmAlias )
+void CONSOLE_ChangeChannel( string channel, uint32_t realmId )
 {
 	if ( gCurses )
-		gCurses->ChangeChannel( channel, realmAlias );
+		gCurses->ChangeChannel( channel, realmId );
 }
 
-void CONSOLE_AddChannelUser( string name, string realmAlias, int userFlags )
+void CONSOLE_AddChannelUser( string name, uint32_t realmId, int flag )
 {
 	if ( gCurses )
-		gCurses->AddChannelUser( name, realmAlias, userFlags );
+		gCurses->AddChannelUser( name, realmId, flag );
 }
 
-void CONSOLE_UpdateChannelUser( string name, string realmAlias, int userFlags )
+void CONSOLE_UpdateChannelUser( string name, uint32_t realmId, int flag )
 {
 	if ( gCurses )
-		gCurses->UpdateChannelUser( name, realmAlias, userFlags );
+		gCurses->UpdateChannelUser( name, realmId, flag );
 }
 
-void CONSOLE_RemoveChannelUser( string name, string realmAlias )
+void CONSOLE_RemoveChannelUser( string name, uint32_t realmId )
 {
 	if ( gCurses )
-		gCurses->RemoveChannelUser( name, realmAlias );
+		gCurses->RemoveChannelUser( name, realmId );
 }
 
-void CONSOLE_RemoveChannelUsers( string realmAlias )
+void CONSOLE_RemoveChannelUsers( uint32_t realmId )
 {
 	if ( gCurses )
-		gCurses->RemoveChannelUsers( realmAlias );
+		gCurses->RemoveChannelUsers( realmId );
 }
 
-void CONSOLE_UpdateCustomList( string realmAlias )
+void CONSOLE_UpdateCustomLists( uint32_t realmId )
 {
-	if ( gCurses )
-		gCurses->UpdateCustomList( realmAlias );
+	if (gCurses )
+		gCurses->UpdateCustomLists( realmId );
 }
 
 //

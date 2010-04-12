@@ -191,28 +191,22 @@ BYTEARRAY CBNET :: GetUniqueName( )
 	return m_Protocol->GetUniqueName( );
 }
 
-vector<pair<string, char> > CBNET :: GetOnlineFriends( )
+vector<pair<string, int> > CBNET :: GetFriends( )
 {
-	vector<pair<string, char> > result;
+	vector<pair<string, int> > result;
 
 	for( vector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
-	{
-		if ( (*i)->GetArea( ) != 0 )
-			result.push_back(pair<string, char>((*i)->GetAccount( ), (*i)->GetArea( ) ) );
-	}
+		result.push_back(pair<string, int>((*i)->GetAccount( ), (*i)->GetArea( ) ) );
 
 	return result;
 }
 
-vector<pair<string, char> > CBNET :: GetOnlineClans( )
+vector<pair<string, int> > CBNET :: GetClan( )
 {
-	vector<pair<string, char> > result;
+	vector<pair<string, int> > result;
 
 	for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
-	{
-		if ( (*i)->GetRawStatus( ) != 0 )
-			result.push_back(pair<string, char>((*i)->GetName( ), (*i)->GetRawStatus( ) ) );
-	}
+		result.push_back(pair<string, int>((*i)->GetName( ), (*i)->GetRawStatus( ) ) );
 
 	return result;
 }
@@ -714,7 +708,7 @@ void CBNET :: ProcessPackets( )
 				GameHost = m_Protocol->RECEIVE_SID_GETADVLISTEX( Packet->GetData( ) );
 
 				if( GameHost )
-					CONSOLE_Print( "[BNET] joining game [" + GameHost->GetGameName( ) + "]", m_ServerAlias, false );
+					CONSOLE_Print( "[BNET] joining game [" + GameHost->GetGameName( ) + "]", GetRealmId( ), false );
 
 				delete GameHost;
 				GameHost = NULL;
@@ -723,7 +717,7 @@ void CBNET :: ProcessPackets( )
 			case CBNETProtocol :: SID_ENTERCHAT:
 				if( m_Protocol->RECEIVE_SID_ENTERCHAT( Packet->GetData( ) ) )
 				{
-					CONSOLE_Print( "[BNET] joining channel [" + m_FirstChannel + "]", m_ServerAlias, false );
+					CONSOLE_Print( "[BNET] joining channel [" + m_FirstChannel + "]", GetRealmId( ), false );
 					m_InChat = true;
 					m_Socket->PutBytes( m_Protocol->SEND_SID_JOINCHANNEL( m_FirstChannel ) );
 				}
@@ -933,7 +927,7 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Friends = Friends;
-				CONSOLE_UpdateCustomList( m_ServerAlias );
+				CONSOLE_UpdateCustomLists( GetRealmId( ) );
 				break;
 
 			case CBNETProtocol :: SID_CLANMEMBERLIST:
@@ -943,7 +937,7 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Clans = Clans;
-				CONSOLE_UpdateCustomList( m_ServerAlias );
+				CONSOLE_UpdateCustomLists( GetRealmId( ) );
 				break;
 			}
 		}
@@ -961,54 +955,45 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 	string Message = chatEvent->GetMessage( );
 
 	if( Event == CBNETProtocol :: EID_SHOWUSER )
-	{
-		// UserFlags:
-		// 0x00000020 Squelched
-		// 0x00000001 Blizzard rep
-		// 0x00000002 Channel op
-		// 0x00000004 Speaker
-		// 0x00000008 Battlenet admin
-
-		CONSOLE_AddChannelUser( User, m_ServerAlias, UserFlags );
-	}
+		CONSOLE_AddChannelUser( User, GetRealmId( ), UserFlags );
 	else if( Event == CBNETProtocol :: EID_USERFLAGS )
-		CONSOLE_UpdateChannelUser( User, m_ServerAlias, UserFlags );
+		CONSOLE_UpdateChannelUser( User, GetRealmId( ), UserFlags );
 	else if( Event == CBNETProtocol :: EID_JOIN )
-		CONSOLE_AddChannelUser( User, m_ServerAlias, UserFlags );
+		CONSOLE_AddChannelUser( User, GetRealmId( ), UserFlags );
 	else if( Event == CBNETProtocol :: EID_LEAVE )
-		CONSOLE_RemoveChannelUser( User, m_ServerAlias);
+		CONSOLE_RemoveChannelUser( User, GetRealmId( ));
 	else if( Event == CBNETProtocol :: EID_WHISPER )
 	{
 		m_ReplyTarget = User;
 
-		CONSOLE_Print( "[WHISPER] [" + User + "] " + Message, m_ServerAlias, false );
+		CONSOLE_Print( "[WHISPER] <" + User + "> " + Message, GetRealmId( ), false );
 		m_GHost->EventBNETWhisper( this, User, Message );
 	}
 	else if( Event == CBNETProtocol :: EID_TALK )
 	{
-		CONSOLE_Print( "[" + User + "] " + Message, m_ServerAlias, false );
+		CONSOLE_Print( "<" + User + "> " + Message, GetRealmId( ), false );
 		m_GHost->EventBNETChat( this, User, Message );
 	}
 	else if( Event == CBNETProtocol :: EID_BROADCAST )
-		CONSOLE_Print( "[BROADCAST] " + Message, m_ServerAlias, false );
+		CONSOLE_Print( "[BROADCAST] " + Message, GetRealmId( ), false );
 	else if( Event == CBNETProtocol :: EID_CHANNEL )
 	{
-		CONSOLE_Print( "[BNET] joined channel [" + Message + "]", m_ServerAlias, false );
+		CONSOLE_Print( "[BNET] joined channel [" + Message + "]", GetRealmId( ), false );
 		m_CurrentChannel = Message;
-		CONSOLE_ChangeChannel( Message, m_ServerAlias );
-		CONSOLE_RemoveChannelUsers( m_ServerAlias );
-		CONSOLE_AddChannelUser( m_UserName, m_ServerAlias, UserFlags );
+		CONSOLE_ChangeChannel( Message, GetRealmId( ) );
+		CONSOLE_RemoveChannelUsers( GetRealmId( ) );
+		CONSOLE_AddChannelUser( m_UserName, GetRealmId( ), UserFlags );
 	}
 	else if( Event == CBNETProtocol :: EID_CHANNELFULL )
-		CONSOLE_Print( "[BNET] channel is full", m_ServerAlias, false  );
+		CONSOLE_Print( "[BNET] channel is full", GetRealmId( ), false  );
 	else if( Event == CBNETProtocol :: EID_CHANNELDOESNOTEXIST )
-		CONSOLE_Print( "[BNET] channel does not exist", m_ServerAlias, false  );
+		CONSOLE_Print( "[BNET] channel does not exist", GetRealmId( ), false  );
 	else if( Event == CBNETProtocol :: EID_CHANNELRESTRICTED )
-		CONSOLE_Print( "[BNET] channel restricted", m_ServerAlias, false  );
+		CONSOLE_Print( "[BNET] channel restricted", GetRealmId( ), false  );
 	else if( Event == CBNETProtocol :: EID_ERROR )
-		CONSOLE_Print( "[ERROR] " + Message, m_ServerAlias, false );
+		CONSOLE_Print( "[ERROR] " + Message, GetRealmId( ), false );
 	else if( Event == CBNETProtocol :: EID_EMOTE )
-		CONSOLE_Print( "[EMOTE] [" + User + "] " + Message, m_ServerAlias, false  );
+		CONSOLE_Print( "[EMOTE] <" + User + "> " + Message, GetRealmId( ), false  );
 	
 	if( Event == CBNETProtocol :: EID_WHISPER || Event == CBNETProtocol :: EID_TALK || Event == 29 )
 	{
@@ -2243,7 +2228,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 	}
 	else if( Event == CBNETProtocol :: EID_INFO )
 	{
-		CONSOLE_Print( "[INFO] " + Message, m_ServerAlias, false );
+		CONSOLE_Print( "[INFO] " + Message, GetRealmId( ), false );
 
 		// extract the first word which we hope is the username
 		// this is not necessarily true though since info messages also include channel MOTD's and such
@@ -2352,12 +2337,12 @@ void CBNET :: QueueChatCommand( string chatCommand, bool hidden )
 					if ( nameEndpos != -1 )
 					{
 						string target = chatCommand.substr( r, nameEndpos - r );
-						CONSOLE_Print( "[WHISPERED: " + target + "] " + chatCommand.substr( nameEndpos + 1, chatCommand.length( ) ) , m_ServerAlias, false );
+						CONSOLE_Print( "[WHISPERED: " + target + "] " + chatCommand.substr( nameEndpos + 1, chatCommand.length( ) ) , GetRealmId( ), false );
 					}
 				}
-				else	CONSOLE_Print( "[WHISPERED: Friends] " + chatCommand.substr( r, chatCommand.length( ) ) , m_ServerAlias, false );
+				else	CONSOLE_Print( "[WHISPERED: Friends] " + chatCommand.substr( r, chatCommand.length( ) ) , GetRealmId( ), false );
 			}
-			else if (!hidden) CONSOLE_Print( "[" + m_UserName + "] " + chatCommand, m_ServerAlias, false );
+			else if (!hidden) CONSOLE_Print( "<" + m_UserName + "> " + chatCommand, GetRealmId( ), false );
 
 			m_OutPackets.push( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );
 		}
@@ -2411,7 +2396,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, string gameName, string hos
 		// when a player joins a game we can obtain the ID from the received host counter
 		// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
-		uint32_t FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( m_HostCounterID << 28 );
+		uint32_t FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( GetRealmId( ) << 28 );
 
 		// construct the correct SID_STARTADVEX3 packet
 

@@ -6,44 +6,51 @@
 
 CCurses :: CCurses( int nTermWidth, int nTermHeight )
 {
-	// Initialize RealmBuffers, 16 realms
-	vector<string> temp;
-	for ( uint32_t i = 0; i < 16; ++i )
-		m_RealmBuffers.push_back(temp);
+	// Initialize vectors
+	SRealmData temp1;
+	for ( uint32_t i = 0; i < 10; ++i )
+		m_RealmData.push_back( temp1 );
 
-	m_ListCycleTimer = 0;
-	m_ShowFriends = true;
+	SWindowData temp2;
+	for ( uint32_t i = 0; i < 7; ++i )
+		m_WindowData.push_back( temp2 );
 
+	Buffer *temp3;
+	for ( uint32_t i = 0; i < 30; ++i )
+	{
+		temp3 = new Buffer( );
+		m_Buffers.push_back( temp3 );
+	}
+
+	// Initialize variables
 	m_RealmId = 0;
-
+	m_RealmId2 = 0;
+	m_ListUpdateTimer = 0;
+	m_SelectedTab = 0;
+	m_SelectedInput = 0;
+	
 	// Initialize curses and windows
 	initscr( );
 	clear( );
 	noecho( );
 	cbreak( );
 
-	m_MainWindow = newwin( LINES / 2 - 1, COLS - 17, 0, 0 );
-	m_RealmWindow = newwin( LINES / 2 - 3, COLS - 17, LINES / 2, 0 );
-	m_InputWindow = newwin( 2, COLS, LINES - 2, 0 );
-	m_CustomListWindow = newwin( LINES / 2 - 1, 16, 0, COLS - 16 );
-	m_ChannelWindow = newwin( LINES / 2 - 3, 16, LINES / 2 - 1, COLS - 16 );
+	m_WindowData[W_TAB].Window = newwin( 1, COLS, 0, 0 );
+	m_WindowData[W_FULL].Window = newwin( LINES - 3, COLS - 21, 1, 0 );
+	m_WindowData[W_FULL2].Window = newwin( LINES - 3, COLS, 1, 0 );
+	m_WindowData[W_UPPER].Window = newwin( LINES / 2 - 1, COLS - 21, 1, 0 );
+	m_WindowData[W_LOWER].Window = newwin( LINES / 2 - 3, COLS - 21, LINES / 2, 0 );
+	m_WindowData[W_CHANNEL].Window = newwin( LINES - 3, 20, 1, COLS - 20 );
+	m_WindowData[W_INPUT].Window = newwin( 2, COLS, LINES - 2, 0 );
 
-	m_BottomBorder = newwin( 1, COLS, LINES - 3, 0 );
-	m_MiddleBorder = newwin( 1, COLS - 16, LINES / 2 - 1, 0 );
-	m_RightBorder = newwin( LINES - 3, 1, 0, COLS - 17 );
-	mvwhline( m_BottomBorder, 0, 0, 0, COLS );
-	mvwhline( m_MiddleBorder, 0, 0, 0, COLS );
-	mvwvline( m_RightBorder, 0, 0, 0, LINES );
-	wrefresh( m_BottomBorder );
-	wrefresh( m_MiddleBorder );
-	wrefresh( m_RightBorder );
+	scrollok( m_WindowData[W_FULL].Window, TRUE );
+	scrollok( m_WindowData[W_FULL2].Window, TRUE );
+	scrollok( m_WindowData[W_UPPER].Window, TRUE );
+	scrollok( m_WindowData[W_LOWER].Window, TRUE );
+	keypad( m_WindowData[W_INPUT].Window, TRUE );
+	scrollok( m_WindowData[W_INPUT].Window, TRUE );
+	nodelay( m_WindowData[W_INPUT].Window, TRUE );
 
-	scrollok( m_MainWindow, TRUE );
-	scrollok( m_RealmWindow, TRUE );
-	keypad( m_InputWindow, TRUE );
-	scrollok( m_InputWindow, TRUE );
-	nodelay( m_InputWindow, TRUE );
-	
 	// Initialize colors
 	start_color();
 	init_pair( 0, COLOR_WHITE, COLOR_BLACK );
@@ -52,10 +59,31 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight )
 	init_pair( 3, COLOR_CYAN, COLOR_BLACK );
 	init_pair( 4, COLOR_YELLOW, COLOR_BLACK );
 	init_pair( 5, COLOR_BLUE, COLOR_BLACK );
+	init_pair( 6, COLOR_WHITE, COLOR_CYAN );
+
+	// make this an option/config:
 	
+	wbkgdset( m_WindowData[W_INPUT].Window, ' ' | COLOR_PAIR(6)  );
+	wattr_set( m_WindowData[W_INPUT].Window, A_NORMAL, 6, 0 );
+
+	
+	wbkgdset( m_WindowData[W_TAB].Window, ' ' | COLOR_PAIR(6)  );
+	wattr_set( m_WindowData[W_TAB].Window, A_NORMAL, 6, 0 );
+	
+
 	// Change terminal size
 	resize_term( nTermHeight, nTermWidth );
 	Resize( );
+
+	// Tabs
+	AddTab( "ALL", T_MAIN, 0, B_ALL );
+	AddTab( "MAIN", T_MAIN, 0, B_MAIN );
+	AddTab( "FRIENDS", T_LIST, 0, B_FRIENDS);
+	AddTab( "CLAN", T_LIST, 0, B_CLAN );
+	SelectTab( 0 );
+	
+	// Initialize Input-buffer
+	m_Buffers[B_INPUT]->push_back( pair<string, int>("", 0) );
 }
 
 CCurses :: ~CCurses( )
@@ -63,213 +91,356 @@ CCurses :: ~CCurses( )
 	endwin( );
 }
 
+void CCurses :: AddTab( string nName, TabType nType, uint32_t nId, BufferType nBufferType )
+{
+	STabData data;
+	data.name = nName;
+	data.type = nType;
+	data.id = nId;
+	data.bufferType  = nBufferType;
+	data.IsTabSelected = false;
+
+	for( vector<STabData> :: iterator i = m_TabData.begin( ); i != m_TabData.end( ); i++ )
+	{
+		if( (*i).type == nType && (*i).id == nId - 1 )
+		{
+			m_TabData.insert( i + 1, data );
+			m_WindowData[W_TAB].IsWindowChanged = true;
+			return;
+		}
+	}
+
+	m_WindowData[W_TAB].IsWindowChanged = true;
+	m_TabData.push_back( data );
+}
+
+void CCurses :: RemoveTab( TabType type, uint32_t id )
+{
+
+	m_WindowData[W_TAB].IsWindowChanged = true;
+}
+
+void CCurses :: SelectTab( uint32_t n )
+{
+	if( n >= 0 && n < m_TabData.size( ) )
+	{
+		if( m_SelectedTab < m_TabData.size( ) )
+			m_TabData[m_SelectedTab].IsTabSelected = false;
+
+		m_SelectedTab = n;
+		m_TabData[m_SelectedTab].IsTabSelected = true;
+
+		m_Buffers[B_REALM] = &m_RealmData[m_TabData[m_SelectedTab].id].Messages;
+		m_Buffers[B_CHANNEL] = &m_RealmData[m_TabData[m_SelectedTab].id].ChannelUsers;
+
+		m_RealmId = m_TabData[m_SelectedTab].id;
+
+		UpdateWindows( );
+	}
+}
+
+void CCurses :: ShowWindow( WindowType type )
+{
+	int y = 0, x = 0;
+	switch( type )
+	{
+	case W_TAB:		y = 0; x = 0; break;
+	case W_FULL:	y = 1; x = 0; break;
+	case W_FULL2:	y = 1; x = 0; break;
+	case W_UPPER:	y = 1; x = 0; break;
+	case W_LOWER:	y = LINES / 2; x = 0; break;
+	case W_CHANNEL:	y = 1; x = COLS - 21; break;
+	case W_INPUT:	y = LINES - 2; x = 0; break;
+	}
+
+	mvwin( m_WindowData[type].Window, y, x );
+	m_WindowData[type].IsWindowChanged = true;
+}
+
+void CCurses :: HideWindow( WindowType type )
+{
+	mvwin( m_WindowData[type].Window, 1000, 1000 );
+	m_WindowData[type].IsWindowChanged = false;
+}
+
+void CCurses :: UpdateWindows( )
+{
+	for( uint32_t i = 0; i < 7; ++i )
+	{
+		ShowWindow( WindowType( i ) );
+	}
+}
+
+void CCurses :: CompileFriends( )
+{
+	m_Buffers[B_FRIENDS]->clear( );
+
+	for( uint32_t i = 0; i < 10; ++i )
+	{
+		if ( !m_RealmData[i].Friends.empty( ) )
+		{
+			m_Buffers[B_FRIENDS]->push_back( pair<string, int>( "[" + m_RealmData[i].RealmAlias + "]", 1 ) );
+			
+			for( uint32_t j = 0; j < m_RealmData[i].Friends.size( ); ++j )
+			{
+				m_Buffers[B_FRIENDS]->push_back( pair<string, int>( " " + m_RealmData[i].Friends[j].first, m_RealmData[i].Friends[j].second ) );
+			}
+
+			m_Buffers[B_FRIENDS]->push_back( pair<string, int>( "\n", 1 ) );
+		}
+	}
+}
+
+void CCurses :: CompileClan( )
+{
+	m_Buffers[B_CLAN]->clear( );
+
+	for( uint32_t i = 0; i < 10; ++i )
+	{
+		if ( !m_RealmData[i].Clan.empty( ) )
+		{
+			m_Buffers[B_CLAN]->push_back( pair<string, int>( "[" + m_RealmData[i].RealmAlias + "]", 1 ) );
+			
+			for( uint32_t j = 0; j < m_RealmData[i].Clan.size( ) && j < 25; ++j )
+			{
+				m_Buffers[B_CLAN]->push_back( pair<string, int>( " " + m_RealmData[i].Clan[j].first, m_RealmData[i].Clan[j].second ) );
+			}
+
+			m_Buffers[B_CLAN]->push_back( pair<string, int>( "\n", 1 ) );
+		}
+	}
+}
+
 void CCurses :: SetGHost( CGHost* nGHost )
 {
 	m_GHost = nGHost;
 
-	if ( !m_GHost->m_BNETs.empty() )
-		m_RealmAlias = m_GHost->m_BNETs[m_RealmId]->GetServerAlias();
-
-	m_ListCycleTimer = GetTime( ) + 10; 
+	// Realms
+	for ( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	{
+		m_RealmData[(*i)->GetRealmId( )].RealmAlias = (*i)->GetServerAlias( );
+		AddTab( (*i)->GetServerAlias( ), T_REALM, (*i)->GetRealmId( ), B_REALM );
+	}
 }
 
-void CCurses :: SetMessageAttribute( WINDOW* window, string message, bool on, bool errorEnabled )
+void CCurses :: SetAttribute( SWindowData &data, string message, int flag, BufferType type, bool on )
 {
-	// Sets color on messages.
-
-	transform( message.begin( ), message.end( ), message.begin( ), (int(*)(int))tolower );
-
 	attr_t attribute = A_WHITE;
 
-	if ( message.size( ) > 3 )
+	transform( message.begin(), message.end(), message.begin(), ::tolower );
+	
+	switch( type )
 	{
-		if ( message.compare(1, 3, "map") == 0 )			attribute = A_WHITE;
-		else if ( message.compare(1, 4, "info") == 0 )		attribute = A_CYAN;
-		else if ( message.compare(1, 4, "bnet") == 0 )		attribute = A_YELLOW;
-		else if ( message.compare(1, 4, "util") == 0 )		attribute = A_CYAN;
-		else if ( message.compare(1, 4, "game") == 0 )		attribute = A_WHITE;
-		else if ( message.compare(1, 5, "ghost") == 0 )		attribute = A_CYAN;
-		else if ( message.compare(1, 5, "bnlsc") == 0 )		attribute = A_YELLOW;
-		else if ( message.compare(1, 5, "error") == 0 )		attribute = A_RED;
-		else if ( message.compare(1, 5, "emote") == 0 )		attribute = A_CYAN;
-		else if ( message.compare(1, 6, "config") == 0 )	attribute = A_WHITE;
-		else if ( message.compare(1, 7, "whisper") == 0 )	attribute = A_GREEN;
-		
-		if ( message.find("error") != -1 && errorEnabled )	attribute = A_RED;
-	}
-
-	if ( on )
-		wattr_on( window, attribute, 0 );
-	else
-		wattr_off( window, attribute, 0 );
-}
-
-void CCurses :: SetNameAttribute( WINDOW* window, int flags, bool on, bool isChannelUser )
-{
-	// Sets color on names. Different coloring for channel names and friend names.
-
-	attr_t attribute = A_WHITE;
-
-	if ( isChannelUser )
-	{
-		switch ( flags )
+	case B_TAB:
+		if( flag == 1 )	attribute = COLOR_PAIR( 6 ) | A_BOLD;
+		break;
+	case B_ALL:
+	case B_MAIN:
+		if ( message.find("error") != -1 )
 		{
-		case 1: attribute = A_BBLUE; break;
-		case 2: attribute = A_YELLOW; break;
-		case 4: attribute = A_CYAN; break;
-		case 8: attribute = A_BBLUE; break;
-		case 32: attribute = A_RED; break;
+			attribute = A_RED;
+			break;
 		}
-	}
-	else // isFriend
-	{
-		switch ( flags )
+	case B_REALM:
+		flag = GetMessageFlag( message );
+		switch( flag )
 		{
-		case 1: attribute = A_RED; break;
-		case 2: attribute = A_WHITE; break;
-		case 3: attribute = A_GREEN; break;
-		case 4: attribute = A_YELLOW; break;
-		case 5: attribute = A_CYAN; break;
+		case 0: attribute = A_WHITE;	break;	// NORMAL, GAME, MAP, CONFIG, UTIL
+		case 1: attribute = A_CYAN;		break;	// INFO, EMOTE
+		case 2: attribute = A_CYAN;		break;	// GHOST
+		case 3: attribute = A_RED;		break;	// ERROR
+		case 4: attribute = A_YELLOW;	break;	// BNET, BNLSC
+		case 5: attribute = A_GREEN;	break;	// WHISPER
 		}
+		break;
+	case B_CHANNEL:
+		switch( flag )
+		{
+		case 1: attribute = A_BBLUE;	break;	// BLIZZARD REP
+		case 2: attribute = A_YELLOW;	break;	// CHANNEL OP
+		case 4: attribute = A_CYAN;		break;	// SPEAKER
+		case 8: attribute = A_BBLUE;	break;	// BNET ADMIN
+		case 32: attribute = A_RED;		break;	// SQUELCHED
+		}
+		break;
+	case B_FRIENDS:
+		switch ( flag )
+		{
+		case 0: attribute = A_RED;		break;	// OFFLINE
+		case 1: attribute = A_WHITE;	break;	// NOT IN CHAT
+		case 2: attribute = A_BWHITE;	break;	// IN CHAT
+		case 3: attribute = A_GREEN;	break;	// IN PUBLIC GAME
+		case 4: attribute = A_YELLOW;	break;	// IN PRIVATE GAME; NOT MUTUAL
+		case 5: attribute = A_CYAN;		break;	// IN PRIVATE GAME; MUTUAL
+		}
+		break;
+	case B_CLAN:
+		// todo: add flags
+		break;
 	}
 
-	if ( on )
-		wattr_on( window, attribute, 0 );
+	if( on )
+		wattr_on( data.Window, attribute, 0 );
 	else
-		wattr_off( window, attribute, 0 );
+		wattr_off( data.Window, attribute, 0 );
 }
 
 void CCurses :: Draw ( )
 {
-	DrawMainWindow( );
-	DrawRealmWindow( );
-	DrawChannelWindow( );
-	DrawCustomListWindow( );
-	DrawInputWindow( );
+	// view 1: all, no channel
+	// accept only inner commands "!", "/commands", "/quit" and "/resize"
+	// send inner commands to the first realm that user is logged in
+
+	// view 2: main only, no channel
+	// accept only inner commands "!", "/commands", "/quit" and "/resize"
+	// send inner commands to the first realm that user is logged in
+
+	// view 3: friends, no channel, no input
+	// option: show only online friends (config: curses_online_friends_only)
+
+	// view 4: clan, no channel, no input
+	// option: show first x users of each clan (config: curses_max_clan)
+	// option: show only online users of each clan (config: curses_online_clan_only)
+
+	// view 5-x: realm, channel, input, (splitview: main)
+
+	// draw tabs always
+	DrawTabs( );
+
+	if( !m_TabData.empty( ) )
+		switch( m_TabData[m_SelectedTab].type )
+		{
+		case T_MAIN:
+			DrawWindow( m_WindowData[W_FULL2], m_TabData[m_SelectedTab].bufferType );
+			DrawWindow( m_WindowData[W_INPUT], B_INPUT );
+			HideWindow( W_FULL );
+			HideWindow( W_CHANNEL );
+			HideWindow( W_UPPER );
+			HideWindow( W_LOWER );
+			break;
+		case T_LIST:
+			DrawListWindow( m_WindowData[W_FULL2], m_TabData[m_SelectedTab].bufferType );
+			HideWindow( W_INPUT );
+			HideWindow( W_FULL );
+			HideWindow( W_CHANNEL );
+			HideWindow( W_UPPER );
+			HideWindow( W_LOWER );
+			break;
+		case T_REALM:
+			m_WindowData[W_CHANNEL].title = m_RealmData[m_TabData[m_SelectedTab].id].ChannelName;
+			DrawWindow( m_WindowData[W_FULL], m_TabData[m_SelectedTab].bufferType );
+			DrawWindow( m_WindowData[W_CHANNEL], B_CHANNEL );
+			DrawWindow( m_WindowData[W_INPUT], B_INPUT );
+			HideWindow( W_FULL2 );
+			HideWindow( W_UPPER );
+			HideWindow( W_LOWER );
+			break;
+		case T_GAME:
+			DrawWindow( m_WindowData[W_FULL], m_TabData[m_SelectedTab].bufferType );
+			DrawWindow( m_WindowData[W_INPUT], B_INPUT );
+			HideWindow( W_FULL2 );
+			HideWindow( W_UPPER );
+			HideWindow( W_LOWER );
+			break;
+		}
 }
 
-void CCurses :: DrawMainWindow ( )
+void CCurses :: DrawTabs( )
 {
-	if( m_MainWindowChanged )
+	SWindowData &data = m_WindowData[W_TAB];
+	BufferType type = B_TAB;
+
+	if ( data.IsWindowChanged )
 	{
-		wclear( m_MainWindow );
-		wmove( m_MainWindow, 0, 0 );
+		wclear( data.Window );
+		wmove( data.Window, 0, 0 );
 
-		for( vector<string> :: iterator i = m_MainBuffer.begin( ); i != m_MainBuffer.end( ); i++ )
+		for( vector<STabData> :: iterator i = m_TabData.begin( ); i != m_TabData.end( ); i++ )
 		{
-			*i = UTIL_UTF8ToLatin1(*i);
+			string &name = (*i).name;
+			int flag = (*i).IsTabSelected ? 1 : 0;
 
-			SetMessageAttribute( m_MainWindow, *i, true, true );	// colors on
+			name = UTIL_UTF8ToLatin1( name );
 
-			for( string :: iterator j = (*i).begin( ); j != (*i).end( ); j++ )
-				waddch( m_MainWindow, UTIL_ToULong(*j) );
+			SetAttribute( data, name, flag, type, true );
 
-			if( i != m_MainBuffer.end( ) - 1 )
-				waddch( m_MainWindow, '\n' );
+			for( string :: iterator j = name.begin( ); j != name.end( ); j++ )
+				waddch( data.Window, UTIL_ToULong( *j ) );
 
-			SetMessageAttribute( m_MainWindow, *i, false, true );	// colors off
+			SetAttribute( data, name, flag, type, false );
+
+			waddch( data.Window, ' ' );
 		}
 
-		wrefresh( m_MainWindow );
-		m_MainWindowChanged = false;
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
 	}
 }
 
-void CCurses :: DrawRealmWindow ( )
+void CCurses :: DrawWindow( SWindowData &data, BufferType type )
 {
-	if( m_RealmWindowChanged && !m_RealmBuffers.empty() )
+	if ( data.IsWindowChanged )
 	{
-		wclear( m_RealmWindow );
-		wmove( m_RealmWindow, 0, 0 );
+		bool onlyLast = type == B_INPUT && m_Buffers[type]->size( ) > 1;
 
-		for( vector<string> :: iterator i = m_RealmBuffers[m_RealmId].begin( ); i != m_RealmBuffers[m_RealmId].end( ); i++ )
+		wclear( data.Window );
+
+		if( !data.title.empty( ) )
 		{
-			*i = UTIL_UTF8ToLatin1(*i);
-
-			SetMessageAttribute( m_RealmWindow, *i, true, false );	// colors on
-
-			for( string :: iterator j = (*i).begin( ); j != (*i).end( ); j++ )
-				waddch( m_RealmWindow, UTIL_ToULong(*j) );
-
-			if( i != m_RealmBuffers[m_RealmId].end( ) - 1 )
-				waddch( m_RealmWindow, '\n' );
-
-			SetMessageAttribute( m_RealmWindow, *i, false, false );	// colors off
+			mvwhline( data.Window, 0, 0, 0, 20 );
+			mvwaddnstr( data.Window, 0, data.title.size( ) < 20 ? ( 20 - data.title.size( ) ) / 2 : 0, data.title.c_str( ), 20 );
+			wmove( data.Window, 1, 0 );
 		}
 
-		wrefresh( m_RealmWindow );
-		m_RealmWindowChanged = false;
+		for( Buffer :: iterator i = onlyLast ? m_Buffers[type]->end( ) - 1 : m_Buffers[type]->begin( ); i != m_Buffers[type]->end( ); i++ )
+		{
+			string message = (*i).first;
+			int &flag = (*i).second;
+			
+			message = UTIL_UTF8ToLatin1( message );
+
+			SetAttribute( data, message, flag, type, true );
+
+			for( string :: iterator j = message.begin( ); j != message.end( ); j++ )
+				waddch( data.Window, UTIL_ToULong( *j ) );
+
+			SetAttribute( data, message, flag, type, false );
+
+			if( i != m_Buffers[type]->end( ) - 1 )
+				waddch( data.Window, '\n' );
+		}
+
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
 	}
 }
 
-void CCurses :: DrawInputWindow ( )
+void CCurses :: DrawListWindow( SWindowData &data, BufferType type )
 {
-	if( m_InputWindowChanged )
+	if ( data.IsWindowChanged )
 	{
-		wclear( m_InputWindow );
-		wmove( m_InputWindow, 0, 0 );
+		wclear( data.Window );
 
-		m_InputBuffer = UTIL_UTF8ToLatin1(m_InputBuffer);
-
-		for( string :: iterator i = m_InputBuffer.begin( ); i != m_InputBuffer.end( ); i++ )
-			waddch( m_InputWindow, UTIL_ToULong(*i) );
-
-		wrefresh( m_InputWindow );
-		m_InputWindowChanged = false;
-	}
-}
-
-void CCurses :: DrawChannelWindow ( )
-{
-	if( m_ChannelWindowChanged )
-	{
-		wclear( m_ChannelWindow );
-		mvwhline( m_ChannelWindow, 0, 0, 0, 16 );
-		mvwaddnstr( m_ChannelWindow, 1, m_ChannelName.size( ) < 16 ? ( 16 - m_ChannelName.size( ) ) / 2 : 0, m_ChannelName.c_str( ), 16 );
-		mvwhline( m_ChannelWindow, 2, 0, 0, 16 );
-		int y = 2;
-
-		for( vector<pair<string, int> > :: iterator i = m_ChannelUsers.begin( ); i != m_ChannelUsers.end( ) && y++ < LINES / 2; i++ )
+		for( Buffer :: iterator i = m_Buffers[type]->begin( ); i != m_Buffers[type]->end( ); i++ )
 		{
-			SetNameAttribute( m_ChannelWindow, (*i).second, true, true );	// colors on
-			mvwaddnstr( m_ChannelWindow, y, 0, (*i).first.c_str( ), 16 );
-			SetNameAttribute( m_ChannelWindow, (*i).second, false, true );	// colors off
+			string message = (*i).first;
+			int &flag = (*i).second;
+			
+			message = UTIL_UTF8ToLatin1( message );
+
+			if( message[0] == '[' )
+				waddch( data.Window, '\n' );
+
+			SetAttribute( data, message, flag, type, true );
+
+			for( string :: iterator j = message.begin( ); j != message.end( ); j++ )
+				waddch( data.Window, UTIL_ToULong( *j ) );
+
+			SetAttribute( data, message, flag, type, false );
 		}
 
-		wrefresh( m_ChannelWindow );
-		m_ChannelWindowChanged = false;
-	}
-}
-
-void CCurses :: DrawCustomListWindow ( )
-{
-	if( m_CustomListWindowChanged )
-	{
-		wclear( m_CustomListWindow );
-		mvwhline( m_CustomListWindow, 1, 0, 0, 16 );
-		int y = 1;
-
-		if ( ( m_ShowFriends == true && m_Friends.size() > 0 ) || ( m_ShowFriends == false && m_Friends.size() > 0 && m_Clan.size() == 0 ) )
-		{
-			mvwaddnstr( m_CustomListWindow, 0, 9/2, "Friends", 16 );
-
-			for( vector<pair<string, char> > :: iterator i = m_Friends.begin( ); i != m_Friends.end( ) && y++ < LINES / 2; i++ )
-			{
-				SetNameAttribute( m_CustomListWindow, (*i).second, true, false );	// colors on
-				mvwaddnstr( m_CustomListWindow, y, 0, (*i).first.c_str( ), 16 );
-				SetNameAttribute( m_CustomListWindow, (*i).second, false, false );	// colors off
-			}
-		}
-		else if ( m_Clan.size() > 0 )
-		{
-			mvwaddnstr( m_CustomListWindow, 0, 6, "Clan", 16 );
-
-			for( vector<pair<string, char> > :: iterator i = m_Clan.begin( ); i != m_Clan.end( ) && y++ < LINES / 2; i++ )
-				mvwaddnstr( m_CustomListWindow, y, 0, (*i).first.c_str( ), 16 );
-		}
-
-		wrefresh( m_CustomListWindow );
-		m_CustomListWindowChanged = false;
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
 	}
 }
 
@@ -279,62 +450,63 @@ void CCurses :: Resize( )
 	clear();
     refresh();
 
-	wresize( m_MainWindow, LINES / 2 - 1, COLS - 17 );
-	wresize( m_BottomBorder, 1, COLS );
-	wresize( m_RealmWindow, LINES / 2 - 3, COLS - 17 );
-	wresize( m_MiddleBorder, 1, COLS );
-	wresize( m_RightBorder, LINES - 3, 1 );
-	wresize( m_InputWindow, 2, COLS );
-	wresize( m_CustomListWindow, LINES / 2 - 2, 16 );
-	wresize( m_ChannelWindow, LINES / 2 - 3, 16 );
+	wresize( m_WindowData[W_TAB].Window, 1, COLS );
+	wresize( m_WindowData[W_FULL].Window, LINES - 3, COLS - 21 );
+	wresize( m_WindowData[W_FULL2].Window, LINES - 3, COLS );
+	wresize( m_WindowData[W_UPPER].Window, LINES / 2 - 1, COLS - 21 );
+	wresize( m_WindowData[W_LOWER].Window, LINES / 2 - 3, COLS - 21 );
+	wresize( m_WindowData[W_CHANNEL].Window, LINES - 3, 20 );
+	wresize( m_WindowData[W_INPUT].Window, 2, COLS );
 
-	mvwin( m_MainWindow, 0, 0 );
-	mvwin( m_RealmWindow, LINES / 2, 0 );
-	mvwin( m_InputWindow, LINES - 2, 0 );
-	mvwin( m_CustomListWindow, 0, COLS - 16 );
-	mvwin( m_ChannelWindow, LINES / 2 - 1, COLS - 16 );
+	mvwin( m_WindowData[W_TAB].Window, 0, 0 );
+	mvwin( m_WindowData[W_FULL].Window, 1, 0 );
+	mvwin( m_WindowData[W_FULL2].Window, 1, 0 );
+	mvwin( m_WindowData[W_UPPER].Window, 1, 0 );
+	mvwin( m_WindowData[W_LOWER].Window, LINES / 2, 0 );
+	mvwin( m_WindowData[W_CHANNEL].Window, 1, COLS - 20 );
+	mvwin( m_WindowData[W_INPUT].Window, LINES - 2, 0 );
 
-	mvwin( m_BottomBorder, LINES - 3, 0 );
-	mvwin( m_MiddleBorder, LINES / 2 - 1, 0 );
-	mvwin( m_RightBorder, 0, COLS - 17 );
-
-	mvwhline( m_BottomBorder, 0, 0, 0, COLS );
-	mvwhline( m_MiddleBorder, 0, 0, 0, COLS );
-	mvwvline( m_RightBorder, 0, 0, 0, LINES );
-	wrefresh( m_BottomBorder );
-	wrefresh( m_MiddleBorder );
-	wrefresh( m_RightBorder );
-
-	m_MainWindowChanged = true;
-	m_RealmWindowChanged = true;
-	m_InputWindowChanged = true;
-	m_CustomListWindowChanged = true;
-	m_ChannelWindowChanged = true;
+	m_WindowData[W_TAB].IsWindowChanged = true;
+	m_WindowData[W_FULL].IsWindowChanged = true;
+	m_WindowData[W_FULL2].IsWindowChanged = true;
+	m_WindowData[W_UPPER].IsWindowChanged = true;
+	m_WindowData[W_LOWER].IsWindowChanged = true;
+	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	m_WindowData[W_INPUT].IsWindowChanged = true;
 
 	Draw( );
 }
 
-void CCurses :: Print( string message, string realmAlias, bool toMainBuffer )
+void CCurses :: Print( string message, uint32_t realmId, bool toMainBuffer )
 {
+	message = UTIL_UTF8ToLatin1( message );
+	pair<string, int> temp = pair<string, int>( message, 0 );
 	if ( toMainBuffer )
 	{
-		m_MainBuffer.push_back( message );
+		m_Buffers[B_MAIN]->push_back( temp );
 
-		if( m_MainBuffer.size( ) > 100 )
-			m_MainBuffer.erase( m_MainBuffer.begin( ) );
+		if( m_Buffers[B_MAIN]->size( ) > 100 )
+			m_Buffers[B_MAIN]->erase( m_Buffers[B_MAIN]->begin( ) );
 
-		m_MainWindowChanged = true;
+		m_WindowData[W_UPPER].IsWindowChanged = true;
 	}
 	else
 	{
-		uint32_t realmId = GetRealmId(realmAlias);
-		m_RealmBuffers[realmId].push_back( message );
+		m_RealmData[realmId].Messages.push_back( temp );
 
-		if( m_RealmBuffers[realmId].size( ) > 100 )
-			m_RealmBuffers[realmId].erase( m_RealmBuffers[realmId].begin( ) );
+		if( m_RealmData[realmId].Messages.size( ) > 100 )
+			m_RealmData[realmId].Messages.erase( m_RealmData[realmId].Messages.begin( ) );
 
-		m_RealmWindowChanged = true;
+		m_WindowData[W_LOWER].IsWindowChanged = true;
 	}
+
+	m_Buffers[B_ALL]->push_back( temp );
+
+	if( m_Buffers[B_ALL]->size( ) > 100 )
+		m_Buffers[B_ALL]->erase( m_Buffers[B_ALL]->begin( ) );
+
+	m_WindowData[W_FULL].IsWindowChanged = true;
+	m_WindowData[W_FULL2].IsWindowChanged = true;
 
 	Draw( );
 }
@@ -344,29 +516,68 @@ bool CCurses :: Update( )
 	bool Quit = false;
 
 	bool Connected = !m_GHost->m_BNETs.empty();
-	if ( Connected ) Connected = IsConnected( m_RealmId, true );
+	if( Connected ) Connected = IsConnected( m_RealmId, true );
 
-	if ( GetTime( ) > m_ListCycleTimer && Connected )
+	if( GetTime( ) > m_ListUpdateTimer && Connected )
 	{
-		m_ListCycleTimer = GetTime( ) + 10;
-		m_ShowFriends = !m_ShowFriends;
+		m_ListUpdateTimer = GetTime( ) + 10;
 		m_GHost->m_BNETs[m_RealmId]->RequestListUpdates( );
 	}
 
-	int c = wgetch( m_InputWindow );
+	int c = wgetch( m_WindowData[W_INPUT].Window );
 
-	while( c != ERR && Connected )
+	if( c == KEY_BTAB || c == KEY_LEFT )	// SHIFT-TAB, LEFT
 	{
+		SelectTab( m_SelectedTab - 1 );
+		return false;
+	}
+	else if( c == 9 || c == KEY_RIGHT )	// TAB, RIGHT
+	{
+		SelectTab( m_SelectedTab + 1 );
+		return false;
+	}
+
+	if( m_Buffers[B_INPUT]->size( ) > 1 )
+	{
+		if( c == KEY_UP )
+		{
+			m_SelectedInput = m_SelectedInput > 0 ? m_SelectedInput - 1 : 0;
+			if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
+			{
+				m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
+
+				m_WindowData[W_INPUT].IsWindowChanged = true;
+
+				m_Buffers[B_INPUT]->pop_back( );
+				m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
+			}
+			return false;
+		}
+		else if( c == KEY_DOWN )
+		{
+			m_SelectedInput = m_SelectedInput < m_Buffers[B_INPUT]->size( ) - 1 ? m_SelectedInput + 1 : m_Buffers[B_INPUT]->size( ) - 1;
+			if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
+			{
+				m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
+
+				m_WindowData[W_INPUT].IsWindowChanged = true;
+
+				m_Buffers[B_INPUT]->pop_back( );
+				m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
+			}
+			return false;
+		}
+	}
+
+	while( c != ERR && Connected && m_TabData[m_SelectedTab].type != T_LIST )
+	{
+		string &InputBuffer = m_InputBuffer;
+
 		if( c == 8 || c == 127 || c == KEY_BACKSPACE || c == KEY_DC )
 		{
 			// backspace, delete
-
-			if( !m_InputBuffer.empty( ) )
-				m_InputBuffer.erase( m_InputBuffer.size( ) - 1, 1 );
-		}
-		else if( c == 9 )
-		{
-			// tab
+			if( !InputBuffer.empty( ) )
+				InputBuffer.erase( InputBuffer.size( ) - 1, 1 );
 		}
 #ifdef WIN32
 		else if( c == 10 || c == 13 || c == PADENTER )
@@ -377,7 +588,7 @@ bool CCurses :: Update( )
 			// cr, lf
 			// process input buffer now
 
-			string Command = m_InputBuffer;
+			string Command = InputBuffer;
 			transform( Command.begin( ), Command.end( ), Command.begin( ), (int(*)(int))tolower );
 
 			if( Command.size( ) >= 9 && Command.substr( 0, 8 ) == "/resize " )
@@ -386,16 +597,16 @@ bool CCurses :: Update( )
 				int j = 0;
 				int* dimensions = new int[2];
 
-				for ( uint32_t i = 8; i < m_InputBuffer.size( ); ++i )
+				for ( uint32_t i = 8; i < InputBuffer.size( ); ++i )
 				{
-					if ( m_InputBuffer[i] == ' ' )
+					if ( InputBuffer[i] == ' ' )
 					{
 						dimensions[j++] = UTIL_ToInt32( temp );
 						temp.clear( );
 					}
 
-					if ( m_InputBuffer[i] >= 48 && m_InputBuffer[i] <= 57 )
-						temp += m_InputBuffer[i];
+					if ( InputBuffer[i] >= 48 && InputBuffer[i] <= 57 )
+						temp += InputBuffer[i];
 				}
 
 				dimensions[j++] = UTIL_ToInt32( temp );
@@ -409,59 +620,35 @@ bool CCurses :: Update( )
 			}
 			else if( Command == "/commands" )
 			{
-				CONSOLE_Print( ">>> /commands", false );
-				CONSOLE_Print( "", false );
-				CONSOLE_Print( "  In the GHost++ console:", false );
-				CONSOLE_Print( "   !<command>               : GHost command. Replace '!' with defined trigger character.", false );
-				CONSOLE_Print( "   /commands                : show command list", false );
-				CONSOLE_Print( "   /realm <number>          : changes current channel view to another realm (if possible)", false );
-				CONSOLE_Print( "   /resize <width> <height> : resizes console", false );
-				CONSOLE_Print( "   /exit or /quit           : close GHost++", false );
-				CONSOLE_Print( "   /r <message>             : reply to the last received whisper", false );
-				CONSOLE_Print( "   /w <user> <message>      : whispers <message> to <user>", false );
-				CONSOLE_Print( "", false );
+				CONSOLE_Print( ">>> /commands", true );
+				CONSOLE_Print( "", true );
+				CONSOLE_Print( "  In the GHost++ console:", true );
+				CONSOLE_Print( "   !<command>               : GHost command. Replace '!' with defined trigger character.", true );
+				CONSOLE_Print( "   /<bnet-command> <...>    : Battle.net command.", true );
+				CONSOLE_Print( "   /resize <width> <height> : Resizes console", true );
+				CONSOLE_Print( "   /exit or /quit           : Close GHost++", true );
+				CONSOLE_Print( "", true );
 			}
 			else if( Command == "/exit" || Command == "/quit" )
 			{
 				Quit = true;
 				break;
 			}
-			else if( Command.size( ) >= 4 && Command.substr( 0, 3 ) == "/r " )
+			else if( Command.size( ) >= 2 && Command[0] == m_GHost->m_BNETs[m_RealmId]->GetCommandTrigger( ) )
 			{
-				if( !m_GHost->m_BNETs[m_RealmId]->GetReplyTarget( ).empty( ) )
-				{
-					m_InputBuffer = UTIL_Latin1ToUTF8( m_InputBuffer );
-					m_GHost->m_BNETs[m_RealmId]->QueueChatCommand( m_InputBuffer.substr( 3 ), m_GHost->m_BNETs[m_RealmId]->GetReplyTarget( ), true );
-				}
-				else
-					CONSOLE_Print( "[BNET] nobody has whispered you yet", false );
+				InputBuffer = UTIL_Latin1ToUTF8( InputBuffer );
+				m_GHost->m_BNETs[m_RealmId2]->HiddenGhostCommand( InputBuffer );
 			}
-			else if( Command.size( ) >= 2 && Command[0] == m_GHost->m_BNETs[m_RealmId]->GetCommandTrigger() )
+			else if( m_TabData[m_SelectedTab].type != T_MAIN )
 			{
-				m_InputBuffer = UTIL_Latin1ToUTF8( m_InputBuffer );
-				m_GHost->m_BNETs[m_RealmId]->HiddenGhostCommand( m_InputBuffer );
+				InputBuffer = UTIL_Latin1ToUTF8( InputBuffer );
+				m_GHost->m_BNETs[m_RealmId]->QueueChatCommand( InputBuffer, InputBuffer[0] == '/' );
 			}
-			else if( Command.size( ) >= 4 && Command.substr( 0, 7 ) == "/realm " )
-			{
-				uint32_t newRealm = atoi( m_InputBuffer.substr( 7 ).c_str( ) );
+			else return false; // don't clear the inputbuffer
 
-				if (newRealm >= 0 && newRealm < m_GHost->m_BNETs.size() )
-				{
-					m_RealmId = newRealm;
-					m_RealmAlias = m_GHost->m_BNETs[m_RealmId]->GetServerAlias( );
-
-					string currentChannel = m_GHost->m_BNETs[m_RealmId]->GetCurrentChannel( );
-					m_GHost->m_BNETs[m_RealmId]->QueueEnterChat( );
-					m_GHost->m_BNETs[m_RealmId]->QueueChatCommand( "/j " + currentChannel, true);
-				}
-			}
-			else
-			{
-				m_InputBuffer = UTIL_Latin1ToUTF8( m_InputBuffer );
-				m_GHost->m_BNETs[m_RealmId]->QueueChatCommand( m_InputBuffer, m_InputBuffer[0] == '/' );
-			}
-
-			m_InputBuffer.clear( );
+			InputBuffer.clear( );
+			m_Buffers[B_INPUT]->push_back( pair<string, int>( "", 0 ) );
+			m_SelectedInput = m_Buffers[B_INPUT]->size( ) - 1;
 		}
 #ifdef WIN32
 		else if( c == 22 )
@@ -472,46 +659,56 @@ bool CCurses :: Update( )
 
 			if( PDC_getclipboard( &clipboard, &length ) == PDC_CLIP_SUCCESS )
 			{
-				m_InputBuffer += string( clipboard, length );
+				InputBuffer += string( clipboard, length );
 				PDC_freeclipboard( clipboard );
 			}
 		}
 		else if( c == 3 )
 		{
 			// copy
-			string clipboard = UTIL_Latin1ToUTF8(m_InputBuffer);
+			string clipboard = UTIL_Latin1ToUTF8(InputBuffer);
 			PDC_setclipboard( clipboard.c_str(), clipboard.length() );
 		}
 #endif
 		else if( c == 27 )
 		{
 			// esc
-			m_InputBuffer.clear( );
+			InputBuffer.clear( );
 		}
 		else if( c >= 32 && c <= 255 )
 		{
 			// printable characters
-			m_InputBuffer.push_back( c );
+			InputBuffer.push_back( c );
 		}
 #ifdef WIN32
 		else if( c == PADSLASH )
-			m_InputBuffer.push_back( '/' );
+			InputBuffer.push_back( '/' );
 		else if( c == PADSTAR )
-			m_InputBuffer.push_back( '*' );
+			InputBuffer.push_back( '*' );
 		else if( c == PADMINUS )
-			m_InputBuffer.push_back( '-' );
+			InputBuffer.push_back( '-' );
 		else if( c == PADPLUS )
-			m_InputBuffer.push_back( '+' );
+			InputBuffer.push_back( '+' );
 #endif
 		else if( c == KEY_RESIZE )
 			Resize( );
 
 		// clamp input buffer size
-		if( m_InputBuffer.size( ) > 200 )
-			m_InputBuffer.erase( 200 );
+		if( InputBuffer.size( ) > 200 )
+			InputBuffer.erase( 200 );
 
-		c = wgetch( m_InputWindow );
-		m_InputWindowChanged = true;
+		c = wgetch( m_WindowData[W_INPUT].Window );
+		m_WindowData[W_INPUT].IsWindowChanged = true;
+
+		// "/r " -> "/w <username> " just like in wc3 client and it works like that for a reason.
+		if( m_TabData[m_SelectedTab].type != T_MAIN && !m_GHost->m_BNETs[m_RealmId]->GetReplyTarget( ).empty( ) &&
+			InputBuffer.size( ) >= 3 &&	( InputBuffer.substr( 0, 3 ) == "/r " || InputBuffer.substr( 0, 3 ) == "/R " ) )
+		{
+			InputBuffer = "/w " + m_GHost->m_BNETs[m_RealmId]->GetReplyTarget( ) + " ";
+		}
+
+		m_Buffers[B_INPUT]->pop_back( );
+		m_Buffers[B_INPUT]->push_back( pair<string, int>( InputBuffer, 0 ) );
 	}
 
 	Draw( );
@@ -546,90 +743,92 @@ bool CCurses :: IsConnected( uint32_t realmId, bool entry )
 	// This will check if we are logged in some realm.
 	if ( m_GHost->m_BNETs[realmId]->GetLoggedIn() == false )
 	{
-		if ( realmId == m_RealmId && entry == false)
+		if ( realmId == m_RealmId2 && entry == false)
 			return false;
 		else
+		{
 			return IsConnected( GetNextRealm( realmId ), false );
+		}
 	}
 
-	// If we are connected on some realm, this will be it.
-	m_RealmId = realmId;
+	m_RealmId2 = realmId;
 
 	return true;
 }
 
-void CCurses :: ChangeChannel( string channel, string realmAlias )
+uint32_t CCurses :: GetMessageFlag( string &message )
 {
-	if ( m_RealmAlias == realmAlias )
+	if ( message.size( ) > 4 && message[0] == '[' )
 	{
-		m_ChannelName = channel;
-		m_ChannelWindowChanged = true;
+		if ( message.compare(1, 4, "info") == 0 )			return 1;
+		else if ( message.compare(1, 4, "bnet") == 0 )		return 4;
+		else if ( message.compare(1, 5, "ghost") == 0 )		return 2;
+		else if ( message.compare(1, 5, "bnlsc") == 0 )		return 4;
+		else if ( message.compare(1, 5, "error") == 0 )		return 3;
+		else if ( message.compare(1, 5, "emote") == 0 )		return 1;
+		else if ( message.compare(1, 7, "whisper") == 0 )	return 5;
 	}
+
+	return 0;
 }
 
-void CCurses :: AddChannelUser( string name, string realmAlias, int userFlags )
+void CCurses :: ChangeChannel( string channel, uint32_t realmId )
 {
-	if ( m_RealmAlias == realmAlias )
+	m_RealmData[realmId].ChannelName = channel;
+	m_WindowData[W_FULL].IsWindowChanged = true;
+	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+}
+
+void CCurses :: AddChannelUser( string name, uint32_t realmId, int flag )
+{
+	for( Buffer :: iterator i = m_RealmData[realmId].ChannelUsers.begin( ); i != m_RealmData[realmId].ChannelUsers.end( ); i++ )
 	{
-		for( vector<pair<string, int> > :: iterator i = m_ChannelUsers.begin( ); i != m_ChannelUsers.end( ); i++ )
+		if( (*i).first == name )
+			return;
+	}
+
+	m_RealmData[realmId].ChannelUsers.push_back( pair<string, int>( name, flag ) );
+	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+}
+
+void CCurses :: UpdateChannelUser( string name, uint32_t realmId, int flag )
+{
+	for( Buffer :: iterator i = m_RealmData[realmId].ChannelUsers.begin( ); i != m_RealmData[realmId].ChannelUsers.end( ); i++ )
+	{
+		if( (*i).first == name )
 		{
-			if( (*i).first == name )
-				return;
-		}
-
-		m_ChannelUsers.push_back( pair<string, int>( name, userFlags ) );
-		m_ChannelWindowChanged = true;
-	}
-}
-
-void CCurses :: UpdateChannelUser( string name, string realmAlias, int userFlags )
-{
-	if ( m_RealmAlias == realmAlias )
-	{
-		for( vector<pair<string, int> > :: iterator i = m_ChannelUsers.begin( ); i != m_ChannelUsers.end( ); i++ )
-		{
-			if( (*i).first == name )
-			{
-				(*i).second = userFlags;
-				m_ChannelWindowChanged = true;
-				return;
-			}
+			(*i).second = flag;
+			m_WindowData[W_CHANNEL].IsWindowChanged = true;
+			return;
 		}
 	}
 }
 
-void CCurses :: RemoveChannelUser( string name, string realmAlias )
+void CCurses :: RemoveChannelUser( string name, uint32_t realmId )
 {
-	if ( m_RealmAlias == realmAlias )
-	{
-		for( vector<pair<string, int> > :: iterator i = m_ChannelUsers.begin( ); i != m_ChannelUsers.end( ); )
-		{
-			if( (*i).first == name )
-				i = m_ChannelUsers.erase( i );
-			else
-				i++;
-		}
 
-		m_ChannelWindowChanged = true;
+	for( Buffer :: iterator i = m_RealmData[realmId].ChannelUsers.begin( ); i != m_RealmData[realmId].ChannelUsers.end( ); i++ )
+	{
+		if( (*i).first == name )
+			i = m_RealmData[realmId].ChannelUsers.erase( i );
 	}
+
+	m_WindowData[W_CHANNEL].IsWindowChanged = true;
 }
 
-void CCurses :: RemoveChannelUsers( string realmAlias )
+void CCurses :: RemoveChannelUsers( uint32_t realmId )
 {
-	if ( m_RealmAlias == realmAlias )
-	{
-		m_ChannelUsers.clear( );
-		m_ChannelWindowChanged = true;
-	}
+	m_RealmData[realmId].ChannelUsers.clear( );
+	m_WindowData[W_CHANNEL].IsWindowChanged = true;
 }
 
-void CCurses :: UpdateCustomList( string realmAlias )
+void CCurses :: UpdateCustomLists( uint32_t realmId )
 {
-	if ( m_RealmAlias == realmAlias )
-	{
-		m_Friends = m_GHost->m_BNETs[m_RealmId]->GetOnlineFriends( );
-		m_Clan = m_GHost->m_BNETs[m_RealmId]->GetOnlineClans( );
+	m_RealmData[realmId].Friends = m_GHost->m_BNETs[realmId]->GetFriends( );
+	m_RealmData[realmId].Clan = m_GHost->m_BNETs[realmId]->GetClan( );
 
-		m_CustomListWindowChanged = true;
-	}
+	CompileFriends( );
+	CompileClan( );
+
+	m_WindowData[W_FULL2].IsWindowChanged = true;
 }
