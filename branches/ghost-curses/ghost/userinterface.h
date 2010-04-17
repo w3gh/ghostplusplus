@@ -24,12 +24,7 @@
 #define A_BYELLOW	( A_BOLD | COLOR_PAIR(4) )
 #define A_BBLUE		( A_BOLD | COLOR_PAIR(5) )
 
-//
-// Buffer
-//
-
 typedef vector<pair<string, int> > Buffer;
-// buffers except channel, friends and clan get automatically integer value of 0
 
 enum BufferType
 {
@@ -41,19 +36,11 @@ enum BufferType
 	B_CHANNEL = 15,
 	B_INPUT,
 	B_TAB,
+	B_BANS,
+	B_ADMINS,
+	B_GAMES,
 	B_GAME = 18
 };
-
-// All-Buffer:          m_Buffers[B_ALL]
-// Main-Buffer:         m_Buffers[B_MAIN]
-// Realm-Buffer:        m_Buffers[B_REALM] = m_RealmData[m_RealmId].Messages
-// Channel-Buffer:      m_Buffers[B_CHANNEL] = m_RealmData[m_RealmId].ChannelUsers
-// Friends-Buffer:      m_Buffers[B_FRIENDS] = m_RealmData[m_RealmId].Friends
-// Clan-Buffer:         m_Buffers[B_CLAN] = m_RealmData[m_RealmId].Clan
-
-// Normally max username length is 15 characters, but it can be 48 characters in some cases.
-
-// Highlight currently selected tab
 
 struct SRealmData
 {
@@ -63,6 +50,8 @@ struct SRealmData
 	Buffer Messages;
 	Buffer Friends;
 	Buffer Clan;
+	Buffer Bans;
+	Buffer Admins;
 };
 
 enum WindowType
@@ -95,12 +84,8 @@ struct STabData
 {
 	string name;
 	TabType type;
-
-	// realmId or gameId
-	uint32_t id;
-
+	uint32_t id;	// realmId or gameId
 	BufferType bufferType;
-
 	bool IsTabSelected;
 };
 
@@ -142,8 +127,10 @@ private:
 
 	void Draw( );
 	void DrawTabs( );
-	void DrawWindow( SWindowData &data, BufferType type );
-	void DrawListWindow( SWindowData &data, BufferType type );
+	void DrawWindow( WindowType wType, BufferType bType );
+	void DrawListWindow( WindowType wType, BufferType bType );
+
+	void Resize( int y, int x );
 	void Resize( );
 	
 	// Tab
@@ -152,24 +139,34 @@ private:
 	void SelectTab( uint32_t n );
 
 	// Window
-	void ShowWindow( WindowType type );
-	void HideWindow( WindowType type );
+	void UpdateWindow( WindowType type );
 	void UpdateWindows( );
 
+	void CompileList( BufferType type );
+	void CompileLists( );
 	void CompileFriends( );
 	void CompileClan( );
+	void CompileBans( );
+	void CompileAdmins( );
+	void CompileGames( );
+
+	// Mouse
+	void UpdateMouse( );
 
 	// Misc
 	uint32_t GetRealmId( string &realmAlias );
 	uint32_t GetNextRealm( uint32_t realmId );
 	bool IsConnected( uint32_t realmId, bool entry );
 	uint32_t GetMessageFlag( string &message );
+	void UpdateCustomLists( BufferType type );
 
 	uint32_t m_SelectedTab;
 	uint32_t m_SelectedInput;
 
+	bool m_SplitView;
+
 public:
-	CCurses( int nTermWidth, int nTermHeight );
+	CCurses( int nTermWidth, int nTermHeight, bool nSplitView );
 	~CCurses( );
 
 	void SetGHost( CGHost * nGHost );
@@ -182,7 +179,6 @@ public:
 	void UpdateChannelUser( string name, uint32_t realmId, int flag );
 	void RemoveChannelUser( string name, uint32_t realmId );
 	void RemoveChannelUsers( uint32_t realmId );
-	void UpdateCustomLists( uint32_t realmId );
 
 };
 

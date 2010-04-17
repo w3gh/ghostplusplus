@@ -205,8 +205,32 @@ vector<pair<string, int> > CBNET :: GetClan( )
 {
 	vector<pair<string, int> > result;
 
-	for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
+	int k = 0;
+	for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ) && k < 50; i++, k++ )
 		result.push_back(pair<string, int>((*i)->GetName( ), (*i)->GetRawStatus( ) ) );
+
+	return result;
+}
+
+vector<pair<string, int> > CBNET :: GetBans( )
+{
+	vector<pair<string, int> > result;
+
+	int k = 0;
+	for( vector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ) && k < 100; i++, k++ )
+		result.push_back(pair<string, int>((*i)->GetName( ), 0 ) );
+
+	return result;
+}
+
+vector<pair<string, int> > CBNET :: GetAdmins( )
+{
+	vector<pair<string, int> > result;
+
+	result.push_back(pair<string, int>( m_RootAdmin, 2 ) );
+
+	for( vector<string> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
+		result.push_back(pair<string, int>( *i, 0 ) );
 
 	return result;
 }
@@ -927,7 +951,6 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Friends = Friends;
-				CONSOLE_UpdateCustomLists( GetRealmId( ) );
 				break;
 
 			case CBNETProtocol :: SID_CLANMEMBERLIST:
@@ -937,7 +960,6 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Clans = Clans;
-				CONSOLE_UpdateCustomLists( GetRealmId( ) );
 				break;
 			}
 		}
@@ -1050,6 +1072,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 			if( IsAdmin( User ) || IsRootAdmin( User ) )
 			{
+				if( User == "" )
+					User = m_UserName;
+				
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] admin [" + User + "] sent command [" + Message + "]" );
 
 				/*****************
@@ -2530,6 +2555,9 @@ bool CBNET :: IsAdmin( string name )
 
 bool CBNET :: IsRootAdmin( string name )
 {
+	if( name == "" )
+		return true;
+
 	// m_RootAdmin was already transformed to lower case in the constructor
 
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
@@ -2639,6 +2667,7 @@ void CBNET :: HoldClan( CBaseGame *game )
 
 void CBNET :: HiddenGhostCommand( string Message )
 {
-	CIncomingChatEvent temp( CBNETProtocol::IncomingChatEvent(29), 0, 0, m_UserName, Message );
+	// "" ok or not? revert to m_UserName?
+	CIncomingChatEvent temp( CBNETProtocol::IncomingChatEvent(29), 0, 0, "", Message );
 	ProcessChatEvent( &temp );
 }

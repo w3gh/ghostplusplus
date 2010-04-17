@@ -76,6 +76,5 @@ void CONSOLE_AddChannelUser( string name, uint32_t realmId, int flag );
 void CONSOLE_UpdateChannelUser ( string name, uint32_t realmId, int flag );
 void CONSOLE_RemoveChannelUser( string name, uint32_t realmId );
 void CONSOLE_RemoveChannelUsers( uint32_t realmId );
-void CONSOLE_UpdateCustomLists( uint32_t realmId );
 
 #endif

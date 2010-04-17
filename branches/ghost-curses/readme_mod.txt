@@ -1,6 +1,6 @@
-﻿=============================================
-GHost++ Version 17.0 (SVN r418) CursesMod-1.7
-=============================================
+﻿==============================
+GHost++ Version 17.0 CursesMod
+==============================
 
 This mod brings pdcurses user interface to GHost++.
 
@@ -9,19 +9,18 @@ Usage
 =====
 
 1.) If you have already a configured GHost++, just copy your ghost.cfg to this directory.
-    You must add next three lines to your config file (ghost.cfg). Change values as you like. More information in default.cfg.
+    You must add next four lines to your config file (ghost.cfg). Change values as you like. More information in default.cfg.
 
 term_width = 135
 term_height = 52
 curses_enabled = 1
+curses_splitview = 0
 
 2.) Otherwise configure your GHost++ normally. Copy default.cfg and rename it ghost.cfg. More information in readme.txt.
 
 3.) After configuring GHost++:
  a.) Run ghost.exe
  b.) GHost++ will now log on to battle.net realms and joins into the chat channels which you have configured.
-     If you have multiple realms configured, you can change between realms using "/realm <number>" command.
-     Current chat-channel will be shown based on the realm.
  c.) Type /commands to see all the console commands.
      You can directly type GHost++ commands
      !load
@@ -44,7 +43,9 @@ The first version was basicly a copy-paste from GProxy++ code. You can see addit
  - Own window for general messages and own window for realm-specific chat-channel messages
  - Console resizing
  - Copying text (Ctrl+C)
- - Friend List / Clan List
+ - Friend List / Clan Lis
+ - New UI: tabs
+ - Mouse support
 
 Version history:
 ----------------
@@ -86,6 +87,11 @@ v1.7
  - moved channel name below the middle border
  - removed all references to "ascii"
  - removed Windows-specific code for buffer resizing (from now on use "/resize" command or config file)
+v1.8 (svn r421-422)
+ - new UI
+ - new tabs
+ - mouse support
+ - bugfixes
 
 =========
 Compiling

@@ -152,8 +152,9 @@ public:
 
 	vector<pair<string, int> > GetFriends( );
 	vector<pair<string, int> > GetClan( );
+	vector<pair<string, int> > GetBans( );
+	vector<pair<string, int> > GetAdmins( );
 	string GetReplyTarget( )			{ return m_ReplyTarget; }
-
 	uint32_t GetRealmId( )				{ return m_HostCounterID - 1; }
 
 	// processing functions

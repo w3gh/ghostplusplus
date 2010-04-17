@@ -270,12 +270,6 @@ void CONSOLE_RemoveChannelUsers( uint32_t realmId )
 		gCurses->RemoveChannelUsers( realmId );
 }
 
-void CONSOLE_UpdateCustomLists( uint32_t realmId )
-{
-	if (gCurses )
-		gCurses->UpdateCustomLists( realmId );
-}
-
 //
 // main
 //
@@ -296,7 +290,7 @@ int main( int argc, char **argv )
 	gLogMethod = CFG.GetInt( "bot_logmethod", 1 );
 
 	if ( CFG.GetInt( "curses_enabled", 1 ) == 1 )
-		gCurses = new CCurses( CFG.GetInt( "term_width", 0 ), CFG.GetInt( "term_height", 0 ) );
+		gCurses = new CCurses( CFG.GetInt( "term_width", 0 ), CFG.GetInt( "term_height", 0 ), !!CFG.GetInt( "curses_splitview", 0 ) );
 
 	UTIL_Construct_UTF8_Latin1_Map( );
 
