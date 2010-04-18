@@ -24,6 +24,9 @@
 #define A_BYELLOW	( A_BOLD | COLOR_PAIR(4) )
 #define A_BBLUE		( A_BOLD | COLOR_PAIR(5) )
 
+#define MAX_BUFFER_SIZE 512
+#define SCROLL_VALUE 2
+
 typedef vector<pair<string, int> > Buffer;
 
 enum BufferType
@@ -57,19 +60,23 @@ struct SRealmData
 enum WindowType
 {
 	W_TAB = 0,
+	W_TAB2,
 	W_FULL,
 	W_FULL2,
 	W_UPPER,
 	W_LOWER,
 	W_CHANNEL,
-	W_INPUT
+	W_INPUT,
+	W_HLINE,
+	W_VLINE
 };
 
 struct SWindowData
 {
 	WINDOW *Window;
-	string title;
+	string Title;
 	bool IsWindowChanged;
+	int Scroll;
 };
 
 enum TabType
@@ -87,6 +94,7 @@ struct STabData
 	uint32_t id;	// realmId or gameId
 	BufferType bufferType;
 	bool IsTabSelected;
+	WindowType windowType;
 };
 
 //
@@ -120,26 +128,27 @@ private:
 	uint32_t m_RealmId;
 	uint32_t m_RealmId2;	// for ghost commands and IsConnected
 
-	uint32_t m_ListUpdateTimer;
-
 	// Drawing
 	void SetAttribute( SWindowData &data, string message, int something, BufferType type, bool on );
 
 	void Draw( );
-	void DrawTabs( );
+	void DrawTabs( WindowType type );
 	void DrawWindow( WindowType wType, BufferType bType );
 	void DrawListWindow( WindowType wType, BufferType bType );
+	void DrawHorizontalLine( WindowType type );
+	void DrawVerticalLine( WindowType type );
 
 	void Resize( int y, int x );
 	void Resize( );
 	
 	// Tab
-	void AddTab( string nName, TabType nType, uint32_t nId, BufferType nBufferType );
+	void AddTab( string nName, TabType nType, uint32_t nId, BufferType nBufferType, WindowType nWindowType );
 	void RemoveTab( TabType type, uint32_t id );
 	void SelectTab( uint32_t n );
 
 	// Window
 	void UpdateWindow( WindowType type );
+	void ClearWindow( WindowType type );
 	void UpdateWindows( );
 
 	void CompileList( BufferType type );
@@ -151,7 +160,7 @@ private:
 	void CompileGames( );
 
 	// Mouse
-	void UpdateMouse( );
+	void UpdateMouse( int c );
 
 	// Misc
 	uint32_t GetRealmId( string &realmAlias );
@@ -163,7 +172,14 @@ private:
 	uint32_t m_SelectedTab;
 	uint32_t m_SelectedInput;
 
+	uint32_t m_ListUpdateTimer;
 	bool m_SplitView;
+
+	void ScrollDown( );
+	void ScrollUp( );
+
+	uint32_t NextTab( );
+	uint32_t PreviousTab( );
 
 public:
 	CCurses( int nTermWidth, int nTermHeight, bool nSplitView );

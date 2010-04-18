@@ -24,7 +24,8 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
 		m_RealmData.push_back( temp1 );
 
 	SWindowData temp2;
-	for ( uint32_t i = 0; i < 7; ++i )
+	temp2.Scroll = 0;
+	for ( uint32_t i = 0; i < 10; ++i )
 		m_WindowData.push_back( temp2 );
 
 	Buffer *temp3;
@@ -49,13 +50,16 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
 	noecho( );
 	cbreak( );
 
-	m_WindowData[W_TAB].Window = newwin( 1, COLS, 0, 0 );
-	m_WindowData[W_FULL].Window = newwin( LINES - 3, COLS - 21, 1, 0 );
+	m_WindowData[W_TAB].Window = newwin( 1, COLS - 24, 0, 0 );
+	m_WindowData[W_TAB2].Window = newwin( 1, 24, 0, COLS - 24 );
+	m_WindowData[W_FULL].Window = newwin( LINES - 3, COLS - 22, 1, 0 );
 	m_WindowData[W_FULL2].Window = newwin( LINES - 3, COLS, 1, 0 );
-	m_WindowData[W_UPPER].Window = newwin( LINES / 2 - 2, COLS - 21, 1, 0 );
-	m_WindowData[W_LOWER].Window = newwin( LINES / 2 - 2, COLS - 21, LINES / 2, 0 );
+	m_WindowData[W_UPPER].Window = newwin( LINES / 2 - 2, COLS - 22, 1, 0 );
+	m_WindowData[W_LOWER].Window = newwin( LINES / 2 - 2, COLS - 22, LINES / 2, 0 );
 	m_WindowData[W_CHANNEL].Window = newwin( LINES - 3, 21, 1, COLS - 21 );
 	m_WindowData[W_INPUT].Window = newwin( 2, COLS, LINES - 2, 0 );
+	m_WindowData[W_HLINE].Window = newwin( 1, COLS - 22, LINES / 2 - 1, 0 );
+	m_WindowData[W_VLINE].Window = newwin( LINES - 3, 1, 1, COLS - 22 );
 
 	scrollok( m_WindowData[W_FULL].Window, TRUE );
 	scrollok( m_WindowData[W_FULL2].Window, TRUE );
@@ -75,24 +79,25 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
 	init_pair( 5, COLOR_BLUE, COLOR_BLACK );
 	init_pair( 6, COLOR_WHITE, COLOR_CYAN );
 
-	// make this an option/config:
+	// make this an option/config?
 	wbkgdset( m_WindowData[W_INPUT].Window, ' ' | COLOR_PAIR(6)  );
-	wattr_set( m_WindowData[W_INPUT].Window, A_NORMAL, 6, 0 );
 	wbkgdset( m_WindowData[W_TAB].Window, ' ' | COLOR_PAIR(6)  );
+	wbkgdset( m_WindowData[W_TAB2].Window, ' ' | COLOR_PAIR(6)  );
+	wattr_set( m_WindowData[W_INPUT].Window, A_NORMAL, 6, 0 );
 	wattr_set( m_WindowData[W_TAB].Window, A_NORMAL, 6, 0 );
+	wattr_set( m_WindowData[W_TAB2].Window, A_NORMAL, 6, 0 );
 	
 	// Change terminal size
-	resize_term( nTermHeight, nTermWidth );
-	Resize( );
+	Resize( nTermHeight, nTermWidth );
 
 	// Tabs
-	AddTab( "ALL", T_MAIN, 0, B_ALL );
-	AddTab( "MAIN", T_MAIN, 0, B_MAIN );
-	AddTab( "FRIENDS", T_LIST, 0, B_FRIENDS);
-	AddTab( "CLAN", T_LIST, 0, B_CLAN );
-	AddTab( "BANS", T_LIST, 0, B_BANS );
-	AddTab( "ADMINS", T_LIST, 0, B_ADMINS );
-	AddTab( "GAMES", T_LIST, 0, B_GAMES );
+	AddTab( "ALL", T_MAIN, 0, B_ALL, W_TAB );
+	AddTab( "MAIN", T_MAIN, 0, B_MAIN, W_TAB );
+	AddTab( "FRIENDS", T_LIST, 0, B_FRIENDS, W_TAB2 );
+	AddTab( "CLAN", T_LIST, 0, B_CLAN, W_TAB2 );
+	AddTab( "BANS", T_LIST, 0, B_BANS, W_TAB2 );
+	AddTab( "ADMINS", T_LIST, 0, B_ADMINS, W_TAB2 );
+	AddTab( "GAMES", T_LIST, 0, B_GAMES, W_TAB );
 	SelectTab( 0 );
 	
 	// Initialize Input-buffer
@@ -109,7 +114,7 @@ CCurses :: ~CCurses( )
 	endwin( );
 }
 
-void CCurses :: AddTab( string nName, TabType nType, uint32_t nId, BufferType nBufferType )
+void CCurses :: AddTab( string nName, TabType nType, uint32_t nId, BufferType nBufferType, WindowType nWindowType )
 {
 	STabData data;
 	data.name = nName;
@@ -117,18 +122,19 @@ void CCurses :: AddTab( string nName, TabType nType, uint32_t nId, BufferType nB
 	data.id = nId;
 	data.bufferType  = nBufferType;
 	data.IsTabSelected = false;
+	data.windowType = nWindowType;
 
 	for( vector<STabData> :: iterator i = m_TabData.begin( ); i != m_TabData.end( ); i++ )
 	{
 		if( (*i).type == nType && (*i).id == nId - 1 )
 		{
 			m_TabData.insert( i + 1, data );
-			m_WindowData[W_TAB].IsWindowChanged = true;
+			m_WindowData[nWindowType].IsWindowChanged = true;
 			return;
 		}
 	}
 
-	m_WindowData[W_TAB].IsWindowChanged = true;
+	m_WindowData[nWindowType].IsWindowChanged = true;
 	m_TabData.push_back( data );
 }
 
@@ -156,15 +162,51 @@ void CCurses :: SelectTab( uint32_t n )
 		UpdateCustomLists( m_TabData[m_SelectedTab].bufferType );
 		CompileList( m_TabData[m_SelectedTab].bufferType );
 
-		if( m_TabData[m_SelectedTab].type == T_REALM && m_SplitView )
-		{
-			mvhline( LINES / 2 - 1, 0, 0, COLS - 21 );
-			refresh( );
-		}
+		if( m_TabData[m_SelectedTab].bufferType == B_REALM )
+			ClearWindow( W_FULL2 );
 
 		UpdateWindows( );
 	}
 }
+
+uint32_t CCurses :: NextTab( )
+{
+	WindowType sameType = m_TabData[m_SelectedTab].windowType;
+	WindowType otherType = sameType == W_TAB ? W_TAB2 : W_TAB;
+
+	for( uint32_t i = m_SelectedTab + 1; i < m_TabData.size( ); ++i )
+	{
+		if( m_TabData[i].windowType == sameType )
+			return i;
+	}
+	for( uint32_t i = 0; i < m_TabData.size( ); ++i )
+	{
+		if( m_TabData[i].windowType == otherType )
+			return i;
+	}
+
+	return m_SelectedTab;
+}
+
+uint32_t CCurses :: PreviousTab( )
+{
+	WindowType sameType = m_TabData[m_SelectedTab].windowType;
+	WindowType otherType = sameType == W_TAB ? W_TAB2 : W_TAB;
+
+	for( uint32_t i = m_SelectedTab - 1; i >= 0; --i )
+	{
+		if( m_TabData[i].windowType == sameType )
+			return i;
+	}
+	for( uint32_t i = m_TabData.size( ) - 1; i >= 0; --i )
+	{
+		if( m_TabData[i].windowType == otherType )
+			return i;
+	}
+
+	return m_SelectedTab;
+}
+
 
 void CCurses :: UpdateWindow( WindowType type )
 {
@@ -173,23 +215,41 @@ void CCurses :: UpdateWindow( WindowType type )
 
 	switch( type )
 	{
-	case W_TAB:		y1 = 0; x1 = 0; y2 = 1; x2 = COLS; break;
-	case W_FULL:	y1 = 1; x1 = 0; y2 = LINES - 3; x2 = COLS - 21; break;
+	case W_TAB:		y1 = 0; x1 = 0; y2 = 1; x2 = COLS - 24; break;
+	case W_TAB2:	y1 = 0; x1 = COLS - 24; y2 = 1; x2 = 24; break;
+	case W_FULL:	y1 = 1; x1 = 0; y2 = LINES - 3; x2 = COLS - 22; break;
 	case W_FULL2:	y1 = 1; x1 = 0; y2 = LINES - 3; x2 = COLS; break;
-	case W_UPPER:	y1 = 1; x1 = 0; y2 = LINES / 2 - 2; x2 = COLS - 21; break;
-	case W_LOWER:	y1 = LINES / 2; x1 = 0; y2 = ceili(LINES * 1.0f / 2) - 2; x2 = COLS - 21; break;
+	case W_UPPER:	y1 = 1; x1 = 0; y2 = LINES / 2 - 2; x2 = COLS - 22; break;
+	case W_LOWER:	y1 = LINES / 2; x1 = 0; y2 = ceili(LINES * 1.0f / 2) - 2; x2 = COLS - 22; break;
 	case W_CHANNEL:	y1 = 1; x1 = COLS - 21; y2 = LINES - 3; x2 = 21; break;
 	case W_INPUT:	y1 = LINES - 2; x1 = 0; y2 = 2; x2 = COLS; break;
+	case W_HLINE:	y1 = LINES / 2 - 1; x1 = 0; y2 = 1; x2 = COLS - 22; break;
+	case W_VLINE:	y1 = 1; x1 = COLS - 22; y2 = LINES - 3; x2 = 1; break;
 	}
 
 	wresize( m_WindowData[type].Window, y2, x2 );
 	mvwin( m_WindowData[type].Window, y1, x1 );
 	m_WindowData[type].IsWindowChanged = true;
+
+	if( !m_TabData.empty( ) && m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) > LINES / 2 )
+	{
+		if( ( m_WindowData[type].Scroll < LINES ) && ( type == W_FULL || type == W_FULL2 ) )
+			m_WindowData[type].Scroll = LINES;
+		else if( m_WindowData[type].Scroll < LINES / 2 )
+			m_WindowData[type].Scroll = LINES / 2;
+	}
+}
+
+void CCurses :: ClearWindow( WindowType type )
+{
+	wclear( m_WindowData[type].Window );
+	wrefresh( m_WindowData[type].Window );
+	m_WindowData[type].IsWindowChanged = true;
 }
 
 void CCurses :: UpdateWindows( )
 {
-	for( uint32_t i = 0; i < 7; ++i )
+	for( uint32_t i = 0; i < 10; ++i )
 	{
 		UpdateWindow( WindowType( i ) );
 	}
@@ -322,7 +382,7 @@ void CCurses :: SetGHost( CGHost* nGHost )
 	for ( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		m_RealmData[(*i)->GetRealmId( )].RealmAlias = (*i)->GetServerAlias( );
-		AddTab( (*i)->GetServerAlias( ), T_REALM, (*i)->GetRealmId( ), B_REALM );
+		AddTab( (*i)->GetServerAlias( ), T_REALM, (*i)->GetRealmId( ), B_REALM, W_TAB );
 	}
 }
 
@@ -400,7 +460,8 @@ void CCurses :: Draw ( )
 	// view 7-x: realm, channel, input, (splitview: main)
 
 	// draw tabs always
-	DrawTabs( );
+	DrawTabs( W_TAB );
+	DrawTabs( W_TAB2 );
 
 	if( !m_TabData.empty( ) )
 		switch( m_TabData[m_SelectedTab].type )
@@ -414,10 +475,10 @@ void CCurses :: Draw ( )
 			DrawWindow( W_INPUT, B_INPUT );
 			break;
 		case T_REALM:
-			m_WindowData[W_CHANNEL].title = m_RealmData[m_TabData[m_SelectedTab].id].ChannelName;
+			m_WindowData[W_CHANNEL].Title = m_RealmData[m_TabData[m_SelectedTab].id].ChannelName;
 			if( m_SplitView )
 			{
-				mvhline( LINES / 2 - 1, 0, 0, COLS - 21 );
+				DrawHorizontalLine( W_HLINE );
 				DrawWindow( W_UPPER, B_MAIN );
 				DrawWindow( W_LOWER, m_TabData[m_SelectedTab].bufferType );
 			}
@@ -425,6 +486,7 @@ void CCurses :: Draw ( )
 			{
 				DrawWindow( W_FULL, m_TabData[m_SelectedTab].bufferType );
 			}
+			//DrawVerticalLine( W_VLINE );
 			DrawWindow( W_CHANNEL, B_CHANNEL );
 			DrawWindow( W_INPUT, B_INPUT );
 			break;
@@ -435,10 +497,9 @@ void CCurses :: Draw ( )
 		}
 }
 
-void CCurses :: DrawTabs( )
+void CCurses :: DrawTabs( WindowType type )
 {
-	SWindowData &data = m_WindowData[W_TAB];
-	BufferType type = B_TAB;
+	SWindowData &data = m_WindowData[type];
 
 	if ( data.IsWindowChanged )
 	{
@@ -447,19 +508,22 @@ void CCurses :: DrawTabs( )
 
 		for( vector<STabData> :: iterator i = m_TabData.begin( ); i != m_TabData.end( ); i++ )
 		{
-			string &name = (*i).name;
-			int flag = (*i).IsTabSelected ? 1 : 0;
+			if( (*i).windowType == type )
+			{
+				string &name = (*i).name;
+				int flag = (*i).IsTabSelected ? 1 : 0;
 
-			name = UTIL_UTF8ToLatin1( name );
+				name = UTIL_UTF8ToLatin1( name );
 
-			SetAttribute( data, name, flag, type, true );
+				SetAttribute( data, name, flag, B_TAB, true );
 
-			for( string :: iterator j = name.begin( ); j != name.end( ); j++ )
-				waddch( data.Window, UTIL_ToULong( *j ) );
+				for( string :: iterator j = name.begin( ); j != name.end( ); j++ )
+					waddch( data.Window, UTIL_ToULong( *j ) );
 
-			SetAttribute( data, name, flag, type, false );
+				SetAttribute( data, name, flag, B_TAB, false );
 
-			waddch( data.Window, ' ' );
+				waddch( data.Window, ' ' );
+			}
 		}
 
 		wrefresh( data.Window );
@@ -477,13 +541,14 @@ void CCurses :: DrawWindow( WindowType wType, BufferType bType )
 
 		wclear( data.Window );
 
-		if( !data.title.empty( ) )
+		if( !data.Title.empty( ) )
 		{
-			mvwhline( data.Window, 0, 0, 0, 20 );
-			mvwaddnstr( data.Window, 0, data.title.size( ) < 20 ? ( 20 - data.title.size( ) ) / 2 : 0, data.title.c_str( ), 20 );
+			whline( data.Window, 0, 20 );
+			mvwaddnstr( data.Window, 0, data.Title.size( ) < 20 ? ( 20 - data.Title.size( ) ) / 2 : 0, data.Title.c_str( ), 20 );
 			wmove( data.Window, 1, 0 );
 		}
 
+		int k = 0;
 		for( Buffer :: iterator i = onlyLast ? m_Buffers[bType]->end( ) - 1 : m_Buffers[bType]->begin( ); i != m_Buffers[bType]->end( ); i++ )
 		{
 			string message = (*i).first;
@@ -497,6 +562,9 @@ void CCurses :: DrawWindow( WindowType wType, BufferType bType )
 				waddch( data.Window, UTIL_ToULong( *j ) );
 
 			SetAttribute( data, message, flag, bType, false );
+
+			if( k++ >= data.Scroll )
+				break;
 
 			if( i != m_Buffers[bType]->end( ) - 1 )
 				waddch( data.Window, '\n' );
@@ -538,17 +606,37 @@ void CCurses :: DrawListWindow( WindowType wType, BufferType bType )
 	}
 }
 
+void CCurses :: DrawHorizontalLine( WindowType type )
+{
+	SWindowData& data = m_WindowData[type];
+
+	if ( data.IsWindowChanged )
+	{
+		whline( data.Window, 0, COLS );
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
+	}
+}
+
+void CCurses :: DrawVerticalLine( WindowType type )
+{
+	SWindowData& data = m_WindowData[type];
+
+	if ( data.IsWindowChanged )
+	{
+		wvline( data.Window, 0, LINES );
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
+	}
+}
+
 void CCurses :: Resize( int y, int x )
 {
-	if ( y > 5 && x > 5 )
+	if( y > 5 && x > 5 )
 	{
 		resize_term( y, x );
-		clear();
-		refresh();
-
-		UpdateWindows( );
-
-		Draw( );
+		
+		Resize( );
 	}
 }
 
@@ -571,59 +659,196 @@ void CCurses :: Print( string message, uint32_t realmId, bool toMainBuffer )
 	{
 		m_Buffers[B_MAIN]->push_back( temp );
 
-		if( m_Buffers[B_MAIN]->size( ) > 100 )
+		if( m_Buffers[B_MAIN]->size( ) > MAX_BUFFER_SIZE )
 			m_Buffers[B_MAIN]->erase( m_Buffers[B_MAIN]->begin( ) );
 
 		m_WindowData[W_UPPER].IsWindowChanged = true;
+
+		m_WindowData[W_UPPER].Scroll++;
 	}
 	else
 	{
 		m_RealmData[realmId].Messages.push_back( temp );
 
-		if( m_RealmData[realmId].Messages.size( ) > 100 )
+		if( m_RealmData[realmId].Messages.size( ) > MAX_BUFFER_SIZE )
 			m_RealmData[realmId].Messages.erase( m_RealmData[realmId].Messages.begin( ) );
 
 		m_WindowData[W_LOWER].IsWindowChanged = true;
+
+		m_WindowData[W_LOWER].Scroll++;
 	}
 
 	m_Buffers[B_ALL]->push_back( temp );
 
-	if( m_Buffers[B_ALL]->size( ) > 100 )
+	if( m_Buffers[B_ALL]->size( ) > MAX_BUFFER_SIZE )
 		m_Buffers[B_ALL]->erase( m_Buffers[B_ALL]->begin( ) );
 
 	m_WindowData[W_FULL].IsWindowChanged = true;
 	m_WindowData[W_FULL2].IsWindowChanged = true;
 
+	m_WindowData[W_FULL].Scroll++;
+	m_WindowData[W_FULL2].Scroll++;
 	Draw( );
 }
 
-void CCurses :: UpdateMouse( )
+void CCurses :: UpdateMouse( int c )
 {
 	// Mouse position update
 	request_mouse_pos( );
 	move( MOUSE_Y_POS, MOUSE_X_POS );
 	refresh( );
 
-	// Is cursor over tabs?
-	if( MOUSE_Y_POS <= 1 )
+	
+	if( c == KEY_MOUSE )
 	{
-		// Is left button pressed?
-		if( Mouse_status.button[0] == BUTTON_PRESSED )
+		// Is cursor over tabs?
+		if( MOUSE_Y_POS <= 1 )
 		{
-			int x1 = 0, x2 = 0;
-			// Where it is pressed?
-			for( uint32_t i = 0; i < m_TabData.size( ); ++i )
+			// Is left button pressed?
+			if( Mouse_status.button[0] == BUTTON_PRESSED )
 			{
-				x1 = x2;
-				x2 = x1 + m_TabData[i].name.size( ) + 1;
-
-				if ( MOUSE_X_POS >= x1 && MOUSE_X_POS < x2 - 1 )
+				// Where it is pressed?
+				int x1 = 0, x2 = 0;
+				for( uint32_t i = 0; i < m_TabData.size( ); ++i )
 				{
-					SelectTab( i );
-					return;
+					if( m_TabData[i].windowType == W_TAB )
+					{
+						x1 = x2;
+						x2 = x1 + m_TabData[i].name.size( ) + 1;
+
+						if ( MOUSE_X_POS >= x1 && MOUSE_X_POS < x2 - 1 && MOUSE_X_POS < COLS - 26 )
+						{
+							SelectTab( i );
+							return;
+						}
+					}
+				}
+
+				x1 = 0; x2 = COLS - 24;
+				for( uint32_t i = 0; i < m_TabData.size( ); ++i )
+				{
+					if( m_TabData[i].windowType == W_TAB2 )
+					{
+						x1 = x2;
+						x2 = x1 + m_TabData[i].name.size( ) + 1;
+
+						if ( MOUSE_X_POS >= x1 && MOUSE_X_POS < x2 - 1 )
+						{
+							SelectTab( i );
+							return;
+						}
+					}
 				}
 			}
 		}
+		
+		if ( m_TabData[m_SelectedTab].type != T_LIST && m_TabData[m_SelectedTab].type != T_GAME )
+		{
+			/*
+			// Disabled, as I got mouse wheel working.
+			if( Mouse_status.button[0] == BUTTON_PRESSED )
+			{
+				if( !m_SplitView )
+				{
+					if( MOUSE_Y_POS <= LINES / 2 )
+						ScrollUp( );
+					else
+						ScrollDown( );
+				}
+				else if( m_TabData[m_SelectedTab].type == T_REALM && m_SplitView )
+				{
+					if( MOUSE_Y_POS <= LINES / 4 || ( MOUSE_Y_POS > LINES / 2 && MOUSE_Y_POS <= 3 * LINES / 4 ) )
+						ScrollUp( );
+					else if( ( MOUSE_Y_POS > LINES / 4 && MOUSE_Y_POS <= LINES / 2 ) || MOUSE_Y_POS > 3 * LINES / 4 )
+						ScrollDown( );
+				}
+			}
+			*/
+#ifdef __PDCURSES__
+			if( Mouse_status.changes == MOUSE_WHEEL_UP )
+				ScrollUp( );
+			else if( Mouse_status.changes == MOUSE_WHEEL_DOWN )
+				ScrollDown( );
+#endif
+		}
+	}
+}
+
+void CCurses :: ScrollDown( )
+{
+	switch( m_TabData[m_SelectedTab].type )
+	{
+	case T_MAIN:
+		m_WindowData[W_FULL2].Scroll = m_WindowData[W_FULL2].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+									   m_WindowData[W_FULL2].Scroll + SCROLL_VALUE :
+									   m_WindowData[W_FULL2].Scroll;
+		m_WindowData[W_FULL2].IsWindowChanged = true;
+		break;
+	case T_REALM:
+		if( m_SplitView )
+		{
+			if( MOUSE_Y_POS < LINES / 2 )
+			{
+				m_WindowData[W_UPPER].Scroll = m_WindowData[W_UPPER].Scroll < m_Buffers[B_MAIN]->size( ) ?
+											   m_WindowData[W_UPPER].Scroll + SCROLL_VALUE :
+											   m_WindowData[W_UPPER].Scroll;
+				m_WindowData[W_UPPER].IsWindowChanged = true;
+			}
+			else
+			{
+				m_WindowData[W_LOWER].Scroll = m_WindowData[W_LOWER].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+											   m_WindowData[W_LOWER].Scroll + SCROLL_VALUE :
+											   m_WindowData[W_LOWER].Scroll;
+				m_WindowData[W_LOWER].IsWindowChanged = true;
+			}
+		}
+		else
+		{
+			m_WindowData[W_FULL].Scroll = m_WindowData[W_FULL].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+										  m_WindowData[W_FULL].Scroll + SCROLL_VALUE :
+										  m_WindowData[W_FULL].Scroll;
+			m_WindowData[W_FULL].IsWindowChanged = true;
+		}
+		break;
+	}
+}
+
+void CCurses :: ScrollUp( )
+{
+	switch( m_TabData[m_SelectedTab].type )
+	{
+	case T_MAIN:
+		m_WindowData[W_FULL2].Scroll = m_WindowData[W_FULL2].Scroll - SCROLL_VALUE > LINES ?
+									   m_WindowData[W_FULL2].Scroll - SCROLL_VALUE :
+									   LINES - 4;
+		m_WindowData[W_FULL2].IsWindowChanged = true;
+		break;
+	case T_REALM:
+		if( m_SplitView )
+		{
+			if( MOUSE_Y_POS < LINES / 2 )
+			{
+				m_WindowData[W_UPPER].Scroll = m_WindowData[W_UPPER].Scroll - SCROLL_VALUE > LINES / 2 ?
+											   m_WindowData[W_UPPER].Scroll - SCROLL_VALUE :
+											   (LINES - 4) / 2;
+				m_WindowData[W_UPPER].IsWindowChanged = true;
+			}
+			else
+			{
+				m_WindowData[W_LOWER].Scroll = m_WindowData[W_LOWER].Scroll - SCROLL_VALUE > LINES / 2 ?
+											   m_WindowData[W_LOWER].Scroll - SCROLL_VALUE :
+											   (LINES - 4) / 2;
+				m_WindowData[W_LOWER].IsWindowChanged = true;
+			}
+		}
+		else
+		{
+			m_WindowData[W_FULL].Scroll = m_WindowData[W_FULL].Scroll - SCROLL_VALUE > LINES ?
+										  m_WindowData[W_FULL].Scroll - SCROLL_VALUE :
+										  LINES - 4;
+			m_WindowData[W_FULL].IsWindowChanged = true;
+		}
+		break;
 	}
 }
 
@@ -647,53 +872,58 @@ bool CCurses :: Update( )
 
 	int c = wgetch( m_WindowData[W_INPUT].Window );
 
-	UpdateMouse( );
-
-	if( c == KEY_LEFT )	// LEFT
-	{
-		SelectTab( m_SelectedTab - 1 );
-		return false;
-	}
-	else if( c == KEY_RIGHT )	// RIGHT
-	{
-		SelectTab( m_SelectedTab + 1 );
-		return false;
-	}
-
-	if( m_Buffers[B_INPUT]->size( ) > 1 )
-	{
-		if( c == KEY_UP )
-		{
-			m_SelectedInput = m_SelectedInput > 0 ? m_SelectedInput - 1 : 0;
-			if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
-			{
-				m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
-
-				m_WindowData[W_INPUT].IsWindowChanged = true;
-
-				m_Buffers[B_INPUT]->pop_back( );
-				m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
-			}
-			return false;
-		}
-		else if( c == KEY_DOWN )
-		{
-			m_SelectedInput = m_SelectedInput < m_Buffers[B_INPUT]->size( ) - 1 ? m_SelectedInput + 1 : m_Buffers[B_INPUT]->size( ) - 1;
-			if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
-			{
-				m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
-
-				m_WindowData[W_INPUT].IsWindowChanged = true;
-
-				m_Buffers[B_INPUT]->pop_back( );
-				m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
-			}
-			return false;
-		}
-	}
-
 	while( c != ERR && Connected )
-	{
+	{	
+		UpdateMouse( c );
+
+		if( c == KEY_LEFT )	// LEFT
+		{
+			SelectTab( PreviousTab( ) );
+			return false;
+		}
+		else if( c == KEY_RIGHT )	// RIGHT
+		{
+			SelectTab( NextTab( ) );
+			return false;
+		}
+
+		if( c == KEY_NPAGE )	// PAGE DOWN
+			ScrollDown( );
+		else if( c == KEY_PPAGE )	// PAGE UP
+			ScrollUp( );
+
+		if( m_Buffers[B_INPUT]->size( ) > 1 )
+		{
+			if( c == KEY_UP )
+			{
+				m_SelectedInput = m_SelectedInput > 0 ? m_SelectedInput - 1 : 0;
+				if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
+				{
+					m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
+
+					m_WindowData[W_INPUT].IsWindowChanged = true;
+
+					m_Buffers[B_INPUT]->pop_back( );
+					m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
+				}
+				return false;
+			}
+			else if( c == KEY_DOWN )
+			{
+				m_SelectedInput = m_SelectedInput < m_Buffers[B_INPUT]->size( ) - 1 ? m_SelectedInput + 1 : m_Buffers[B_INPUT]->size( ) - 1;
+				if( m_SelectedInput != m_Buffers[B_INPUT]->size( ) - 1 )
+				{
+					m_InputBuffer = m_Buffers[B_INPUT]->at( m_SelectedInput ).first;
+
+					m_WindowData[W_INPUT].IsWindowChanged = true;
+
+					m_Buffers[B_INPUT]->pop_back( );
+					m_Buffers[B_INPUT]->push_back( pair<string, int>( m_InputBuffer, 0 ) );
+				}
+				return false;
+			}
+		}
+
 		if( c == 8 || c == 127 || c == KEY_BACKSPACE || c == KEY_DC )
 		{
 			// backspace, delete

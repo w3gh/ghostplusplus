@@ -92,6 +92,10 @@ v1.8 (svn r421-422)
  - new tabs
  - mouse support
  - bugfixes
+v1.9 (svn r423-424)
+ - applied changes from svn r419 trunk
+ - scrolling support (pg up, pg down, mouse wheel)
+ - moved some tabs (friends, clan, bans, admins) to the right corner
 
 =========
 Compiling
