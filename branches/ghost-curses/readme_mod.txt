@@ -96,6 +96,9 @@ v1.9 (svn r423-424)
  - applied changes from svn r419 trunk
  - scrolling support (pg up, pg down, mouse wheel)
  - moved some tabs (friends, clan, bans, admins) to the right corner
+v1.10 (sv r425)
+ - fixed bug with left arrow key (navigating tabs)
+ - config: curses_listtype
 
 =========
 Compiling

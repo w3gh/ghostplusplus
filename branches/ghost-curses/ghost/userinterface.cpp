@@ -12,7 +12,7 @@ int ceili( float f )
 	return int( ceilf( f ) );
 }
 
-CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
+CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListType )
 {
 #ifdef __PDCURSES__
 	PDC_set_title("GHost++ CursesMod");
@@ -43,6 +43,7 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
 	m_SelectedInput = 0;
 	m_GHost = 0;
 	m_SplitView = nSplitView;
+	m_ListType = nListType;
 	
 	// Initialize curses and windows
 	initscr( );
@@ -50,8 +51,8 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView )
 	noecho( );
 	cbreak( );
 
-	m_WindowData[W_TAB].Window = newwin( 1, COLS - 24, 0, 0 );
-	m_WindowData[W_TAB2].Window = newwin( 1, 24, 0, COLS - 24 );
+	m_WindowData[W_TAB].Window = newwin( 1, COLS - 25, 0, 0 );
+	m_WindowData[W_TAB2].Window = newwin( 1, 25, 0, COLS - 25 );
 	m_WindowData[W_FULL].Window = newwin( LINES - 3, COLS - 22, 1, 0 );
 	m_WindowData[W_FULL2].Window = newwin( LINES - 3, COLS, 1, 0 );
 	m_WindowData[W_UPPER].Window = newwin( LINES / 2 - 2, COLS - 22, 1, 0 );
@@ -190,21 +191,16 @@ uint32_t CCurses :: NextTab( )
 
 uint32_t CCurses :: PreviousTab( )
 {
-	WindowType sameType = m_TabData[m_SelectedTab].windowType;
-	WindowType otherType = sameType == W_TAB ? W_TAB2 : W_TAB;
+	string name = m_TabData[m_SelectedTab].name;
 
-	for( uint32_t i = m_SelectedTab - 1; i >= 0; --i )
-	{
-		if( m_TabData[i].windowType == sameType )
-			return i;
-	}
-	for( uint32_t i = m_TabData.size( ) - 1; i >= 0; --i )
-	{
-		if( m_TabData[i].windowType == otherType )
-			return i;
-	}
-
-	return m_SelectedTab;
+	if( name == "ALL" ) return 5;
+	else if( name == "MAIN" ) return 0;
+	else if( name == "FRIENDS" ) return m_TabData.size( ) - 1;
+	else if( name == "CLAN" ) return 2;
+	else if( name == "BANS" ) return 3;
+	else if( name == "ADMINS" ) return 4;
+	else if( name == "GAMES" ) return 1;
+	else return m_SelectedTab - 1;
 }
 
 
@@ -215,8 +211,8 @@ void CCurses :: UpdateWindow( WindowType type )
 
 	switch( type )
 	{
-	case W_TAB:		y1 = 0; x1 = 0; y2 = 1; x2 = COLS - 24; break;
-	case W_TAB2:	y1 = 0; x1 = COLS - 24; y2 = 1; x2 = 24; break;
+	case W_TAB:		y1 = 0; x1 = 0; y2 = 1; x2 = COLS - 25; break;
+	case W_TAB2:	y1 = 0; x1 = COLS - 25; y2 = 1; x2 = 25; break;
 	case W_FULL:	y1 = 1; x1 = 0; y2 = LINES - 3; x2 = COLS - 22; break;
 	case W_FULL2:	y1 = 1; x1 = 0; y2 = LINES - 3; x2 = COLS; break;
 	case W_UPPER:	y1 = 1; x1 = 0; y2 = LINES / 2 - 2; x2 = COLS - 22; break;
@@ -471,7 +467,14 @@ void CCurses :: Draw ( )
 			DrawWindow( W_INPUT, B_INPUT );
 			break;
 		case T_LIST:
-			DrawListWindow( W_FULL2, m_TabData[m_SelectedTab].bufferType );
+			if( m_ListType == 0 )
+			{
+				DrawListWindow( W_FULL2, m_TabData[m_SelectedTab].bufferType );
+			}
+			else
+			{
+				DrawListWindow2( W_FULL2, m_TabData[m_SelectedTab].bufferType );
+			}
 			DrawWindow( W_INPUT, B_INPUT );
 			break;
 		case T_REALM:
@@ -599,6 +602,47 @@ void CCurses :: DrawListWindow( WindowType wType, BufferType bType )
 				waddch( data.Window, UTIL_ToULong( *j ) );
 
 			SetAttribute( data, message, flag, bType, false );
+		}
+
+		wrefresh( data.Window );
+		data.IsWindowChanged = false;
+	}
+}
+
+void CCurses :: DrawListWindow2( WindowType wType, BufferType bType )
+{
+	SWindowData& data = m_WindowData[wType];
+
+	if ( data.IsWindowChanged )
+	{
+		wclear( data.Window );
+
+		int x = -25, y = 0;
+		for( Buffer :: iterator i = m_Buffers[bType]->begin( ); i != m_Buffers[bType]->end( ); i++ )
+		{
+			string message = (*i).first;
+			int &flag = (*i).second;
+			
+			message = UTIL_UTF8ToLatin1( message );
+
+			if( message[0] == '[' )
+			{
+				x += 25;
+				y = 0;
+				wmove( data.Window, 0, x );
+			}
+			
+			if( y++ < LINES - 5 )
+			{
+				SetAttribute( data, message, flag, bType, true );
+
+				for( uint32_t j = 0; j < message.size( ) && j < 23; j++ )
+					waddch( data.Window, UTIL_ToULong( message[j] ) );
+
+				SetAttribute( data, message, flag, bType, false );
+
+				waddch( data.Window, '\n' );
+			}
 		}
 
 		wrefresh( data.Window );

@@ -135,6 +135,7 @@ private:
 	void DrawTabs( WindowType type );
 	void DrawWindow( WindowType wType, BufferType bType );
 	void DrawListWindow( WindowType wType, BufferType bType );
+	void DrawListWindow2( WindowType wType, BufferType bType );
 	void DrawHorizontalLine( WindowType type );
 	void DrawVerticalLine( WindowType type );
 
@@ -174,6 +175,7 @@ private:
 
 	uint32_t m_ListUpdateTimer;
 	bool m_SplitView;
+	int m_ListType;
 
 	void ScrollDown( );
 	void ScrollUp( );
@@ -182,7 +184,7 @@ private:
 	uint32_t PreviousTab( );
 
 public:
-	CCurses( int nTermWidth, int nTermHeight, bool nSplitView );
+	CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListType );
 	~CCurses( );
 
 	void SetGHost( CGHost * nGHost );

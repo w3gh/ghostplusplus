@@ -227,7 +227,10 @@ vector<pair<string, int> > CBNET :: GetAdmins( )
 {
 	vector<pair<string, int> > result;
 
-	result.push_back(pair<string, int>( m_RootAdmin, 2 ) );
+	vector<string> roots = UTIL_Tokenize( m_RootAdmin, ' ' );
+	
+	for( vector<string> :: iterator i = roots.begin( ); i != roots.end( ); i++ )
+		result.push_back(pair<string, int>( *i, 2 ) );
 
 	for( vector<string> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
 		result.push_back(pair<string, int>( *i, 0 ) );
