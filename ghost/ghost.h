@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -133,8 +133,9 @@ public:
 	uint32_t m_ReplayBuildNumber;			// config value: replay build number (for saving replays)
 	bool m_TCPNoDelay;						// config value: use Nagle's algorithm or not
 	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
+	string m_ConfigFile;
 
-	CGHost( CConfig *CFG );
+	CGHost( CConfig *CFG, string configFile );
 	~CGHost( );
 
 	// processing functions
