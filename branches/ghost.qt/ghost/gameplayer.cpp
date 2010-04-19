@@ -65,7 +65,7 @@ QByteArray CPotentialPlayer :: GetExternalIP( )
 	if( m_Socket )
 		return m_Socket->GetIP( );
 
-	return UTIL_CreateQByteArray( Zeros, 4 );
+	return QByteArray( (char*)Zeros, 4 );
 }
 
 QString CPotentialPlayer :: GetExternalIPString( )

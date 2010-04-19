@@ -25,7 +25,7 @@
 CBNETProtocol :: CBNETProtocol( )
 {
 	unsigned char ClientToken[] = { 220, 1, 203, 7 };
-	m_ClientToken = UTIL_CreateQByteArray( ClientToken, 4 );
+	m_ClientToken = QByteArray( (char*)ClientToken, 4 );
 }
 
 CBNETProtocol :: ~CBNETProtocol( )
