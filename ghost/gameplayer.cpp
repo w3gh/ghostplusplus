@@ -102,7 +102,7 @@ void CPotentialPlayer :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = RecvBuffer->toUtf8();
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
@@ -118,9 +118,9 @@ void CPotentialPlayer :: ExtractPackets( )
 			{
 				if( Bytes.size( ) >= Length )
 				{
-					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
-					*RecvBuffer = RecvBuffer->substr( Length );
-					Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
+					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], Bytes.mid(0, Length) ) );
+					*RecvBuffer = RecvBuffer->mid( Length );
+					Bytes = Bytes.mid(Length);
 				}
 				else
 					return;
@@ -293,12 +293,11 @@ QString CGamePlayer :: GetNameTerminated( )
 	// if the player's name contains an unterminated colour code add the colour terminator to the end of their name
 	// this is useful because it allows you to print the player's name in a longer message which doesn't colour all the subsequent text
 
-	QString LowerName = m_Name;
-	transform( LowerName.begin( ), LowerName.end( ), LowerName.begin( ), (int(*)(int))tolower );
-	QString :: size_type Start = LowerName.find( "|c" );
-	QString :: size_type End = LowerName.find( "|r" );
+	QString LowerName = m_Name.toLower();
+	int Start = LowerName.indexOf( "|c" );
+	int End = LowerName.indexOf( "|r" );
 
-	if( Start != QString :: npos && ( End == QString :: npos || End < Start ) )
+	if( Start != -1 && ( End == -1 || End < Start ) )
 		return m_Name + "|r";
 	else
 		return m_Name;
@@ -406,7 +405,7 @@ void CGamePlayer :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = RecvBuffer->toUtf8();
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
@@ -422,13 +421,13 @@ void CGamePlayer :: ExtractPackets( )
 			{
 				if( Bytes.size( ) >= Length )
 				{
-					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
+					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], Bytes.mid(0, Length) ) );
 
 					if( Bytes[0] == W3GS_HEADER_CONSTANT )
 						m_TotalPacketsReceived++;
 
-					*RecvBuffer = RecvBuffer->substr( Length );
-					Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
+					*RecvBuffer = RecvBuffer->mid( Length );
+					Bytes.remove(0, Length);
 				}
 				else
 					return;

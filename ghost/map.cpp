@@ -268,7 +268,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	HANDLE MapMPQ;
 	bool MapMPQReady = false;
 
-	if( SFileOpenArchive( MapMPQFileName.c_str( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &MapMPQ ) )
+	if( SFileOpenArchive( MapMPQFileName.toStdString().c_str(), 0, MPQ_OPEN_FORCE_MPQ_V1, &MapMPQ ) )
 	{
 		CONSOLE_Print( "[MAP] loading MPQ file [" + MapMPQFileName + "]" );
 		MapMPQReady = true;
@@ -294,7 +294,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		// calculate map_info (this is actually the CRC)
 
-		MapInfo = UTIL_CreateQByteArray( (uint32_t)m_GHost->m_CRC->FullCRC( (unsigned char *)m_MapData.c_str( ), m_MapData.size( ) ), false );
+		MapInfo = UTIL_CreateQByteArray( (uint32_t)m_GHost->m_CRC->FullCRC( m_MapData ), false );
 		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_QByteArrayToDecString( MapInfo ) );
 
 		// calculate map_crc (this is not the CRC) and map_sha1
@@ -352,8 +352,8 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 				if( !OverrodeCommonJ )
 				{
-					Val = Val ^ XORRotateLeft( (unsigned char *)CommonJ.c_str( ), CommonJ.size( ) );
-					m_GHost->m_SHA->Update( (unsigned char *)CommonJ.c_str( ), CommonJ.size( ) );
+					Val = Val ^ XORRotateLeft( (unsigned char *)CommonJ.toStdString().c_str( ), CommonJ.size( ) );
+					m_GHost->m_SHA->Update( (unsigned char *)CommonJ.toStdString().c_str( ), CommonJ.size( ) );
 				}
 
 				if( MapMPQReady )
@@ -388,8 +388,8 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 				if( !OverrodeBlizzardJ )
 				{
-					Val = Val ^ XORRotateLeft( (unsigned char *)BlizzardJ.c_str( ), BlizzardJ.size( ) );
-					m_GHost->m_SHA->Update( (unsigned char *)BlizzardJ.c_str( ), BlizzardJ.size( ) );
+					Val = Val ^ XORRotateLeft( (unsigned char *)BlizzardJ.toStdString().c_str( ), BlizzardJ.size( ) );
+					m_GHost->m_SHA->Update( (unsigned char *)BlizzardJ.toStdString().c_str( ), BlizzardJ.size( ) );
 				}
 
 				Val = ROTL( Val, 3 );
@@ -420,7 +420,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 						HANDLE SubFile;
 
-						if( SFileOpenFileEx( MapMPQ, (*i).c_str( ), 0, &SubFile ) )
+						if( SFileOpenFileEx( MapMPQ, (*i).toStdString().c_str( ), 0, &SubFile ) )
 						{
 							uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
 
@@ -460,7 +460,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					unsigned char SHA1[20];
 					memset( SHA1, 0, sizeof( unsigned char ) * 20 );
 					m_GHost->m_SHA->GetHash( SHA1 );
-					MapSHA1 = UTIL_CreateQByteArray( SHA1, 20 );
+					MapSHA1 = QByteArray( SHA1, 20 );
 					CONSOLE_Print( "[MAP] calculated map_sha1 = " + UTIL_QByteArrayToDecString( MapSHA1 ) );
 				}
 				else
@@ -497,11 +497,11 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 					if( SFileReadFile( SubFile, SubFileData, FileLength, &BytesRead ) )
 					{
-						istringstream ISS( QString( SubFileData, BytesRead ) );
+						istringstream ISS( string( SubFileData, BytesRead ) );
 
 						// war3map.w3i format found at http://www.wc3campaigns.net/tools/specs/index.html by Zepir/PitzerMike
 
-						QString GarbageString;
+						string GarbageString;
 						uint32_t FileFormat;
 						uint32_t RawMapWidth;
 						uint32_t RawMapHeight;
@@ -891,7 +891,7 @@ void CMap :: CheckValid( )
 	else if( m_MapPath[0] == '\\' )
 		CONSOLE_Print( "[MAP] warning - map_path starts with '\\', any replays saved by GHost++ will not be playable in Warcraft III" );
 
-	if( m_MapPath.find( '/' ) != QString :: npos )
+	if( m_MapPath.indexOf( '/' ) != -1 )
 		CONSOLE_Print( "[MAP] warning - map_path contains forward slashes '/' but it must use Windows style back slashes '\\'" );
 
 	if( m_MapSize.size( ) != 4 )

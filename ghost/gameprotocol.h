@@ -122,24 +122,24 @@ public:
 	QByteArray SEND_W3GS_PING_FROM_HOST( );
 	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_REJECTJOIN( uint32_t reason );
-	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, string name, QByteArray externalIP, QByteArray internalIP );
+	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, QString name, QByteArray externalIP, QByteArray internalIP );
 	QByteArray SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, uint32_t leftCode );
 	QByteArray SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
 	QByteArray SEND_W3GS_SLOTINFO( QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_COUNTDOWN_START( );
 	QByteArray SEND_W3GS_COUNTDOWN_END( );
 	QByteArray SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, uint16_t sendInterval );
-	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QByteArray toPIDs, unsigned char flag, QByteArray flagExtra, string message );
+	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QByteArray toPIDs, unsigned char flag, QByteArray flagExtra, QString message );
 	QByteArray SEND_W3GS_START_LAG( QVector<CGamePlayer *> players, bool loadInGame = false );
 	QByteArray SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadInGame = false );
 	QByteArray SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Version );
-	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, QByteArray mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter );
+	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, QByteArray mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter );
 	QByteArray SEND_W3GS_CREATEGAME( bool TFT, unsigned char war3Version );
 	QByteArray SEND_W3GS_REFRESHGAME( uint32_t players, uint32_t playerSlots );
 	QByteArray SEND_W3GS_DECREATEGAME( );
-	QByteArray SEND_W3GS_MAPCHECK( string mapPath, QByteArray mapSize, QByteArray mapInfo, QByteArray mapCRC, QByteArray mapSHA1 );
+	QByteArray SEND_W3GS_MAPCHECK( QString mapPath, QByteArray mapSize, QByteArray mapInfo, QByteArray mapCRC, QByteArray mapSHA1 );
 	QByteArray SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID );
-	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, uint32_t start, string *mapData );
+	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, uint32_t start, QString *mapData );
 	QByteArray SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *> actions );
 
 	// other functions
@@ -158,15 +158,15 @@ class CIncomingJoinPlayer
 {
 private:
 	uint32_t m_HostCounter;
-	string m_Name;
+	QString m_Name;
 	QByteArray m_InternalIP;
 
 public:
-	CIncomingJoinPlayer( uint32_t nHostCounter, string nName, QByteArray &nInternalIP );
+	CIncomingJoinPlayer( uint32_t nHostCounter, QString nName, QByteArray &nInternalIP );
 	~CIncomingJoinPlayer( );
 
 	uint32_t GetHostCounter( )	{ return m_HostCounter; }
-	string GetName( )			{ return m_Name; }
+	QString GetName( )			{ return m_Name; }
 	QByteArray GetInternalIP( )	{ return m_InternalIP; }
 };
 
@@ -213,13 +213,13 @@ private:
 	unsigned char m_FromPID;
 	QByteArray m_ToPIDs;
 	unsigned char m_Flag;
-	string m_Message;
+	QString m_Message;
 	unsigned char m_Byte;
 	QByteArray m_ExtraFlags;
 
 public:
-	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, string nMessage );
-	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, string nMessage, QByteArray &nExtraFlags );
+	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, QString nMessage );
+	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, QString nMessage, QByteArray &nExtraFlags );
 	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, unsigned char nByte );
 	~CIncomingChatPlayer( );
 
@@ -227,7 +227,7 @@ public:
 	unsigned char GetFromPID( )		{ return m_FromPID; }
 	QByteArray GetToPIDs( )			{ return m_ToPIDs; }
 	unsigned char GetFlag( )		{ return m_Flag; }
-	string GetMessage( )			{ return m_Message; }
+	QString GetMessage( )			{ return m_Message; }
 	unsigned char GetByte( )		{ return m_Byte; }
 	QByteArray GetExtraFlags( )		{ return m_ExtraFlags; }
 };

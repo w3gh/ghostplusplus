@@ -136,7 +136,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 void CBNLSClient :: ExtractPackets( )
 {
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = RecvBuffer->toUtf8();
 
 	while( Bytes.size( ) >= 3 )
 	{
@@ -146,9 +146,9 @@ void CBNLSClient :: ExtractPackets( )
 		{
 			if( Bytes.size( ) >= Length )
 			{
-				m_Packets.enqueue( new CCommandPacket( 0, Bytes[2], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
-				*RecvBuffer = RecvBuffer->substr( Length );
-				Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
+				m_Packets.enqueue( new CCommandPacket( 0, Bytes[2], Bytes.left(Length) ) );
+				*RecvBuffer = RecvBuffer->mid( Length );
+				Bytes.remove(0, Length);
 			}
 			else
 				return;

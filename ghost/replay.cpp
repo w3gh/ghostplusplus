@@ -222,6 +222,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 
 void CReplay :: ParseReplay( bool parseBlocks )
 {
+	/*
 	m_HostPID = 0;
 	m_HostName.clear( );
 	m_GameName.clear( );
@@ -579,4 +580,5 @@ void CReplay :: ParseReplay( bool parseBlocks )
 		CONSOLE_Print( "[REPLAY] warning - replay length mismatch (" + UTIL_ToString( m_ReplayLength ) + "ms/" + UTIL_ToString( ActualReplayLength ) + "ms)" );
 
 	m_Valid = true;
+	*/
 }

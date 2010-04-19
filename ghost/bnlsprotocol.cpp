@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,7 +54,7 @@ QByteArray CBNLSProtocol :: RECEIVE_BNLS_WARDEN( QByteArray data )
 		uint16_t Length = UTIL_QByteArrayToUInt16( data, false, 10 );
 
 		if( Result == 0x00 )
-			return QByteArray( data.begin( ) + 11, data.end( ) );
+			return data.mid(11);
 		else
 			CONSOLE_Print( "[BNLSPROTO] received error code " + UTIL_ToString( data[8] ) );
 	}
@@ -69,8 +69,8 @@ QByteArray CBNLSProtocol :: RECEIVE_BNLS_WARDEN( QByteArray data )
 QByteArray CBNLSProtocol :: SEND_BNLS_NULL( )
 {
 	QByteArray packet;
-	packet.push_back( 0 );							// packet length will be assigned later
-	packet.push_back( 0 );							// packet length will be assigned later
+	packet.push_back( (char)0 );							// packet length will be assigned later
+	packet.push_back( (char)0 );							// packet length will be assigned later
 	packet.push_back( BNLS_NULL );					// BNLS_NULL
 	AssignLength( packet );
 	return packet;
@@ -81,15 +81,15 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t see
 	unsigned char Client[] = {  80,  88,  51,  87 };	// "W3XP"
 
 	QByteArray packet;
-	packet.push_back( 0 );								// packet length will be assigned later
-	packet.push_back( 0 );								// packet length will be assigned later
+	packet.push_back( (char)0 );								// packet length will be assigned later
+	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( BNLS_WARDEN );					// BNLS_WARDEN
-	packet.push_back( 0 );								// BNLS_WARDEN_SEED
+	packet.push_back( (char)0 );								// BNLS_WARDEN_SEED
 	UTIL_AppendQByteArray( packet, cookie, false );		// cookie
 	UTIL_AppendQByteArray( packet, Client, 4 );			// Client
 	UTIL_AppendQByteArray( packet, (uint16_t)4, false );	// length of seed
 	UTIL_AppendQByteArray( packet, seed, false );		// seed
-	packet.push_back( 0 );								// username is blank
+	packet.push_back( (char)0 );								// username is blank
 	UTIL_AppendQByteArray( packet, (uint16_t)0, false );	// password length
 														// password
 	AssignLength( packet );
@@ -99,8 +99,8 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t see
 QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray raw )
 {
 	QByteArray packet;
-	packet.push_back( 0 );											// packet length will be assigned later
-	packet.push_back( 0 );											// packet length will be assigned later
+	packet.push_back( (char)0 );											// packet length will be assigned later
+	packet.push_back( (char)0 );											// packet length will be assigned later
 	packet.push_back( BNLS_WARDEN );								// BNLS_WARDEN
 	packet.push_back( 1 );											// BNLS_WARDEN_RAW
 	UTIL_AppendQByteArray( packet, cookie, false );					// cookie

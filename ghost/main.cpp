@@ -57,7 +57,7 @@ void SignalCatcher( int s )
 
 void CONSOLE_Print( QString message )
 {
-	cout << message << endl;
+	cout << message.toStdString() << endl;
 
 	// logging
 
@@ -69,18 +69,18 @@ void CONSOLE_Print( QString message )
 
 			if( gLogFile.isWritable() )
 			{
-				gLogStream << "[" << QTime::currentTime().toString() << "] " << QString::fromStdString(message) << endl;
+				gLogStream << "[" << QTime::currentTime().toString() << "] " << message << endl;
 				gLogFile.close();
 			}
 		}
 		else if( gLogMethod == 2 && gLogFile.isWritable() )
-			gLogStream << "[" << QTime::currentTime().toString() << "] " << QString::fromStdString(message) << endl;
+			gLogStream << "[" << QTime::currentTime().toString() << "] " << message << endl;
 	}
 }
 
 void DEBUG_Print( QString message )
 {
-	cout << message << endl;
+	cout << message.toStdString() << endl;
 }
 
 void DEBUG_Print( QByteArray b )
@@ -111,7 +111,7 @@ int main( int argc, char **argv )
 	CConfig CFG;
 	CFG.Read( "default.cfg" );
 	CFG.Read( gCFGFile );
-	gLogFile.setFileName(QString::fromStdString(CFG.GetString( "bot_log", QString( ) )));
+	gLogFile.setFileName(CFG.GetString( "bot_log", QString( ) ));
 	gLogMethod = CFG.GetInt( "bot_logmethod", 1 );
 
 	if( !gLogFile.fileName().isEmpty() )
@@ -136,13 +136,13 @@ int main( int argc, char **argv )
 	if( !gLogFile.fileName().isEmpty() )
 	{
 		if( gLogMethod == 1 )
-			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile.fileName().toStdString() + "] will not be locked" );
+			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile.fileName() + "] will not be locked" );
 		else if( gLogMethod == 2 )
 		{
 			if( gLogFile.error() != QFile::NoError )
-				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile.fileName().toStdString() + "] for appending, logging is disabled" );
+				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile.fileName() + "] for appending, logging is disabled" );
 			else
-				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile.fileName().toStdString() + "] is now locked" );
+				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile.fileName() + "] is now locked" );
 		}
 	}
 	else

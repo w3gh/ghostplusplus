@@ -10,7 +10,7 @@ modification, are permitted provided that the following conditions are
 met:
 
 * Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.  
+this list of conditions and the following disclaimer.
 
 * Redistributions in binary form must reproduce the above copyright
 notice, this list of conditions and the following disclaimer in the
@@ -33,21 +33,20 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
-using namespace std;
+#include <QString>
 
 class CSVParser {
  private:
-  string m_sData;
-  string::size_type m_nPos;
+  QString m_sData;
+  int m_nPos;
   void SkipSpaces(void);
  public:
   CSVParser();
-  const CSVParser & operator << (const string &sIn);
+  const CSVParser & operator << (const QString &sIn);
   const CSVParser & operator << (const char *sIn);
   CSVParser & operator >> (int &nOut);
   CSVParser & operator >> (double &nOut);
-  CSVParser & operator >> (string &sOut);
+  CSVParser & operator >> (QString &sOut);
 };
 
 #endif

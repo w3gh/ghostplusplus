@@ -70,7 +70,7 @@ CSVParser & CSVParser::operator >>(int & nOut)
 	sTmp += m_sData[m_nPos++];
 
   m_nPos++; // skip past comma
-  nOut = atoi(sTmp.c_str());
+  nOut = sTmp.toInt();
   return *this;
 }
 
@@ -82,7 +82,7 @@ CSVParser & CSVParser::operator >>(double & nOut)
 	sTmp += m_sData[m_nPos++];
 
   m_nPos++; // skip past comma
-  nOut = atof(sTmp.c_str());
+  nOut = sTmp.toInt();
   return *this;
 }
 

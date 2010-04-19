@@ -35,10 +35,11 @@
 #include "replay.h"
 #include "gameprotocol.h"
 #include "game_base.h"
+#include "includes.h"
 
-#include <boost/filesystem.hpp>
-
-using namespace boost :: filesystem;
+#include <QRegExp>
+#include <QDir>
+#include <QStringList>
 
 //
 // CBNET
@@ -58,7 +59,7 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_Exiting = false;
 	m_Server = nServer;
 	QString LowerServer = m_Server;
-	transform( LowerServer.begin( ), LowerServer.end( ), LowerServer.begin( ), (int(*)(int))tolower );
+	LowerServer = LowerServer.toLower();
 
 	if( !nServerAlias.isEmpty( ) )
 		m_ServerAlias = nServerAlias;
@@ -89,10 +90,8 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 
 	// remove dashes from CD keys and convert to uppercase
 
-	m_CDKeyROC.erase( remove( m_CDKeyROC.begin( ), m_CDKeyROC.end( ), '-' ), m_CDKeyROC.end( ) );
-	m_CDKeyTFT.erase( remove( m_CDKeyTFT.begin( ), m_CDKeyTFT.end( ), '-' ), m_CDKeyTFT.end( ) );
-	transform( m_CDKeyROC.begin( ), m_CDKeyROC.end( ), m_CDKeyROC.begin( ), (int(*)(int))toupper );
-	transform( m_CDKeyTFT.begin( ), m_CDKeyTFT.end( ), m_CDKeyTFT.begin( ), (int(*)(int))toupper );
+	m_CDKeyROC = m_CDKeyROC.replace('-', "").toLower();
+	m_CDKeyTFT = m_CDKeyTFT.replace('-', "").toLower();
 
 	if( m_CDKeyROC.size( ) != 26 )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - your ROC CD key is not 26 characters long and is probably invalid" );
@@ -107,7 +106,7 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_UserPassword = nUserPassword;
 	m_FirstChannel = nFirstChannel;
 	m_RootAdmin = nRootAdmin;
-	transform( m_RootAdmin.begin( ), m_RootAdmin.end( ), m_RootAdmin.begin( ), (int(*)(int))tolower );
+	m_RootAdmin = m_RootAdmin.toLower();
 	m_CommandTrigger = nCommandTrigger;
 	m_War3Version = nWar3Version;
 	m_EXEVersion = nEXEVersion;
@@ -615,7 +614,7 @@ void CBNET :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = RecvBuffer->toUtf8();
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
@@ -633,9 +632,9 @@ void CBNET :: ExtractPackets( )
 			{
 				if( Bytes.size( ) >= Length )
 				{
-					m_Packets.enqueue( new CCommandPacket( BNET_HEADER_CONSTANT, Bytes[1], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
-					*RecvBuffer = RecvBuffer->substr( Length );
-					Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
+					m_Packets.enqueue( new CCommandPacket( BNET_HEADER_CONSTANT, Bytes[1], Bytes.left(Length) ) );
+					*RecvBuffer = RecvBuffer->mid( Length );
+					Bytes.remove(0, Length);
 				}
 				else
 					return;
@@ -876,7 +875,7 @@ void CBNET :: ProcessPackets( )
 					// try to figure out if the user might be using the wrong logon type since too many people are confused by this
 
 					QString Server = m_Server;
-					transform( Server.begin( ), Server.end( ), Server.begin( ), (int(*)(int))tolower );
+					Server = Server.toLower();
 
 					if( m_PasswordHashType == "pvpgn" && ( Server == "useast.battle.net" || Server == "uswest.battle.net" || Server == "asia.battle.net" || Server == "europe.battle.net" ) )
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] it looks like you're trying to connect to a battle.net server using a pvpgn logon type, check your config file's \"battle.net custom data\" section" );
@@ -952,7 +951,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 		{
 			if( Message == "s" || Message == "sc" || Message == "spoof" || Message == "check" || Message == "spoofcheck" )
 				m_GHost->m_CurrentGame->AddToSpoofed( m_Server, User, true );
-			else if( Message.find( m_GHost->m_CurrentGame->GetGameName( ) ) != QString :: npos )
+			else if( Message.indexOf( m_GHost->m_CurrentGame->GetGameName( ) ) != -1 )
 			{
 				// look for messages like "entered a Warcraft III The Frozen Throne game called XYZ"
 				// we don't look for the English part of the text anymore because we want this to work with multiple languages
@@ -983,9 +982,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 			QString Command;
 			QString Payload;
-			QString :: size_type PayloadStart = Message.find( " " );
+			int PayloadStart = Message.indexOf( " " );
 
-			if( PayloadStart != QString :: npos )
+			if( PayloadStart != -1 )
 			{
 				Command = Message.mid( 1, PayloadStart - 1 );
 				Payload = Message.mid( PayloadStart + 1 );
@@ -993,7 +992,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 			else
 				Command = Message.mid( 1 );
 
-			transform( Command.begin( ), Command.end( ), Command.begin( ), (int(*)(int))tolower );
+			Command = Command.toLower();
 
 			if( IsAdmin( User ) || IsRootAdmin( User ) )
 			{
@@ -1032,16 +1031,16 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					QString Victim;
 					QString Reason;
-					stringstream SS;
+					QTextStream SS;
 					SS << Payload;
 					SS >> Victim;
 
-					if( !SS.eof( ) )
+					if( !SS.atEnd( ) )
 					{
-						getline( SS, Reason );
-						QString :: size_type Start = Reason.find_first_not_of( " " );
+						Reason = SS.readLine();
+						int Start = Reason.indexOf( QRegExp( "[^ ]" ));
 
-						if( Start != QString :: npos )
+						if( Start != -1 )
 							Reason = Reason.mid( Start );
 					}
 
@@ -1069,22 +1068,22 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						uint32_t Interval;
 						QString Message;
-						stringstream SS;
+						QTextStream SS;
 						SS << Payload;
 						SS >> Interval;
 
-						if( SS.fail( ) || Interval == 0 )
+						if( SS.status() != QTextStream::Ok || Interval == 0 )
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to announce command" );
 						else
 						{
-							if( SS.eof( ) )
+							if( SS.atEnd( ) )
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to announce command" );
 							else
 							{
-								getline( SS, Message );
-								QString :: size_type Start = Message.find_first_not_of( " " );
+								Message = SS.readLine();
+								int Start = Message.indexOf( QRegExp( "[^ ]" ));
 
-								if( Start != QString :: npos )
+								if( Start != -1 )
 									Message = Message.mid( Start );
 
 								QueueChatCommand( m_GHost->m_Language->AnnounceMessageEnabled( ), User, Whisper );
@@ -1123,28 +1122,28 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							uint32_t MaximumGames;
 							uint32_t AutoStartPlayers;
 							QString GameName;
-							stringstream SS;
+							QTextStream SS;
 							SS << Payload;
 							SS >> MaximumGames;
 
-							if( SS.fail( ) || MaximumGames == 0 )
+							if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to autohost command" );
 							else
 							{
 								SS >> AutoStartPlayers;
 
-								if( SS.fail( ) || AutoStartPlayers == 0 )
+								if( SS.status() != QTextStream::Ok || AutoStartPlayers == 0 )
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to autohost command" );
 								else
 								{
-									if( SS.eof( ) )
+									if( SS.atEnd( ) )
 										CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #3 to autohost command" );
 									else
 									{
-										getline( SS, GameName );
-										QString :: size_type Start = GameName.find_first_not_of( " " );
+										GameName = SS.readLine();
+										int Start = GameName.indexOf( QRegExp( "[^ ]" ));
 
-										if( Start != QString :: npos )
+										if( Start != -1 )
 											GameName = GameName.mid( Start );
 
 										QueueChatCommand( m_GHost->m_Language->AutoHostEnabled( ), User, Whisper );
@@ -1199,40 +1198,40 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							double MinimumScore;
 							double MaximumScore;
 							QString GameName;
-							stringstream SS;
+							QTextStream SS;
 							SS << Payload;
 							SS >> MaximumGames;
 
-							if( SS.fail( ) || MaximumGames == 0 )
+							if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to autohostmm command" );
 							else
 							{
 								SS >> AutoStartPlayers;
 
-								if( SS.fail( ) || AutoStartPlayers == 0 )
+								if( SS.status() != QTextStream::Ok || AutoStartPlayers == 0 )
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to autohostmm command" );
 								else
 								{
 									SS >> MinimumScore;
 
-									if( SS.fail( ) )
+									if( SS.status() != QTextStream::Ok )
 										CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #3 to autohostmm command" );
 									else
 									{
 										SS >> MaximumScore;
 
-										if( SS.fail( ) )
+										if( SS.status() != QTextStream::Ok )
 											CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #4 to autohostmm command" );
 										else
 										{
-											if( SS.eof( ) )
+											if( SS.atEnd( ) )
 												CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #5 to autohostmm command" );
 											else
 											{
-												getline( SS, GameName );
-												QString :: size_type Start = GameName.find_first_not_of( " " );
+												GameName = SS.readLine();
+												int Start = GameName.indexOf( QRegExp( "[^ ]" ));
 
-												if( Start != QString :: npos )
+												if( Start != -1 )
 													GameName = GameName.mid( Start );
 
 												QueueChatCommand( m_GHost->m_Language->AutoHostEnabled( ), User, Whisper );
@@ -1329,15 +1328,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
-						stringstream SS;
+						QTextStream SS;
 						SS << Payload;
 
-						while( !SS.eof( ) )
+						while( !SS.atEnd( ) )
 						{
 							uint32_t SID;
 							SS >> SID;
 
-							if( SS.fail( ) )
+							if( SS.status() != QTextStream::Ok )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to close command" );
 								break;
@@ -1503,7 +1502,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// only load files in the current directory just to be safe
 
-					if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
+					if( Payload.indexOf( "/" ) != -1 || Payload.indexOf( "\\" ) != -1 )
 						QueueChatCommand( m_GHost->m_Language->UnableToLoadReplaysOutside( ), User, Whisper );
 					else
 					{
@@ -1602,15 +1601,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
-					stringstream SS;
+					QTextStream SS;
 					SS << Payload;
 
-					while( !SS.eof( ) )
+					while( !SS.atEnd( ) )
 					{
 						QString HoldName;
 						SS >> HoldName;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to hold command" );
 							break;
@@ -1640,69 +1639,45 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						QueueChatCommand( m_GHost->m_Language->CurrentlyLoadedMapCFGIs( m_GHost->m_Map->GetCFGFile( ) ), User, Whisper );
 					else
 					{
-						QString FoundMapConfigs;
-
 						try
 						{
-							path MapCFGPath( m_GHost->m_MapCFGPath );
-							QString Pattern = Payload;
-							transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
+							QDir MapCFGPath( m_GHost->m_MapCFGPath );
+							QString Pattern = Payload.toLower();
 
-							if( !exists( MapCFGPath ) )
+							if( !MapCFGPath.exists() )
 							{
-								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing map configs - map config path doesn't exist" );
+								CONSOLE_Print( "[ADMINGAME] error listing map configs - map config path doesn't exist" );
 								QueueChatCommand( m_GHost->m_Language->ErrorListingMapConfigs( ), User, Whisper );
 							}
 							else
 							{
-								directory_iterator EndIterator;
-								path LastMatch;
-								uint32_t Matches = 0;
-
-								for( directory_iterator i( MapCFGPath ); i != EndIterator; i++ )
-								{
-									QString FileName = i->filename( );
-									QString Stem = i->path( ).stem( );
-									transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
-									transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-
-									if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != QString :: npos )
-									{
-										LastMatch = i->path( );
-										Matches++;
-
-										if( FoundMapConfigs.isEmpty( ) )
-											FoundMapConfigs = i->filename( );
-										else
-											FoundMapConfigs += ", " + i->filename( );
-
-										// if the pattern matches the filename exactly, with or without extension, stop any further matching
-
-										if( FileName == Pattern || Stem == Pattern )
-										{
-											Matches = 1;
-											break;
-										}
-									}
-								}
+								QStringList files = MapCFGPath.entryList(QStringList("*" + Pattern + "*"), QDir::Files, QDir::Name);
+								uint32_t Matches = files.size();
 
 								if( Matches == 0 )
 									QueueChatCommand( m_GHost->m_Language->NoMapConfigsFound( ), User, Whisper );
-								else if( Matches == 1 )
+								else if (files.contains(Pattern))
 								{
-									QString File = LastMatch.filename( );
+									QueueChatCommand( m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + Pattern ), User, Whisper );
+									CConfig MapCFG;
+									MapCFG.Read( Pattern );
+									m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + Pattern );
+								}
+								else if (Matches == 1)
+								{
+									QString File = files.at(0);
 									QueueChatCommand( m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + File ), User, Whisper );
 									CConfig MapCFG;
-									MapCFG.Read( LastMatch.QString( ) );
+									MapCFG.Read( m_GHost->m_MapCFGPath + File );
 									m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
 								}
 								else
-									QueueChatCommand( m_GHost->m_Language->FoundMapConfigs( FoundMapConfigs ), User, Whisper );
+									QueueChatCommand( m_GHost->m_Language->FoundMapConfigs( files.join(", ") ), User, Whisper );
 							}
 						}
 						catch( const exception &ex )
 						{
-							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing map configs - caught exception [" + ex.what( ) + "]" );
+							CONSOLE_Print( QString( "[ADMINGAME] error listing map configs - caught exception [" ) + ex.what( ) + "]" );
 							QueueChatCommand( m_GHost->m_Language->ErrorListingMapConfigs( ), User, Whisper );
 						}
 					}
@@ -1716,7 +1691,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// only load files in the current directory just to be safe
 
-					if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
+					if( Payload.indexOf( "/" ) != -1 || Payload.indexOf( "\\" ) != -1 )
 						QueueChatCommand( m_GHost->m_Language->UnableToLoadSaveGamesOutside( ), User, Whisper );
 					else
 					{
@@ -1755,53 +1730,35 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						try
 						{
-							path MapPath( m_GHost->m_MapPath );
-							QString Pattern = Payload;
-							transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
+							QDir MapPath( m_GHost->m_MapPath );
+							QString Pattern = Payload.toLower();
 
-							if( !exists( MapPath ) )
+							if( !MapPath.exists() )
 							{
-								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing maps - map path doesn't exist" );
+								CONSOLE_Print( "[ADMINGAME] error listing maps - map path doesn't exist" );
 								QueueChatCommand( m_GHost->m_Language->ErrorListingMaps( ), User, Whisper );
 							}
 							else
 							{
-								directory_iterator EndIterator;
-								path LastMatch;
-								uint32_t Matches = 0;
-
-								for( directory_iterator i( MapPath ); i != EndIterator; i++ )
-								{
-									QString FileName = i->filename( );
-									QString Stem = i->path( ).stem( );
-									transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
-									transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-
-									if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != QString :: npos )
-									{
-										LastMatch = i->path( );
-										Matches++;
-
-										if( FoundMaps.isEmpty( ) )
-											FoundMaps = i->filename( );
-										else
-											FoundMaps += ", " + i->filename( );
-
-										// if the pattern matches the filename exactly, with or without extension, stop any further matching
-
-										if( FileName == Pattern || Stem == Pattern )
-										{
-											Matches = 1;
-											break;
-										}
-									}
-								}
+								QStringList files = MapPath.entryList(QStringList("*"+Pattern+"*"), QDir::Files, QDir::Name);
+								uint32_t Matches = files.size();
 
 								if( Matches == 0 )
 									QueueChatCommand( m_GHost->m_Language->NoMapsFound( ), User, Whisper );
+								else if (files.contains(Pattern))
+								{
+									QueueChatCommand( m_GHost->m_Language->LoadingConfigFile( Pattern ), User, Whisper );
+
+									// hackhack: create a config file in memory with the required information to load the map
+
+									CConfig MapCFG;
+									MapCFG.Set( "map_path", "Maps\\Download\\" + Pattern );
+									MapCFG.Set( "map_localpath", Pattern );
+									m_GHost->m_Map->Load( &MapCFG, Pattern );
+								}
 								else if( Matches == 1 )
 								{
-									QString File = LastMatch.filename( );
+									QString File = files.at(0);
 									QueueChatCommand( m_GHost->m_Language->LoadingConfigFile( File ), User, Whisper );
 
 									// hackhack: create a config file in memory with the required information to load the map
@@ -1812,7 +1769,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									m_GHost->m_Map->Load( &MapCFG, File );
 								}
 								else
-									QueueChatCommand( m_GHost->m_Language->FoundMaps( FoundMaps ), User, Whisper );
+									QueueChatCommand( m_GHost->m_Language->FoundMaps( files.join(", ") ), User, Whisper );
 							}
 						}
 						catch( const exception &ex )
@@ -1833,15 +1790,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
-						stringstream SS;
+						QTextStream SS;
 						SS << Payload;
 
-						while( !SS.eof( ) )
+						while( !SS.atEnd( ) )
 						{
 							uint32_t SID;
 							SS >> SID;
 
-							if( SS.fail( ) )
+							if( SS.status() != QTextStream::Ok )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to open command" );
 								break;
@@ -1884,9 +1841,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					QString Owner;
 					QString GameName;
-					QString :: size_type GameNameStart = Payload.find( " " );
+					int GameNameStart = Payload.indexOf( " " );
 
-					if( GameNameStart != QString :: npos )
+					if( GameNameStart != -1 )
 					{
 						Owner = Payload.mid( 0, GameNameStart );
 						GameName = Payload.mid( GameNameStart + 1 );
@@ -1912,9 +1869,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					QString Owner;
 					QString GameName;
-					QString :: size_type GameNameStart = Payload.find( " " );
+					int GameNameStart = Payload.indexOf( " " );
 
-					if( GameNameStart != QString :: npos )
+					if( GameNameStart != -1 )
 					{
 						Owner = Payload.mid( 0, GameNameStart );
 						GameName = Payload.mid( GameNameStart + 1 );
@@ -1957,22 +1914,22 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						uint32_t GameNumber;
 						QString Message;
-						stringstream SS;
+						QTextStream SS;
 						SS << Payload;
 						SS >> GameNumber;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to saygame command" );
 						else
 						{
-							if( SS.eof( ) )
+							if( SS.atEnd( ) )
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to saygame command" );
 							else
 							{
-								getline( SS, Message );
-								QString :: size_type Start = Message.find_first_not_of( " " );
+								Message = SS.readLine();
+								int Start = Message.indexOf( QRegExp( "[^ ]" ));
 
-								if( Start != QString :: npos )
+								if( Start != -1 )
 									Message = Message.mid( Start );
 
 								if( GameNumber - 1 < m_GHost->m_Games.size( ) )
@@ -2049,21 +2006,21 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						uint32_t SID1;
 						uint32_t SID2;
-						stringstream SS;
+						QTextStream SS;
 						SS << Payload;
 						SS >> SID1;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to swap command" );
 						else
 						{
-							if( SS.eof( ) )
+							if( SS.atEnd( ) )
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to swap command" );
 							else
 							{
 								SS >> SID2;
 
-								if( SS.fail( ) )
+								if( SS.status() != QTextStream::Ok )
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to swap command" );
 								else
 									m_GHost->m_CurrentGame->SwapSlots( (unsigned char)( SID1 - 1 ), (unsigned char)( SID2 - 1 ) );
@@ -2188,9 +2145,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 		// this is not necessarily true though since info messages also include channel MOTD's and such
 
 		QString UserName;
-		QString :: size_type Split = Message.find( " " );
+		int Split = Message.indexOf( " " );
 
-		if( Split != QString :: npos )
+		if( Split != -1 )
 			UserName = Message.mid( 0, Split );
 		else
 			UserName = Message.mid( 0 );
@@ -2201,26 +2158,26 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 		if( m_GHost->m_CurrentGame && m_GHost->m_CurrentGame->GetPlayerFromName( UserName, true ) )
 		{
-			if( Message.find( "is away" ) != QString :: npos )
+			if( Message.indexOf( "is away" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofPossibleIsAway( UserName ) );
-			else if( Message.find( "is unavailable" ) != QString :: npos )
+			else if( Message.indexOf( "is unavailable" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofPossibleIsUnavailable( UserName ) );
-			else if( Message.find( "is refusing messages" ) != QString :: npos )
+			else if( Message.indexOf( "is refusing messages" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofPossibleIsRefusingMessages( UserName ) );
-			else if( Message.find( "is using Warcraft III The Frozen Throne in the channel" ) != QString :: npos )
+			else if( Message.indexOf( "is using Warcraft III The Frozen Throne in the channel" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofDetectedIsNotInGame( UserName ) );
-			else if( Message.find( "is using Warcraft III The Frozen Throne in channel" ) != QString :: npos )
+			else if( Message.indexOf( "is using Warcraft III The Frozen Throne in channel" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofDetectedIsNotInGame( UserName ) );
-			else if( Message.find( "is using Warcraft III The Frozen Throne in a private channel" ) != QString :: npos )
+			else if( Message.indexOf( "is using Warcraft III The Frozen Throne in a private channel" ) != -1 )
 				m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofDetectedIsInPrivateChannel( UserName ) );
 
-			if( Message.find( "is using Warcraft III The Frozen Throne in game" ) != QString :: npos || Message.find( "is using Warcraft III Frozen Throne and is currently in  game" ) != QString :: npos )
+			if( Message.indexOf( "is using Warcraft III The Frozen Throne in game" ) != -1 || Message.indexOf( "is using Warcraft III Frozen Throne and is currently in  game" ) != -1 )
 			{
 				// check both the current game name and the last game name against the /whois response
 				// this is because when the game is rehosted, players who joined recently will be in the previous game according to battle.net
 				// note: if the game is rehosted more than once it is possible (but unlikely) for a false positive because only two game names are checked
 
-				if( Message.find( m_GHost->m_CurrentGame->GetGameName( ) ) != QString :: npos || Message.find( m_GHost->m_CurrentGame->GetLastGameName( ) ) != QString :: npos )
+				if( Message.indexOf( m_GHost->m_CurrentGame->GetGameName( ) ) != -1 || Message.indexOf( m_GHost->m_CurrentGame->GetLastGameName( ) ) != -1 )
 					m_GHost->m_CurrentGame->AddToSpoofed( m_Server, UserName, false );
 				else
 					m_GHost->m_CurrentGame->SendAllChat( m_GHost->m_Language->SpoofDetectedIsInAnotherGame( UserName ) );
@@ -2316,7 +2273,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 	if( hostName.isEmpty( ) )
 	{
 		QByteArray UniqueName = m_Protocol->GetUniqueName( );
-		hostName = QString( UniqueName.begin( ), UniqueName.end( ) );
+		hostName = UniqueName;
 	}
 
 	if( m_LoggedIn && map )
@@ -2444,7 +2401,7 @@ void CBNET :: UnqueueGameRefreshes( )
 
 bool CBNET :: IsAdmin( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	for( QVector<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
 	{
@@ -2459,17 +2416,17 @@ bool CBNET :: IsRootAdmin( QString name )
 {
 	// m_RootAdmin was already transformed to lower case in the constructor
 
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	// updated to permit multiple root admins seperated by a space, e.g. "Varlock Kilranin Instinct121"
 	// note: this function gets called frequently so it would be better to parse the root admins just once and store them in a list somewhere
 	// however, it's hardly worth optimizing at this point since the code's already written
 
-	stringstream SS;
+	QTextStream SS;
 	QString s;
 	SS << m_RootAdmin;
 
-	while( !SS.eof( ) )
+	while( !SS.atEnd( ) )
 	{
 		SS >> s;
 
@@ -2482,7 +2439,7 @@ bool CBNET :: IsRootAdmin( QString name )
 
 CDBBan *CBNET :: IsBannedName( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	// todotodo: optimize this - maybe use a map?
 
@@ -2510,19 +2467,19 @@ CDBBan *CBNET :: IsBannedIP( QString ip )
 
 void CBNET :: AddAdmin( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 	m_Admins.push_back( name );
 }
 
 void CBNET :: AddBan( QString name, QString ip, QString gamename, QString admin, QString reason )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 	m_Bans.push_back( new CDBBan( m_Server, name, ip, "N/A", gamename, admin, reason ) );
 }
 
 void CBNET :: RemoveAdmin( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	for( QVector<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); )
 	{
@@ -2535,7 +2492,7 @@ void CBNET :: RemoveAdmin( QString name )
 
 void CBNET :: RemoveBan( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); )
 	{

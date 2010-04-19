@@ -40,6 +40,11 @@
 #include <QString>
 #include <time.h>
 
+#include <QTextStream>
+#include <QFile>
+#include <QDir>
+#include <QStringList>
+
 //
 // sorting classes
 //
@@ -408,23 +413,22 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				QString Victim;
 				QString Reason;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Victim;
 
-				if( !SS.eof( ) )
+				if( !SS.atEnd( ) )
 				{
-					getline( SS, Reason );
-					QString :: size_type Start = Reason.find_first_not_of( " " );
+					Reason = SS.readLine();
+					int Start = Reason.indexOf( QRegExp( "[^ ]" ));
 
-					if( Start != QString :: npos )
+					if( Start != -1 )
 						Reason = Reason.mid( Start );
 				}
 
 				if( m_GameLoaded )
 				{
-					QString VictimLower = Victim;
-					transform( VictimLower.begin( ), VictimLower.end( ), VictimLower.begin( ), (int(*)(int))tolower );
+					QString VictimLower = Victim.toLower();
 					uint32_t Matches = 0;
 					CDBBan *LastMatch = NULL;
 
@@ -433,10 +437,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 					{
-						QString TestName = (*i)->GetName( );
-						transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
+						QString TestName = (*i)->GetName( ).toLower();
 
-						if( TestName.find( VictimLower ) != QString :: npos )
+						if( TestName.indexOf( VictimLower ) != -1 )
 						{
 							Matches++;
 							LastMatch = *i;
@@ -490,22 +493,22 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					uint32_t Interval;
 					QString Message;
-					stringstream SS;
+					QTextStream SS;
 					SS << Payload;
 					SS >> Interval;
 
-					if( SS.fail( ) || Interval == 0 )
+					if( SS.status() != QTextStream::Ok || Interval == 0 )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to announce command" );
 					else
 					{
-						if( SS.eof( ) )
+						if( SS.atEnd( ) )
 							CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to announce command" );
 						else
 						{
-							getline( SS, Message );
-							QString :: size_type Start = Message.find_first_not_of( " " );
+							Message = SS.readLine();
+							int Start = Message.indexOf( QRegExp( "[^ ]" ));
 
-							if( Start != QString :: npos )
+							if( Start != -1 )
 								Message = Message.mid( Start );
 
 							SendAllChat( m_GHost->m_Language->AnnounceMessageEnabled( ) );
@@ -637,15 +640,15 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 
-				while( !SS.eof( ) )
+				while( !SS.atEnd( ) )
 				{
 					uint32_t SID;
 					SS >> SID;
 
-					if( SS.fail( ) )
+					if( SS.status() != QTextStream::Ok )
 					{
 						CONSOLE_Print( "[GAME: " + m_GameName + "] bad input to close command" );
 						break;
@@ -673,18 +676,18 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Skill = 1;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Slot;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to comp command" );
 				else
 				{
-					if( !SS.eof( ) )
+					if( !SS.atEnd( ) )
 						SS >> Skill;
 
-					if( SS.fail( ) )
+					if( SS.status() != QTextStream::Ok )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #2 to comp command" );
 					else
 						ComputerSlot( (unsigned char)( Slot - 1 ), (unsigned char)Skill, true );
@@ -702,21 +705,21 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Colour;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Slot;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to compcolour command" );
 				else
 				{
-					if( SS.eof( ) )
+					if( SS.atEnd( ) )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to compcolour command" );
 					else
 					{
 						SS >> Colour;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #2 to compcolour command" );
 						else
 						{
@@ -743,21 +746,21 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Handicap;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Slot;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to comphandicap command" );
 				else
 				{
-					if( SS.eof( ) )
+					if( SS.atEnd( ) )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to comphandicap command" );
 					else
 					{
 						SS >> Handicap;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #2 to comphandicap command" );
 						else
 						{
@@ -787,25 +790,24 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				QString Race;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Slot;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to comprace command" );
 				else
 				{
-					if( SS.eof( ) )
+					if( SS.atEnd( ) )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to comprace command" );
 					else
 					{
-						getline( SS, Race );
-						QString :: size_type Start = Race.find_first_not_of( " " );
+						Race = SS.readLine().toLower();
+						int Start = Race.indexOf( QRegExp( "[^ ]" ));
 
-						if( Start != QString :: npos )
+						if( Start != -1 )
 							Race = Race.mid( Start );
 
-						transform( Race.begin( ), Race.end( ), Race.begin( ), (int(*)(int))tolower );
 						unsigned char SID = (unsigned char)( Slot - 1 );
 
 						if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && !( m_Map->GetMapFlags( ) & MAPFLAG_RANDOMRACES ) && SID < m_Slots.size( ) )
@@ -856,21 +858,21 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Team;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> Slot;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to compteam command" );
 				else
 				{
-					if( SS.eof( ) )
+					if( SS.atEnd( ) )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to compteam command" );
 					else
 					{
 						SS >> Team;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #2 to compteam command" );
 						else
 						{
@@ -1028,7 +1030,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					{
 						QString HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
 
-						if( Payload.find_first_not_of( HCLChars ) == QString :: npos )
+						if( Payload.indexOf( QRegExp("[^" + HCLChars + "]") ) == -1 )
 						{
 							m_HCLCommandString = Payload;
 							SendAllChat( m_GHost->m_Language->SettingHCL( m_HCLCommandString ) );
@@ -1051,15 +1053,15 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 
-				while( !SS.eof( ) )
+				while( !SS.atEnd( ) )
 				{
 					QString HoldName;
 					SS >> HoldName;
 
-					if( SS.fail( ) )
+					if( SS.status() != QTextStream::Ok )
 					{
 						CONSOLE_Print( "[GAME: " + m_GameName + "] bad input to hold command" );
 						break;
@@ -1193,15 +1195,15 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 
-				while( !SS.eof( ) )
+				while( !SS.atEnd( ) )
 				{
 					uint32_t SID;
 					SS >> SID;
 
-					if( SS.fail( ) )
+					if( SS.status() != QTextStream::Ok )
 					{
 						CONSOLE_Print( "[GAME: " + m_GameName + "] bad input to open command" );
 						break;
@@ -1414,14 +1416,14 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				QString IP;
 				uint32_t Port = 6112;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> IP;
 
-				if( !SS.eof( ) )
+				if( !SS.atEnd( ) )
 					SS >> Port;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad inputs to sendlan command" );
 				else
 				{
@@ -1440,11 +1442,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 						uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
 						QByteArray MapWidth;
-						MapWidth.push_back( 0 );
-						MapWidth.push_back( 0 );
+						MapWidth.push_back( (char)0 );
+						MapWidth.push_back( (char)0 );
 						QByteArray MapHeight;
-						MapHeight.push_back( 0 );
-						MapHeight.push_back( 0 );
+						MapHeight.push_back( (char)0 );
+						MapHeight.push_back( (char)0 );
 						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
 					}
 					else
@@ -1496,21 +1498,21 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				uint32_t SID1;
 				uint32_t SID2;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> SID1;
 
-				if( SS.fail( ) )
+				if( SS.status() != QTextStream::Ok )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #1 to swap command" );
 				else
 				{
-					if( SS.eof( ) )
+					if( SS.atEnd( ) )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] missing input #2 to swap command" );
 					else
 					{
 						SS >> SID2;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[GAME: " + m_GameName + "] bad input #2 to swap command" );
 						else
 							SwapSlots( (unsigned char)( SID1 - 1 ), (unsigned char)( SID2 - 1 ) );
@@ -1624,9 +1626,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				QString Name;
 				QString Message;
-				QString :: size_type MessageStart = Payload.find( " " );
+				int MessageStart = Payload.indexOf( " " );
 
-				if( MessageStart != QString :: npos )
+				if( MessageStart != -1 )
 				{
 					Name = Payload.mid( 0, MessageStart );
 					Message = Payload.mid( MessageStart + 1 );

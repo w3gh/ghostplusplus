@@ -35,6 +35,9 @@
 #include "game_admin.h"
 
 #include <QString>
+#include <QTextStream>
+#include <QRegExp>
+#include <QDir>
 
 #include <boost/filesystem.hpp>
 
@@ -347,11 +350,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			stringstream SS;
+			QTextStream SS;
 			SS << Payload;
 			SS >> Name;
 
-			if( SS.eof( ) )
+			if( SS.atEnd( ) )
 			{
 				if( m_GHost->m_BNETs.size( ) == 1 )
 					Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -418,28 +421,28 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				uint32_t MaximumGames;
 				uint32_t AutoStartPlayers;
 				QString GameName;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> MaximumGames;
 
-				if( SS.fail( ) || MaximumGames == 0 )
+				if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
 					CONSOLE_Print( "[ADMINGAME] bad input #1 to autohost command" );
 				else
 				{
 					SS >> AutoStartPlayers;
 
-					if( SS.fail( ) || AutoStartPlayers == 0 )
+					if( SS.status() != QTextStream::Ok || AutoStartPlayers == 0 )
 						CONSOLE_Print( "[ADMINGAME] bad input #2 to autohost command" );
 					else
 					{
-						if( SS.eof( ) )
+						if( SS.atEnd( ) )
 							CONSOLE_Print( "[ADMINGAME] missing input #3 to autohost command" );
 						else
 						{
-							getline( SS, GameName );
-							QString :: size_type Start = GameName.find_first_not_of( " " );
+							GameName = SS.readLine( );
+							int Start = GameName.indexOf( QRegExp("[^ ]") );
 
-							if( Start != QString :: npos )
+							if( Start != -1 )
 								GameName = GameName.mid( Start );
 
 							SendChat( player, m_GHost->m_Language->AutoHostEnabled( ) );
@@ -489,40 +492,40 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				double MinimumScore;
 				double MaximumScore;
 				QString GameName;
-				stringstream SS;
+				QTextStream SS;
 				SS << Payload;
 				SS >> MaximumGames;
 
-				if( SS.fail( ) || MaximumGames == 0 )
+				if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
 					CONSOLE_Print( "[ADMINGAME] bad input #1 to autohostmm command" );
 				else
 				{
 					SS >> AutoStartPlayers;
 
-					if( SS.fail( ) || AutoStartPlayers == 0 )
+					if( SS.status() != QTextStream::Ok || AutoStartPlayers == 0 )
 						CONSOLE_Print( "[ADMINGAME] bad input #2 to autohostmm command" );
 					else
 					{
 						SS >> MinimumScore;
 
-						if( SS.fail( ) )
+						if( SS.status() != QTextStream::Ok )
 							CONSOLE_Print( "[ADMINGAME] bad input #3 to autohostmm command" );
 						else
 						{
 							SS >> MaximumScore;
 
-							if( SS.fail( ) )
+							if( SS.status() != QTextStream::Ok )
 								CONSOLE_Print( "[ADMINGAME] bad input #4 to autohostmm command" );
 							else
 							{
-								if( SS.eof( ) )
+								if( SS.atEnd( ) )
 									CONSOLE_Print( "[ADMINGAME] missing input #5 to autohostmm command" );
 								else
 								{
-									getline( SS, GameName );
-									QString :: size_type Start = GameName.find_first_not_of( " " );
+									GameName = SS.readLine();
+									int Start = GameName.indexOf( QRegExp( "[^ ]" ));
 
-									if( Start != QString :: npos )
+									if( Start != -1 )
 										GameName = GameName.mid( Start );
 
 									SendChat( player, m_GHost->m_Language->AutoHostEnabled( ) );
@@ -556,11 +559,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			stringstream SS;
+			QTextStream SS;
 			SS << Payload;
 			SS >> Name;
 
-			if( SS.eof( ) )
+			if( SS.atEnd( ) )
 			{
 				if( m_GHost->m_BNETs.size( ) == 1 )
 					Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -611,11 +614,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			stringstream SS;
+			QTextStream SS;
 			SS << Payload;
 			SS >> Name;
 
-			if( SS.eof( ) )
+			if( SS.atEnd( ) )
 			{
 				if( m_GHost->m_BNETs.size( ) == 1 )
 					Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -697,11 +700,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			stringstream SS;
+			QTextStream SS;
 			SS << Payload;
 			SS >> Name;
 
-			if( SS.eof( ) )
+			if( SS.atEnd( ) )
 			{
 				if( m_GHost->m_BNETs.size( ) == 1 )
 					Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -822,7 +825,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		{
 			// only load files in the current directory just to be safe
 
-			if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
+			if( Payload.indexOf( "/" ) != -1 || Payload.indexOf( "\\" ) != -1 )
 				SendChat( player, m_GHost->m_Language->UnableToLoadReplaysOutside( ) );
 			else
 			{
@@ -905,64 +908,40 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				SendChat( player, m_GHost->m_Language->CurrentlyLoadedMapCFGIs( m_GHost->m_Map->GetCFGFile( ) ) );
 			else
 			{
-				QString FoundMapConfigs;
-
 				try
 				{
-					path MapCFGPath( m_GHost->m_MapCFGPath );
-					QString Pattern = Payload;
-					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
+					QDir MapCFGPath( m_GHost->m_MapCFGPath );
+					QString Pattern = Payload.toLower();
 
-					if( !exists( MapCFGPath ) )
+					if( !MapCFGPath.exists() )
 					{
 						CONSOLE_Print( "[ADMINGAME] error listing map configs - map config path doesn't exist" );
 						SendChat( player, m_GHost->m_Language->ErrorListingMapConfigs( ) );
 					}
 					else
 					{
-						directory_iterator EndIterator;
-						path LastMatch;
-						uint32_t Matches = 0;
-
-						for( directory_iterator i( MapCFGPath ); i != EndIterator; i++ )
-						{
-							QString FileName = i->filename( );
-							QString Stem = i->path( ).stem( );
-							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
-							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-
-							if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != QString :: npos )
-							{
-								LastMatch = i->path( );
-								Matches++;
-
-								if( FoundMapConfigs.isEmpty( ) )
-									FoundMapConfigs = i->filename( );
-								else
-									FoundMapConfigs += ", " + i->filename( );
-
-								// if the pattern matches the filename exactly, with or without extension, stop any further matching
-
-								if( FileName == Pattern || Stem == Pattern )
-								{
-									Matches = 1;
-									break;
-								}
-							}
-						}
+						QStringList files = MapCFGPath.entryList(QStringList("*" + Pattern + "*"), QDir::Files, QDir::Name);
+						uint32_t Matches = files.size();
 
 						if( Matches == 0 )
 							SendChat( player, m_GHost->m_Language->NoMapConfigsFound( ) );
-						else if( Matches == 1 )
+						else if (files.contains(Pattern))
 						{
-							QString File = LastMatch.filename( );
+							SendChat( player, m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + Pattern ) );
+							CConfig MapCFG;
+							MapCFG.Read( Pattern );
+							m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + Pattern );
+						}
+						else if (Matches == 1)
+						{
+							QString File = files.at(0);
 							SendChat( player, m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + File ) );
 							CConfig MapCFG;
-							MapCFG.Read( LastMatch.QString( ) );
+							MapCFG.Read( m_GHost->m_MapCFGPath + File );
 							m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
 						}
 						else
-							SendChat( player, m_GHost->m_Language->FoundMapConfigs( FoundMapConfigs ) );
+							SendChat( player, m_GHost->m_Language->FoundMapConfigs( files.join(", ") ) );
 					}
 				}
 				catch( const exception &ex )
@@ -981,7 +960,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		{
 			// only load files in the current directory just to be safe
 
-			if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
+			if( Payload.indexOf( "/" ) != -1 || Payload.indexOf( "\\" ) != -1 )
 				SendChat( player, m_GHost->m_Language->UnableToLoadSaveGamesOutside( ) );
 			else
 			{
@@ -1016,57 +995,37 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				SendChat( player, m_GHost->m_Language->CurrentlyLoadedMapCFGIs( m_GHost->m_Map->GetCFGFile( ) ) );
 			else
 			{
-				QString FoundMaps;
-
 				try
 				{
-					path MapPath( m_GHost->m_MapPath );
-					QString Pattern = Payload;
-					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
+					QDir MapPath( m_GHost->m_MapPath );
+					QString Pattern = Payload.toLower();
 
-					if( !exists( MapPath ) )
+					if( !MapPath.exists() )
 					{
 						CONSOLE_Print( "[ADMINGAME] error listing maps - map path doesn't exist" );
 						SendChat( player, m_GHost->m_Language->ErrorListingMaps( ) );
 					}
 					else
 					{
-						directory_iterator EndIterator;
-						path LastMatch;
-						uint32_t Matches = 0;
-
-						for( directory_iterator i( MapPath ); i != EndIterator; i++ )
-						{
-							QString FileName = i->filename( );
-							QString Stem = i->path( ).stem( );
-							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
-							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-
-							if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != QString :: npos )
-							{
-								LastMatch = i->path( );
-								Matches++;
-
-								if( FoundMaps.isEmpty( ) )
-									FoundMaps = i->filename( );
-								else
-									FoundMaps += ", " + i->filename( );
-
-								// if the pattern matches the filename exactly, with or without extension, stop any further matching
-
-								if( FileName == Pattern || Stem == Pattern )
-								{
-									Matches = 1;
-									break;
-								}
-							}
-						}
+						QStringList files = MapPath.entryList(QStringList("*"+Pattern+"*"), QDir::Files, QDir::Name);
+						uint32_t Matches = files.size();
 
 						if( Matches == 0 )
 							SendChat( player, m_GHost->m_Language->NoMapsFound( ) );
+						else if (files.contains(Pattern))
+						{
+							SendChat( player, m_GHost->m_Language->LoadingConfigFile( Pattern ) );
+
+							// hackhack: create a config file in memory with the required information to load the map
+
+							CConfig MapCFG;
+							MapCFG.Set( "map_path", "Maps\\Download\\" + Pattern );
+							MapCFG.Set( "map_localpath", Pattern );
+							m_GHost->m_Map->Load( &MapCFG, Pattern );
+						}
 						else if( Matches == 1 )
 						{
-							QString File = LastMatch.filename( );
+							QString File = files.at(0);
 							SendChat( player, m_GHost->m_Language->LoadingConfigFile( File ) );
 
 							// hackhack: create a config file in memory with the required information to load the map
@@ -1077,7 +1036,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							m_GHost->m_Map->Load( &MapCFG, File );
 						}
 						else
-							SendChat( player, m_GHost->m_Language->FoundMaps( FoundMaps ) );
+							SendChat( player, m_GHost->m_Language->FoundMaps( files.join(", ") ) );
 					}
 				}
 				catch( const exception &ex )
@@ -1106,9 +1065,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Owner;
 			QString GameName;
-			QString :: size_type GameNameStart = Payload.find( " " );
+			int GameNameStart = Payload.indexOf( " " );
 
-			if( GameNameStart != QString :: npos )
+			if( GameNameStart != -1 )
 			{
 				Owner = Payload.mid( 0, GameNameStart );
 				GameName = Payload.mid( GameNameStart + 1 );
@@ -1134,9 +1093,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Owner;
 			QString GameName;
-			QString :: size_type GameNameStart = Payload.find( " " );
+			int GameNameStart = Payload.indexOf( " " );
 
-			if( GameNameStart != QString :: npos )
+			if( GameNameStart != -1 )
 			{
 				Owner = Payload.mid( 0, GameNameStart );
 				GameName = Payload.mid( GameNameStart + 1 );
@@ -1175,22 +1134,22 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			uint32_t GameNumber;
 			QString Message;
-			stringstream SS;
+			QTextStream SS;
 			SS << Payload;
 			SS >> GameNumber;
 
-			if( SS.fail( ) )
+			if( SS.status() != QTextStream::Ok )
 				CONSOLE_Print( "[ADMINGAME] bad input #1 to saygame command" );
 			else
 			{
-				if( SS.eof( ) )
+				if( SS.atEnd( ) )
 					CONSOLE_Print( "[ADMINGAME] missing input #2 to saygame command" );
 				else
 				{
-					getline( SS, Message );
-					QString :: size_type Start = Message.find_first_not_of( " " );
+					Message = SS.readLine();
+					int Start = Message.indexOf( QRegExp( "[^ ]" ));
 
-					if( Start != QString :: npos )
+					if( Start != -1 )
 						Message = Message.mid( Start );
 
 					if( GameNumber - 1 < m_GHost->m_Games.size( ) )
@@ -1245,9 +1204,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Message;
-			QString :: size_type MessageStart = Payload.find( " " );
+			int MessageStart = Payload.indexOf( " " );
 
-			if( MessageStart != QString :: npos )
+			if( MessageStart != -1 )
 			{
 				Name = Payload.mid( 0, MessageStart );
 				Message = Payload.mid( MessageStart + 1 );

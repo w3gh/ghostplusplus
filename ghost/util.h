@@ -27,7 +27,6 @@
 
 // byte arrays
 
-QByteArray UTIL_CreateQByteArray( unsigned char *a, int size );
 QByteArray UTIL_CreateQByteArray( unsigned char c );
 QByteArray UTIL_CreateQByteArray( uint16_t i, bool reverse );
 QByteArray UTIL_CreateQByteArray( uint32_t i, bool reverse );
@@ -35,7 +34,6 @@ uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start
 uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
-void UTIL_AppendQByteArray( QByteArray &b, QByteArray append );
 void UTIL_AppendQByteArrayFast( QByteArray &b, QByteArray &append );
 void UTIL_AppendQByteArray( QByteArray &b, unsigned char *a, int size );
 void UTIL_AppendQByteArray( QByteArray &b, QString append, bool terminator = true );
@@ -71,7 +69,7 @@ QString UTIL_MSToString( uint32_t ms );
 bool UTIL_FileExists( QString file );
 QByteArray UTIL_FileRead( QString file, uint32_t start, uint32_t length );
 QByteArray UTIL_FileRead( QString file );
-bool UTIL_FileWrite( QString file, unsigned char *data, uint32_t length );
+bool UTIL_FileWrite( QString file, const QByteArray &data );
 QString UTIL_FileSafeName( QString fileName );
 QString UTIL_AddPathSeperator( QString path );
 

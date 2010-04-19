@@ -103,7 +103,7 @@ bool CPacked :: Save( bool TFT, QString fileName )
 	if( m_Valid )
 	{
 		CONSOLE_Print( "[PACKED] saving data to file [" + fileName + "]" );
-		return UTIL_FileWrite( fileName, (unsigned char *)m_Compressed.c_str( ), m_Compressed.size( ) );
+		return UTIL_FileWrite( fileName, m_Compressed );
 	}
 	else
 		return false;
@@ -117,7 +117,7 @@ bool CPacked :: Extract( QString inFileName, QString outFileName )
 	Decompress( true );
 
 	if( m_Valid )
-		return UTIL_FileWrite( outFileName, (unsigned char *)m_Decompressed.c_str( ), m_Decompressed.size( ) );
+		return UTIL_FileWrite( outFileName, m_Decompressed );
 	else
 		return false;
 }
@@ -130,14 +130,14 @@ bool CPacked :: Pack( bool TFT, QString inFileName, QString outFileName )
 	Compress( TFT );
 
 	if( m_Valid )
-		return UTIL_FileWrite( outFileName, (unsigned char *)m_Compressed.c_str( ), m_Compressed.size( ) );
+		return UTIL_FileWrite( outFileName, m_Compressed );
 	else
 		return false;
 }
 
 void CPacked :: Decompress( bool allBlocks )
 {
-	CONSOLE_Print( "[PACKED] decompressing data" );
+	/*CONSOLE_Print( "[PACKED] decompressing data" );
 
 	// format found at http://www.thehelper.net/forums/showthread.php?t=42787
 
@@ -278,7 +278,7 @@ void CPacked :: Decompress( bool allBlocks )
 
 		CONSOLE_Print( "[PACKED] discarding " + UTIL_ToString( m_Decompressed.size( ) - m_DecompressedSize ) + " bytes" );
 		m_Decompressed.erase( m_DecompressedSize );
-	}
+	}*/
 }
 
 void CPacked :: Compress( bool TFT )
@@ -293,10 +293,10 @@ void CPacked :: Compress( bool TFT )
 	// use a buffer of size 8213 bytes because in the worst case zlib will grow the data 0.1% plus 12 bytes
 
 	uint32_t CompressedSize = 0;
-	QString Padded = m_Decompressed;
+	string Padded = QString(m_Decompressed).toStdString();
 	Padded.append( 8192 - ( Padded.size( ) % 8192 ), 0 );
-	QVector<QString> CompressedBlocks;
-	QString :: size_type Position = 0;
+	QVector<string> CompressedBlocks;
+	string :: size_type Position = 0;
 	unsigned char *CompressedData = new unsigned char[8213];
 
 	while( Position < Padded.size( ) )
@@ -312,7 +312,7 @@ void CPacked :: Compress( bool TFT )
 			return;
 		}
 
-		CompressedBlocks.push_back( QString( (char *)CompressedData, BlockCompressedLong ) );
+		CompressedBlocks.push_back( string( (char *)CompressedData, BlockCompressedLong ) );
 		CompressedSize += BlockCompressedLong;
 		Position += 8192;
 	}
@@ -360,21 +360,21 @@ void CPacked :: Compress( bool TFT )
 
 	// calculate header CRC
 
-	QString HeaderString = QString( Header.begin( ), Header.end( ) );
-	uint32_t CRC = m_CRC->FullCRC( (unsigned char *)HeaderString.c_str( ), HeaderString.size( ) );
+	QString HeaderString = Header;
+	uint32_t CRC = m_CRC->FullCRC( HeaderString );
 
 	// overwrite the (currently zero) header CRC with the calculated CRC
 
-	Header.erase( Header.end( ) - 4, Header.end( ) );
+	Header.remove(Header.size() - 4, 4);
 	UTIL_AppendQByteArray( Header, CRC, false );
 
 	// append header
 
-	m_Compressed += QString( Header.begin( ), Header.end( ) );
+	m_Compressed += Header;
 
 	// append blocks
 
-	for( QVector<QString> :: iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
+	for( QVector<string> :: const_iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
 	{
 		QByteArray BlockHeader;
 		UTIL_AppendQByteArray( BlockHeader, (uint16_t)(*i).size( ), false );
@@ -386,21 +386,20 @@ void CPacked :: Compress( bool TFT )
 
 		// calculate block header CRC
 
-		QString BlockHeaderString = QString( BlockHeader.begin( ), BlockHeader.end( ) );
-		uint32_t CRC1 = m_CRC->FullCRC( (unsigned char *)BlockHeaderString.c_str( ), BlockHeaderString.size( ) );
+		uint32_t CRC1 = m_CRC->FullCRC( BlockHeader );
 		CRC1 = CRC1 ^ ( CRC1 >> 16 );
-		uint32_t CRC2 = m_CRC->FullCRC( (unsigned char *)(*i).c_str( ), (*i).size( ) );
+		uint32_t CRC2 = m_CRC->FullCRC( QString::fromStdString(*i) );
 		CRC2 = CRC2 ^ ( CRC2 >> 16 );
 		uint32_t BlockCRC = ( CRC1 & 0xFFFF ) | ( CRC2 << 16 );
 
 		// overwrite the block header CRC with the calculated CRC
 
-		BlockHeader.erase( BlockHeader.end( ) - 4, BlockHeader.end( ) );
+		BlockHeader.remove( BlockHeader.size() - 4, 4 );
 		UTIL_AppendQByteArray( BlockHeader, BlockCRC, false );
 
 		// append block header and data
 
-		m_Compressed += QString( BlockHeader.begin( ), BlockHeader.end( ) );
-		m_Compressed += *i;
+		m_Compressed += BlockHeader;
+		m_Compressed += QString::fromStdString(*i);
 	}
 }
