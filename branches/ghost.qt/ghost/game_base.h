@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,9 +53,9 @@ protected:
 	vector<CGamePlayer *> m_Players;				// vector of players
 	vector<CCallableScoreCheck *> m_ScoreChecks;
 	queue<CIncomingAction *> m_Actions;				// queue of actions to be sent
-	vector<string> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
-	set<string> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
-	set<string> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
+	vector<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
+	set<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
+	set<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
 	vector<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
 	vector<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
 	CMap *m_Map;									// map data
@@ -68,16 +68,16 @@ protected:
 	unsigned char m_VirtualHostPID;					// virtual host's PID
 	unsigned char m_FakePlayerPID;					// the fake player's PID (if present)
 	unsigned char m_GProxyEmptyActions;
-	string m_GameName;								// game name
-	string m_LastGameName;							// last game name (the previous game name before it was rehosted)
-	string m_VirtualHostName;						// virtual host's name
-	string m_OwnerName;								// name of the player who owns this game (should be considered an admin)
-	string m_CreatorName;							// name of the player who created this game
-	string m_CreatorServer;							// battle.net server the player who created this game was on
-	string m_AnnounceMessage;						// a message to be sent every m_AnnounceInterval seconds
-	string m_StatString;							// the stat string when the game started (used when saving replays)
-	string m_KickVotePlayer;						// the player to be kicked with the currently running kick vote
-	string m_HCLCommandString;						// the "HostBot Command Library" command string, used to pass a limited amount of data to specially designed maps
+	QString m_GameName;								// game name
+	QString m_LastGameName;							// last game name (the previous game name before it was rehosted)
+	QString m_VirtualHostName;						// virtual host's name
+	QString m_OwnerName;								// name of the player who owns this game (should be considered an admin)
+	QString m_CreatorName;							// name of the player who created this game
+	QString m_CreatorServer;							// battle.net server the player who created this game was on
+	QString m_AnnounceMessage;						// a message to be sent every m_AnnounceInterval seconds
+	QString m_StatString;							// the stat QString when the game started (used when saving replays)
+	QString m_KickVotePlayer;						// the player to be kicked with the currently running kick vote
+	QString m_HCLCommandString;						// the "HostBot Command Library" command QString, used to pass a limited amount of data to specially designed maps
 	uint32_t m_RandomSeed;							// the random seed sent to the Warcraft III clients
 	uint32_t m_HostCounter;							// a unique game number
 	uint32_t m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
@@ -126,7 +126,7 @@ protected:
 	bool m_LocalAdminMessages;						// if local admin messages should be relayed or not
 
 public:
-	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer );
+	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CBaseGame( );
 
 	virtual vector<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
@@ -135,12 +135,12 @@ public:
 	virtual uint16_t GetHostPort( )					{ return m_HostPort; }
 	virtual unsigned char GetGameState( )			{ return m_GameState; }
 	virtual unsigned char GetGProxyEmptyActions( )	{ return m_GProxyEmptyActions; }
-	virtual string GetGameName( )					{ return m_GameName; }
-	virtual string GetLastGameName( )				{ return m_LastGameName; }
-	virtual string GetVirtualHostName( )			{ return m_VirtualHostName; }
-	virtual string GetOwnerName( )					{ return m_OwnerName; }
-	virtual string GetCreatorName( )				{ return m_CreatorName; }
-	virtual string GetCreatorServer( )				{ return m_CreatorServer; }
+	virtual QString GetGameName( )					{ return m_GameName; }
+	virtual QString GetLastGameName( )				{ return m_LastGameName; }
+	virtual QString GetVirtualHostName( )			{ return m_VirtualHostName; }
+	virtual QString GetOwnerName( )					{ return m_OwnerName; }
+	virtual QString GetCreatorName( )				{ return m_CreatorName; }
+	virtual QString GetCreatorServer( )				{ return m_CreatorServer; }
 	virtual uint32_t GetHostCounter( )				{ return m_HostCounter; }
 	virtual uint32_t GetLastLagScreenTime( )		{ return m_LastLagScreenTime; }
 	virtual bool GetLocked( )						{ return m_Locked; }
@@ -164,9 +164,9 @@ public:
 	virtual uint32_t GetSlotsOpen( );
 	virtual uint32_t GetNumPlayers( );
 	virtual uint32_t GetNumHumanPlayers( );
-	virtual string GetDescription( );
+	virtual QString GetDescription( );
 
-	virtual void SetAnnounce( uint32_t interval, string message );
+	virtual void SetAnnounce( uint32_t interval, QString message );
 
 	// processing functions
 
@@ -183,13 +183,13 @@ public:
 
 	// functions to send packets to players
 
-	virtual void SendChat( unsigned char fromPID, CGamePlayer *player, string message );
-	virtual void SendChat( unsigned char fromPID, unsigned char toPID, string message );
-	virtual void SendChat( CGamePlayer *player, string message );
-	virtual void SendChat( unsigned char toPID, string message );
-	virtual void SendAllChat( unsigned char fromPID, string message );
-	virtual void SendAllChat( string message );
-	virtual void SendLocalAdminChat( string message );
+	virtual void SendChat( unsigned char fromPID, CGamePlayer *player, QString message );
+	virtual void SendChat( unsigned char fromPID, unsigned char toPID, QString message );
+	virtual void SendChat( CGamePlayer *player, QString message );
+	virtual void SendChat( unsigned char toPID, QString message );
+	virtual void SendAllChat( unsigned char fromPID, QString message );
+	virtual void SendAllChat( QString message );
+	virtual void SendLocalAdminChat( QString message );
 	virtual void SendAllSlotInfo( );
 	virtual void SendVirtualHostPlayerInfo( CGamePlayer *player );
 	virtual void SendFakePlayerInfo( CGamePlayer *player );
@@ -213,7 +213,7 @@ public:
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual void EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum );
 	virtual void EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlayer *chatPlayer );
-	virtual bool EventPlayerBotCommand( CGamePlayer *player, string command, string payload );
+	virtual bool EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload );
 	virtual void EventPlayerChangeTeam( CGamePlayer *player, unsigned char team );
 	virtual void EventPlayerChangeColour( CGamePlayer *player, unsigned char colour );
 	virtual void EventPlayerChangeRace( CGamePlayer *player, unsigned char race );
@@ -224,7 +224,7 @@ public:
 
 	// these events are called outside of any iterations
 
-	virtual void EventGameRefreshed( string server );
+	virtual void EventGameRefreshed( QString server );
 	virtual void EventGameStarted( );
 	virtual void EventGameLoaded( );
 
@@ -233,8 +233,8 @@ public:
 	virtual unsigned char GetSIDFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromSID( unsigned char SID );
-	virtual CGamePlayer *GetPlayerFromName( string name, bool sensitive );
-	virtual uint32_t GetPlayerFromNamePartial( string name, CGamePlayer **player );
+	virtual CGamePlayer *GetPlayerFromName( QString name, bool sensitive );
+	virtual uint32_t GetPlayerFromNamePartial( QString name, CGamePlayer **player );
 	virtual CGamePlayer *GetPlayerFromColour( unsigned char colour );
 	virtual unsigned char GetNewPID( );
 	virtual unsigned char GetNewColour( );
@@ -253,17 +253,17 @@ public:
 	virtual void ShuffleSlots( );
 	virtual vector<unsigned char> BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
 	virtual void BalanceSlots( );
-	virtual void AddToSpoofed( string server, string name, bool sendMessage );
-	virtual void AddToReserved( string name );
-	virtual bool IsOwner( string name );
-	virtual bool IsReserved( string name );
+	virtual void AddToSpoofed( QString server, QString name, bool sendMessage );
+	virtual void AddToReserved( QString name );
+	virtual bool IsOwner( QString name );
+	virtual bool IsReserved( QString name );
 	virtual bool IsDownloading( );
 	virtual bool IsGameDataSaved( );
 	virtual void SaveGameData( );
 	virtual void StartCountDown( bool force );
 	virtual void StartCountDownAuto( bool requireSpoofChecks );
-	virtual void StopPlayers( string reason );
-	virtual void StopLaggers( string reason );
+	virtual void StopPlayers( QString reason );
+	virtual void StopLaggers( QString reason );
 	virtual void CreateVirtualHost( );
 	virtual void DeleteVirtualHost( );
 	virtual void CreateFakePlayer( );

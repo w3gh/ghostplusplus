@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,13 +39,15 @@
 #include <map>
 #include <queue>
 #include <set>
-#include <string>
+#include <QString>
 #include <vector>
+
+#include <QByteArray>
 
 using namespace std;
 
 typedef vector<unsigned char> BYTEARRAY;
-typedef pair<unsigned char,string> PIDPlayer;
+typedef pair<unsigned char,QString> PIDPlayer;
 
 // time
 
@@ -65,8 +67,8 @@ uint32_t GetTicks( );		// milliseconds
 
 // output
 
-void CONSOLE_Print( string message );
-void DEBUG_Print( string message );
+void CONSOLE_Print( QString message );
+void DEBUG_Print( QString message );
 void DEBUG_Print( BYTEARRAY b );
 
 #endif

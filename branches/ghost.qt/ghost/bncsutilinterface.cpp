@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,7 +28,7 @@
 // CBNCSUtilInterface
 //
 
-CBNCSUtilInterface :: CBNCSUtilInterface( string userName, string userPassword )
+CBNCSUtilInterface :: CBNCSUtilInterface( QString userName, QString userPassword )
 {
 	// m_nls = (void *)nls_init( userName.c_str( ), userPassword.c_str( ) );
 	m_NLS = new NLS( userName, userPassword );
@@ -40,7 +40,7 @@ CBNCSUtilInterface :: ~CBNCSUtilInterface( )
 	delete (NLS *)m_NLS;
 }
 
-void CBNCSUtilInterface :: Reset( string userName, string userPassword )
+void CBNCSUtilInterface :: Reset( QString userName, QString userPassword )
 {
 	// nls_free( (nls_t *)m_nls );
 	// m_nls = (void *)nls_init( userName.c_str( ), userPassword.c_str( ) );
@@ -48,17 +48,17 @@ void CBNCSUtilInterface :: Reset( string userName, string userPassword )
 	m_NLS = new NLS( userName, userPassword );
 }
 
-bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, string war3Path, string keyROC, string keyTFT, string valueStringFormula, string mpqFileName, BYTEARRAY clientToken, BYTEARRAY serverToken )
+bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, BYTEARRAY clientToken, BYTEARRAY serverToken )
 {
 	// set m_EXEVersion, m_EXEVersionHash, m_EXEInfo, m_InfoROC, m_InfoTFT
 
-	string FileWar3EXE = war3Path + "war3.exe";
-	string FileStormDLL = war3Path + "Storm.dll";
+	QString FileWar3EXE = war3Path + "war3.exe";
+	QString FileStormDLL = war3Path + "Storm.dll";
 
 	if( !UTIL_FileExists( FileStormDLL ) )
 		FileStormDLL = war3Path + "storm.dll";
 
-	string FileGameDLL = war3Path + "game.dll";
+	QString FileGameDLL = war3Path + "game.dll";
 	bool ExistsWar3EXE = UTIL_FileExists( FileWar3EXE );
 	bool ExistsStormDLL = UTIL_FileExists( FileStormDLL );
 	bool ExistsGameDLL = UTIL_FileExists( FileGameDLL );
@@ -122,13 +122,13 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY salt, BYTE
 	// set m_M1
 
 	char buf[20];
-	// nls_get_M1( (nls_t *)m_nls, buf, string( serverKey.begin( ), serverKey.end( ) ).c_str( ), string( salt.begin( ), salt.end( ) ).c_str( ) );
-	( (NLS *)m_NLS )->getClientSessionKey( buf, string( salt.begin( ), salt.end( ) ).c_str( ), string( serverKey.begin( ), serverKey.end( ) ).c_str( ) );
+	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).c_str( ), QString( salt.begin( ), salt.end( ) ).c_str( ) );
+	( (NLS *)m_NLS )->getClientSessionKey( buf, QString( salt.begin( ), salt.end( ) ).c_str( ), QString( serverKey.begin( ), serverKey.end( ) ).c_str( ) );
 	m_M1 = UTIL_CreateByteArray( (unsigned char *)buf, 20 );
 	return true;
 }
 
-bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( string userPassword )
+bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
 {
 	// set m_PvPGNPasswordHash
 
@@ -138,7 +138,7 @@ bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( string userPassword )
 	return true;
 }
 
-BYTEARRAY CBNCSUtilInterface :: CreateKeyInfo( string key, uint32_t clientToken, uint32_t serverToken )
+BYTEARRAY CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	BYTEARRAY KeyInfo;

@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -88,7 +88,7 @@ CPacked :: ~CPacked( )
 	delete m_CRC;
 }
 
-void CPacked :: Load( string fileName, bool allBlocks )
+void CPacked :: Load( QString fileName, bool allBlocks )
 {
 	m_Valid = true;
 	CONSOLE_Print( "[PACKED] loading data from file [" + fileName + "]" );
@@ -96,7 +96,7 @@ void CPacked :: Load( string fileName, bool allBlocks )
 	Decompress( allBlocks );
 }
 
-bool CPacked :: Save( bool TFT, string fileName )
+bool CPacked :: Save( bool TFT, QString fileName )
 {
 	Compress( TFT );
 
@@ -109,7 +109,7 @@ bool CPacked :: Save( bool TFT, string fileName )
 		return false;
 }
 
-bool CPacked :: Extract( string inFileName, string outFileName )
+bool CPacked :: Extract( QString inFileName, QString outFileName )
 {
 	m_Valid = true;
 	CONSOLE_Print( "[PACKED] extracting data from file [" + inFileName + "] to file [" + outFileName + "]" );
@@ -122,7 +122,7 @@ bool CPacked :: Extract( string inFileName, string outFileName )
 		return false;
 }
 
-bool CPacked :: Pack( bool TFT, string inFileName, string outFileName )
+bool CPacked :: Pack( bool TFT, QString inFileName, QString outFileName )
 {
 	m_Valid = true;
 	CONSOLE_Print( "[PACKET] packing data from file [" + inFileName + "] to file [" + outFileName + "]" );
@@ -143,7 +143,7 @@ void CPacked :: Decompress( bool allBlocks )
 
 	m_Decompressed.clear( );
 	istringstream ISS( m_Compressed );
-	string GarbageString;
+	QString GarbageString;
 
 	// read header
 
@@ -253,7 +253,7 @@ void CPacked :: Decompress( bool allBlocks )
 			return;
 		}
 
-		m_Decompressed += string( (char *)DecompressedData, BlockDecompressedLong );
+		m_Decompressed += QString( (char *)DecompressedData, BlockDecompressedLong );
 		delete [] DecompressedData;
 		delete [] CompressedData;
 
@@ -293,10 +293,10 @@ void CPacked :: Compress( bool TFT )
 	// use a buffer of size 8213 bytes because in the worst case zlib will grow the data 0.1% plus 12 bytes
 
 	uint32_t CompressedSize = 0;
-	string Padded = m_Decompressed;
+	QString Padded = m_Decompressed;
 	Padded.append( 8192 - ( Padded.size( ) % 8192 ), 0 );
-	vector<string> CompressedBlocks;
-	string :: size_type Position = 0;
+	vector<QString> CompressedBlocks;
+	QString :: size_type Position = 0;
 	unsigned char *CompressedData = new unsigned char[8213];
 
 	while( Position < Padded.size( ) )
@@ -312,7 +312,7 @@ void CPacked :: Compress( bool TFT )
 			return;
 		}
 
-		CompressedBlocks.push_back( string( (char *)CompressedData, BlockCompressedLong ) );
+		CompressedBlocks.push_back( QString( (char *)CompressedData, BlockCompressedLong ) );
 		CompressedSize += BlockCompressedLong;
 		Position += 8192;
 	}
@@ -360,7 +360,7 @@ void CPacked :: Compress( bool TFT )
 
 	// calculate header CRC
 
-	string HeaderString = string( Header.begin( ), Header.end( ) );
+	QString HeaderString = QString( Header.begin( ), Header.end( ) );
 	uint32_t CRC = m_CRC->FullCRC( (unsigned char *)HeaderString.c_str( ), HeaderString.size( ) );
 
 	// overwrite the (currently zero) header CRC with the calculated CRC
@@ -370,11 +370,11 @@ void CPacked :: Compress( bool TFT )
 
 	// append header
 
-	m_Compressed += string( Header.begin( ), Header.end( ) );
+	m_Compressed += QString( Header.begin( ), Header.end( ) );
 
 	// append blocks
 
-	for( vector<string> :: iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
+	for( vector<QString> :: iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
 	{
 		BYTEARRAY BlockHeader;
 		UTIL_AppendByteArray( BlockHeader, (uint16_t)(*i).size( ), false );
@@ -386,7 +386,7 @@ void CPacked :: Compress( bool TFT )
 
 		// calculate block header CRC
 
-		string BlockHeaderString = string( BlockHeader.begin( ), BlockHeader.end( ) );
+		QString BlockHeaderString = QString( BlockHeader.begin( ), BlockHeader.end( ) );
 		uint32_t CRC1 = m_CRC->FullCRC( (unsigned char *)BlockHeaderString.c_str( ), BlockHeaderString.size( ) );
 		CRC1 = CRC1 ^ ( CRC1 >> 16 );
 		uint32_t CRC2 = m_CRC->FullCRC( (unsigned char *)(*i).c_str( ), (*i).size( ) );
@@ -400,7 +400,7 @@ void CPacked :: Compress( bool TFT )
 
 		// append block header and data
 
-		m_Compressed += string( BlockHeader.begin( ), BlockHeader.end( ) );
+		m_Compressed += QString( BlockHeader.begin( ), BlockHeader.end( ) );
 		m_Compressed += *i;
 	}
 }

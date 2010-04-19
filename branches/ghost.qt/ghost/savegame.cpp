@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,7 +42,7 @@ CSaveGame :: ~CSaveGame( )
 #define READSTR( x, y )		getline( (x), (y), '\0' )
 
 void CSaveGame :: ParseSaveGame( )
-{
+{/*
 	m_MapPath.clear( );
 	m_GameName.clear( );
 	m_NumSlots = 0;
@@ -60,11 +60,11 @@ void CSaveGame :: ParseSaveGame( )
 	istringstream ISS( m_Decompressed );
 
 	// savegame format figured out by Varlock:
-	// string		-> map path
-	// 0 (string?)	-> ??? (no idea what this is)
-	// string		-> game name
-	// 0 (string?)	-> ??? (maybe original game password)
-	// string		-> stat string
+	// QString		-> map path
+	// 0 (QString?)	-> ??? (no idea what this is)
+	// QString		-> game name
+	// 0 (QString?)	-> ??? (maybe original game password)
+	// QString		-> stat QString
 	// 4 bytes		-> ??? (seems to be # of slots)
 	// 4 bytes		-> ??? (seems to be 0x01 0x28 0x49 0x00 on both of the savegames examined)
 	// 2 bytes		-> ??? (no idea what this is)
@@ -74,14 +74,14 @@ void CSaveGame :: ParseSaveGame( )
 	unsigned char Garbage1;
 	uint16_t Garbage2;
 	uint32_t Garbage4;
-	string GarbageString;
+	QString GarbageString;
 	uint32_t MagicNumber;
 
 	READSTR( ISS, m_MapPath );				// map path
 	READSTR( ISS, GarbageString );			// ???
 	READSTR( ISS, m_GameName );				// game name
 	READSTR( ISS, GarbageString );			// ???
-	READSTR( ISS, GarbageString );			// stat string
+	READSTR( ISS, GarbageString );			// stat QString
 	READB( ISS, &Garbage4, 4 );				// ???
 	READB( ISS, &Garbage4, 4 );				// ???
 	READB( ISS, &Garbage2, 2 );				// ???
@@ -113,6 +113,6 @@ void CSaveGame :: ParseSaveGame( )
 		return;
 	}
 
-	m_MagicNumber = UTIL_CreateByteArray( MagicNumber, false );
-	m_Valid = true;
+	m_MagicNumber = UTIL_CreateQByteArray( MagicNumber, false );
+	m_Valid = true;*/
 }

@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@
 // CLanguage
 //
 
-CLanguage :: CLanguage( string nCFGFile )
+CLanguage :: CLanguage( QString nCFGFile )
 {
 	m_CFG = new CConfig( );
 	m_CFG->Read( nCFGFile );
@@ -38,86 +38,86 @@ CLanguage :: ~CLanguage( )
 	delete m_CFG;
 }
 
-string CLanguage :: UnableToCreateGameTryAnotherName( string server, string gamename )
+QString CLanguage :: UnableToCreateGameTryAnotherName( QString server, QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0001", "lang_0001" );
+	QString Out = m_CFG->GetString( "lang_0001", "lang_0001" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: UserIsAlreadyAnAdmin( string server, string user )
+QString CLanguage :: UserIsAlreadyAnAdmin( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0002", "lang_0002" );
+	QString Out = m_CFG->GetString( "lang_0002", "lang_0002" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: AddedUserToAdminDatabase( string server, string user )
+QString CLanguage :: AddedUserToAdminDatabase( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0003", "lang_0003" );
+	QString Out = m_CFG->GetString( "lang_0003", "lang_0003" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: ErrorAddingUserToAdminDatabase( string server, string user )
+QString CLanguage :: ErrorAddingUserToAdminDatabase( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0004", "lang_0004" );
+	QString Out = m_CFG->GetString( "lang_0004", "lang_0004" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: YouDontHaveAccessToThatCommand( )
+QString CLanguage :: YouDontHaveAccessToThatCommand( )
 {
 	return m_CFG->GetString( "lang_0005", "lang_0005" );
 }
 
-string CLanguage :: UserIsAlreadyBanned( string server, string victim )
+QString CLanguage :: UserIsAlreadyBanned( QString server, QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0006", "lang_0006" );
+	QString Out = m_CFG->GetString( "lang_0006", "lang_0006" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: BannedUser( string server, string victim )
+QString CLanguage :: BannedUser( QString server, QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0007", "lang_0007" );
+	QString Out = m_CFG->GetString( "lang_0007", "lang_0007" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: ErrorBanningUser( string server, string victim )
+QString CLanguage :: ErrorBanningUser( QString server, QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0008", "lang_0008" );
+	QString Out = m_CFG->GetString( "lang_0008", "lang_0008" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UserIsAnAdmin( string server, string user )
+QString CLanguage :: UserIsAnAdmin( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0009", "lang_0009" );
+	QString Out = m_CFG->GetString( "lang_0009", "lang_0009" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UserIsNotAnAdmin( string server, string user )
+QString CLanguage :: UserIsNotAnAdmin( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0010", "lang_0010" );
+	QString Out = m_CFG->GetString( "lang_0010", "lang_0010" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UserWasBannedOnByBecause( string server, string victim, string date, string admin, string reason )
+QString CLanguage :: UserWasBannedOnByBecause( QString server, QString victim, QString date, QString admin, QString reason )
 {
-	string Out = m_CFG->GetString( "lang_0011", "lang_0011" );
+	QString Out = m_CFG->GetString( "lang_0011", "lang_0011" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$DATE$", date );
@@ -126,356 +126,356 @@ string CLanguage :: UserWasBannedOnByBecause( string server, string victim, stri
 	return Out;
 }
 
-string CLanguage :: UserIsNotBanned( string server, string victim )
+QString CLanguage :: UserIsNotBanned( QString server, QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0012", "lang_0012" );
+	QString Out = m_CFG->GetString( "lang_0012", "lang_0012" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: ThereAreNoAdmins( string server )
+QString CLanguage :: ThereAreNoAdmins( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0013", "lang_0013" );
+	QString Out = m_CFG->GetString( "lang_0013", "lang_0013" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: ThereIsAdmin( string server )
+QString CLanguage :: ThereIsAdmin( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0014", "lang_0014" );
+	QString Out = m_CFG->GetString( "lang_0014", "lang_0014" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: ThereAreAdmins( string server, string count )
+QString CLanguage :: ThereAreAdmins( QString server, QString count )
 {
-	string Out = m_CFG->GetString( "lang_0015", "lang_0015" );
-	UTIL_Replace( Out, "$SERVER$", server );
-	UTIL_Replace( Out, "$COUNT$", count );
-	return Out;
-}
-
-string CLanguage :: ThereAreNoBannedUsers( string server )
-{
-	string Out = m_CFG->GetString( "lang_0016", "lang_0016" );
-	UTIL_Replace( Out, "$SERVER$", server );
-	return Out;
-}
-
-string CLanguage :: ThereIsBannedUser( string server )
-{
-	string Out = m_CFG->GetString( "lang_0017", "lang_0017" );
-	UTIL_Replace( Out, "$SERVER$", server );
-	return Out;
-}
-
-string CLanguage :: ThereAreBannedUsers( string server, string count )
-{
-	string Out = m_CFG->GetString( "lang_0018", "lang_0018" );
+	QString Out = m_CFG->GetString( "lang_0015", "lang_0015" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$COUNT$", count );
 	return Out;
 }
 
-string CLanguage :: YouCantDeleteTheRootAdmin( )
+QString CLanguage :: ThereAreNoBannedUsers( QString server )
+{
+	QString Out = m_CFG->GetString( "lang_0016", "lang_0016" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	return Out;
+}
+
+QString CLanguage :: ThereIsBannedUser( QString server )
+{
+	QString Out = m_CFG->GetString( "lang_0017", "lang_0017" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	return Out;
+}
+
+QString CLanguage :: ThereAreBannedUsers( QString server, QString count )
+{
+	QString Out = m_CFG->GetString( "lang_0018", "lang_0018" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	UTIL_Replace( Out, "$COUNT$", count );
+	return Out;
+}
+
+QString CLanguage :: YouCantDeleteTheRootAdmin( )
 {
 	return m_CFG->GetString( "lang_0019", "lang_0019" );
 }
 
-string CLanguage :: DeletedUserFromAdminDatabase( string server, string user )
+QString CLanguage :: DeletedUserFromAdminDatabase( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0020", "lang_0020" );
+	QString Out = m_CFG->GetString( "lang_0020", "lang_0020" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: ErrorDeletingUserFromAdminDatabase( string server, string user )
+QString CLanguage :: ErrorDeletingUserFromAdminDatabase( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0021", "lang_0021" );
+	QString Out = m_CFG->GetString( "lang_0021", "lang_0021" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UnbannedUser( string victim )
+QString CLanguage :: UnbannedUser( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0022", "lang_0022" );
+	QString Out = m_CFG->GetString( "lang_0022", "lang_0022" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: ErrorUnbanningUser( string victim )
+QString CLanguage :: ErrorUnbanningUser( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0023", "lang_0023" );
+	QString Out = m_CFG->GetString( "lang_0023", "lang_0023" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: GameNumberIs( string number, string description )
+QString CLanguage :: GameNumberIs( QString number, QString description )
 {
-	string Out = m_CFG->GetString( "lang_0024", "lang_0024" );
+	QString Out = m_CFG->GetString( "lang_0024", "lang_0024" );
 	UTIL_Replace( Out, "$NUMBER$", number );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: GameNumberDoesntExist( string number )
+QString CLanguage :: GameNumberDoesntExist( QString number )
 {
-	string Out = m_CFG->GetString( "lang_0025", "lang_0025" );
+	QString Out = m_CFG->GetString( "lang_0025", "lang_0025" );
 	UTIL_Replace( Out, "$NUMBER$", number );
 	return Out;
 }
 
-string CLanguage :: GameIsInTheLobby( string description, string current, string max )
+QString CLanguage :: GameIsInTheLobby( QString description, QString current, QString max )
 {
-	string Out = m_CFG->GetString( "lang_0026", "lang_0026" );
+	QString Out = m_CFG->GetString( "lang_0026", "lang_0026" );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	UTIL_Replace( Out, "$CURRENT$", current );
 	UTIL_Replace( Out, "$MAX$", max );
 	return Out;
 }
 
-string CLanguage :: ThereIsNoGameInTheLobby( string current, string max )
+QString CLanguage :: ThereIsNoGameInTheLobby( QString current, QString max )
 {
-	string Out = m_CFG->GetString( "lang_0027", "lang_0027" );
+	QString Out = m_CFG->GetString( "lang_0027", "lang_0027" );
 	UTIL_Replace( Out, "$CURRENT$", current );
 	UTIL_Replace( Out, "$MAX$", max );
 	return Out;
 }
 
-string CLanguage :: UnableToLoadConfigFilesOutside( )
+QString CLanguage :: UnableToLoadConfigFilesOutside( )
 {
 	return m_CFG->GetString( "lang_0028", "lang_0028" );
 }
 
-string CLanguage :: LoadingConfigFile( string file )
+QString CLanguage :: LoadingConfigFile( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0029", "lang_0029" );
+	QString Out = m_CFG->GetString( "lang_0029", "lang_0029" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: UnableToLoadConfigFileDoesntExist( string file )
+QString CLanguage :: UnableToLoadConfigFileDoesntExist( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0030", "lang_0030" );
+	QString Out = m_CFG->GetString( "lang_0030", "lang_0030" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: CreatingPrivateGame( string gamename, string user )
+QString CLanguage :: CreatingPrivateGame( QString gamename, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0031", "lang_0031" );
+	QString Out = m_CFG->GetString( "lang_0031", "lang_0031" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: CreatingPublicGame( string gamename, string user )
+QString CLanguage :: CreatingPublicGame( QString gamename, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0032", "lang_0032" );
+	QString Out = m_CFG->GetString( "lang_0032", "lang_0032" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UnableToUnhostGameCountdownStarted( string description )
+QString CLanguage :: UnableToUnhostGameCountdownStarted( QString description )
 {
-	string Out = m_CFG->GetString( "lang_0033", "lang_0033" );
+	QString Out = m_CFG->GetString( "lang_0033", "lang_0033" );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: UnhostingGame( string description )
+QString CLanguage :: UnhostingGame( QString description )
 {
-	string Out = m_CFG->GetString( "lang_0034", "lang_0034" );
+	QString Out = m_CFG->GetString( "lang_0034", "lang_0034" );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: UnableToUnhostGameNoGameInLobby( )
+QString CLanguage :: UnableToUnhostGameNoGameInLobby( )
 {
 	return m_CFG->GetString( "lang_0035", "lang_0035" );
 }
 
-string CLanguage :: VersionAdmin( string version )
+QString CLanguage :: VersionAdmin( QString version )
 {
-	string Out = m_CFG->GetString( "lang_0036", "lang_0036" );
+	QString Out = m_CFG->GetString( "lang_0036", "lang_0036" );
 	UTIL_Replace( Out, "$VERSION$", version );
 	return Out;
 }
 
-string CLanguage :: VersionNotAdmin( string version )
+QString CLanguage :: VersionNotAdmin( QString version )
 {
-	string Out = m_CFG->GetString( "lang_0037", "lang_0037" );
+	QString Out = m_CFG->GetString( "lang_0037", "lang_0037" );
 	UTIL_Replace( Out, "$VERSION$", version );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameAnotherGameInLobby( string gamename, string description )
+QString CLanguage :: UnableToCreateGameAnotherGameInLobby( QString gamename, QString description )
 {
-	string Out = m_CFG->GetString( "lang_0038", "lang_0038" );
+	QString Out = m_CFG->GetString( "lang_0038", "lang_0038" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameMaxGamesReached( string gamename, string max )
+QString CLanguage :: UnableToCreateGameMaxGamesReached( QString gamename, QString max )
 {
-	string Out = m_CFG->GetString( "lang_0039", "lang_0039" );
+	QString Out = m_CFG->GetString( "lang_0039", "lang_0039" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	UTIL_Replace( Out, "$MAX$", max );
 	return Out;
 }
 
-string CLanguage :: GameIsOver( string description )
+QString CLanguage :: GameIsOver( QString description )
 {
-	string Out = m_CFG->GetString( "lang_0040", "lang_0040" );
+	QString Out = m_CFG->GetString( "lang_0040", "lang_0040" );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: SpoofCheckByReplying( )
+QString CLanguage :: SpoofCheckByReplying( )
 {
 	return m_CFG->GetString( "lang_0041", "lang_0041" );
 }
 
-string CLanguage :: GameRefreshed( )
+QString CLanguage :: GameRefreshed( )
 {
 	return m_CFG->GetString( "lang_0042", "lang_0042" );
 }
 
-string CLanguage :: SpoofPossibleIsAway( string user )
+QString CLanguage :: SpoofPossibleIsAway( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0043", "lang_0043" );
+	QString Out = m_CFG->GetString( "lang_0043", "lang_0043" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: SpoofPossibleIsUnavailable( string user )
+QString CLanguage :: SpoofPossibleIsUnavailable( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0044", "lang_0044" );
+	QString Out = m_CFG->GetString( "lang_0044", "lang_0044" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: SpoofPossibleIsRefusingMessages( string user )
+QString CLanguage :: SpoofPossibleIsRefusingMessages( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0045", "lang_0045" );
+	QString Out = m_CFG->GetString( "lang_0045", "lang_0045" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: SpoofDetectedIsNotInGame( string user )
+QString CLanguage :: SpoofDetectedIsNotInGame( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0046", "lang_0046" );
+	QString Out = m_CFG->GetString( "lang_0046", "lang_0046" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: SpoofDetectedIsInPrivateChannel( string user )
+QString CLanguage :: SpoofDetectedIsInPrivateChannel( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0047", "lang_0047" );
+	QString Out = m_CFG->GetString( "lang_0047", "lang_0047" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: SpoofDetectedIsInAnotherGame( string user )
+QString CLanguage :: SpoofDetectedIsInAnotherGame( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0048", "lang_0048" );
+	QString Out = m_CFG->GetString( "lang_0048", "lang_0048" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: CountDownAborted( )
+QString CLanguage :: CountDownAborted( )
 {
 	return m_CFG->GetString( "lang_0049", "lang_0049" );
 }
 
-string CLanguage :: TryingToJoinTheGameButBanned( string victim )
+QString CLanguage :: TryingToJoinTheGameButBanned( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0050", "lang_0050" );
+	QString Out = m_CFG->GetString( "lang_0050", "lang_0050" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UnableToBanNoMatchesFound( string victim )
+QString CLanguage :: UnableToBanNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0051", "lang_0051" );
+	QString Out = m_CFG->GetString( "lang_0051", "lang_0051" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: PlayerWasBannedByPlayer( string server, string victim, string user )
+QString CLanguage :: PlayerWasBannedByPlayer( QString server, QString victim, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0052", "lang_0052" );
+	QString Out = m_CFG->GetString( "lang_0052", "lang_0052" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UnableToBanFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnableToBanFoundMoreThanOneMatch( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0053", "lang_0053" );
+	QString Out = m_CFG->GetString( "lang_0053", "lang_0053" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: AddedPlayerToTheHoldList( string user )
+QString CLanguage :: AddedPlayerToTheHoldList( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0054", "lang_0054" );
+	QString Out = m_CFG->GetString( "lang_0054", "lang_0054" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UnableToKickNoMatchesFound( string victim )
+QString CLanguage :: UnableToKickNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0055", "lang_0055" );
+	QString Out = m_CFG->GetString( "lang_0055", "lang_0055" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UnableToKickFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnableToKickFoundMoreThanOneMatch( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0056", "lang_0056" );
+	QString Out = m_CFG->GetString( "lang_0056", "lang_0056" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: SettingLatencyToMinimum( string min )
+QString CLanguage :: SettingLatencyToMinimum( QString min )
 {
-	string Out = m_CFG->GetString( "lang_0057", "lang_0057" );
+	QString Out = m_CFG->GetString( "lang_0057", "lang_0057" );
 	UTIL_Replace( Out, "$MIN$", min );
 	return Out;
 }
 
-string CLanguage :: SettingLatencyToMaximum( string max )
+QString CLanguage :: SettingLatencyToMaximum( QString max )
 {
-	string Out = m_CFG->GetString( "lang_0058", "lang_0058" );
+	QString Out = m_CFG->GetString( "lang_0058", "lang_0058" );
 	UTIL_Replace( Out, "$MAX$", max );
 	return Out;
 }
 
-string CLanguage :: SettingLatencyTo( string latency )
+QString CLanguage :: SettingLatencyTo( QString latency )
 {
-	string Out = m_CFG->GetString( "lang_0059", "lang_0059" );
+	QString Out = m_CFG->GetString( "lang_0059", "lang_0059" );
 	UTIL_Replace( Out, "$LATENCY$", latency );
 	return Out;
 }
 
-string CLanguage :: KickingPlayersWithPingsGreaterThan( string total, string ping )
+QString CLanguage :: KickingPlayersWithPingsGreaterThan( QString total, QString ping )
 {
-	string Out = m_CFG->GetString( "lang_0060", "lang_0060" );
+	QString Out = m_CFG->GetString( "lang_0060", "lang_0060" );
 	UTIL_Replace( Out, "$TOTAL$", total );
 	UTIL_Replace( Out, "$PING$", ping );
 	return Out;
 }
 
-string CLanguage :: HasPlayedGamesWithThisBot( string user, string firstgame, string lastgame, string totalgames, string avgloadingtime, string avgstay )
+QString CLanguage :: HasPlayedGamesWithThisBot( QString user, QString firstgame, QString lastgame, QString totalgames, QString avgloadingtime, QString avgstay )
 {
-	string Out = m_CFG->GetString( "lang_0061", "lang_0061" );
+	QString Out = m_CFG->GetString( "lang_0061", "lang_0061" );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$FIRSTGAME$", firstgame );
 	UTIL_Replace( Out, "$LASTGAME$", lastgame );
@@ -485,93 +485,93 @@ string CLanguage :: HasPlayedGamesWithThisBot( string user, string firstgame, st
 	return Out;
 }
 
-string CLanguage :: HasntPlayedGamesWithThisBot( string user )
+QString CLanguage :: HasntPlayedGamesWithThisBot( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0062", "lang_0062" );
+	QString Out = m_CFG->GetString( "lang_0062", "lang_0062" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: AutokickingPlayerForExcessivePing( string victim, string ping )
+QString CLanguage :: AutokickingPlayerForExcessivePing( QString victim, QString ping )
 {
-	string Out = m_CFG->GetString( "lang_0063", "lang_0063" );
+	QString Out = m_CFG->GetString( "lang_0063", "lang_0063" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$PING$", ping );
 	return Out;
 }
 
-string CLanguage :: SpoofCheckAcceptedFor( string server, string user )
+QString CLanguage :: SpoofCheckAcceptedFor( QString server, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0064", "lang_0064" );
+	QString Out = m_CFG->GetString( "lang_0064", "lang_0064" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: PlayersNotYetSpoofChecked( string notspoofchecked )
+QString CLanguage :: PlayersNotYetSpoofChecked( QString notspoofchecked )
 {
-	string Out = m_CFG->GetString( "lang_0065", "lang_0065" );
+	QString Out = m_CFG->GetString( "lang_0065", "lang_0065" );
 	UTIL_Replace( Out, "$NOTSPOOFCHECKED$", notspoofchecked );
 	return Out;
 }
 
-string CLanguage :: ManuallySpoofCheckByWhispering( string hostname )
+QString CLanguage :: ManuallySpoofCheckByWhispering( QString hostname )
 {
-	string Out = m_CFG->GetString( "lang_0066", "lang_0066" );
+	QString Out = m_CFG->GetString( "lang_0066", "lang_0066" );
 	UTIL_Replace( Out, "$HOSTNAME$", hostname );
 	return Out;
 }
 
-string CLanguage :: SpoofCheckByWhispering( string hostname )
+QString CLanguage :: SpoofCheckByWhispering( QString hostname )
 {
-	string Out = m_CFG->GetString( "lang_0067", "lang_0067" );
+	QString Out = m_CFG->GetString( "lang_0067", "lang_0067" );
 	UTIL_Replace( Out, "$HOSTNAME$", hostname );
 	return Out;
 }
 
-string CLanguage :: EveryoneHasBeenSpoofChecked( )
+QString CLanguage :: EveryoneHasBeenSpoofChecked( )
 {
 	return m_CFG->GetString( "lang_0068", "lang_0068" );
 }
 
-string CLanguage :: PlayersNotYetPinged( string notpinged )
+QString CLanguage :: PlayersNotYetPinged( QString notpinged )
 {
-	string Out = m_CFG->GetString( "lang_0069", "lang_0069" );
+	QString Out = m_CFG->GetString( "lang_0069", "lang_0069" );
 	UTIL_Replace( Out, "$NOTPINGED$", notpinged );
 	return Out;
 }
 
-string CLanguage :: EveryoneHasBeenPinged( )
+QString CLanguage :: EveryoneHasBeenPinged( )
 {
 	return m_CFG->GetString( "lang_0070", "lang_0070" );
 }
 
-string CLanguage :: ShortestLoadByPlayer( string user, string loadingtime )
+QString CLanguage :: ShortestLoadByPlayer( QString user, QString loadingtime )
 {
-	string Out = m_CFG->GetString( "lang_0071", "lang_0071" );
+	QString Out = m_CFG->GetString( "lang_0071", "lang_0071" );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$LOADINGTIME$", loadingtime );
 	return Out;
 }
 
-string CLanguage :: LongestLoadByPlayer( string user, string loadingtime )
+QString CLanguage :: LongestLoadByPlayer( QString user, QString loadingtime )
 {
-	string Out = m_CFG->GetString( "lang_0072", "lang_0072" );
+	QString Out = m_CFG->GetString( "lang_0072", "lang_0072" );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$LOADINGTIME$", loadingtime );
 	return Out;
 }
 
-string CLanguage :: YourLoadingTimeWas( string loadingtime )
+QString CLanguage :: YourLoadingTimeWas( QString loadingtime )
 {
-	string Out = m_CFG->GetString( "lang_0073", "lang_0073" );
+	QString Out = m_CFG->GetString( "lang_0073", "lang_0073" );
 	UTIL_Replace( Out, "$LOADINGTIME$", loadingtime );
 	return Out;
 }
 
-string CLanguage :: HasPlayedDotAGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalcreepkills, string totalcreepdenies, string totalassists, string totalneutralkills, string totaltowerkills, string totalraxkills, string totalcourierkills, string avgkills, string avgdeaths, string avgcreepkills, string avgcreepdenies, string avgassists, string avgneutralkills, string avgtowerkills, string avgraxkills, string avgcourierkills )
+QString CLanguage :: HasPlayedDotAGamesWithThisBot( QString user, QString totalgames, QString totalwins, QString totallosses, QString totalkills, QString totaldeaths, QString totalcreepkills, QString totalcreepdenies, QString totalassists, QString totalneutralkills, QString totaltowerkills, QString totalraxkills, QString totalcourierkills, QString avgkills, QString avgdeaths, QString avgcreepkills, QString avgcreepdenies, QString avgassists, QString avgneutralkills, QString avgtowerkills, QString avgraxkills, QString avgcourierkills )
 {
-	string Out = m_CFG->GetString( "lang_0074", "lang_0074" );
+	QString Out = m_CFG->GetString( "lang_0074", "lang_0074" );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$TOTALGAMES$", totalgames );
 	UTIL_Replace( Out, "$TOTALWINS$", totalwins );
@@ -597,309 +597,309 @@ string CLanguage :: HasPlayedDotAGamesWithThisBot( string user, string totalgame
 	return Out;
 }
 
-string CLanguage :: HasntPlayedDotAGamesWithThisBot( string user )
+QString CLanguage :: HasntPlayedDotAGamesWithThisBot( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0075", "lang_0075" );
+	QString Out = m_CFG->GetString( "lang_0075", "lang_0075" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: WasKickedForReservedPlayer( string reserved )
+QString CLanguage :: WasKickedForReservedPlayer( QString reserved )
 {
-	string Out = m_CFG->GetString( "lang_0076", "lang_0076" );
+	QString Out = m_CFG->GetString( "lang_0076", "lang_0076" );
 	UTIL_Replace( Out, "$RESERVED$", reserved );
 	return Out;
 }
 
-string CLanguage :: WasKickedForOwnerPlayer( string owner )
+QString CLanguage :: WasKickedForOwnerPlayer( QString owner )
 {
-	string Out = m_CFG->GetString( "lang_0077", "lang_0077" );
+	QString Out = m_CFG->GetString( "lang_0077", "lang_0077" );
 	UTIL_Replace( Out, "$OWNER$", owner );
 	return Out;
 }
 
-string CLanguage :: WasKickedByPlayer( string user )
+QString CLanguage :: WasKickedByPlayer( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0078", "lang_0078" );
+	QString Out = m_CFG->GetString( "lang_0078", "lang_0078" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionPlayerError( string error )
+QString CLanguage :: HasLostConnectionPlayerError( QString error )
 {
-	string Out = m_CFG->GetString( "lang_0079", "lang_0079" );
+	QString Out = m_CFG->GetString( "lang_0079", "lang_0079" );
 	UTIL_Replace( Out, "$ERROR$", error );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionSocketError( string error )
+QString CLanguage :: HasLostConnectionSocketError( QString error )
 {
-	string Out = m_CFG->GetString( "lang_0080", "lang_0080" );
+	QString Out = m_CFG->GetString( "lang_0080", "lang_0080" );
 	UTIL_Replace( Out, "$ERROR$", error );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionClosedByRemoteHost( )
+QString CLanguage :: HasLostConnectionClosedByRemoteHost( )
 {
 	return m_CFG->GetString( "lang_0081", "lang_0081" );
 }
 
-string CLanguage :: HasLeftVoluntarily( )
+QString CLanguage :: HasLeftVoluntarily( )
 {
 	return m_CFG->GetString( "lang_0082", "lang_0082" );
 }
 
-string CLanguage :: EndingGame( string description )
+QString CLanguage :: EndingGame( QString description )
 {
-	string Out = m_CFG->GetString( "lang_0083", "lang_0083" );
+	QString Out = m_CFG->GetString( "lang_0083", "lang_0083" );
 	UTIL_Replace( Out, "$DESCRIPTION$", description );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionTimedOut( )
+QString CLanguage :: HasLostConnectionTimedOut( )
 {
 	return m_CFG->GetString( "lang_0084", "lang_0084" );
 }
 
-string CLanguage :: GlobalChatMuted( )
+QString CLanguage :: GlobalChatMuted( )
 {
 	return m_CFG->GetString( "lang_0085", "lang_0085" );
 }
 
-string CLanguage :: GlobalChatUnmuted( )
+QString CLanguage :: GlobalChatUnmuted( )
 {
 	return m_CFG->GetString( "lang_0086", "lang_0086" );
 }
 
-string CLanguage :: ShufflingPlayers( )
+QString CLanguage :: ShufflingPlayers( )
 {
 	return m_CFG->GetString( "lang_0087", "lang_0087" );
 }
 
-string CLanguage :: UnableToLoadConfigFileGameInLobby( )
+QString CLanguage :: UnableToLoadConfigFileGameInLobby( )
 {
 	return m_CFG->GetString( "lang_0088", "lang_0088" );
 }
 
-string CLanguage :: PlayersStillDownloading( string stilldownloading )
+QString CLanguage :: PlayersStillDownloading( QString stilldownloading )
 {
-	string Out = m_CFG->GetString( "lang_0089", "lang_0089" );
+	QString Out = m_CFG->GetString( "lang_0089", "lang_0089" );
 	UTIL_Replace( Out, "$STILLDOWNLOADING$", stilldownloading );
 	return Out;
 }
 
-string CLanguage :: RefreshMessagesEnabled( )
+QString CLanguage :: RefreshMessagesEnabled( )
 {
 	return m_CFG->GetString( "lang_0090", "lang_0090" );
 }
 
-string CLanguage :: RefreshMessagesDisabled( )
+QString CLanguage :: RefreshMessagesDisabled( )
 {
 	return m_CFG->GetString( "lang_0091", "lang_0091" );
 }
 
-string CLanguage :: AtLeastOneGameActiveUseForceToShutdown( )
+QString CLanguage :: AtLeastOneGameActiveUseForceToShutdown( )
 {
 	return m_CFG->GetString( "lang_0092", "lang_0092" );
 }
 
-string CLanguage :: CurrentlyLoadedMapCFGIs( string mapcfg )
+QString CLanguage :: CurrentlyLoadedMapCFGIs( QString mapcfg )
 {
-	string Out = m_CFG->GetString( "lang_0093", "lang_0093" );
+	QString Out = m_CFG->GetString( "lang_0093", "lang_0093" );
 	UTIL_Replace( Out, "$MAPCFG$", mapcfg );
 	return Out;
 }
 
-string CLanguage :: LaggedOutDroppedByAdmin( )
+QString CLanguage :: LaggedOutDroppedByAdmin( )
 {
 	return m_CFG->GetString( "lang_0094", "lang_0094" );
 }
 
-string CLanguage :: LaggedOutDroppedByVote( )
+QString CLanguage :: LaggedOutDroppedByVote( )
 {
 	return m_CFG->GetString( "lang_0095", "lang_0095" );
 }
 
-string CLanguage :: PlayerVotedToDropLaggers( string user )
+QString CLanguage :: PlayerVotedToDropLaggers( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0096", "lang_0096" );
+	QString Out = m_CFG->GetString( "lang_0096", "lang_0096" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: LatencyIs( string latency )
+QString CLanguage :: LatencyIs( QString latency )
 {
-	string Out = m_CFG->GetString( "lang_0097", "lang_0097" );
+	QString Out = m_CFG->GetString( "lang_0097", "lang_0097" );
 	UTIL_Replace( Out, "$LATENCY$", latency );
 	return Out;
 }
 
-string CLanguage :: SyncLimitIs( string synclimit )
+QString CLanguage :: SyncLimitIs( QString synclimit )
 {
-	string Out = m_CFG->GetString( "lang_0098", "lang_0098" );
+	QString Out = m_CFG->GetString( "lang_0098", "lang_0098" );
 	UTIL_Replace( Out, "$SYNCLIMIT$", synclimit );
 	return Out;
 }
 
-string CLanguage :: SettingSyncLimitToMinimum( string min )
+QString CLanguage :: SettingSyncLimitToMinimum( QString min )
 {
-	string Out = m_CFG->GetString( "lang_0099", "lang_0099" );
+	QString Out = m_CFG->GetString( "lang_0099", "lang_0099" );
 	UTIL_Replace( Out, "$MIN$", min );
 	return Out;
 }
 
-string CLanguage :: SettingSyncLimitToMaximum( string max )
+QString CLanguage :: SettingSyncLimitToMaximum( QString max )
 {
-	string Out = m_CFG->GetString( "lang_0100", "lang_0100" );
+	QString Out = m_CFG->GetString( "lang_0100", "lang_0100" );
 	UTIL_Replace( Out, "$MAX$", max );
 	return Out;
 }
 
-string CLanguage :: SettingSyncLimitTo( string synclimit )
+QString CLanguage :: SettingSyncLimitTo( QString synclimit )
 {
-	string Out = m_CFG->GetString( "lang_0101", "lang_0101" );
+	QString Out = m_CFG->GetString( "lang_0101", "lang_0101" );
 	UTIL_Replace( Out, "$SYNCLIMIT$", synclimit );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameNotLoggedIn( string gamename )
+QString CLanguage :: UnableToCreateGameNotLoggedIn( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0102", "lang_0102" );
+	QString Out = m_CFG->GetString( "lang_0102", "lang_0102" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: AdminLoggedIn( )
+QString CLanguage :: AdminLoggedIn( )
 {
 	return m_CFG->GetString( "lang_0103", "lang_0103" );
 }
 
-string CLanguage :: AdminInvalidPassword( string attempt )
+QString CLanguage :: AdminInvalidPassword( QString attempt )
 {
-	string Out = m_CFG->GetString( "lang_0104", "lang_0104" );
+	QString Out = m_CFG->GetString( "lang_0104", "lang_0104" );
 	UTIL_Replace( Out, "$ATTEMPT$", attempt );
 	return Out;
 }
 
-string CLanguage :: ConnectingToBNET( string server )
+QString CLanguage :: ConnectingToBNET( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0105", "lang_0105" );
+	QString Out = m_CFG->GetString( "lang_0105", "lang_0105" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: ConnectedToBNET( string server )
+QString CLanguage :: ConnectedToBNET( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0106", "lang_0106" );
+	QString Out = m_CFG->GetString( "lang_0106", "lang_0106" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: DisconnectedFromBNET( string server )
+QString CLanguage :: DisconnectedFromBNET( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0107", "lang_0107" );
+	QString Out = m_CFG->GetString( "lang_0107", "lang_0107" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: LoggedInToBNET( string server )
+QString CLanguage :: LoggedInToBNET( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0108", "lang_0108" );
+	QString Out = m_CFG->GetString( "lang_0108", "lang_0108" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: BNETGameHostingSucceeded( string server )
+QString CLanguage :: BNETGameHostingSucceeded( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0109", "lang_0109" );
+	QString Out = m_CFG->GetString( "lang_0109", "lang_0109" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: BNETGameHostingFailed( string server, string gamename )
+QString CLanguage :: BNETGameHostingFailed( QString server, QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0110", "lang_0110" );
+	QString Out = m_CFG->GetString( "lang_0110", "lang_0110" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: ConnectingToBNETTimedOut( string server )
+QString CLanguage :: ConnectingToBNETTimedOut( QString server )
 {
-	string Out = m_CFG->GetString( "lang_0111", "lang_0111" );
+	QString Out = m_CFG->GetString( "lang_0111", "lang_0111" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	return Out;
 }
 
-string CLanguage :: PlayerDownloadedTheMap( string user, string seconds, string rate )
+QString CLanguage :: PlayerDownloadedTheMap( QString user, QString seconds, QString rate )
 {
-	string Out = m_CFG->GetString( "lang_0112", "lang_0112" );
+	QString Out = m_CFG->GetString( "lang_0112", "lang_0112" );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$SECONDS$", seconds );
 	UTIL_Replace( Out, "$RATE$", rate );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameNameTooLong( string gamename )
+QString CLanguage :: UnableToCreateGameNameTooLong( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0113", "lang_0113" );
+	QString Out = m_CFG->GetString( "lang_0113", "lang_0113" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: SettingGameOwnerTo( string owner )
+QString CLanguage :: SettingGameOwnerTo( QString owner )
 {
-	string Out = m_CFG->GetString( "lang_0114", "lang_0114" );
+	QString Out = m_CFG->GetString( "lang_0114", "lang_0114" );
 	UTIL_Replace( Out, "$OWNER$", owner );
 	return Out;
 }
 
-string CLanguage :: TheGameIsLocked( )
+QString CLanguage :: TheGameIsLocked( )
 {
 	return m_CFG->GetString( "lang_0115", "lang_0115" );
 }
 
-string CLanguage :: GameLocked( )
+QString CLanguage :: GameLocked( )
 {
 	return m_CFG->GetString( "lang_0116", "lang_0116" );
 }
 
-string CLanguage :: GameUnlocked( )
+QString CLanguage :: GameUnlocked( )
 {
 	return m_CFG->GetString( "lang_0117", "lang_0117" );
 }
 
-string CLanguage :: UnableToStartDownloadNoMatchesFound( string victim )
+QString CLanguage :: UnableToStartDownloadNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0118", "lang_0118" );
+	QString Out = m_CFG->GetString( "lang_0118", "lang_0118" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UnableToStartDownloadFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnableToStartDownloadFoundMoreThanOneMatch( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0119", "lang_0119" );
+	QString Out = m_CFG->GetString( "lang_0119", "lang_0119" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UnableToSetGameOwner( string owner )
+QString CLanguage :: UnableToSetGameOwner( QString owner )
 {
-	string Out = m_CFG->GetString( "lang_0120", "lang_0120" );
+	QString Out = m_CFG->GetString( "lang_0120", "lang_0120" );
 	UTIL_Replace( Out, "$OWNER$", owner );
 	return Out;
 }
 
-string CLanguage :: UnableToCheckPlayerNoMatchesFound( string victim )
+QString CLanguage :: UnableToCheckPlayerNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0121", "lang_0121" );
+	QString Out = m_CFG->GetString( "lang_0121", "lang_0121" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: CheckedPlayer( string victim, string ping, string from, string admin, string owner, string spoofed, string spoofedrealm, string reserved )
+QString CLanguage :: CheckedPlayer( QString victim, QString ping, QString from, QString admin, QString owner, QString spoofed, QString spoofedrealm, QString reserved )
 {
-	string Out = m_CFG->GetString( "lang_0122", "lang_0122" );
+	QString Out = m_CFG->GetString( "lang_0122", "lang_0122" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$PING$", ping );
 	UTIL_Replace( Out, "$FROM$", from );
@@ -911,625 +911,625 @@ string CLanguage :: CheckedPlayer( string victim, string ping, string from, stri
 	return Out;
 }
 
-string CLanguage :: UnableToCheckPlayerFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnableToCheckPlayerFoundMoreThanOneMatch( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0123", "lang_0123" );
+	QString Out = m_CFG->GetString( "lang_0123", "lang_0123" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: TheGameIsLockedBNET( )
+QString CLanguage :: TheGameIsLockedBNET( )
 {
 	return m_CFG->GetString( "lang_0124", "lang_0124" );
 }
 
-string CLanguage :: UnableToCreateGameDisabled( string gamename )
+QString CLanguage :: UnableToCreateGameDisabled( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0125", "lang_0125" );
+	QString Out = m_CFG->GetString( "lang_0125", "lang_0125" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: BotDisabled( )
+QString CLanguage :: BotDisabled( )
 {
 	return m_CFG->GetString( "lang_0126", "lang_0126" );
 }
 
-string CLanguage :: BotEnabled( )
+QString CLanguage :: BotEnabled( )
 {
 	return m_CFG->GetString( "lang_0127", "lang_0127" );
 }
 
-string CLanguage :: UnableToCreateGameInvalidMap( string gamename )
+QString CLanguage :: UnableToCreateGameInvalidMap( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0128", "lang_0128" );
+	QString Out = m_CFG->GetString( "lang_0128", "lang_0128" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: WaitingForPlayersBeforeAutoStart( string players, string playersleft )
+QString CLanguage :: WaitingForPlayersBeforeAutoStart( QString players, QString playersleft )
 {
-	string Out = m_CFG->GetString( "lang_0129", "lang_0129" );
+	QString Out = m_CFG->GetString( "lang_0129", "lang_0129" );
 	UTIL_Replace( Out, "$PLAYERS$", players );
 	UTIL_Replace( Out, "$PLAYERSLEFT$", playersleft );
 	return Out;
 }
 
-string CLanguage :: AutoStartDisabled( )
+QString CLanguage :: AutoStartDisabled( )
 {
 	return m_CFG->GetString( "lang_0130", "lang_0130" );
 }
 
-string CLanguage :: AutoStartEnabled( string players )
+QString CLanguage :: AutoStartEnabled( QString players )
 {
-	string Out = m_CFG->GetString( "lang_0131", "lang_0131" );
+	QString Out = m_CFG->GetString( "lang_0131", "lang_0131" );
 	UTIL_Replace( Out, "$PLAYERS$", players );
 	return Out;
 }
 
-string CLanguage :: AnnounceMessageEnabled( )
+QString CLanguage :: AnnounceMessageEnabled( )
 {
 	return m_CFG->GetString( "lang_0132", "lang_0132" );
 }
 
-string CLanguage :: AnnounceMessageDisabled( )
+QString CLanguage :: AnnounceMessageDisabled( )
 {
 	return m_CFG->GetString( "lang_0133", "lang_0133" );
 }
 
-string CLanguage :: AutoHostEnabled( )
+QString CLanguage :: AutoHostEnabled( )
 {
 	return m_CFG->GetString( "lang_0134", "lang_0134" );
 }
 
-string CLanguage :: AutoHostDisabled( )
+QString CLanguage :: AutoHostDisabled( )
 {
 	return m_CFG->GetString( "lang_0135", "lang_0135" );
 }
 
-string CLanguage :: UnableToLoadSaveGamesOutside( )
+QString CLanguage :: UnableToLoadSaveGamesOutside( )
 {
 	return m_CFG->GetString( "lang_0136", "lang_0136" );
 }
 
-string CLanguage :: UnableToLoadSaveGameGameInLobby( )
+QString CLanguage :: UnableToLoadSaveGameGameInLobby( )
 {
 	return m_CFG->GetString( "lang_0137", "lang_0137" );
 }
 
-string CLanguage :: LoadingSaveGame( string file )
+QString CLanguage :: LoadingSaveGame( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0138", "lang_0138" );
+	QString Out = m_CFG->GetString( "lang_0138", "lang_0138" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: UnableToLoadSaveGameDoesntExist( string file )
+QString CLanguage :: UnableToLoadSaveGameDoesntExist( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0139", "lang_0139" );
+	QString Out = m_CFG->GetString( "lang_0139", "lang_0139" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameInvalidSaveGame( string gamename )
+QString CLanguage :: UnableToCreateGameInvalidSaveGame( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0140", "lang_0140" );
+	QString Out = m_CFG->GetString( "lang_0140", "lang_0140" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: UnableToCreateGameSaveGameMapMismatch( string gamename )
+QString CLanguage :: UnableToCreateGameSaveGameMapMismatch( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0141", "lang_0141" );
+	QString Out = m_CFG->GetString( "lang_0141", "lang_0141" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: AutoSaveEnabled( )
+QString CLanguage :: AutoSaveEnabled( )
 {
 	return m_CFG->GetString( "lang_0142", "lang_0142" );
 }
 
-string CLanguage :: AutoSaveDisabled( )
+QString CLanguage :: AutoSaveDisabled( )
 {
 	return m_CFG->GetString( "lang_0143", "lang_0143" );
 }
 
-string CLanguage :: DesyncDetected( )
+QString CLanguage :: DesyncDetected( )
 {
 	return m_CFG->GetString( "lang_0144", "lang_0144" );
 }
 
-string CLanguage :: UnableToMuteNoMatchesFound( string victim )
+QString CLanguage :: UnableToMuteNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0145", "lang_0145" );
+	QString Out = m_CFG->GetString( "lang_0145", "lang_0145" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: MutedPlayer( string victim, string user )
+QString CLanguage :: MutedPlayer( QString victim, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0146", "lang_0146" );
-	UTIL_Replace( Out, "$VICTIM$", victim );
-	UTIL_Replace( Out, "$USER$", user );
-	return Out;
-}
-
-string CLanguage :: UnmutedPlayer( string victim, string user )
-{
-	string Out = m_CFG->GetString( "lang_0147", "lang_0147" );
+	QString Out = m_CFG->GetString( "lang_0146", "lang_0146" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: UnableToMuteFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnmutedPlayer( QString victim, QString user )
 {
-	string Out = m_CFG->GetString( "lang_0148", "lang_0148" );
+	QString Out = m_CFG->GetString( "lang_0147", "lang_0147" );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$USER$", user );
+	return Out;
+}
+
+QString CLanguage :: UnableToMuteFoundMoreThanOneMatch( QString victim )
+{
+	QString Out = m_CFG->GetString( "lang_0148", "lang_0148" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: PlayerIsSavingTheGame( string player )
+QString CLanguage :: PlayerIsSavingTheGame( QString player )
 {
-	string Out = m_CFG->GetString( "lang_0149", "lang_0149" );
+	QString Out = m_CFG->GetString( "lang_0149", "lang_0149" );
 	UTIL_Replace( Out, "$PLAYER$", player );
 	return Out;
 }
 
-string CLanguage :: UpdatingClanList( )
+QString CLanguage :: UpdatingClanList( )
 {
 	return m_CFG->GetString( "lang_0150", "lang_0150" );
 }
 
-string CLanguage :: UpdatingFriendsList( )
+QString CLanguage :: UpdatingFriendsList( )
 {
 	return m_CFG->GetString( "lang_0151", "lang_0151" );
 }
 
-string CLanguage :: MultipleIPAddressUsageDetected( string player, string others )
+QString CLanguage :: MultipleIPAddressUsageDetected( QString player, QString others )
 {
-	string Out = m_CFG->GetString( "lang_0152", "lang_0152" );
+	QString Out = m_CFG->GetString( "lang_0152", "lang_0152" );
 	UTIL_Replace( Out, "$PLAYER$", player );
 	UTIL_Replace( Out, "$OTHERS$", others );
 	return Out;
 }
 
-string CLanguage :: UnableToVoteKickAlreadyInProgress( )
+QString CLanguage :: UnableToVoteKickAlreadyInProgress( )
 {
 	return m_CFG->GetString( "lang_0153", "lang_0153" );
 }
 
-string CLanguage :: UnableToVoteKickNotEnoughPlayers( )
+QString CLanguage :: UnableToVoteKickNotEnoughPlayers( )
 {
 	return m_CFG->GetString( "lang_0154", "lang_0154" );
 }
 
-string CLanguage :: UnableToVoteKickNoMatchesFound( string victim )
+QString CLanguage :: UnableToVoteKickNoMatchesFound( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0155", "lang_0155" );
+	QString Out = m_CFG->GetString( "lang_0155", "lang_0155" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: UnableToVoteKickPlayerIsReserved( string victim )
+QString CLanguage :: UnableToVoteKickPlayerIsReserved( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0156", "lang_0156" );
+	QString Out = m_CFG->GetString( "lang_0156", "lang_0156" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: StartedVoteKick( string victim, string user, string votesneeded )
+QString CLanguage :: StartedVoteKick( QString victim, QString user, QString votesneeded )
 {
-	string Out = m_CFG->GetString( "lang_0157", "lang_0157" );
+	QString Out = m_CFG->GetString( "lang_0157", "lang_0157" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$VOTESNEEDED$", votesneeded );
 	return Out;
 }
 
-string CLanguage :: UnableToVoteKickFoundMoreThanOneMatch( string victim )
+QString CLanguage :: UnableToVoteKickFoundMoreThanOneMatch( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0158", "lang_0158" );
+	QString Out = m_CFG->GetString( "lang_0158", "lang_0158" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: VoteKickPassed( string victim )
+QString CLanguage :: VoteKickPassed( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0159", "lang_0159" );
+	QString Out = m_CFG->GetString( "lang_0159", "lang_0159" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: ErrorVoteKickingPlayer( string victim )
+QString CLanguage :: ErrorVoteKickingPlayer( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0160", "lang_0160" );
+	QString Out = m_CFG->GetString( "lang_0160", "lang_0160" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: VoteKickAcceptedNeedMoreVotes( string victim, string user, string votes )
+QString CLanguage :: VoteKickAcceptedNeedMoreVotes( QString victim, QString user, QString votes )
 {
-	string Out = m_CFG->GetString( "lang_0161", "lang_0161" );
+	QString Out = m_CFG->GetString( "lang_0161", "lang_0161" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$USER$", user );
 	UTIL_Replace( Out, "$VOTES$", votes );
 	return Out;
 }
 
-string CLanguage :: VoteKickCancelled( string victim )
+QString CLanguage :: VoteKickCancelled( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0162", "lang_0162" );
+	QString Out = m_CFG->GetString( "lang_0162", "lang_0162" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: VoteKickExpired( string victim )
+QString CLanguage :: VoteKickExpired( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0163", "lang_0163" );
+	QString Out = m_CFG->GetString( "lang_0163", "lang_0163" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: WasKickedByVote( )
+QString CLanguage :: WasKickedByVote( )
 {
 	return m_CFG->GetString( "lang_0164", "lang_0164" );
 }
 
-string CLanguage :: TypeYesToVote( string commandtrigger )
+QString CLanguage :: TypeYesToVote( QString commandtrigger )
 {
-	string Out = m_CFG->GetString( "lang_0165", "lang_0165" );
+	QString Out = m_CFG->GetString( "lang_0165", "lang_0165" );
 	UTIL_Replace( Out, "$COMMANDTRIGGER$", commandtrigger );
 	return Out;
 }
 
-string CLanguage :: PlayersNotYetPingedAutoStart( string notpinged )
+QString CLanguage :: PlayersNotYetPingedAutoStart( QString notpinged )
 {
-	string Out = m_CFG->GetString( "lang_0166", "lang_0166" );
+	QString Out = m_CFG->GetString( "lang_0166", "lang_0166" );
 	UTIL_Replace( Out, "$NOTPINGED$", notpinged );
 	return Out;
 }
 
-string CLanguage :: WasKickedForNotSpoofChecking( )
+QString CLanguage :: WasKickedForNotSpoofChecking( )
 {
 	return m_CFG->GetString( "lang_0167", "lang_0167" );
 }
 
-string CLanguage :: WasKickedForHavingFurthestScore( string score, string average )
+QString CLanguage :: WasKickedForHavingFurthestScore( QString score, QString average )
 {
-	string Out = m_CFG->GetString( "lang_0168", "lang_0168" );
+	QString Out = m_CFG->GetString( "lang_0168", "lang_0168" );
 	UTIL_Replace( Out, "$SCORE$", score );
 	UTIL_Replace( Out, "$AVERAGE$", average );
 	return Out;
 }
 
-string CLanguage :: PlayerHasScore( string player, string score )
+QString CLanguage :: PlayerHasScore( QString player, QString score )
 {
-	string Out = m_CFG->GetString( "lang_0169", "lang_0169" );
+	QString Out = m_CFG->GetString( "lang_0169", "lang_0169" );
 	UTIL_Replace( Out, "$PLAYER$", player );
 	UTIL_Replace( Out, "$SCORE$", score );
 	return Out;
 }
 
-string CLanguage :: RatedPlayersSpread( string rated, string total, string spread )
+QString CLanguage :: RatedPlayersSpread( QString rated, QString total, QString spread )
 {
-	string Out = m_CFG->GetString( "lang_0170", "lang_0170" );
+	QString Out = m_CFG->GetString( "lang_0170", "lang_0170" );
 	UTIL_Replace( Out, "$RATED$", rated );
 	UTIL_Replace( Out, "$TOTAL$", total );
 	UTIL_Replace( Out, "$SPREAD$", spread );
 	return Out;
 }
 
-string CLanguage :: ErrorListingMaps( )
+QString CLanguage :: ErrorListingMaps( )
 {
 	return m_CFG->GetString( "lang_0171", "lang_0171" );
 }
 
-string CLanguage :: FoundMaps( string maps )
+QString CLanguage :: FoundMaps( QString maps )
 {
-	string Out = m_CFG->GetString( "lang_0172", "lang_0172" );
+	QString Out = m_CFG->GetString( "lang_0172", "lang_0172" );
 	UTIL_Replace( Out, "$MAPS$", maps );
 	return Out;
 }
 
-string CLanguage :: NoMapsFound( )
+QString CLanguage :: NoMapsFound( )
 {
 	return m_CFG->GetString( "lang_0173", "lang_0173" );
 }
 
-string CLanguage :: ErrorListingMapConfigs( )
+QString CLanguage :: ErrorListingMapConfigs( )
 {
 	return m_CFG->GetString( "lang_0174", "lang_0174" );
 }
 
-string CLanguage :: FoundMapConfigs( string mapconfigs )
+QString CLanguage :: FoundMapConfigs( QString mapconfigs )
 {
-	string Out = m_CFG->GetString( "lang_0175", "lang_0175" );
+	QString Out = m_CFG->GetString( "lang_0175", "lang_0175" );
 	UTIL_Replace( Out, "$MAPCONFIGS$", mapconfigs );
 	return Out;
 }
 
-string CLanguage :: NoMapConfigsFound( )
+QString CLanguage :: NoMapConfigsFound( )
 {
 	return m_CFG->GetString( "lang_0176", "lang_0176" );
 }
 
-string CLanguage :: PlayerFinishedLoading( string user )
+QString CLanguage :: PlayerFinishedLoading( QString user )
 {
-	string Out = m_CFG->GetString( "lang_0177", "lang_0177" );
+	QString Out = m_CFG->GetString( "lang_0177", "lang_0177" );
 	UTIL_Replace( Out, "$USER$", user );
 	return Out;
 }
 
-string CLanguage :: PleaseWaitPlayersStillLoading( )
+QString CLanguage :: PleaseWaitPlayersStillLoading( )
 {
 	return m_CFG->GetString( "lang_0178", "lang_0178" );
 }
 
-string CLanguage :: MapDownloadsDisabled( )
+QString CLanguage :: MapDownloadsDisabled( )
 {
 	return m_CFG->GetString( "lang_0179", "lang_0179" );
 }
 
-string CLanguage :: MapDownloadsEnabled( )
+QString CLanguage :: MapDownloadsEnabled( )
 {
 	return m_CFG->GetString( "lang_0180", "lang_0180" );
 }
 
-string CLanguage :: MapDownloadsConditional( )
+QString CLanguage :: MapDownloadsConditional( )
 {
 	return m_CFG->GetString( "lang_0181", "lang_0181" );
 }
 
-string CLanguage :: SettingHCL( string HCL )
+QString CLanguage :: SettingHCL( QString HCL )
 {
-	string Out = m_CFG->GetString( "lang_0182", "lang_0182" );
+	QString Out = m_CFG->GetString( "lang_0182", "lang_0182" );
 	UTIL_Replace( Out, "$HCL$", HCL );
 	return Out;
 }
 
-string CLanguage :: UnableToSetHCLInvalid( )
+QString CLanguage :: UnableToSetHCLInvalid( )
 {
 	return m_CFG->GetString( "lang_0183", "lang_0183" );
 }
 
-string CLanguage :: UnableToSetHCLTooLong( )
+QString CLanguage :: UnableToSetHCLTooLong( )
 {
 	return m_CFG->GetString( "lang_0184", "lang_0184" );
 }
 
-string CLanguage :: TheHCLIs( string HCL )
+QString CLanguage :: TheHCLIs( QString HCL )
 {
-	string Out = m_CFG->GetString( "lang_0185", "lang_0185" );
+	QString Out = m_CFG->GetString( "lang_0185", "lang_0185" );
 	UTIL_Replace( Out, "$HCL$", HCL );
 	return Out;
 }
 
-string CLanguage :: TheHCLIsTooLongUseForceToStart( )
+QString CLanguage :: TheHCLIsTooLongUseForceToStart( )
 {
 	return m_CFG->GetString( "lang_0186", "lang_0186" );
 }
 
-string CLanguage :: ClearingHCL( )
+QString CLanguage :: ClearingHCL( )
 {
 	return m_CFG->GetString( "lang_0187", "lang_0187" );
 }
 
-string CLanguage :: TryingToRehostAsPrivateGame( string gamename )
+QString CLanguage :: TryingToRehostAsPrivateGame( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0188", "lang_0188" );
+	QString Out = m_CFG->GetString( "lang_0188", "lang_0188" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: TryingToRehostAsPublicGame( string gamename )
+QString CLanguage :: TryingToRehostAsPublicGame( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0189", "lang_0189" );
+	QString Out = m_CFG->GetString( "lang_0189", "lang_0189" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: RehostWasSuccessful( )
+QString CLanguage :: RehostWasSuccessful( )
 {
 	return m_CFG->GetString( "lang_0190", "lang_0190" );
 }
 
-string CLanguage :: TryingToJoinTheGameButBannedByName( string victim )
+QString CLanguage :: TryingToJoinTheGameButBannedByName( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0191", "lang_0191" );
+	QString Out = m_CFG->GetString( "lang_0191", "lang_0191" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	return Out;
 }
 
-string CLanguage :: TryingToJoinTheGameButBannedByIP( string victim, string ip, string bannedname )
+QString CLanguage :: TryingToJoinTheGameButBannedByIP( QString victim, QString ip, QString bannedname )
 {
-	string Out = m_CFG->GetString( "lang_0192", "lang_0192" );
-	UTIL_Replace( Out, "$VICTIM$", victim );
-	UTIL_Replace( Out, "$IP$", ip );
-	UTIL_Replace( Out, "$BANNEDNAME$", bannedname );
-	return Out;
-}
-
-string CLanguage :: HasBannedName( string victim )
-{
-	string Out = m_CFG->GetString( "lang_0193", "lang_0193" );
-	UTIL_Replace( Out, "$VICTIM$", victim );
-	return Out;
-}
-
-string CLanguage :: HasBannedIP( string victim, string ip, string bannedname )
-{
-	string Out = m_CFG->GetString( "lang_0194", "lang_0194" );
+	QString Out = m_CFG->GetString( "lang_0192", "lang_0192" );
 	UTIL_Replace( Out, "$VICTIM$", victim );
 	UTIL_Replace( Out, "$IP$", ip );
 	UTIL_Replace( Out, "$BANNEDNAME$", bannedname );
 	return Out;
 }
 
-string CLanguage :: PlayersInGameState( string number, string players )
+QString CLanguage :: HasBannedName( QString victim )
 {
-	string Out = m_CFG->GetString( "lang_0195", "lang_0195" );
+	QString Out = m_CFG->GetString( "lang_0193", "lang_0193" );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	return Out;
+}
+
+QString CLanguage :: HasBannedIP( QString victim, QString ip, QString bannedname )
+{
+	QString Out = m_CFG->GetString( "lang_0194", "lang_0194" );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$IP$", ip );
+	UTIL_Replace( Out, "$BANNEDNAME$", bannedname );
+	return Out;
+}
+
+QString CLanguage :: PlayersInGameState( QString number, QString players )
+{
+	QString Out = m_CFG->GetString( "lang_0195", "lang_0195" );
 	UTIL_Replace( Out, "$NUMBER$", number );
 	UTIL_Replace( Out, "$PLAYERS$", players );
 	return Out;
 }
 
-string CLanguage :: ValidServers( string servers )
+QString CLanguage :: ValidServers( QString servers )
 {
-	string Out = m_CFG->GetString( "lang_0196", "lang_0196" );
+	QString Out = m_CFG->GetString( "lang_0196", "lang_0196" );
 	UTIL_Replace( Out, "$SERVERS$", servers );
 	return Out;
 }
 
-string CLanguage :: TeamCombinedScore( string team, string score )
+QString CLanguage :: TeamCombinedScore( QString team, QString score )
 {
-	string Out = m_CFG->GetString( "lang_0197", "lang_0197" );
+	QString Out = m_CFG->GetString( "lang_0197", "lang_0197" );
 	UTIL_Replace( Out, "$TEAM$", team );
 	UTIL_Replace( Out, "$SCORE$", score );
 	return Out;
 }
 
-string CLanguage :: BalancingSlotsCompleted( )
+QString CLanguage :: BalancingSlotsCompleted( )
 {
 	return m_CFG->GetString( "lang_0198", "lang_0198" );
 }
 
-string CLanguage :: PlayerWasKickedForFurthestScore( string name, string score, string average )
+QString CLanguage :: PlayerWasKickedForFurthestScore( QString name, QString score, QString average )
 {
-	string Out = m_CFG->GetString( "lang_0199", "lang_0199" );
+	QString Out = m_CFG->GetString( "lang_0199", "lang_0199" );
 	UTIL_Replace( Out, "$NAME$", name );
 	UTIL_Replace( Out, "$SCORE$", score );
 	UTIL_Replace( Out, "$AVERAGE$", average );
 	return Out;
 }
 
-string CLanguage :: LocalAdminMessagesEnabled( )
+QString CLanguage :: LocalAdminMessagesEnabled( )
 {
 	return m_CFG->GetString( "lang_0200", "lang_0200" );
 }
 
-string CLanguage :: LocalAdminMessagesDisabled( )
+QString CLanguage :: LocalAdminMessagesDisabled( )
 {
 	return m_CFG->GetString( "lang_0201", "lang_0201" );
 }
 
-string CLanguage :: WasDroppedDesync( )
+QString CLanguage :: WasDroppedDesync( )
 {
 	return m_CFG->GetString( "lang_0202", "lang_0202" );
 }
 
-string CLanguage :: WasKickedForHavingLowestScore( string score )
+QString CLanguage :: WasKickedForHavingLowestScore( QString score )
 {
-	string Out = m_CFG->GetString( "lang_0203", "lang_0203" );
+	QString Out = m_CFG->GetString( "lang_0203", "lang_0203" );
 	UTIL_Replace( Out, "$SCORE$", score );
 	return Out;
 }
 
-string CLanguage :: PlayerWasKickedForLowestScore( string name, string score )
+QString CLanguage :: PlayerWasKickedForLowestScore( QString name, QString score )
 {
-	string Out = m_CFG->GetString( "lang_0204", "lang_0204" );
+	QString Out = m_CFG->GetString( "lang_0204", "lang_0204" );
 	UTIL_Replace( Out, "$NAME$", name );
 	UTIL_Replace( Out, "$SCORE$", score );
 	return Out;
 }
 
-string CLanguage :: ReloadingConfigurationFiles( )
+QString CLanguage :: ReloadingConfigurationFiles( )
 {
 	return m_CFG->GetString( "lang_0205", "lang_0205" );
 }
 
-string CLanguage :: CountDownAbortedSomeoneLeftRecently( )
+QString CLanguage :: CountDownAbortedSomeoneLeftRecently( )
 {
 	return m_CFG->GetString( "lang_0206", "lang_0206" );
 }
 
-string CLanguage :: UnableToCreateGameMustEnforceFirst( string gamename )
+QString CLanguage :: UnableToCreateGameMustEnforceFirst( QString gamename )
 {
-	string Out = m_CFG->GetString( "lang_0207", "lang_0207" );
+	QString Out = m_CFG->GetString( "lang_0207", "lang_0207" );
 	UTIL_Replace( Out, "$GAMENAME$", gamename );
 	return Out;
 }
 
-string CLanguage :: UnableToLoadReplaysOutside( )
+QString CLanguage :: UnableToLoadReplaysOutside( )
 {
 	return m_CFG->GetString( "lang_0208", "lang_0208" );
 }
 
-string CLanguage :: LoadingReplay( string file )
+QString CLanguage :: LoadingReplay( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0209", "lang_0209" );
+	QString Out = m_CFG->GetString( "lang_0209", "lang_0209" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: UnableToLoadReplayDoesntExist( string file )
+QString CLanguage :: UnableToLoadReplayDoesntExist( QString file )
 {
-	string Out = m_CFG->GetString( "lang_0210", "lang_0210" );
+	QString Out = m_CFG->GetString( "lang_0210", "lang_0210" );
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
 
-string CLanguage :: CommandTrigger( string trigger )
+QString CLanguage :: CommandTrigger( QString trigger )
 {
-	string Out = m_CFG->GetString( "lang_0211", "lang_0211" );
+	QString Out = m_CFG->GetString( "lang_0211", "lang_0211" );
 	UTIL_Replace( Out, "$TRIGGER$", trigger );
 	return Out;
 }
 
-string CLanguage :: CantEndGameOwnerIsStillPlaying( string owner )
+QString CLanguage :: CantEndGameOwnerIsStillPlaying( QString owner )
 {
-	string Out = m_CFG->GetString( "lang_0212", "lang_0212" );
+	QString Out = m_CFG->GetString( "lang_0212", "lang_0212" );
 	UTIL_Replace( Out, "$OWNER$", owner );
 	return Out;
 }
 
-string CLanguage :: CantUnhostGameOwnerIsPresent( string owner )
+QString CLanguage :: CantUnhostGameOwnerIsPresent( QString owner )
 {
-	string Out = m_CFG->GetString( "lang_0213", "lang_0213" );
+	QString Out = m_CFG->GetString( "lang_0213", "lang_0213" );
 	UTIL_Replace( Out, "$OWNER$", owner );
 	return Out;
 }
 
-string CLanguage :: WasAutomaticallyDroppedAfterSeconds( string seconds )
+QString CLanguage :: WasAutomaticallyDroppedAfterSeconds( QString seconds )
 {
-	string Out = m_CFG->GetString( "lang_0214", "lang_0214" );
+	QString Out = m_CFG->GetString( "lang_0214", "lang_0214" );
 	UTIL_Replace( Out, "$SECONDS$", seconds );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionTimedOutGProxy( )
+QString CLanguage :: HasLostConnectionTimedOutGProxy( )
 {
 	return m_CFG->GetString( "lang_0215", "lang_0215" );
 }
 
-string CLanguage :: HasLostConnectionSocketErrorGProxy( string error )
+QString CLanguage :: HasLostConnectionSocketErrorGProxy( QString error )
 {
-	string Out = m_CFG->GetString( "lang_0216", "lang_0216" );
+	QString Out = m_CFG->GetString( "lang_0216", "lang_0216" );
 	UTIL_Replace( Out, "$ERROR$", error );
 	return Out;
 }
 
-string CLanguage :: HasLostConnectionClosedByRemoteHostGProxy( )
+QString CLanguage :: HasLostConnectionClosedByRemoteHostGProxy( )
 {
 	return m_CFG->GetString( "lang_0217", "lang_0217" );
 }
 
-string CLanguage :: WaitForReconnectSecondsRemain( string seconds )
+QString CLanguage :: WaitForReconnectSecondsRemain( QString seconds )
 {
-	string Out = m_CFG->GetString( "lang_0218", "lang_0218" );
+	QString Out = m_CFG->GetString( "lang_0218", "lang_0218" );
 	UTIL_Replace( Out, "$SECONDS$", seconds );
 	return Out;
 }
 
-string CLanguage :: WasUnrecoverablyDroppedFromGProxy( )
+QString CLanguage :: WasUnrecoverablyDroppedFromGProxy( )
 {
 	return m_CFG->GetString( "lang_0219", "lang_0219" );
 }
 
-string CLanguage :: PlayerReconnectedWithGProxy( string name )
+QString CLanguage :: PlayerReconnectedWithGProxy( QString name )
 {
-	string Out = m_CFG->GetString( "lang_0220", "lang_0220" );
+	QString Out = m_CFG->GetString( "lang_0220", "lang_0220" );
 	UTIL_Replace( Out, "$NAME$", name );
 	return Out;
 }

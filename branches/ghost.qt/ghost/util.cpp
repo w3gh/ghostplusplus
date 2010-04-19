@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,206 +21,165 @@
 #include "ghost.h"
 #include "util.h"
 
-#include <sys/stat.h>
+#include <QFile>
+#include <QRegExp>
 
-BYTEARRAY UTIL_CreateByteArray( unsigned char *a, int size )
+QByteArray UTIL_CreateQByteArray( unsigned char c )
 {
-	if( size < 1 )
-		return BYTEARRAY( );
-
-	return BYTEARRAY( a, a + size );
-}
-
-BYTEARRAY UTIL_CreateByteArray( unsigned char c )
-{
-	BYTEARRAY result;
+	QByteArray result;
 	result.push_back( c );
 	return result;
 }
 
-BYTEARRAY UTIL_CreateByteArray( uint16_t i, bool reverse )
+QByteArray UTIL_CreateQByteArray( uint16_t i, bool reverse )
 {
-	BYTEARRAY result;
-	result.push_back( (unsigned char)i );
+	QByteArray result;
+
+	if (!reverse)
+		result.push_back( (unsigned char)i );
+
 	result.push_back( (unsigned char)( i >> 8 ) );
 
-	if( reverse )
-		return BYTEARRAY( result.rbegin( ), result.rend( ) );
-	else
-		return result;
+	if (reverse)
+		result.push_back( (unsigned char)i );
+
+	return result;
 }
 
-BYTEARRAY UTIL_CreateByteArray( uint32_t i, bool reverse )
+QByteArray UTIL_CreateQByteArray( uint32_t i, bool reverse )
 {
-	BYTEARRAY result;
-	result.push_back( (unsigned char)i );
-	result.push_back( (unsigned char)( i >> 8 ) );
-	result.push_back( (unsigned char)( i >> 16 ) );
-	result.push_back( (unsigned char)( i >> 24 ) );
+	QByteArray result;
 
 	if( reverse )
-		return BYTEARRAY( result.rbegin( ), result.rend( ) );
+	{
+		result.push_back( (unsigned char)( i >> 24 ) );
+		result.push_back( (unsigned char)( i >> 16 ) );
+		result.push_back( (unsigned char)( i >> 8 ) );
+		result.push_back( (unsigned char)i );
+	}
+
 	else
-		return result;
+	{
+		result.push_back( (unsigned char)i );
+		result.push_back( (unsigned char)( i >> 8 ) );
+		result.push_back( (unsigned char)( i >> 16 ) );
+		result.push_back( (unsigned char)( i >> 24 ) );
+	}
+
+	return result;
 }
 
-uint16_t UTIL_ByteArrayToUInt16( BYTEARRAY b, bool reverse, unsigned int start )
+uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start )
 {
 	if( b.size( ) < start + 2 )
 		return 0;
 
-	BYTEARRAY temp = BYTEARRAY( b.begin( ) + start, b.begin( ) + start + 2 );
+	QByteArray temp = b.mid(start, 2);
 
-	if( reverse )
-		temp = BYTEARRAY( temp.rbegin( ), temp.rend( ) );
-
-	return (uint16_t)( temp[1] << 8 | temp[0] );
+	return (uint16_t)( reverse ? (temp[0] << 8 | temp[1]) : (temp[1] << 8 | temp[0]) );
 }
 
-uint32_t UTIL_ByteArrayToUInt32( BYTEARRAY b, bool reverse, unsigned int start )
+uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start )
 {
 	if( b.size( ) < start + 4 )
 		return 0;
 
-	BYTEARRAY temp = BYTEARRAY( b.begin( ) + start, b.begin( ) + start + 4 );
+	QByteArray temp = b.mid(start, 4);
 
-	if( reverse )
-		temp = BYTEARRAY( temp.rbegin( ), temp.rend( ) );
+	if (reverse)
+		return (uint32_t)( temp[0] << 24 | temp[1] << 16 | temp[2] << 8 | temp[3] );
 
 	return (uint32_t)( temp[3] << 24 | temp[2] << 16 | temp[1] << 8 | temp[0] );
 }
 
-string UTIL_ByteArrayToDecString( BYTEARRAY b )
+QString UTIL_QByteArrayToDecString( QByteArray b )
 {
-	if( b.empty( ) )
-		return string( );
+	if( b.isEmpty( ) )
+		return QString( );
 
-	string result = UTIL_ToString( b[0] );
+	QString result = QString::number( b[0] );
 
-	for( BYTEARRAY :: iterator i = b.begin( ) + 1; i != b.end( ); i++ )
-		result += " " + UTIL_ToString( *i );
+	for( QByteArray :: iterator i = b.begin( ) + 1; i != b.end( ); i++ )
+		result += " " + QString::number( *i );
 
 	return result;
 }
 
-string UTIL_ByteArrayToHexString( BYTEARRAY b )
+QString UTIL_QByteArrayToHexString( QByteArray b )
 {
-	if( b.empty( ) )
-		return string( );
-
-	string result = UTIL_ToHexString( b[0] );
-
-	for( BYTEARRAY :: iterator i = b.begin( ) + 1; i != b.end( ); i++ )
-	{
-		if( *i < 16 )
-			result += " 0" + UTIL_ToHexString( *i );
-		else
-			result += " " + UTIL_ToHexString( *i );
-	}
-
-	return result;
+	return QString::fromAscii(b.toHex());
 }
 
-void UTIL_AppendByteArray( BYTEARRAY &b, BYTEARRAY append )
+void UTIL_AppendQByteArray( QByteArray &b, QByteArray append )
 {
-	b.insert( b.end( ), append.begin( ), append.end( ) );
+	b.append(append);
 }
 
-void UTIL_AppendByteArrayFast( BYTEARRAY &b, BYTEARRAY &append )
+void UTIL_AppendQByteArrayFast( QByteArray &b, QByteArray &append )
 {
-	b.insert( b.end( ), append.begin( ), append.end( ) );
+	b.append(append);
 }
 
-void UTIL_AppendByteArray( BYTEARRAY &b, unsigned char *a, int size )
+void UTIL_AppendQByteArray( QByteArray &b, unsigned char *a, int size )
 {
-	UTIL_AppendByteArray( b, UTIL_CreateByteArray( a, size ) );
+	b.append((char*)a, size);
 }
 
-void UTIL_AppendByteArray( BYTEARRAY &b, string append, bool terminator )
+void UTIL_AppendQByteArray( QByteArray &b, QString append, bool terminator )
 {
-	// append the string plus a null terminator
-
-	b.insert( b.end( ), append.begin( ), append.end( ) );
+	b.append(append);
 
 	if( terminator )
-		b.push_back( 0 );
+		b.push_back( (char)0 );
 }
 
-void UTIL_AppendByteArrayFast( BYTEARRAY &b, string &append, bool terminator )
+void UTIL_AppendQByteArrayFast( QByteArray &b, QString &append, bool terminator )
 {
-	// append the string plus a null terminator
-
-	b.insert( b.end( ), append.begin( ), append.end( ) );
+	b.append(append);
 
 	if( terminator )
-		b.push_back( 0 );
+		b.push_back( (char)0 );
 }
 
-void UTIL_AppendByteArray( BYTEARRAY &b, uint16_t i, bool reverse )
+void UTIL_AppendQByteArray( QByteArray &b, uint16_t i, bool reverse )
 {
-	UTIL_AppendByteArray( b, UTIL_CreateByteArray( i, reverse ) );
+	b.append( UTIL_CreateQByteArray( i, reverse ) );
 }
 
-void UTIL_AppendByteArray( BYTEARRAY &b, uint32_t i, bool reverse )
+void UTIL_AppendQByteArray( QByteArray &b, uint32_t i, bool reverse )
 {
-	UTIL_AppendByteArray( b, UTIL_CreateByteArray( i, reverse ) );
+	b.append( UTIL_CreateQByteArray( i, reverse ) );
 }
 
-BYTEARRAY UTIL_ExtractCString( BYTEARRAY &b, unsigned int start )
+QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start )
 {
 	// start searching the byte array at position 'start' for the first null value
 	// if found, return the subarray from 'start' to the null value but not including the null value
 
-	if( start < b.size( ) )
-	{
-		for( unsigned int i = start; i < b.size( ); i++ )
-		{
-			if( b[i] == 0 )
-				return BYTEARRAY( b.begin( ) + start, b.begin( ) + i );
-		}
-
-		// no null value found, return the rest of the byte array
-
-		return BYTEARRAY( b.begin( ) + start, b.end( ) );
-	}
-
-	return BYTEARRAY( );
+	QString s(b.mid(start).data());
+	return s.toUtf8();
 }
 
-unsigned char UTIL_ExtractHex( BYTEARRAY &b, unsigned int start, bool reverse )
+unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse )
 {
 	// consider the byte array to contain a 2 character ASCII encoded hex value at b[start] and b[start + 1] e.g. "FF"
 	// extract it as a single decoded byte
 
-	if( start + 1 < b.size( ) )
-	{
-		unsigned int c;
-		string temp = string( b.begin( ) + start, b.begin( ) + start + 2 );
-
-		if( reverse )
-			temp = string( temp.rend( ), temp.rbegin( ) );
-
-		stringstream SS;
-		SS << temp;
-		SS >> hex >> c;
-		return c;
-	}
-
-	return 0;
+	return (unsigned char)b.mid(start, 2).toUShort(NULL, 16);
 }
 
-BYTEARRAY UTIL_ExtractNumbers( string s, unsigned int count )
+QByteArray UTIL_ExtractNumbers( QString s, unsigned int count )
 {
-	// consider the string to contain a bytearray in dec-text form, e.g. "52 99 128 1"
+	// consider the QString to contain a QByteArray in dec-text form, e.g. "52 99 128 1"
 
-	BYTEARRAY result;
+	QByteArray result;
 	unsigned int c;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 
 	for( unsigned int i = 0; i < count; i++ )
 	{
-		if( SS.eof( ) )
+		if( SS.atEnd() )
 			break;
 
 		SS >> c;
@@ -233,16 +192,16 @@ BYTEARRAY UTIL_ExtractNumbers( string s, unsigned int count )
 	return result;
 }
 
-BYTEARRAY UTIL_ExtractHexNumbers( string s )
+QByteArray UTIL_ExtractHexNumbers( QString s )
 {
-	// consider the string to contain a bytearray in hex-text form, e.g. "4e 17 b7 e6"
+	// consider the QString to contain a QByteArray in hex-text form, e.g. "4e 17 b7 e6"
 
-	BYTEARRAY result;
+	QByteArray result;
 	unsigned int c;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 
-	while( !SS.eof( ) )
+	while( !SS.atEnd() )
 	{
 		SS >> hex >> c;
 
@@ -254,138 +213,139 @@ BYTEARRAY UTIL_ExtractHexNumbers( string s )
 	return result;
 }
 
-string UTIL_ToString( unsigned long i )
+QString UTIL_ToString( unsigned long i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( unsigned short i )
+QString UTIL_ToString( unsigned short i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( unsigned int i )
+QString UTIL_ToString( unsigned int i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( long i )
+QString UTIL_ToString( long i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( short i )
+QString UTIL_ToString( short i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( int i )
+QString UTIL_ToString( int i )
 {
-	string result;
-	stringstream SS;
+	QString result;
+	QTextStream SS;
 	SS << i;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( float f, int digits )
+QString UTIL_ToString( float f, int digits )
 {
-	string result;
-	stringstream SS;
-	SS << std :: fixed << std :: setprecision( digits ) << f;
+	QString result;
+	QTextStream SS;
+	SS.setRealNumberPrecision( digits );
+	SS << QTextStream::FixedNotation << f;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToString( double d, int digits )
+QString UTIL_ToString( double d, int digits )
 {
-	string result;
-	stringstream SS;
-	SS << std :: fixed << std :: setprecision( digits ) << d;
+	QString result;
+	QTextStream SS;
+	SS << fixed << qSetRealNumberPrecision( digits ) << d;
 	SS >> result;
 	return result;
 }
 
-string UTIL_ToHexString( uint32_t i )
+QString UTIL_ToHexString( uint32_t i )
 {
-	string result;
-	stringstream SS;
-	SS << std :: hex << i;
+	QString result;
+	QTextStream SS;
+	SS << hex << i;
 	SS >> result;
 	return result;
 }
 
 // todotodo: these UTIL_ToXXX functions don't fail gracefully, they just return garbage (in the uint case usually just -1 casted to an unsigned type it looks like)
 
-uint16_t UTIL_ToUInt16( string &s )
+uint16_t UTIL_ToUInt16( QString &s )
 {
 	uint16_t result;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 	SS >> result;
 	return result;
 }
 
-uint32_t UTIL_ToUInt32( string &s )
+uint32_t UTIL_ToUInt32( QString &s )
 {
 	uint32_t result;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 	SS >> result;
 	return result;
 }
 
-int16_t UTIL_ToInt16( string &s )
+int16_t UTIL_ToInt16( QString &s )
 {
 	int16_t result;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 	SS >> result;
 	return result;
 }
 
-int32_t UTIL_ToInt32( string &s )
+int32_t UTIL_ToInt32( QString &s )
 {
 	int32_t result;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 	SS >> result;
 	return result;
 }
 
-double UTIL_ToDouble( string &s )
+double UTIL_ToDouble( QString &s )
 {
 	double result;
-	stringstream SS;
+	QTextStream SS;
 	SS << s;
 	SS >> result;
 	return result;
 }
 
-string UTIL_MSToString( uint32_t ms )
+QString UTIL_MSToString( uint32_t ms )
 {
-	string MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
-	string SecString = UTIL_ToString( ( ms / 1000 ) % 60 );
+	QString MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
+	QString SecString = UTIL_ToString( ( ms / 1000 ) % 60 );
 
 	if( MinString.size( ) == 1 )
 		MinString.insert( 0, "0" );
@@ -396,133 +356,81 @@ string UTIL_MSToString( uint32_t ms )
 	return MinString + "m" + SecString + "s";
 }
 
-bool UTIL_FileExists( string file )
+bool UTIL_FileExists( QString file )
 {
-	struct stat fileinfo;
-
-	if( stat( file.c_str( ), &fileinfo ) == 0 )
-		return true;
-
-	return false;
+	return QFile::exists(file);
 }
 
-string UTIL_FileRead( string file, uint32_t start, uint32_t length )
+QByteArray UTIL_FileRead( QString file, uint32_t start, uint32_t length )
 {
-	ifstream IS;
-	IS.open( file.c_str( ), ios :: binary );
+	QFile f(file);
+	f.open(QFile::ReadOnly);
 
-	if( IS.fail( ) )
+	if (f.error() != QFile::NoError)
 	{
 		CONSOLE_Print( "[UTIL] warning - unable to read file part [" + file + "]" );
-		return string( );
+		return QByteArray();
 	}
 
-	// get length of file
-
-	IS.seekg( 0, ios :: end );
-	uint32_t FileLength = IS.tellg( );
-
-	if( start > FileLength )
-	{
-		IS.close( );
-		return string( );
-	}
-
-	IS.seekg( start, ios :: beg );
-
-	// read data
-
-	char *Buffer = new char[length];
-	IS.read( Buffer, length );
-	string BufferString = string( Buffer, IS.gcount( ) );
-	IS.close( );
-	delete [] Buffer;
-	return BufferString;
+	f.seek(start);
+	return f.read(length);
 }
 
-string UTIL_FileRead( string file )
+QByteArray UTIL_FileRead( QString file )
 {
-	ifstream IS;
-	IS.open( file.c_str( ), ios :: binary );
+	QFile f(file);
+	f.open(QFile::ReadOnly);
 
-	if( IS.fail( ) )
+	if (f.error() != QFile::NoError)
 	{
 		CONSOLE_Print( "[UTIL] warning - unable to read file [" + file + "]" );
-		return string( );
+		return QByteArray();
 	}
 
-	// get length of file
-
-	IS.seekg( 0, ios :: end );
-	uint32_t FileLength = IS.tellg( );
-	IS.seekg( 0, ios :: beg );
-
-	// read data
-
-	char *Buffer = new char[FileLength];
-	IS.read( Buffer, FileLength );
-	string BufferString = string( Buffer, IS.gcount( ) );
-	IS.close( );
-	delete [] Buffer;
-
-	if( BufferString.size( ) == FileLength )
-		return BufferString;
-	else
-		return string( );
+	return f.readAll();
 }
 
-bool UTIL_FileWrite( string file, unsigned char *data, uint32_t length )
+bool UTIL_FileWrite( QString file, unsigned char *data, uint32_t length )
 {
-	ofstream OS;
-	OS.open( file.c_str( ), ios :: binary );
+	QFile f(file);
+	f.open(QFile::Truncate);
 
-	if( OS.fail( ) )
+	if (f.error() != QFile::NoError || !f.isWritable())
 	{
 		CONSOLE_Print( "[UTIL] warning - unable to write file [" + file + "]" );
 		return false;
 	}
 
-	// write data
-
-	OS.write( (const char *)data, length );
-	OS.close( );
+	f.write((char*)data, length);
 	return true;
 }
 
-string UTIL_FileSafeName( string fileName )
+QString UTIL_FileSafeName( QString fileName )
 {
-	string :: size_type BadStart = fileName.find_first_of( "\\/:*?<>|" );
-
-	while( BadStart != string :: npos )
-	{
-		fileName.replace( BadStart, 1, 1, '_' );
-		BadStart = fileName.find_first_of( "\\/:*?<>|" );
-	}
-
-	return fileName;
+	return fileName.replace(QRegExp("\\\\\\/\\:\\*\\?\\<\\>\\|"), "_");
 }
 
-string UTIL_AddPathSeperator( string path )
+QString UTIL_AddPathSeperator( QString path )
 {
-	if( path.empty( ) )
-		return string( );
+	if( path.isEmpty( ) )
+		return path;
 
 #ifdef WIN32
-	char Seperator = '\\';
+	QString Seperator = "\\";
 #else
-	char Seperator = '/';
+	QString Seperator = "/";
 #endif
 
-	if( *(path.end( ) - 1) == Seperator )
+	if( path.right(1) == Seperator )
 		return path;
 	else
-		return path + string( 1, Seperator );
+		return path + Seperator;
 }
 
-BYTEARRAY UTIL_EncodeStatString( BYTEARRAY &data )
+QByteArray UTIL_EncodeStatString( QByteArray &data )
 {
 	unsigned char Mask = 1;
-	BYTEARRAY Result;
+	QByteArray Result;
 
 	for( unsigned int i = 0; i < data.size( ); i++ )
 	{
@@ -536,7 +444,7 @@ BYTEARRAY UTIL_EncodeStatString( BYTEARRAY &data )
 
 		if( i % 7 == 6 || i == data.size( ) - 1 )
 		{
-			Result.insert( Result.end( ) - 1 - ( i % 7 ), Mask );
+			Result.insert( Result.size() - 1 - ( i % 7 ), Mask);
 			Mask = 1;
 		}
 	}
@@ -544,10 +452,20 @@ BYTEARRAY UTIL_EncodeStatString( BYTEARRAY &data )
 	return Result;
 }
 
-BYTEARRAY UTIL_DecodeStatString( BYTEARRAY &data )
+QByteArray UTIL_QByteArrayReverse(const QByteArray &b)
+{
+	QByteArray res;
+	QByteArray::const_iterator it;
+	for (it = b.end(); it != b.begin(); it--)
+		res.push_back(*it);
+
+	return res;
+}
+
+QByteArray UTIL_DecodeStatString( QByteArray &data )
 {
 	unsigned char Mask;
-	BYTEARRAY Result;
+	QByteArray Result;
 
 	for( unsigned int i = 0; i < data.size( ); i++ )
 	{
@@ -565,7 +483,7 @@ BYTEARRAY UTIL_DecodeStatString( BYTEARRAY &data )
 	return Result;
 }
 
-bool UTIL_IsLanIP( BYTEARRAY ip )
+bool UTIL_IsLanIP( QByteArray ip )
 {
 	if( ip.size( ) != 4 )
 		return false;
@@ -595,12 +513,12 @@ bool UTIL_IsLanIP( BYTEARRAY ip )
 	return false;
 }
 
-bool UTIL_IsLocalIP( BYTEARRAY ip, vector<BYTEARRAY> &localIPs )
+bool UTIL_IsLocalIP( QByteArray ip, vector<QByteArray> &localIPs )
 {
 	if( ip.size( ) != 4 )
 		return false;
 
-	for( vector<BYTEARRAY> :: iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
+	for( vector<QByteArray> :: iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
 	{
 		if( (*i).size( ) != 4 )
 			continue;
@@ -612,32 +530,21 @@ bool UTIL_IsLocalIP( BYTEARRAY ip, vector<BYTEARRAY> &localIPs )
 	return false;
 }
 
-void UTIL_Replace( string &Text, string Key, string Value )
+void UTIL_Replace( QString &Text, QString Key, QString Value )
 {
-	// don't allow any infinite loops
-
-	if( Value.find( Key ) != string :: npos )
-		return;
-
-	string :: size_type KeyStart = Text.find( Key );
-
-	while( KeyStart != string :: npos )
-	{
-		Text.replace( KeyStart, Key.size( ), Value );
-		KeyStart = Text.find( Key );
-	}
+	Text.replace(Key, Value);
 }
 
-vector<string> UTIL_Tokenize( string s, char delim )
+vector<QString> UTIL_Tokenize( QString s, char delim )
 {
-	vector<string> Tokens;
-	string Token;
+	vector<QString> Tokens;
+	QString Token;
 
-	for( string :: iterator i = s.begin( ); i != s.end( ); i++ )
+	for( QString :: iterator i = s.begin( ); i != s.end( ); i++ )
 	{
 		if( *i == delim )
 		{
-			if( Token.empty( ) )
+			if( Token.isEmpty( ) )
 				continue;
 
 			Tokens.push_back( Token );
@@ -647,7 +554,7 @@ vector<string> UTIL_Tokenize( string s, char delim )
 			Token += *i;
 	}
 
-	if( !Token.empty( ) )
+	if( !Token.isEmpty( ) )
 		Tokens.push_back( Token );
 
 	return Tokens;

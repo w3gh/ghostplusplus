@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@
 #include "util.h"
 #include "socket.h"
 
-#include <string.h>
+#include <QString>
 
 #ifndef WIN32
  int GetLastError( ) { return errno; }
@@ -54,22 +54,22 @@ CSocket :: ~CSocket( )
 		closesocket( m_Socket );
 }
 
-BYTEARRAY CSocket :: GetPort( )
+QByteArray CSocket :: GetPort( )
 {
-	return UTIL_CreateByteArray( m_SIN.sin_port, false );
+	return UTIL_CreateQByteArray( m_SIN.sin_port, false );
 }
 
-BYTEARRAY CSocket :: GetIP( )
+QByteArray CSocket :: GetIP( )
 {
-	return UTIL_CreateByteArray( (uint32_t)m_SIN.sin_addr.s_addr, false );
+	return UTIL_CreateQByteArray( (uint32_t)m_SIN.sin_addr.s_addr, false );
 }
 
-string CSocket :: GetIPString( )
+QString CSocket :: GetIPString( )
 {
 	return inet_ntoa( m_SIN.sin_addr );
 }
 
-string CSocket :: GetErrorString( )
+QString CSocket :: GetErrorString( )
 {
 	if( !m_HasError )
 		return "NO ERROR";
@@ -216,28 +216,16 @@ void CTCPSocket :: Reset( )
 #else
 	fcntl( m_Socket, F_SETFL, fcntl( m_Socket, F_GETFL ) | O_NONBLOCK );
 #endif
-
-	if( !m_LogFile.empty( ) )
-	{
-		ofstream Log;
-		Log.open( m_LogFile.c_str( ), ios :: app );
-
-		if( !Log.fail( ) )
-		{
-			Log << "----------RESET----------" << endl;
-			Log.close( );
-		}
-	}
 }
 
-void CTCPSocket :: PutBytes( string bytes )
+void CTCPSocket :: PutBytes( QString bytes )
 {
-	m_SendBuffer += bytes;
+	m_SendBuffer.append(bytes);
 }
 
-void CTCPSocket :: PutBytes( BYTEARRAY bytes )
+void CTCPSocket :: PutBytes( QByteArray bytes )
 {
-	m_SendBuffer += string( bytes.begin( ), bytes.end( ) );
+	m_SendBuffer.append(bytes);
 }
 
 void CTCPSocket :: DoRecv( fd_set *fd )
@@ -279,12 +267,12 @@ void CTCPSocket :: DoRecv( fd_set *fd )
 
 				if( !Log.fail( ) )
 				{
-					Log << "					RECEIVE <<< " << UTIL_ByteArrayToHexString( UTIL_CreateByteArray( (unsigned char *)buffer, c ) ) << endl;
+					Log << "					RECEIVE <<< " << UTIL_QByteArrayToHexString( UTIL_CreateQByteArray( (unsigned char *)buffer, c ) ) << endl;
 					Log.close( );
 				}
 			}
 
-			m_RecvBuffer += string( buffer, c );
+			m_RecvBuffer += QString( buffer, c );
 			m_LastRecv = GetTime( );
 		}
 	}
@@ -321,7 +309,7 @@ void CTCPSocket :: DoSend( fd_set *send_fd )
 
 				if( !Log.fail( ) )
 				{
-					Log << "SEND >>> " << UTIL_ByteArrayToHexString( BYTEARRAY( m_SendBuffer.begin( ), m_SendBuffer.begin( ) + s ) ) << endl;
+					Log << "SEND >>> " << UTIL_QByteArrayToHexString( QByteArray( m_SendBuffer.begin( ), m_SendBuffer.begin( ) + s ) ) << endl;
 					Log.close( );
 				}
 			}
@@ -376,7 +364,7 @@ void CTCPClient :: Disconnect( )
 	m_Connecting = false;
 }
 
-void CTCPClient :: Connect( string localaddress, string address, uint16_t port )
+void CTCPClient :: Connect( QString localaddress, QString address, uint16_t port )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError || m_Connecting || m_Connected )
 		return;
@@ -497,7 +485,7 @@ CTCPServer :: ~CTCPServer( )
 
 }
 
-bool CTCPServer :: Listen( string address, uint16_t port )
+bool CTCPServer :: Listen( QString address, uint16_t port )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
 		return false;
@@ -579,7 +567,7 @@ CUDPSocket :: CUDPSocket( ) : CSocket( )
 
 	int OptVal = 1;
 	setsockopt( m_Socket, SOL_SOCKET, SO_BROADCAST, (const char *)&OptVal, sizeof( int ) );
-	
+
 	// set default broadcast target
 	m_BroadcastTarget.s_addr = INADDR_BROADCAST;
 }
@@ -589,12 +577,12 @@ CUDPSocket :: ~CUDPSocket( )
 
 }
 
-bool CUDPSocket :: SendTo( struct sockaddr_in sin, BYTEARRAY message )
+bool CUDPSocket :: SendTo( struct sockaddr_in sin, QByteArray message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
 		return false;
 
-	string MessageString = string( message.begin( ), message.end( ) );
+	QString MessageString = QString( message.begin( ), message.end( ) );
 
 	if( sendto( m_Socket, MessageString.c_str( ), MessageString.size( ), 0, (struct sockaddr *)&sin, sizeof( sin ) ) == -1 )
 		return false;
@@ -602,7 +590,7 @@ bool CUDPSocket :: SendTo( struct sockaddr_in sin, BYTEARRAY message )
 	return true;
 }
 
-bool CUDPSocket :: SendTo( string address, uint16_t port, BYTEARRAY message )
+bool CUDPSocket :: SendTo( QString address, uint16_t port, QByteArray message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
 		return false;
@@ -630,7 +618,7 @@ bool CUDPSocket :: SendTo( string address, uint16_t port, BYTEARRAY message )
 	return SendTo( sin, message );
 }
 
-bool CUDPSocket :: Broadcast( uint16_t port, BYTEARRAY message )
+bool CUDPSocket :: Broadcast( uint16_t port, QByteArray message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
 		return false;
@@ -640,7 +628,7 @@ bool CUDPSocket :: Broadcast( uint16_t port, BYTEARRAY message )
 	sin.sin_addr.s_addr = m_BroadcastTarget.s_addr;
 	sin.sin_port = htons( port );
 
-	string MessageString = string( message.begin( ), message.end( ) );
+	QString MessageString = QString( message.begin( ), message.end( ) );
 
 	if( sendto( m_Socket, MessageString.c_str( ), MessageString.size( ), 0, (struct sockaddr *)&sin, sizeof( sin ) ) == -1 )
 	{
@@ -651,7 +639,7 @@ bool CUDPSocket :: Broadcast( uint16_t port, BYTEARRAY message )
 	return true;
 }
 
-void CUDPSocket :: SetBroadcastTarget( string subnet )
+void CUDPSocket :: SetBroadcastTarget( QString subnet )
 {
 	if( subnet.empty( ) )
 	{
@@ -661,7 +649,7 @@ void CUDPSocket :: SetBroadcastTarget( string subnet )
 	else
 	{
 		// this function does not check whether the given subnet is a valid subnet the user is on
-		// convert string representation of ip/subnet to in_addr
+		// convert QString representation of ip/subnet to in_addr
 
 		CONSOLE_Print( "[UDPSOCKET] using broadcast target [" + subnet + "]" );
 		m_BroadcastTarget.s_addr = inet_addr( subnet.c_str( ) );
@@ -739,7 +727,7 @@ bool CUDPServer :: Bind( struct sockaddr_in sin )
 	return true;
 }
 
-bool CUDPServer :: Bind( string address, uint16_t port )
+bool CUDPServer :: Bind( QString address, uint16_t port )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )
 		return false;
@@ -760,7 +748,7 @@ bool CUDPServer :: Bind( string address, uint16_t port )
 	return Bind( sin );
 }
 
-void CUDPServer :: RecvFrom( fd_set *fd, struct sockaddr_in *sin, string *message )
+void CUDPServer :: RecvFrom( fd_set *fd, struct sockaddr_in *sin, QString *message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError || !sin || !message )
 		return;
@@ -791,7 +779,7 @@ void CUDPServer :: RecvFrom( fd_set *fd, struct sockaddr_in *sin, string *messag
 		{
 			// success!
 
-			*message = string( buffer, c );
+			*message = QString( buffer, c );
 		}
 	}
 }

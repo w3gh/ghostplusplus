@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,10 +30,10 @@
 class CSaveGame : public CPacked
 {
 private:
-	string m_FileName;
-	string m_FileNameNoPath;
-	string m_MapPath;
-	string m_GameName;
+	QString m_FileName;
+	QString m_FileNameNoPath;
+	QString m_MapPath;
+	QString m_GameName;
 	unsigned char m_NumSlots;
 	vector<CGameSlot> m_Slots;
 	uint32_t m_RandomSeed;
@@ -43,17 +43,17 @@ public:
 	CSaveGame( );
 	virtual ~CSaveGame( );
 
-	string GetFileName( )				{ return m_FileName; }
-	string GetFileNameNoPath( )			{ return m_FileNameNoPath; }
-	string GetMapPath( )				{ return m_MapPath; }
-	string GetGameName( )				{ return m_GameName; }
+	QString GetFileName( )				{ return m_FileName; }
+	QString GetFileNameNoPath( )			{ return m_FileNameNoPath; }
+	QString GetMapPath( )				{ return m_MapPath; }
+	QString GetGameName( )				{ return m_GameName; }
 	unsigned char GetNumSlots( )		{ return m_NumSlots; }
 	vector<CGameSlot> GetSlots( )		{ return m_Slots; }
 	uint32_t GetRandomSeed( )			{ return m_RandomSeed; }
 	BYTEARRAY GetMagicNumber( )			{ return m_MagicNumber; }
 
-	void SetFileName( string nFileName )				{ m_FileName = nFileName; }
-	void SetFileNameNoPath( string nFileNameNoPath )	{ m_FileNameNoPath = nFileNameNoPath; }
+	void SetFileName( QString nFileName )				{ m_FileName = nFileName; }
+	void SetFileNameNoPath( QString nFileNameNoPath )	{ m_FileNameNoPath = nFileNameNoPath; }
 
 	void ParseSaveGame( );
 };

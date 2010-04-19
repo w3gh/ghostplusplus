@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,7 +60,7 @@ CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( BYTEARRAY data )
 	//		10 bytes			-> ???
 	//		2 bytes				-> Port
 	//		4 bytes				-> IP
-	//		null term string	-> GameName
+	//		null term QString	-> GameName
 	//		2 bytes				-> ???
 	//		8 bytes				-> HostCounter
 
@@ -83,7 +83,7 @@ CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( BYTEARRAY data )
 				HostCounter.push_back( UTIL_ExtractHex( data, GameName.size( ) + 33, true ) );
 				return new CIncomingGameHost(	IP,
 												UTIL_ByteArrayToUInt16( Port, false ),
-												string( GameName.begin( ), GameName.end( ) ),
+												QString( GameName.begin( ), GameName.end( ) ),
 												HostCounter );
 			}
 		}
@@ -99,7 +99,7 @@ bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( BYTEARRAY data )
 
 	// 2 bytes					-> Header
 	// 2 bytes					-> Length
-	// null terminated string	-> UniqueName
+	// null terminated QString	-> UniqueName
 
 	if( ValidateLength( data ) && data.size( ) >= 5 )
 	{
@@ -121,8 +121,8 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 	// 4 bytes					-> ???
 	// 4 bytes					-> Ping
 	// 12 bytes					-> ???
-	// null terminated string	-> User
-	// null terminated string	-> Message
+	// null terminated QString	-> User
+	// null terminated QString	-> Message
 
 	if( ValidateLength( data ) && data.size( ) >= 29 )
 	{
@@ -150,8 +150,8 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 		case CBNETProtocol :: EID_EMOTE:
 			return new CIncomingChatEvent(	(CBNETProtocol :: IncomingChatEvent)UTIL_ByteArrayToUInt32( EventID, false ),
 												UTIL_ByteArrayToUInt32( Ping, false ),
-												string( User.begin( ), User.end( ) ),
-												string( Message.begin( ), Message.end( ) ) );
+												QString( User.begin( ), User.end( ) ),
+												QString( Message.begin( ), Message.end( ) ) );
 		}
 
 	}
@@ -236,8 +236,8 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( BYTEARRAY data )
 	// 4 bytes					-> ServerToken
 	// 4 bytes					-> ???
 	// 8 bytes					-> MPQFileTime
-	// null terminated string	-> IX86VerFileName
-	// null terminated string	-> ValueStringFormula
+	// null terminated QString	-> IX86VerFileName
+	// null terminated QString	-> ValueStringFormula
 
 	if( ValidateLength( data ) && data.size( ) >= 25 )
 	{
@@ -260,7 +260,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( BYTEARRAY data )
 	// 2 bytes					-> Header
 	// 2 bytes					-> Length
 	// 4 bytes					-> KeyState
-	// null terminated string	-> KeyStateDescription
+	// null terminated QString	-> KeyStateDescription
 
 	if( ValidateLength( data ) && data.size( ) >= 9 )
 	{
@@ -345,11 +345,11 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 	// 2 bytes					-> Length
 	// 1 byte					-> Total
 	// for( 1 .. Total )
-	//		null term string	-> Account
+	//		null term QString	-> Account
 	//		1 byte				-> Status
 	//		1 byte				-> Area
 	//		4 bytes				-> ???
-	//		null term string	-> Location
+	//		null term QString	-> Location
 
 	vector<CIncomingFriendList *> Friends;
 
@@ -376,10 +376,10 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 			i += 6;
 			BYTEARRAY Location = UTIL_ExtractCString( data, i );
 			i += Location.size( ) + 1;
-			Friends.push_back( new CIncomingFriendList(	string( Account.begin( ), Account.end( ) ),
+			Friends.push_back( new CIncomingFriendList(	QString( Account.begin( ), Account.end( ) ),
 														Status,
 														Area,
-														string( Location.begin( ), Location.end( ) ) ) );
+														QString( Location.begin( ), Location.end( ) ) ) );
 		}
 	}
 
@@ -396,10 +396,10 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 	// 4 bytes					-> ???
 	// 1 byte					-> Total
 	// for( 1 .. Total )
-	//		null term string	-> Name
+	//		null term QString	-> Name
 	//		1 byte				-> Rank
 	//		1 byte				-> Status
-	//		null term string	-> Location
+	//		null term QString	-> Location
 
 	vector<CIncomingClanList *> ClanList;
 
@@ -425,11 +425,11 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 			unsigned char Status = data[i + 1];
 			i += 2;
 
-			// in the original VB source the location string is read but discarded, so that's what I do here
+			// in the original VB source the location QString is read but discarded, so that's what I do here
 
 			BYTEARRAY Location = UTIL_ExtractCString( data, i );
 			i += Location.size( ) + 1;
-			ClanList.push_back( new CIncomingClanList(	string( Name.begin( ), Name.end( ) ),
+			ClanList.push_back( new CIncomingClanList(	QString( Name.begin( ), Name.end( ) ),
 														Rank,
 														Status ) );
 		}
@@ -445,10 +445,10 @@ CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRA
 
 	// 2 bytes					-> Header
 	// 2 bytes					-> Length
-	// null terminated string	-> Name
+	// null terminated QString	-> Name
 	// 1 byte					-> Rank
 	// 1 byte					-> Status
-	// null terminated string	-> Location
+	// null terminated QString	-> Location
 
 	if( ValidateLength( data ) && data.size( ) >= 5 )
 	{
@@ -459,10 +459,10 @@ CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRA
 			unsigned char Rank = data[Name.size( ) + 5];
 			unsigned char Status = data[Name.size( ) + 6];
 
-			// in the original VB source the location string is read but discarded, so that's what I do here
+			// in the original VB source the location QString is read but discarded, so that's what I do here
 
 			BYTEARRAY Location = UTIL_ExtractCString( data, Name.size( ) + 7 );
-			return new CIncomingClanList(	string( Name.begin( ), Name.end( ) ),
+			return new CIncomingClanList(	QString( Name.begin( ), Name.end( ) ),
 											Rank,
 											Status );
 		}
@@ -510,7 +510,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_STOPADV( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_GETADVLISTEX( string gameName )
+BYTEARRAY CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
 {
 	unsigned char MapFilter1[]	= { 255, 3, 0, 0 };
 	unsigned char MapFilter2[]	= { 255, 3, 0, 0 };
@@ -550,7 +550,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_ENTERCHAT( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_JOINCHANNEL( string channel )
+BYTEARRAY CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
 {
 	unsigned char NoCreateJoin[]	= { 2, 0, 0, 0 };
 	unsigned char FirstJoin[]		= { 1, 0, 0, 0 };
@@ -573,7 +573,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_JOINCHANNEL( string channel )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_CHATCOMMAND( string command )
+BYTEARRAY CBNETProtocol :: SEND_SID_CHATCOMMAND( QString command )
 {
 	BYTEARRAY packet;
 	packet.push_back( BNET_HEADER_CONSTANT );		// BNET header constant
@@ -606,7 +606,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_CHECKAD( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, BYTEARRAY mapSHA1, uint32_t hostCounter )
+BYTEARRAY CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, BYTEARRAY mapCRC, BYTEARRAY mapSHA1, uint32_t hostCounter )
 {
 	// todotodo: sort out how GameType works, the documentation is horrendous
 
@@ -637,16 +637,16 @@ Flags:
 	unsigned char Unknown[]		= { 255,  3,  0,  0 };
 	unsigned char CustomGame[]	= {   0,  0,  0,  0 };
 
-	string HostCounterString = UTIL_ToHexString( hostCounter );
+	QString HostCounterString = UTIL_ToHexString( hostCounter );
 
 	if( HostCounterString.size( ) < 8 )
 		HostCounterString.insert( 0, 8 - HostCounterString.size( ), '0' );
 
-	HostCounterString = string( HostCounterString.rbegin( ), HostCounterString.rend( ) );
+	HostCounterString = QString( HostCounterString.rbegin( ), HostCounterString.rend( ) );
 
 	BYTEARRAY packet;
 
-	// make the stat string
+	// make the stat QString
 
 	BYTEARRAY StatString;
 	UTIL_AppendByteArrayFast( StatString, mapFlags );
@@ -681,7 +681,7 @@ Flags:
 		packet.push_back( 98 );											// Slots Free (ascii 98 = char 'b' = 11 slots free) - note: do not reduce this as this is the # of PID's Warcraft III will allocate
 		UTIL_AppendByteArrayFast( packet, HostCounterString, false );	// Host Counter
 		UTIL_AppendByteArrayFast( packet, StatString );					// Stat String
-		packet.push_back( 0 );											// Stat String null terminator (the stat string is encoded to remove all even numbers i.e. zeros)
+		packet.push_back( 0 );											// Stat String null terminator (the stat QString is encoded to remove all even numbers i.e. zeros)
 		AssignLength( packet );
 	}
 	else
@@ -692,7 +692,7 @@ Flags:
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_NOTIFYJOIN( string gameName )
+BYTEARRAY CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
 {
 	unsigned char ProductID[]		= {  0, 0, 0, 0 };
 	unsigned char ProductVersion[]	= { 14, 0, 0, 0 };	// Warcraft III is 14
@@ -733,7 +733,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_PING( BYTEARRAY pingValue )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_LOGONRESPONSE( BYTEARRAY clientToken, BYTEARRAY serverToken, BYTEARRAY passwordHash, string accountName )
+BYTEARRAY CBNETProtocol :: SEND_SID_LOGONRESPONSE( BYTEARRAY clientToken, BYTEARRAY serverToken, BYTEARRAY passwordHash, QString accountName )
 {
 	// todotodo: check that the passed BYTEARRAY sizes are correct (don't know what they should be right now so I can't do this today)
 
@@ -766,7 +766,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, string countryAbbrev, string country )
+BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country )
 {
 	unsigned char ProtocolID[]		= {   0,   0,   0,   0 };
 	unsigned char PlatformID[]		= {  54,  56,  88,  73 };	// "IX86"
@@ -804,7 +804,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken, BYTEARRAY exeVersion, BYTEARRAY exeVersionHash, BYTEARRAY keyInfoROC, BYTEARRAY keyInfoTFT, string exeInfo, string keyOwnerName )
+BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken, BYTEARRAY exeVersion, BYTEARRAY exeVersionHash, BYTEARRAY keyInfoROC, BYTEARRAY keyInfoTFT, QString exeInfo, QString keyOwnerName )
 {
 	uint32_t NumKeys = 0;
 
@@ -843,7 +843,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken,
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey, string accountName )
+BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey, QString accountName )
 {
 	BYTEARRAY packet;
 
@@ -974,7 +974,7 @@ bool CBNETProtocol :: ValidateLength( BYTEARRAY &content )
 // CIncomingGameHost
 //
 
-CIncomingGameHost :: CIncomingGameHost( BYTEARRAY &nIP, uint16_t nPort, string nGameName, BYTEARRAY &nHostCounter )
+CIncomingGameHost :: CIncomingGameHost( BYTEARRAY &nIP, uint16_t nPort, QString nGameName, BYTEARRAY &nHostCounter )
 {
 	m_IP = nIP;
 	m_Port = nPort;
@@ -987,9 +987,9 @@ CIncomingGameHost :: ~CIncomingGameHost( )
 
 }
 
-string CIncomingGameHost :: GetIPString( )
+QString CIncomingGameHost :: GetIPString( )
 {
-	string Result;
+	QString Result;
 
 	if( m_IP.size( ) >= 4 )
 	{
@@ -1009,7 +1009,7 @@ string CIncomingGameHost :: GetIPString( )
 // CIncomingChatEvent
 //
 
-CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, string nUser, string nMessage )
+CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, QString nUser, QString nMessage )
 {
 	m_ChatEvent = nChatEvent;
 	m_Ping = nPing;
@@ -1026,7 +1026,7 @@ CIncomingChatEvent :: ~CIncomingChatEvent( )
 // CIncomingFriendList
 //
 
-CIncomingFriendList :: CIncomingFriendList( string nAccount, unsigned char nStatus, unsigned char nArea, string nLocation )
+CIncomingFriendList :: CIncomingFriendList( QString nAccount, unsigned char nStatus, unsigned char nArea, QString nLocation )
 {
 	m_Account = nAccount;
 	m_Status = nStatus;
@@ -1039,9 +1039,9 @@ CIncomingFriendList :: ~CIncomingFriendList( )
 
 }
 
-string CIncomingFriendList :: GetDescription( )
+QString CIncomingFriendList :: GetDescription( )
 {
-	string Description;
+	QString Description;
 	Description += GetAccount( ) + "\n";
 	Description += ExtractStatus( GetStatus( ) ) + "\n";
 	Description += ExtractArea( GetArea( ) ) + "\n";
@@ -1049,9 +1049,9 @@ string CIncomingFriendList :: GetDescription( )
 	return Description;
 }
 
-string CIncomingFriendList :: ExtractStatus( unsigned char status )
+QString CIncomingFriendList :: ExtractStatus( unsigned char status )
 {
-	string Result;
+	QString Result;
 
 	if( status & 1 )
 		Result += "<Mutual>";
@@ -1068,7 +1068,7 @@ string CIncomingFriendList :: ExtractStatus( unsigned char status )
 	return Result;
 }
 
-string CIncomingFriendList :: ExtractArea( unsigned char area )
+QString CIncomingFriendList :: ExtractArea( unsigned char area )
 {
 	switch( area )
 	{
@@ -1083,9 +1083,9 @@ string CIncomingFriendList :: ExtractArea( unsigned char area )
 	return "<Unknown>";
 }
 
-string CIncomingFriendList :: ExtractLocation( string location )
+QString CIncomingFriendList :: ExtractLocation( QString location )
 {
-	string Result;
+	QString Result;
 
 	if( location.substr( 0, 4 ) == "PX3W" )
 		Result = location.substr( 4 );
@@ -1100,7 +1100,7 @@ string CIncomingFriendList :: ExtractLocation( string location )
 // CIncomingClanList
 //
 
-CIncomingClanList :: CIncomingClanList( string nName, unsigned char nRank, unsigned char nStatus )
+CIncomingClanList :: CIncomingClanList( QString nName, unsigned char nRank, unsigned char nStatus )
 {
 	m_Name = nName;
 	m_Rank = nRank;
@@ -1112,7 +1112,7 @@ CIncomingClanList :: ~CIncomingClanList( )
 
 }
 
-string CIncomingClanList :: GetRank( )
+QString CIncomingClanList :: GetRank( )
 {
 	switch( m_Rank )
 	{
@@ -1126,7 +1126,7 @@ string CIncomingClanList :: GetRank( )
 	return "Rank Unknown";
 }
 
-string CIncomingClanList :: GetStatus( )
+QString CIncomingClanList :: GetStatus( )
 {
 	if( m_Status == 0 )
 		return "Offline";
@@ -1134,9 +1134,9 @@ string CIncomingClanList :: GetStatus( )
 		return "Online";
 }
 
-string CIncomingClanList :: GetDescription( )
+QString CIncomingClanList :: GetDescription( )
 {
-	string Description;
+	QString Description;
 	Description += GetName( ) + "\n";
 	Description += GetStatus( ) + "\n";
 	Description += GetRank( ) + "\n\n";
