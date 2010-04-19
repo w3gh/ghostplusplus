@@ -30,15 +30,15 @@ class CCommandPacket
 private:
 	unsigned char m_PacketType;
 	int m_ID;
-	BYTEARRAY m_Data;
+	QByteArray m_Data;
 
 public:
-	CCommandPacket( unsigned char nPacketType, int nID, BYTEARRAY nData );
+	CCommandPacket( unsigned char nPacketType, int nID, QByteArray nData );
 	~CCommandPacket( );
 
 	unsigned char GetPacketType( )	{ return m_PacketType; }
 	int GetID( )					{ return m_ID; }
-	BYTEARRAY GetData( )			{ return m_Data; }
+	QByteArray GetData( )			{ return m_Data; }
 };
 
 #endif

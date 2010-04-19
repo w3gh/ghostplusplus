@@ -55,7 +55,7 @@ void CConfig :: Read( QString file )
 
 			// ignore blank lines and comments
 
-			if( Line.empty( ) || Line[0] == '#' )
+			if( Line.isEmpty( ) || Line[0] == '#' )
 				continue;
 
 			// remove newlines and partial newlines to help fix issues with Windows formatted config files on Linux systems
@@ -74,7 +74,7 @@ void CConfig :: Read( QString file )
 			QString :: size_type ValueEnd = Line.size( );
 
 			if( ValueStart != QString :: npos )
-				m_CFG[Line.substr( KeyStart, KeyEnd - KeyStart )] = Line.substr( ValueStart, ValueEnd - ValueStart );
+				m_CFG[Line.mid( KeyStart, KeyEnd - KeyStart )] = Line.mid( ValueStart, ValueEnd - ValueStart );
 		}
 
 		in.close( );

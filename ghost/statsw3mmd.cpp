@@ -87,9 +87,9 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 						{
 							QString ValueIDString = MissionKeyString.mid( 4 );
 							uint32_t ValueID = UTIL_ToUInt32( ValueIDString );
-							vector<QString> Tokens = TokenizeKey( KeyString );
+							QVector<QString> Tokens = TokenizeKey( KeyString );
 
-							if( !Tokens.empty( ) )
+							if( !Tokens.isEmpty( ) )
 							{
 								if( Tokens[0] == "init" && Tokens.size( ) >= 2 )
 								{
@@ -254,7 +254,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										uint32_t Arguments = UTIL_ToUInt32( Tokens[2] );
 
 										if( Tokens.size( ) == Arguments + 4 )
-											m_DefEvents[Tokens[1]] = vector<QString>( Tokens.begin( ) + 3, Tokens.end( ) );
+											m_DefEvents[Tokens[1]] = Tokens.mid(3);
 									}
 								}
 								else if( Tokens[0] == "Event" && Tokens.size( ) >= 2 )
@@ -266,9 +266,9 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + KeyString + "] found without a corresponding DefEvent, ignoring" );
 									else
 									{
-										vector<QString> DefEvent = m_DefEvents[Tokens[1]];
+										QVector<QString> DefEvent = m_DefEvents[Tokens[1]];
 
-										if( !DefEvent.empty( ) )
+										if( !DefEvent.isEmpty( ) )
 										{
 											QString Format = DefEvent[DefEvent.size( ) - 1];
 
@@ -357,13 +357,13 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		// todotodo: there's no reason to create a new callable for each entry in this map
 		// rewrite ThreadedW3MMDPlayerAdd to act more like ThreadedW3MMDVarAdd
 
-		for( map<uint32_t,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
+		for( QMap<uint32_t,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
 		{
-			QString Flags = m_Flags[i->first];
+			QString Flags = m_Flags[i.key()];
 			uint32_t Leaver = 0;
 			uint32_t Practicing = 0;
 
-			if( m_FlagsLeaver.find( i->first ) != m_FlagsLeaver.end( ) && m_FlagsLeaver[i->first] )
+			if( m_FlagsLeaver.find( i.key() ) != m_FlagsLeaver.end( ) && m_FlagsLeaver[i.key()] )
 			{
 				Leaver = 1;
 
@@ -373,7 +373,7 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 				Flags += "leaver";
 			}
 
-			if( m_FlagsPracticing.find( i->first ) != m_FlagsPracticing.end( ) && m_FlagsPracticing[i->first] )
+			if( m_FlagsPracticing.find( i.key() ) != m_FlagsPracticing.end( ) && m_FlagsPracticing[i.key()] )
 			{
 				Practicing = 1;
 
@@ -383,17 +383,17 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 				Flags += "practicing";
 			}
 
-			CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] recorded flags [" + Flags + "] for player [" + i->second + "] with PID [" + UTIL_ToString( i->first ) + "]" );
-			GHost->m_Callables.push_back( DB->ThreadedW3MMDPlayerAdd( m_Category, GameID, i->first, i->second, m_Flags[i->first], Leaver, Practicing ) );
+			CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] recorded flags [" + Flags + "] for player [" + i.value() + "] with PID [" + UTIL_ToString( i.key() ) + "]" );
+			GHost->m_Callables.push_back( DB->ThreadedW3MMDPlayerAdd( m_Category, GameID, i.key(), i.value(), m_Flags[i.key()], Leaver, Practicing ) );
 		}
 
-		if( !m_VarPInts.empty( ) )
+		if( !m_VarPInts.isEmpty( ) )
 			GHost->m_Callables.push_back( DB->ThreadedW3MMDVarAdd( GameID, m_VarPInts ) );
 
-		if( !m_VarPReals.empty( ) )
+		if( !m_VarPReals.isEmpty( ) )
 			GHost->m_Callables.push_back( DB->ThreadedW3MMDVarAdd( GameID, m_VarPReals ) );
 
-		if( !m_VarPStrings.empty( ) )
+		if( !m_VarPStrings.isEmpty( ) )
 			GHost->m_Callables.push_back( DB->ThreadedW3MMDVarAdd( GameID, m_VarPStrings ) );
 
 		if( DB->Commit( ) )
@@ -405,9 +405,9 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
 }
 
-vector<QString> CStatsW3MMD :: TokenizeKey( QString key )
+QVector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 {
-	vector<QString> Tokens;
+	QVector<QString> Tokens;
 	QString Token;
 	bool Escaping = false;
 
@@ -422,7 +422,7 @@ vector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 			else
 			{
 				CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], invalid escape sequence found, ignoring" );
-				return vector<QString>( );
+				return QVector<QString>( );
 			}
 
 			Escaping = false;
@@ -434,7 +434,7 @@ vector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 				if( Token.isEmpty( ) )
 				{
 					CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-					return vector<QString>( );
+					return QVector<QString>( );
 				}
 
 				Tokens.push_back( Token );
@@ -450,7 +450,7 @@ vector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 	if( Token.isEmpty( ) )
 	{
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-		return vector<QString>( );
+		return QVector<QString>( );
 	}
 
 	Tokens.push_back( Token );

@@ -28,7 +28,7 @@
 class CConfig
 {
 private:
-	map<string, string> m_CFG;
+	QMap<string, string> m_CFG;
 
 public:
 	CConfig( );

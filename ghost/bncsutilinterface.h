@@ -29,40 +29,40 @@ class CBNCSUtilInterface
 {
 private:
 	void *m_NLS;
-	BYTEARRAY m_EXEVersion;			// set in HELP_SID_AUTH_CHECK
-	BYTEARRAY m_EXEVersionHash;		// set in HELP_SID_AUTH_CHECK
+	QByteArray m_EXEVersion;			// set in HELP_SID_AUTH_CHECK
+	QByteArray m_EXEVersionHash;		// set in HELP_SID_AUTH_CHECK
 	QString m_EXEInfo;				// set in HELP_SID_AUTH_CHECK
-	BYTEARRAY m_KeyInfoROC;			// set in HELP_SID_AUTH_CHECK
-	BYTEARRAY m_KeyInfoTFT;			// set in HELP_SID_AUTH_CHECK
-	BYTEARRAY m_ClientKey;			// set in HELP_SID_AUTH_ACCOUNTLOGON
-	BYTEARRAY m_M1;					// set in HELP_SID_AUTH_ACCOUNTLOGONPROOF
-	BYTEARRAY m_PvPGNPasswordHash;	// set in HELP_PvPGNPasswordHash
+	QByteArray m_KeyInfoROC;			// set in HELP_SID_AUTH_CHECK
+	QByteArray m_KeyInfoTFT;			// set in HELP_SID_AUTH_CHECK
+	QByteArray m_ClientKey;			// set in HELP_SID_AUTH_ACCOUNTLOGON
+	QByteArray m_M1;					// set in HELP_SID_AUTH_ACCOUNTLOGONPROOF
+	QByteArray m_PvPGNPasswordHash;	// set in HELP_PvPGNPasswordHash
 
 public:
 	CBNCSUtilInterface( QString userName, QString userPassword );
 	~CBNCSUtilInterface( );
 
-	BYTEARRAY GetEXEVersion( )								{ return m_EXEVersion; }
-	BYTEARRAY GetEXEVersionHash( )							{ return m_EXEVersionHash; }
+	QByteArray GetEXEVersion( )								{ return m_EXEVersion; }
+	QByteArray GetEXEVersionHash( )							{ return m_EXEVersionHash; }
 	QString GetEXEInfo( )									{ return m_EXEInfo; }
-	BYTEARRAY GetKeyInfoROC( )								{ return m_KeyInfoROC; }
-	BYTEARRAY GetKeyInfoTFT( )								{ return m_KeyInfoTFT; }
-	BYTEARRAY GetClientKey( )								{ return m_ClientKey; }
-	BYTEARRAY GetM1( )										{ return m_M1; }
-	BYTEARRAY GetPvPGNPasswordHash( )						{ return m_PvPGNPasswordHash; }
+	QByteArray GetKeyInfoROC( )								{ return m_KeyInfoROC; }
+	QByteArray GetKeyInfoTFT( )								{ return m_KeyInfoTFT; }
+	QByteArray GetClientKey( )								{ return m_ClientKey; }
+	QByteArray GetM1( )										{ return m_M1; }
+	QByteArray GetPvPGNPasswordHash( )						{ return m_PvPGNPasswordHash; }
 
-	void SetEXEVersion( BYTEARRAY &nEXEVersion )			{ m_EXEVersion = nEXEVersion; }
-	void SetEXEVersionHash( BYTEARRAY &nEXEVersionHash )	{ m_EXEVersionHash = nEXEVersionHash; }
+	void SetEXEVersion( QByteArray &nEXEVersion )			{ m_EXEVersion = nEXEVersion; }
+	void SetEXEVersionHash( QByteArray &nEXEVersionHash )	{ m_EXEVersionHash = nEXEVersionHash; }
 
 	void Reset( QString userName, QString userPassword );
 
-	bool HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, BYTEARRAY clientToken, BYTEARRAY serverToken );
+	bool HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, QByteArray clientToken, QByteArray serverToken );
 	bool HELP_SID_AUTH_ACCOUNTLOGON( );
-	bool HELP_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY salt, BYTEARRAY serverKey );
+	bool HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QByteArray serverKey );
 	bool HELP_PvPGNPasswordHash( QString userPassword );
 
 private:
-	BYTEARRAY CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken );
+	QByteArray CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken );
 };
 
 #endif

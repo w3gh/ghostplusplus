@@ -37,7 +37,7 @@
 #include "statsw3mmd.h"
 
 #include <cmath>
-#include <QString.h>
+#include <QString>
 #include <time.h>
 
 //
@@ -91,7 +91,7 @@ CGame :: ~CGame( )
 
 			// store the CDBGamePlayers in the database
 
-			for( vector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
+			for( QVector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
 				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedGamePlayerAdd( m_CallableGameAdd->GetResult( ), (*i)->GetName( ), (*i)->GetIP( ), (*i)->GetSpoofed( ), (*i)->GetSpoofedRealm( ), (*i)->GetReserved( ), (*i)->GetLoadingTime( ), (*i)->GetLeft( ), (*i)->GetLeftReason( ), (*i)->GetTeam( ), (*i)->GetColour( ) ) );
 
 			// store the stats in the database
@@ -107,24 +107,24 @@ CGame :: ~CGame( )
 		m_CallableGameAdd = NULL;
 	}
 
-	for( vector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); i++ )
+	for( QVector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( vector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
+	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( vector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
+	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
+	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+	for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 		delete *i;
 
 	delete m_DBGame;
 
-	for( vector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
+	for( QVector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
 		delete *i;
 
 	delete m_Stats;
@@ -145,7 +145,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 {
 	// update callables
 
-	for( vector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); )
+	for( QVector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -164,13 +164,13 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	for( vector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
+	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
 			if( i->second->GetResult( ) )
 			{
-				for( vector<CBNET *> :: iterator j = m_GHost->m_BNETs.begin( ); j != m_GHost->m_BNETs.end( ); j++ )
+				for( QVector<CBNET *> :: iterator j = m_GHost->m_BNETs.begin( ); j != m_GHost->m_BNETs.end( ); j++ )
 				{
 					if( (*j)->GetServer( ) == i->second->GetServer( ) )
 						(*j)->AddBan( i->second->GetUser( ), i->second->GetIP( ), i->second->GetGameName( ), i->second->GetAdmin( ), i->second->GetReason( ) );
@@ -187,7 +187,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	for( vector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
+	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -195,7 +195,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 
 			if( GamePlayerSummary )
 			{
-				if( i->first.empty( ) )
+				if( i->first.isEmpty( ) )
 					SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
 				else
 				{
@@ -207,7 +207,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 			}
 			else
 			{
-				if( i->first.empty( ) )
+				if( i->first.isEmpty( ) )
 					SendAllChat( m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName( ) ) );
 				else
 				{
@@ -226,7 +226,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
+	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -257,7 +257,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 																						UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
 																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
 
-				if( i->first.empty( ) )
+				if( i->first.isEmpty( ) )
 					SendAllChat( Summary );
 				else
 				{
@@ -269,7 +269,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 			}
 			else
 			{
-				if( i->first.empty( ) )
+				if( i->first.isEmpty( ) )
 					SendAllChat( m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( i->second->GetName( ) ) );
 				else
 				{
@@ -319,7 +319,7 @@ void CGame :: EventPlayerDeleted( CGamePlayer *player )
 
 		// also keep track of the last player to leave for the !banlast command
 
-		for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+		for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 		{
 			if( (*i)->GetName( ) == player->GetName( ) )
 				m_DBBanLast = *i;
@@ -353,7 +353,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 	bool AdminCheck = false;
 
-	for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetServer( ) == player->GetSpoofedRealm( ) && (*i)->IsAdmin( User ) )
 		{
@@ -364,7 +364,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 	bool RootAdminCheck = false;
 
-	for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetServer( ) == player->GetSpoofedRealm( ) && (*i)->IsRootAdmin( User ) )
 		{
@@ -401,7 +401,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !BAN
 			//
 
-			if( ( Command == "addban" || Command == "ban" ) && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
+			if( ( Command == "addban" || Command == "ban" ) && !Payload.isEmpty( ) && !m_GHost->m_BNETs.isEmpty( ) )
 			{
 				// extract the victim and the reason
 				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
@@ -418,7 +418,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					QString :: size_type Start = Reason.find_first_not_of( " " );
 
 					if( Start != QString :: npos )
-						Reason = Reason.substr( Start );
+						Reason = Reason.mid( Start );
 				}
 
 				if( m_GameLoaded )
@@ -431,7 +431,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
 					// we use the m_DBBans vector for this in case the player already left and thus isn't in the m_Players vector anymore
 
-					for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+					for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 					{
 						QString TestName = (*i)->GetName( );
 						transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
@@ -478,7 +478,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "announce" && !m_CountDownStarted )
 			{
-				if( Payload.empty( ) || Payload == "off" )
+				if( Payload.isEmpty( ) || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AnnounceMessageDisabled( ) );
 					SetAnnounce( 0, QString( ) );
@@ -506,7 +506,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 							QString :: size_type Start = Message.find_first_not_of( " " );
 
 							if( Start != QString :: npos )
-								Message = Message.substr( Start );
+								Message = Message.mid( Start );
 
 							SendAllChat( m_GHost->m_Language->AnnounceMessageEnabled( ) );
 							SetAnnounce( Interval, Message );
@@ -539,7 +539,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "autostart" && !m_CountDownStarted )
 			{
-				if( Payload.empty( ) || Payload == "off" )
+				if( Payload.isEmpty( ) || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AutoStartDisabled( ) );
 					m_AutoStartPlayers = 0;
@@ -560,7 +560,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !BANLAST
 			//
 
-			if( Command == "banlast" && m_GameLoaded && !m_GHost->m_BNETs.empty( ) && m_DBBanLast )
+			if( Command == "banlast" && m_GameLoaded && !m_GHost->m_BNETs.isEmpty( ) && m_DBBanLast )
 				m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( m_DBBanLast->GetServer( ), m_DBBanLast->GetName( ), m_DBBanLast->GetIP( ), m_GameName, User, Payload ) ) );
 
 			//
@@ -569,7 +569,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "check" )
 			{
-				if( !Payload.empty( ) )
+				if( !Payload.isEmpty( ) )
 				{
 					CGamePlayer *LastMatch = NULL;
 					uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
@@ -580,7 +580,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					{
 						bool LastMatchAdminCheck = false;
 
-						for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+						for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						{
 							if( (*i)->GetServer( ) == LastMatch->GetSpoofedRealm( ) && (*i)->IsAdmin( LastMatch->GetName( ) ) )
 							{
@@ -591,7 +591,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 						bool LastMatchRootAdminCheck = false;
 
-						for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+						for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						{
 							if( (*i)->GetServer( ) == LastMatch->GetSpoofedRealm( ) && (*i)->IsRootAdmin( LastMatch->GetName( ) ) )
 							{
@@ -600,22 +600,22 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 							}
 						}
 
-						SendAllChat( m_GHost->m_Language->CheckedPlayer( LastMatch->GetName( ), LastMatch->GetNumPings( ) > 0 ? UTIL_ToString( LastMatch->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( LastMatch->GetExternalIP( ), true ) ), LastMatchAdminCheck || LastMatchRootAdminCheck ? "Yes" : "No", IsOwner( LastMatch->GetName( ) ) ? "Yes" : "No", LastMatch->GetSpoofed( ) ? "Yes" : "No", LastMatch->GetSpoofedRealm( ).empty( ) ? "N/A" : LastMatch->GetSpoofedRealm( ), LastMatch->GetReserved( ) ? "Yes" : "No" ) );
+						SendAllChat( m_GHost->m_Language->CheckedPlayer( LastMatch->GetName( ), LastMatch->GetNumPings( ) > 0 ? UTIL_ToString( LastMatch->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( LastMatch->GetExternalIP( ), true ) ), LastMatchAdminCheck || LastMatchRootAdminCheck ? "Yes" : "No", IsOwner( LastMatch->GetName( ) ) ? "Yes" : "No", LastMatch->GetSpoofed( ) ? "Yes" : "No", LastMatch->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : LastMatch->GetSpoofedRealm( ), LastMatch->GetReserved( ) ? "Yes" : "No" ) );
 					}
 					else
 						SendAllChat( m_GHost->m_Language->UnableToCheckPlayerFoundMoreThanOneMatch( Payload ) );
 				}
 				else
-					SendAllChat( m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).empty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
+					SendAllChat( m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 			}
 
 			//
 			// !CHECKBAN
 			//
 
-			if( Command == "checkban" && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
+			if( Command == "checkban" && !Payload.isEmpty( ) && !m_GHost->m_BNETs.isEmpty( ) )
 			{
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, QString( ) ) ) );
 			}
 
@@ -633,7 +633,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !CLOSE (close slot)
 			//
 
-			if( Command == "close" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
+			if( Command == "close" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
@@ -666,7 +666,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !COMP (computer slot)
 			//
 
-			if( Command == "comp" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
+			if( Command == "comp" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
 				// extract the slot and the skill
 				// e.g. "1 2" -> slot: "1", skill: "2"
@@ -695,7 +695,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !COMPCOLOUR (computer colour change)
 			//
 
-			if( Command == "compcolour" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
+			if( Command == "compcolour" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
 				// extract the slot and the colour
 				// e.g. "1 2" -> slot: "1", colour: "2"
@@ -736,7 +736,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !COMPHANDICAP (computer handicap change)
 			//
 
-			if( Command == "comphandicap" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
+			if( Command == "comphandicap" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
 				// extract the slot and the handicap
 				// e.g. "1 50" -> slot: "1", handicap: "50"
@@ -780,7 +780,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !COMPRACE (computer race change)
 			//
 
-			if( Command == "comprace" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
+			if( Command == "comprace" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
 				// extract the slot and the race
 				// e.g. "1 human" -> slot: "1", race: "human"
@@ -803,7 +803,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						QString :: size_type Start = Race.find_first_not_of( " " );
 
 						if( Start != QString :: npos )
-							Race = Race.substr( Start );
+							Race = Race.mid( Start );
 
 						transform( Race.begin( ), Race.end( ), Race.begin( ), (int(*)(int))tolower );
 						unsigned char SID = (unsigned char)( Slot - 1 );
@@ -849,7 +849,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !COMPTEAM (computer team change)
 			//
 
-			if( Command == "compteam" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
+			if( Command == "compteam" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
 				// extract the slot and the team
 				// e.g. "1 2" -> slot: "1", team: "2"
@@ -901,7 +901,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !DL
 			//
 
-			if( ( Command == "download" || Command == "dl" ) && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
+			if( ( Command == "download" || Command == "dl" ) && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
@@ -965,10 +965,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "fppause" && m_FakePlayerPID != 255 && m_GameLoaded )
 			{
-				BYTEARRAY CRC;
-				BYTEARRAY Action;
+				QByteArray CRC;
+				QByteArray Action;
 				Action.push_back( 1 );
-				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
+				m_Actions.enqueue( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
 			}
 
 			//
@@ -977,10 +977,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "fpresume" && m_FakePlayerPID != 255 && m_GameLoaded )
 			{
-				BYTEARRAY CRC;
-				BYTEARRAY Action;
+				QByteArray CRC;
+				QByteArray Action;
 				Action.push_back( 2 );
-				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
+				m_Actions.enqueue( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
 			}
 
 			//
@@ -991,13 +991,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				QString Froms;
 
-				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 				{
 					// we reverse the byte order on the IP because it's stored in network byte order
 
 					Froms += (*i)->GetNameTerminated( );
 					Froms += ": (";
-					Froms += m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( (*i)->GetExternalIP( ), true ) );
+					Froms += m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( (*i)->GetExternalIP( ), true ) );
 					Froms += ")";
 
 					if( i != m_Players.end( ) - 1 )
@@ -1012,7 +1012,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					}
 				}
 
-				if( !Froms.empty( ) )
+				if( !Froms.isEmpty( ) )
 					SendAllChat( Froms );
 			}
 
@@ -1022,7 +1022,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "hcl" && !m_CountDownStarted )
 			{
-				if( !Payload.empty( ) )
+				if( !Payload.isEmpty( ) )
 				{
 					if( Payload.size( ) <= m_Slots.size( ) )
 					{
@@ -1047,7 +1047,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !HOLD (hold a slot for someone)
 			//
 
-			if( Command == "hold" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
+			if( Command == "hold" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
@@ -1076,7 +1076,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !KICK (kick a player)
 			//
 
-			if( Command == "kick" && !Payload.empty( ) )
+			if( Command == "kick" && !Payload.isEmpty( ) )
 			{
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
@@ -1106,7 +1106,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "latency" )
 			{
-				if( Payload.empty( ) )
+				if( Payload.isEmpty( ) )
 					SendAllChat( m_GHost->m_Language->LatencyIs( UTIL_ToString( m_Latency ) ) );
 				else
 				{
@@ -1189,7 +1189,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !OPEN (open slot)
 			//
 
-			if( Command == "open" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
+			if( Command == "open" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
@@ -1226,7 +1226,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				if( RootAdminCheck || IsOwner( User ) || !GetPlayerFromName( m_OwnerName, false ) )
 				{
-					if( !Payload.empty( ) )
+					if( !Payload.isEmpty( ) )
 					{
 						SendAllChat( m_GHost->m_Language->SettingGameOwnerTo( Payload ) );
 						m_OwnerName = Payload;
@@ -1253,16 +1253,16 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				uint32_t Kicked = 0;
 				uint32_t KickPing = 0;
 
-				if( !m_GameLoading && !m_GameLoaded && !Payload.empty( ) )
+				if( !m_GameLoading && !m_GameLoaded && !Payload.isEmpty( ) )
 					KickPing = UTIL_ToUInt32( Payload );
 
 				// copy the m_Players vector so we can sort by descending ping so it's easier to find players with high pings
 
-				vector<CGamePlayer *> SortedPlayers = m_Players;
+				QVector<CGamePlayer *> SortedPlayers = m_Players;
 				sort( SortedPlayers.begin( ), SortedPlayers.end( ), CGamePlayerSortDescByPing( ) );
 				QString Pings;
 
-				for( vector<CGamePlayer *> :: iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )
+				for( QVector<CGamePlayer *> :: iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )
 				{
 					Pings += (*i)->GetNameTerminated( );
 					Pings += ": ";
@@ -1297,7 +1297,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					}
 				}
 
-				if( !Pings.empty( ) )
+				if( !Pings.isEmpty( ) )
 					SendAllChat( Pings );
 
 				if( Kicked > 0 )
@@ -1308,7 +1308,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !PRIV (rehost as private game)
 			//
 
-			if( Command == "priv" && !Payload.empty( ) && !m_CountDownStarted && !m_SaveGame )
+			if( Command == "priv" && !Payload.isEmpty( ) && !m_CountDownStarted && !m_SaveGame )
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as private game [" + Payload + "]" );
 				SendAllChat( m_GHost->m_Language->TryingToRehostAsPrivateGame( Payload ) );
@@ -1319,7 +1319,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 				{
 					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
 					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
@@ -1345,7 +1345,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !PUB (rehost as public game)
 			//
 
-			if( Command == "pub" && !Payload.empty( ) && !m_CountDownStarted && !m_SaveGame )
+			if( Command == "pub" && !Payload.isEmpty( ) && !m_CountDownStarted && !m_SaveGame )
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as public game [" + Payload + "]" );
 				SendAllChat( m_GHost->m_Language->TryingToRehostAsPublicGame( Payload ) );
@@ -1356,7 +1356,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 				{
 					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
 					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
@@ -1395,9 +1395,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !SAY
 			//
 
-			if( Command == "say" && !Payload.empty( ) )
+			if( Command == "say" && !Payload.isEmpty( ) )
 			{
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					(*i)->QueueChatCommand( Payload );
 
 				HideCommand = true;
@@ -1407,7 +1407,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !SENDLAN
 			//
 
-			if( Command == "sendlan" && !Payload.empty( ) && !m_CountDownStarted )
+			if( Command == "sendlan" && !Payload.isEmpty( ) && !m_CountDownStarted )
 			{
 				// extract the ip and the port
 				// e.g. "1.2.3.4 6112" -> ip: "1.2.3.4", port: "6112"
@@ -1439,13 +1439,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 
 						uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
-						BYTEARRAY MapWidth;
+						QByteArray MapWidth;
 						MapWidth.push_back( 0 );
 						MapWidth.push_back( 0 );
-						BYTEARRAY MapHeight;
+						QByteArray MapHeight;
 						MapHeight.push_back( 0 );
 						MapHeight.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
 					}
 					else
 					{
@@ -1453,7 +1453,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 						uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
 					}
 				}
 			}
@@ -1492,7 +1492,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !SWAP (swap slots)
 			//
 
-			if( Command == "swap" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
+			if( Command == "swap" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				uint32_t SID1;
 				uint32_t SID2;
@@ -1524,7 +1524,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "synclimit" )
 			{
-				if( Payload.empty( ) )
+				if( Payload.isEmpty( ) )
 					SendAllChat( m_GHost->m_Language->SyncLimitIs( UTIL_ToString( m_SyncLimit ) ) );
 				else
 				{
@@ -1596,7 +1596,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !VIRTUALHOST
 			//
 
-			if( Command == "virtualhost" && !Payload.empty( ) && Payload.size( ) <= 15 && !m_CountDownStarted )
+			if( Command == "virtualhost" && !Payload.isEmpty( ) && Payload.size( ) <= 15 && !m_CountDownStarted )
 			{
 				DeleteVirtualHost( );
 				m_VirtualHostName = Payload;
@@ -1606,7 +1606,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !VOTECANCEL
 			//
 
-			if( Command == "votecancel" && !m_KickVotePlayer.empty( ) )
+			if( Command == "votecancel" && !m_KickVotePlayer.isEmpty( ) )
 			{
 				SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
 				m_KickVotePlayer.clear( );
@@ -1617,7 +1617,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			// !W
 			//
 
-			if( Command == "w" && !Payload.empty( ) )
+			if( Command == "w" && !Payload.isEmpty( ) )
 			{
 				// extract the name and the message
 				// e.g. "Varlock hello there!" -> name: "Varlock", message: "hello there!"
@@ -1628,10 +1628,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				if( MessageStart != QString :: npos )
 				{
-					Name = Payload.substr( 0, MessageStart );
-					Message = Payload.substr( MessageStart + 1 );
+					Name = Payload.mid( 0, MessageStart );
+					Message = Payload.mid( MessageStart + 1 );
 
-					for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+					for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						(*i)->QueueChatCommand( Message, Name, true );
 				}
 
@@ -1661,7 +1661,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	//
 
 	if( Command == "checkme" )
-		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).empty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
+		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 
 	//
 	// !STATS
@@ -1671,7 +1671,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	{
 		QString StatsUser = User;
 
-		if( !Payload.empty( ) )
+		if( !Payload.isEmpty( ) )
 			StatsUser = Payload;
 
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
@@ -1690,7 +1690,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	{
 		QString StatsUser = User;
 
-		if( !Payload.empty( ) )
+		if( !Payload.isEmpty( ) )
 			StatsUser = Payload;
 
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
@@ -1717,9 +1717,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	// !VOTEKICK
 	//
 
-	if( Command == "votekick" && m_GHost->m_VoteKickAllowed && !Payload.empty( ) )
+	if( Command == "votekick" && m_GHost->m_VoteKickAllowed && !Payload.isEmpty( ) )
 	{
-		if( !m_KickVotePlayer.empty( ) )
+		if( !m_KickVotePlayer.isEmpty( ) )
 			SendChat( player, m_GHost->m_Language->UnableToVoteKickAlreadyInProgress( ) );
 		else if( m_Players.size( ) == 2 )
 			SendChat( player, m_GHost->m_Language->UnableToVoteKickNotEnoughPlayers( ) );
@@ -1739,7 +1739,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					m_KickVotePlayer = LastMatch->GetName( );
 					m_StartedKickVoteTime = GetTime( );
 
-					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+					for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 						(*i)->SetKickVote( false );
 
 					player->SetKickVote( true );
@@ -1757,13 +1757,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	// !YES
 	//
 
-	if( Command == "yes" && !m_KickVotePlayer.empty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
+	if( Command == "yes" && !m_KickVotePlayer.isEmpty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
 	{
 		player->SetKickVote( true );
 		uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
 		uint32_t Votes = 0;
 
-		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( (*i)->GetKickVote( ) )
 				Votes++;
@@ -1811,7 +1811,7 @@ void CGame :: EventGameStarted( )
 	// but since the player has already left the game we don't have access to their information anymore
 	// so we create a "potential ban" for each player and only store it in the database if requested to by an admin
 
-	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), QString( ), QString( ), QString( ), QString( ) ) );
 }
 

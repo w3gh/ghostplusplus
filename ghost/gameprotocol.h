@@ -120,17 +120,17 @@ public:
 	// send functions
 
 	QByteArray SEND_W3GS_PING_FROM_HOST( );
-	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_REJECTJOIN( uint32_t reason );
 	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, string name, QByteArray externalIP, QByteArray internalIP );
 	QByteArray SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, uint32_t leftCode );
 	QByteArray SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
-	QByteArray SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFO( QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_COUNTDOWN_START( );
 	QByteArray SEND_W3GS_COUNTDOWN_END( );
-	QByteArray SEND_W3GS_INCOMING_ACTION( queue<CIncomingAction *> actions, uint16_t sendInterval );
+	QByteArray SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, uint16_t sendInterval );
 	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QByteArray toPIDs, unsigned char flag, QByteArray flagExtra, string message );
-	QByteArray SEND_W3GS_START_LAG( vector<CGamePlayer *> players, bool loadInGame = false );
+	QByteArray SEND_W3GS_START_LAG( QVector<CGamePlayer *> players, bool loadInGame = false );
 	QByteArray SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadInGame = false );
 	QByteArray SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Version );
 	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, QByteArray mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter );
@@ -140,14 +140,14 @@ public:
 	QByteArray SEND_W3GS_MAPCHECK( string mapPath, QByteArray mapSize, QByteArray mapInfo, QByteArray mapCRC, QByteArray mapSHA1 );
 	QByteArray SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID );
 	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, uint32_t start, string *mapData );
-	QByteArray SEND_W3GS_INCOMING_ACTION2( queue<CIncomingAction *> actions );
+	QByteArray SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *> actions );
 
 	// other functions
 
 private:
 	bool AssignLength( QByteArray &content );
 	bool ValidateLength( QByteArray &content );
-	QByteArray EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray EncodeSlotInfo( QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 };
 
 //

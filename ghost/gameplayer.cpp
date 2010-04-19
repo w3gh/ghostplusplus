@@ -49,23 +49,23 @@ CPotentialPlayer :: ~CPotentialPlayer( )
 	if( m_Socket )
 		delete m_Socket;
 
-	while( !m_Packets.empty( ) )
+	while( !m_Packets.isEmpty( ) )
 	{
 		delete m_Packets.front( );
-		m_Packets.pop( );
+		m_Packets.dequeue( );
 	}
 
 	delete m_IncomingJoinPlayer;
 }
 
-BYTEARRAY CPotentialPlayer :: GetExternalIP( )
+QByteArray CPotentialPlayer :: GetExternalIP( )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 
 	if( m_Socket )
 		return m_Socket->GetIP( );
 
-	return UTIL_CreateByteArray( Zeros, 4 );
+	return UTIL_CreateQByteArray( Zeros, 4 );
 }
 
 QString CPotentialPlayer :: GetExternalIPString( )
@@ -102,7 +102,7 @@ void CPotentialPlayer :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
@@ -112,15 +112,15 @@ void CPotentialPlayer :: ExtractPackets( )
 		{
 			// bytes 2 and 3 contain the length of the packet
 
-			uint16_t Length = UTIL_ByteArrayToUInt16( Bytes, false, 2 );
+			uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
 
 			if( Length >= 4 )
 			{
 				if( Bytes.size( ) >= Length )
 				{
-					m_Packets.push( new CCommandPacket( Bytes[0], Bytes[1], BYTEARRAY( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
+					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
 					*RecvBuffer = RecvBuffer->substr( Length );
-					Bytes = BYTEARRAY( Bytes.begin( ) + Length, Bytes.end( ) );
+					Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
 				}
 				else
 					return;
@@ -148,10 +148,10 @@ void CPotentialPlayer :: ProcessPackets( )
 
 	// process all the received packets in the m_Packets queue
 
-	while( !m_Packets.empty( ) )
+	while( !m_Packets.isEmpty( ) )
 	{
 		CCommandPacket *Packet = m_Packets.front( );
-		m_Packets.pop( );
+		m_Packets.dequeue( );
 
 		if( Packet->GetPacketType( ) == W3GS_HEADER_CONSTANT )
 		{
@@ -179,7 +179,7 @@ void CPotentialPlayer :: ProcessPackets( )
 	}
 }
 
-void CPotentialPlayer :: Send( BYTEARRAY data )
+void CPotentialPlayer :: Send( QByteArray data )
 {
 	if( m_Socket )
 		m_Socket->PutBytes( data );
@@ -189,7 +189,7 @@ void CPotentialPlayer :: Send( BYTEARRAY data )
 // CGamePlayer
 //
 
-CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
+CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
 {
 	m_PID = nPID;
 	m_Name = nName;
@@ -231,7 +231,7 @@ CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSock
 	m_LastGProxyAckTime = 0;
 }
 
-CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
+CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
 {
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
@@ -308,7 +308,7 @@ uint32_t CGamePlayer :: GetPing( bool LCPing )
 {
 	// just average all the pings in the vector, nothing fancy
 
-	if( m_Pings.empty( ) )
+	if( m_Pings.isEmpty( ) )
 		return 0;
 
 	uint32_t AvgPing = 0;
@@ -329,11 +329,11 @@ bool CGamePlayer :: Update( void *fd )
 	// wait 4 seconds after joining before sending the /whois or /w
 	// if we send the /whois too early battle.net may not have caught up with where the player is and return erroneous results
 
-	if( m_WhoisShouldBeSent && !m_Spoofed && !m_WhoisSent && !m_JoinedRealm.empty( ) && GetTime( ) - m_JoinTime >= 4 )
+	if( m_WhoisShouldBeSent && !m_Spoofed && !m_WhoisSent && !m_JoinedRealm.isEmpty( ) && GetTime( ) - m_JoinTime >= 4 )
 	{
 		// todotodo: we could get kicked from battle.net for sending a command with invalid characters, do some basic checking
 
-		for( vector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
+		for( QVector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == m_JoinedRealm )
 			{
@@ -406,7 +406,7 @@ void CGamePlayer :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
@@ -416,19 +416,19 @@ void CGamePlayer :: ExtractPackets( )
 		{
 			// bytes 2 and 3 contain the length of the packet
 
-			uint16_t Length = UTIL_ByteArrayToUInt16( Bytes, false, 2 );
+			uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
 
 			if( Length >= 4 )
 			{
 				if( Bytes.size( ) >= Length )
 				{
-					m_Packets.push( new CCommandPacket( Bytes[0], Bytes[1], BYTEARRAY( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
+					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
 
 					if( Bytes[0] == W3GS_HEADER_CONSTANT )
 						m_TotalPacketsReceived++;
 
 					*RecvBuffer = RecvBuffer->substr( Length );
-					Bytes = BYTEARRAY( Bytes.begin( ) + Length, Bytes.end( ) );
+					Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
 				}
 				else
 					return;
@@ -463,10 +463,10 @@ void CGamePlayer :: ProcessPackets( )
 
 	// process all the received packets in the m_Packets queue
 
-	while( !m_Packets.empty( ) )
+	while( !m_Packets.isEmpty( ) )
 	{
 		CCommandPacket *Packet = m_Packets.front( );
-		m_Packets.pop( );
+		m_Packets.dequeue( );
 
 		if( Packet->GetPacketType( ) == W3GS_HEADER_CONSTANT )
 		{
@@ -505,7 +505,7 @@ void CGamePlayer :: ProcessPackets( )
 
 			case CGameProtocol :: W3GS_OUTGOING_KEEPALIVE:
 				CheckSum = m_Protocol->RECEIVE_W3GS_OUTGOING_KEEPALIVE( Packet->GetData( ) );
-				m_CheckSums.push( CheckSum );
+				m_CheckSums.enqueue( CheckSum );
 				m_SyncCounter++;
 				m_Game->EventPlayerKeepAlive( this, CheckSum );
 				break;
@@ -572,7 +572,7 @@ void CGamePlayer :: ProcessPackets( )
 		}
 		else if( Packet->GetPacketType( ) == GPS_HEADER_CONSTANT )
 		{
-			BYTEARRAY Data = Packet->GetData( );
+			QByteArray Data = Packet->GetData( );
 
 			if( Packet->GetID( ) == CGPSProtocol :: GPS_INIT )
 			{
@@ -595,7 +595,7 @@ void CGamePlayer :: ProcessPackets( )
 			}
 			else if( Packet->GetID( ) == CGPSProtocol :: GPS_ACK && Data.size( ) == 8 )
 			{
-				uint32_t LastPacket = UTIL_ByteArrayToUInt32( Data, false, 4 );
+				uint32_t LastPacket = UTIL_QByteArrayToUInt32( Data, false, 4 );
 				uint32_t PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
 
 				if( LastPacket > PacketsAlreadyUnqueued )
@@ -607,7 +607,7 @@ void CGamePlayer :: ProcessPackets( )
 
 					while( PacketsToUnqueue > 0 )
 					{
-						m_GProxyBuffer.pop( );
+						m_GProxyBuffer.dequeue( );
 						PacketsToUnqueue--;
 					}
 				}
@@ -618,7 +618,7 @@ void CGamePlayer :: ProcessPackets( )
 	}
 }
 
-void CGamePlayer :: Send( BYTEARRAY data )
+void CGamePlayer :: Send( QByteArray data )
 {
 	// must start counting packet total from beginning of connection
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
@@ -627,7 +627,7 @@ void CGamePlayer :: Send( BYTEARRAY data )
 	m_TotalPacketsSent++;
 
 	if( m_GProxy && m_Game->GetGameLoaded( ) )
-		m_GProxyBuffer.push( data );
+		m_GProxyBuffer.enqueue( data );
 
 	CPotentialPlayer :: Send( data );
 }
@@ -649,20 +649,20 @@ void CGamePlayer :: EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPa
 
 		while( PacketsToUnqueue > 0 )
 		{
-			m_GProxyBuffer.pop( );
+			m_GProxyBuffer.dequeue( );
 			PacketsToUnqueue--;
 		}
 	}
 
 	// send remaining packets from buffer, preserve buffer
 
-	queue<BYTEARRAY> TempBuffer;
+	QQueue<QByteArray> TempBuffer;
 
-	while( !m_GProxyBuffer.empty( ) )
+	while( !m_GProxyBuffer.isEmpty( ) )
 	{
 		m_Socket->PutBytes( m_GProxyBuffer.front( ) );
-		TempBuffer.push( m_GProxyBuffer.front( ) );
-		m_GProxyBuffer.pop( );
+		TempBuffer.enqueue( m_GProxyBuffer.front( ) );
+		m_GProxyBuffer.dequeue( );
 	}
 
 	m_GProxyBuffer = TempBuffer;

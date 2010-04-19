@@ -63,23 +63,23 @@ private:
 	CTCPClient *m_Socket;							// the connection to battle.net
 	CBNETProtocol *m_Protocol;						// battle.net protocol
 	CBNLSClient *m_BNLSClient;						// the BNLS client (for external warden handling)
-	queue<CCommandPacket *> m_Packets;				// queue of incoming packets
+	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	CBNCSUtilInterface *m_BNCSUtil;					// the interface to the bncsutil library (used for logging into battle.net)
-	queue<BYTEARRAY> m_OutPackets;					// queue of outgoing packets to be sent (to prevent getting kicked for flooding)
-	vector<CIncomingFriendList *> m_Friends;		// vector of friends
-	vector<CIncomingClanList *> m_Clans;			// vector of clan members
-	vector<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
-	vector<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
-	vector<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
-	vector<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
-	vector<PairedBanAdd> m_PairedBanAdds;			// vector of paired threaded database ban adds in progress
-	vector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
-	vector<PairedGPSCheck> m_PairedGPSChecks;		// vector of paired threaded database game player summary checks in progress
-	vector<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
+	QQueue<QByteArray> m_OutPackets;					// queue of outgoing packets to be sent (to prevent getting kicked for flooding)
+	QVector<CIncomingFriendList *> m_Friends;		// vector of friends
+	QVector<CIncomingClanList *> m_Clans;			// vector of clan members
+	QVector<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
+	QVector<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
+	QVector<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
+	QVector<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
+	QVector<PairedBanAdd> m_PairedBanAdds;			// vector of paired threaded database ban adds in progress
+	QVector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
+	QVector<PairedGPSCheck> m_PairedGPSChecks;		// vector of paired threaded database game player summary checks in progress
+	QVector<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
 	CCallableAdminList *m_CallableAdminList;		// threaded database admin list in progress
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
-	vector<string> m_Admins;						// vector of cached admins
-	vector<CDBBan *> m_Bans;						// vector of cached bans
+	QVector<string> m_Admins;						// vector of cached admins
+	QVector<CDBBan *> m_Bans;						// vector of cached bans
 	bool m_Exiting;									// set to true and this class will be deleted next update
 	string m_Server;								// battle.net server to connect to
 	string m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
@@ -99,8 +99,8 @@ private:
 	string m_RootAdmin;								// the root admin
 	char m_CommandTrigger;							// the character prefix to identify commands
 	unsigned char m_War3Version;					// custom warcraft 3 version for PvPGN users
-	BYTEARRAY m_EXEVersion;							// custom exe version for PvPGN users
-	BYTEARRAY m_EXEVersionHash;						// custom exe version hash for PvPGN users
+	QByteArray m_EXEVersion;							// custom exe version for PvPGN users
+	QByteArray m_EXEVersionHash;						// custom exe version hash for PvPGN users
 	string m_PasswordHashType;						// password hash type for PvPGN users
 	string m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
 	uint32_t m_MaxMessageLength;					// maximum message length for PvPGN users
@@ -121,7 +121,7 @@ private:
 	bool m_PublicCommands;							// whether to allow public commands or not
 
 public:
-	CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
+	CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
 	~CBNET( );
 
 	bool GetExiting( )					{ return m_Exiting; }
@@ -135,8 +135,8 @@ public:
 	string GetCurrentChannel( )			{ return m_CurrentChannel; }
 	string GetRootAdmin( )				{ return m_RootAdmin; }
 	char GetCommandTrigger( )			{ return m_CommandTrigger; }
-	BYTEARRAY GetEXEVersion( )			{ return m_EXEVersion; }
-	BYTEARRAY GetEXEVersionHash( )		{ return m_EXEVersionHash; }
+	QByteArray GetEXEVersion( )			{ return m_EXEVersion; }
+	QByteArray GetEXEVersionHash( )		{ return m_EXEVersionHash; }
 	string GetPasswordHashType( )		{ return m_PasswordHashType; }
 	string GetPVPGNRealmName( )			{ return m_PVPGNRealmName; }
 	uint32_t GetHostCounterID( )		{ return m_HostCounterID; }
@@ -146,7 +146,7 @@ public:
 	bool GetHoldClan( )					{ return m_HoldClan; }
 	bool GetPublicCommands( )			{ return m_PublicCommands; }
 	uint32_t GetOutPacketsQueued( )		{ return m_OutPackets.size( ); }
-	BYTEARRAY GetUniqueName( );
+	QByteArray GetUniqueName( );
 
 	// processing functions
 

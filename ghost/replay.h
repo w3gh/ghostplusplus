@@ -52,14 +52,14 @@ private:
 	QString m_StatString;
 	uint32_t m_PlayerCount;
 	uint32_t m_MapGameType;
-	vector<PIDPlayer> m_Players;
-	vector<CGameSlot> m_Slots;
+	QVector<PIDPlayer> m_Players;
+	QVector<CGameSlot> m_Slots;
 	uint32_t m_RandomSeed;
 	unsigned char m_SelectMode;				// also known as the "layout style" elsewhere in this project
 	unsigned char m_StartSpotCount;
-	queue<QByteArray> m_LoadingBlocks;
-	queue<QByteArray> m_Blocks;
-	queue<uint32_t> m_CheckSums;
+	QQueue<QByteArray> m_LoadingBlocks;
+	QQueue<QByteArray> m_Blocks;
+	QQueue<uint32_t> m_CheckSums;
 	QString m_CompiledBlocks;
 
 public:
@@ -72,17 +72,17 @@ public:
 	QString GetStatString( )					{ return m_StatString; }
 	uint32_t GetPlayerCount( )				{ return m_PlayerCount; }
 	uint32_t GetMapGameType( )				{ return m_MapGameType; }
-	vector<PIDPlayer> GetPlayers( )			{ return m_Players; }
-	vector<CGameSlot> GetSlots( )			{ return m_Slots; }
+	QVector<PIDPlayer> GetPlayers( )			{ return m_Players; }
+	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }
 	uint32_t GetRandomSeed( )				{ return m_RandomSeed; }
 	unsigned char GetSelectMode( )			{ return m_SelectMode; }
 	unsigned char GetStartSpotCount( )		{ return m_StartSpotCount; }
-	queue<QByteArray> *GetLoadingBlocks( )	{ return &m_LoadingBlocks; }
-	queue<QByteArray> *GetBlocks( )			{ return &m_Blocks; }
-	queue<uint32_t> *GetCheckSums( )		{ return &m_CheckSums; }
+	QQueue<QByteArray> *GetLoadingBlocks( )	{ return &m_LoadingBlocks; }
+	QQueue<QByteArray> *GetBlocks( )			{ return &m_Blocks; }
+	QQueue<uint32_t> *GetCheckSums( )		{ return &m_CheckSums; }
 
 	void AddPlayer( unsigned char nPID, QString nName )		{ m_Players.push_back( PIDPlayer( nPID, nName ) ); }
-	void SetSlots( vector<CGameSlot> nSlots )				{ m_Slots = nSlots; }
+	void SetSlots( QVector<CGameSlot> nSlots )				{ m_Slots = nSlots; }
 	void SetRandomSeed( uint32_t nRandomSeed )				{ m_RandomSeed = nRandomSeed; }
 	void SetSelectMode( unsigned char nSelectMode )			{ m_SelectMode = nSelectMode; }
 	void SetStartSpotCount( unsigned char nStartSpotCount )	{ m_StartSpotCount = nStartSpotCount; }
@@ -92,8 +92,8 @@ public:
 
 	void AddLeaveGame( uint32_t reason, unsigned char PID, uint32_t result );
 	void AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, uint32_t result );
-	void AddTimeSlot2( queue<CIncomingAction *> actions );
-	void AddTimeSlot( uint16_t timeIncrement, queue<CIncomingAction *> actions );
+	void AddTimeSlot2( QQueue<CIncomingAction *> actions );
+	void AddTimeSlot( uint16_t timeIncrement, QQueue<CIncomingAction *> actions );
 	void AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, QString message );
 	void AddLoadingBlock( QByteArray &loadingBlock );
 	void BuildReplay( QString gameName, QString statString, uint32_t war3Version, uint16_t buildNumber );

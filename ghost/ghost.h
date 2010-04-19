@@ -50,24 +50,24 @@ class CGHost : public QObject
 public:
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
 	CTCPServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
-	vector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
+	QVector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
 	CGPSProtocol *m_GPSProtocol;
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's
-	vector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
+	QVector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
 	CBaseGame *m_CurrentGame;				// this game is still in the lobby state
 	CAdminGame *m_AdminGame;				// this "fake game" allows an admin who knows the password to control the bot from the local network
-	vector<CBaseGame *> m_Games;			// these games are in progress
+	QVector<CBaseGame *> m_Games;			// these games are in progress
 	CGHostDB *m_DB;							// database
 	CGHostDB *m_DBLocal;					// local database (for temporary data)
-	vector<CBaseCallable *> m_Callables;	// vector of orphaned callables waiting to die
-	vector<BYTEARRAY> m_LocalAddresses;		// vector of local IP addresses
+	QVector<CBaseCallable *> m_Callables;	// vector of orphaned callables waiting to die
+	QVector<QByteArray> m_LocalAddresses;		// vector of local IP addresses
 	CLanguage *m_Language;					// language
 	CMap *m_Map;							// the currently loaded map
 	CMap *m_AdminMap;						// the map to use in the admin game
 	CMap *m_AutoHostMap;					// the map to use when autohosting
 	CSaveGame *m_SaveGame;					// the save game to use
-	vector<PIDPlayer> m_EnforcePlayers;		// vector of pids to force players to use in the next game (used with saved games)
+	QVector<PIDPlayer> m_EnforcePlayers;		// vector of pids to force players to use in the next game (used with saved games)
 	bool m_Exiting;							// set to true to force ghost to shutdown next update (used by SignalCatcher)
 	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
 	bool m_Enabled;							// set to false to prevent new games from being created

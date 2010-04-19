@@ -88,83 +88,83 @@ public:
 	};
 
 private:
-	BYTEARRAY m_ClientToken;			// set in constructor
-	BYTEARRAY m_LogonType;				// set in RECEIVE_SID_AUTH_INFO
-	BYTEARRAY m_ServerToken;			// set in RECEIVE_SID_AUTH_INFO
-	BYTEARRAY m_MPQFileTime;			// set in RECEIVE_SID_AUTH_INFO
-	BYTEARRAY m_IX86VerFileName;		// set in RECEIVE_SID_AUTH_INFO
-	BYTEARRAY m_ValueStringFormula;		// set in RECEIVE_SID_AUTH_INFO
-	BYTEARRAY m_KeyState;				// set in RECEIVE_SID_AUTH_CHECK
-	BYTEARRAY m_KeyStateDescription;	// set in RECEIVE_SID_AUTH_CHECK
-	BYTEARRAY m_Salt;					// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
-	BYTEARRAY m_ServerPublicKey;		// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
-	BYTEARRAY m_UniqueName;				// set in RECEIVE_SID_ENTERCHAT
+	QByteArray m_ClientToken;			// set in constructor
+	QByteArray m_LogonType;				// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_ServerToken;			// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_MPQFileTime;			// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_IX86VerFileName;		// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_ValueStringFormula;		// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_KeyState;				// set in RECEIVE_SID_AUTH_CHECK
+	QByteArray m_KeyStateDescription;	// set in RECEIVE_SID_AUTH_CHECK
+	QByteArray m_Salt;					// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
+	QByteArray m_ServerPublicKey;		// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
+	QByteArray m_UniqueName;				// set in RECEIVE_SID_ENTERCHAT
 
 public:
 	CBNETProtocol( );
 	~CBNETProtocol( );
 
-	BYTEARRAY GetClientToken( )				{ return m_ClientToken; }
-	BYTEARRAY GetLogonType( )				{ return m_LogonType; }
-	BYTEARRAY GetServerToken( )				{ return m_ServerToken; }
-	BYTEARRAY GetMPQFileTime( )				{ return m_MPQFileTime; }
-	BYTEARRAY GetIX86VerFileName( )			{ return m_IX86VerFileName; }
+	QByteArray GetClientToken( )				{ return m_ClientToken; }
+	QByteArray GetLogonType( )				{ return m_LogonType; }
+	QByteArray GetServerToken( )				{ return m_ServerToken; }
+	QByteArray GetMPQFileTime( )				{ return m_MPQFileTime; }
+	QByteArray GetIX86VerFileName( )			{ return m_IX86VerFileName; }
 	string GetIX86VerFileNameString( )		{ return string( m_IX86VerFileName.begin( ), m_IX86VerFileName.end( ) ); }
-	BYTEARRAY GetValueStringFormula( )		{ return m_ValueStringFormula; }
+	QByteArray GetValueStringFormula( )		{ return m_ValueStringFormula; }
 	string GetValueStringFormulaString( )	{ return string( m_ValueStringFormula.begin( ), m_ValueStringFormula.end( ) ); }
-	BYTEARRAY GetKeyState( )				{ return m_KeyState; }
+	QByteArray GetKeyState( )				{ return m_KeyState; }
 	string GetKeyStateDescription( )		{ return string( m_KeyStateDescription.begin( ), m_KeyStateDescription.end( ) ); }
-	BYTEARRAY GetSalt( )					{ return m_Salt; }
-	BYTEARRAY GetServerPublicKey( )			{ return m_ServerPublicKey; }
-	BYTEARRAY GetUniqueName( )				{ return m_UniqueName; }
+	QByteArray GetSalt( )					{ return m_Salt; }
+	QByteArray GetServerPublicKey( )			{ return m_ServerPublicKey; }
+	QByteArray GetUniqueName( )				{ return m_UniqueName; }
 
 	// receive functions
 
-	bool RECEIVE_SID_NULL( BYTEARRAY data );
-	CIncomingGameHost *RECEIVE_SID_GETADVLISTEX( BYTEARRAY data );
-	bool RECEIVE_SID_ENTERCHAT( BYTEARRAY data );
-	CIncomingChatEvent *RECEIVE_SID_CHATEVENT( BYTEARRAY data );
-	bool RECEIVE_SID_CHECKAD( BYTEARRAY data );
-	bool RECEIVE_SID_STARTADVEX3( BYTEARRAY data );
-	BYTEARRAY RECEIVE_SID_PING( BYTEARRAY data );
-	bool RECEIVE_SID_LOGONRESPONSE( BYTEARRAY data );
-	bool RECEIVE_SID_AUTH_INFO( BYTEARRAY data );
-	bool RECEIVE_SID_AUTH_CHECK( BYTEARRAY data );
-	bool RECEIVE_SID_AUTH_ACCOUNTLOGON( BYTEARRAY data );
-	bool RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY data );
-	BYTEARRAY RECEIVE_SID_WARDEN( BYTEARRAY data );
-	vector<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( BYTEARRAY data );
-	vector<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( BYTEARRAY data );
-	CIncomingClanList *RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRAY data );
+	bool RECEIVE_SID_NULL( QByteArray data );
+	CIncomingGameHost *RECEIVE_SID_GETADVLISTEX( QByteArray data );
+	bool RECEIVE_SID_ENTERCHAT( QByteArray data );
+	CIncomingChatEvent *RECEIVE_SID_CHATEVENT( QByteArray data );
+	bool RECEIVE_SID_CHECKAD( QByteArray data );
+	bool RECEIVE_SID_STARTADVEX3( QByteArray data );
+	QByteArray RECEIVE_SID_PING( QByteArray data );
+	bool RECEIVE_SID_LOGONRESPONSE( QByteArray data );
+	bool RECEIVE_SID_AUTH_INFO( QByteArray data );
+	bool RECEIVE_SID_AUTH_CHECK( QByteArray data );
+	bool RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data );
+	bool RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data );
+	QByteArray RECEIVE_SID_WARDEN( QByteArray data );
+	QVector<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( QByteArray data );
+	QVector<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( QByteArray data );
+	CIncomingClanList *RECEIVE_SID_CLANMEMBERSTATUSCHANGE( QByteArray data );
 
 	// send functions
 
-	BYTEARRAY SEND_PROTOCOL_INITIALIZE_SELECTOR( );
-	BYTEARRAY SEND_SID_NULL( );
-	BYTEARRAY SEND_SID_STOPADV( );
-	BYTEARRAY SEND_SID_GETADVLISTEX( string gameName );
-	BYTEARRAY SEND_SID_ENTERCHAT( );
-	BYTEARRAY SEND_SID_JOINCHANNEL( string channel );
-	BYTEARRAY SEND_SID_CHATCOMMAND( string command );
-	BYTEARRAY SEND_SID_CHECKAD( );
-	BYTEARRAY SEND_SID_STARTADVEX3( unsigned char state, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, BYTEARRAY mapSHA1, uint32_t hostCounter );
-	BYTEARRAY SEND_SID_NOTIFYJOIN( string gameName );
-	BYTEARRAY SEND_SID_PING( BYTEARRAY pingValue );
-	BYTEARRAY SEND_SID_LOGONRESPONSE( BYTEARRAY clientToken, BYTEARRAY serverToken, BYTEARRAY passwordHash, string accountName );
-	BYTEARRAY SEND_SID_NETGAMEPORT( uint16_t serverPort );
-	BYTEARRAY SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, string countryAbbrev, string country );
-	BYTEARRAY SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken, BYTEARRAY exeVersion, BYTEARRAY exeVersionHash, BYTEARRAY keyInfoROC, BYTEARRAY keyInfoTFT, string exeInfo, string keyOwnerName );
-	BYTEARRAY SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey, string accountName );
-	BYTEARRAY SEND_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY clientPasswordProof );
-	BYTEARRAY SEND_SID_WARDEN( BYTEARRAY wardenResponse );
-	BYTEARRAY SEND_SID_FRIENDSLIST( );
-	BYTEARRAY SEND_SID_CLANMEMBERLIST( );
+	QByteArray SEND_PROTOCOL_INITIALIZE_SELECTOR( );
+	QByteArray SEND_SID_NULL( );
+	QByteArray SEND_SID_STOPADV( );
+	QByteArray SEND_SID_GETADVLISTEX( string gameName );
+	QByteArray SEND_SID_ENTERCHAT( );
+	QByteArray SEND_SID_JOINCHANNEL( string channel );
+	QByteArray SEND_SID_CHATCOMMAND( string command );
+	QByteArray SEND_SID_CHECKAD( );
+	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter );
+	QByteArray SEND_SID_NOTIFYJOIN( string gameName );
+	QByteArray SEND_SID_PING( QByteArray pingValue );
+	QByteArray SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, string accountName );
+	QByteArray SEND_SID_NETGAMEPORT( uint16_t serverPort );
+	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, string countryAbbrev, string country );
+	QByteArray SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, string exeInfo, string keyOwnerName );
+	QByteArray SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicKey, string accountName );
+	QByteArray SEND_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray clientPasswordProof );
+	QByteArray SEND_SID_WARDEN( QByteArray wardenResponse );
+	QByteArray SEND_SID_FRIENDSLIST( );
+	QByteArray SEND_SID_CLANMEMBERLIST( );
 
 	// other functions
 
 private:
-	bool AssignLength( BYTEARRAY &content );
-	bool ValidateLength( BYTEARRAY &content );
+	bool AssignLength( QByteArray &content );
+	bool ValidateLength( QByteArray &content );
 };
 
 //
@@ -174,20 +174,20 @@ private:
 class CIncomingGameHost
 {
 private:
-	BYTEARRAY m_IP;
+	QByteArray m_IP;
 	uint16_t m_Port;
 	string m_GameName;
-	BYTEARRAY m_HostCounter;
+	QByteArray m_HostCounter;
 
 public:
-	CIncomingGameHost( BYTEARRAY &nIP, uint16_t nPort, string nGameName, BYTEARRAY &nHostCounter );
+	CIncomingGameHost( QByteArray &nIP, uint16_t nPort, string nGameName, QByteArray &nHostCounter );
 	~CIncomingGameHost( );
 
-	BYTEARRAY GetIP( )			{ return m_IP; }
+	QByteArray GetIP( )			{ return m_IP; }
 	string GetIPString( );
 	uint16_t GetPort( )			{ return m_Port; }
 	string GetGameName( )		{ return m_GameName; }
-	BYTEARRAY GetHostCounter( )	{ return m_HostCounter; }
+	QByteArray GetHostCounter( )	{ return m_HostCounter; }
 };
 
 //

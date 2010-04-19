@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,7 +54,8 @@ private:
 	unsigned char m_Handicap;			// handicap
 
 public:
-	CGameSlot( BYTEARRAY &n );
+	CGameSlot( );
+	CGameSlot( QByteArray &n );
 	CGameSlot( unsigned char nPID, unsigned char nDownloadStatus, unsigned char nSlotStatus, unsigned char nComputer, unsigned char nTeam, unsigned char nColour, unsigned char nRace, unsigned char nComputerType = 1, unsigned char nHandicap = 100 );
 	~CGameSlot( );
 
@@ -78,7 +79,7 @@ public:
 	void SetComputerType( unsigned char nComputerType )			{ m_ComputerType = nComputerType; }
 	void SetHandicap( unsigned char nHandicap )					{ m_Handicap = nHandicap; }
 
-	BYTEARRAY GetByteArray( ) const;
+	QByteArray GetQByteArray( ) const;
 };
 
 #endif

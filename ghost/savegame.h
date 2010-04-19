@@ -35,9 +35,9 @@ private:
 	QString m_MapPath;
 	QString m_GameName;
 	unsigned char m_NumSlots;
-	vector<CGameSlot> m_Slots;
+	QVector<CGameSlot> m_Slots;
 	uint32_t m_RandomSeed;
-	BYTEARRAY m_MagicNumber;
+	QByteArray m_MagicNumber;
 
 public:
 	CSaveGame( );
@@ -48,9 +48,9 @@ public:
 	QString GetMapPath( )				{ return m_MapPath; }
 	QString GetGameName( )				{ return m_GameName; }
 	unsigned char GetNumSlots( )		{ return m_NumSlots; }
-	vector<CGameSlot> GetSlots( )		{ return m_Slots; }
+	QVector<CGameSlot> GetSlots( )		{ return m_Slots; }
 	uint32_t GetRandomSeed( )			{ return m_RandomSeed; }
-	BYTEARRAY GetMagicNumber( )			{ return m_MagicNumber; }
+	QByteArray GetMagicNumber( )			{ return m_MagicNumber; }
 
 	void SetFileName( QString nFileName )				{ m_FileName = nFileName; }
 	void SetFileNameNoPath( QString nFileNameNoPath )	{ m_FileNameNoPath = nFileNameNoPath; }
