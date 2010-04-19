@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@
 // CBNLSClient
 //
 
-CBNLSClient :: CBNLSClient( string nServer, uint16_t nPort, uint32_t nWardenCookie )
+CBNLSClient :: CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie )
 {
 	m_Socket = new CTCPClient( );
 	m_Protocol = new CBNLSProtocol( );
@@ -126,7 +126,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && !m_WasConnected )
 	{
 		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connecting to server [" + m_Server + "] on port " + UTIL_ToString( m_Port ) );
-		m_Socket->Connect( string( ), m_Server, m_Port );
+		m_Socket->Connect( QString( ), m_Server, m_Port );
 		return false;
 	}
 
@@ -135,7 +135,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 
 void CBNLSClient :: ExtractPackets( )
 {
-	string *RecvBuffer = m_Socket->GetBytes( );
+	QString *RecvBuffer = m_Socket->GetBytes( );
 	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	while( Bytes.size( ) >= 3 )

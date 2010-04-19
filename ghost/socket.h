@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -112,12 +112,12 @@ public:
 	CSocket( SOCKET nSocket, struct sockaddr_in nSIN );
 	~CSocket( );
 
-	virtual BYTEARRAY GetPort( );
-	virtual BYTEARRAY GetIP( );
-	virtual string GetIPString( );
+	virtual QByteArray GetPort( );
+	virtual QByteArray GetIP( );
+	virtual QString GetIPString( );
 	virtual bool HasError( )						{ return m_HasError; }
 	virtual int GetError( )							{ return m_Error; }
-	virtual string GetErrorString( );
+	virtual QString GetErrorString( );
 	virtual void SetFD( fd_set *fd, fd_set *send_fd, int *nfds );
 	virtual void Allocate( int type );
 	virtual void Reset( );
@@ -131,11 +131,11 @@ class CTCPSocket : public CSocket
 {
 protected:
 	bool m_Connected;
-	string m_LogFile;
+	QString m_LogFile;
 
 private:
-	string m_RecvBuffer;
-	string m_SendBuffer;
+	QString m_RecvBuffer;
+	QString m_SendBuffer;
 	uint32_t m_LastRecv;
 	uint32_t m_LastSend;
 
@@ -146,9 +146,9 @@ public:
 
 	virtual void Reset( );
 	virtual bool GetConnected( )				{ return m_Connected; }
-	virtual string *GetBytes( )					{ return &m_RecvBuffer; }
-	virtual void PutBytes( string bytes );
-	virtual void PutBytes( BYTEARRAY bytes );
+	virtual QString *GetBytes( )					{ return &m_RecvBuffer; }
+	virtual void PutBytes( QString bytes );
+	virtual void PutBytes( QByteArray bytes );
 	virtual void ClearRecvBuffer( )				{ m_RecvBuffer.clear( ); }
 	virtual void ClearSendBuffer( )				{ m_SendBuffer.clear( ); }
 	virtual uint32_t GetLastRecv( )				{ return m_LastRecv; }
@@ -157,7 +157,7 @@ public:
 	virtual void DoSend( fd_set *send_fd );
 	virtual void Disconnect( );
 	virtual void SetNoDelay( bool noDelay );
-	virtual void SetLogFile( string nLogFile )	{ m_LogFile = nLogFile; }
+	virtual void SetLogFile( QString nLogFile )	{ m_LogFile = nLogFile; }
 };
 
 //
@@ -176,7 +176,7 @@ public:
 	virtual void Reset( );
 	virtual void Disconnect( );
 	virtual bool GetConnecting( )												{ return m_Connecting; }
-	virtual void Connect( string localaddress, string address, uint16_t port );
+	virtual void Connect( QString localaddress, QString address, uint16_t port );
 	virtual bool CheckConnect( );
 };
 
@@ -190,7 +190,7 @@ public:
 	CTCPServer( );
 	virtual ~CTCPServer( );
 
-	virtual bool Listen( string address, uint16_t port );
+	virtual bool Listen( QString address, uint16_t port );
 	virtual CTCPSocket *Accept( fd_set *fd );
 };
 
@@ -206,10 +206,10 @@ public:
 	CUDPSocket( );
 	virtual ~CUDPSocket( );
 
-	virtual bool SendTo( struct sockaddr_in sin, BYTEARRAY message );
-	virtual bool SendTo( string address, uint16_t port, BYTEARRAY message );
-	virtual bool Broadcast( uint16_t port, BYTEARRAY message );
-	virtual void SetBroadcastTarget( string subnet );
+	virtual bool SendTo( struct sockaddr_in sin, QByteArray message );
+	virtual bool SendTo( QString address, uint16_t port, QByteArray message );
+	virtual bool Broadcast( uint16_t port, QByteArray message );
+	virtual void SetBroadcastTarget( QString subnet );
 	virtual void SetDontRoute( bool dontRoute );
 };
 
@@ -224,8 +224,8 @@ public:
 	virtual ~CUDPServer( );
 
 	virtual bool Bind( struct sockaddr_in sin );
-	virtual bool Bind( string address, uint16_t port );
-	virtual void RecvFrom( fd_set *fd, struct sockaddr_in *sin, string *message );
+	virtual bool Bind( QString address, uint16_t port );
+	virtual void RecvFrom( fd_set *fd, struct sockaddr_in *sin, QString *message );
 };
 
 #endif

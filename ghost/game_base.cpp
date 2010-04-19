@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@
 #include "game_base.h"
 
 #include <cmath>
-#include <string.h>
+#include <QString.h>
 #include <time.h>
 
 #include "next_combination.h"
@@ -43,7 +43,7 @@
 // CBaseGame
 //
 
-CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer )
+CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer )
 {
 	m_GHost = nGHost;
 	m_Socket = new CTCPServer( );
@@ -165,7 +165,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 		else
 		{
 			CONSOLE_Print( "[GAME: " + m_GameName + "] loading IP blacklist file [" + m_GHost->m_IPBlackListFile + "]" );
-			string Line;
+			QString Line;
 
 			while( !in.eof( ) )
 			{
@@ -184,7 +184,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 				// ignore lines that don't look like IP addresses
 
-				if( Line.find_first_not_of( "1234567890." ) != string :: npos )
+				if( Line.find_first_not_of( "1234567890." ) != QString :: npos )
 					continue;
 
 				m_IPBlackList.insert( Line );
@@ -223,8 +223,8 @@ CBaseGame :: ~CBaseGame( )
 		char Time[17];
 		memset( Time, 0, sizeof( char ) * 17 );
 		strftime( Time, sizeof( char ) * 17, "%Y-%m-%d %H-%M", localtime( &Now ) );
-		string MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
-		string SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+		QString MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
+		QString SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
 
 		if( MinString.size( ) == 1 )
 			MinString.insert( 0, "0" );
@@ -233,7 +233,7 @@ CBaseGame :: ~CBaseGame( )
 			SecString.insert( 0, "0" );
 
 		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
-		m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( "GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
+		m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( "GHost++ " + QString( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
 	}
 
 	delete m_Socket;
@@ -324,9 +324,9 @@ uint32_t CBaseGame :: GetNumHumanPlayers( )
 	return NumHumanPlayers;
 }
 
-string CBaseGame :: GetDescription( )
+QString CBaseGame :: GetDescription( )
 {
-	string Description = m_GameName + " : " + m_OwnerName + " : " + UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) );
+	QString Description = m_GameName + " : " + m_OwnerName + " : " + UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) );
 
 	if( m_GameLoading || m_GameLoaded )
 		Description += " : " + UTIL_ToString( ( m_GameTicks / 1000 ) / 60 ) + "m";
@@ -336,7 +336,7 @@ string CBaseGame :: GetDescription( )
 	return Description;
 }
 
-void CBaseGame :: SetAnnounce( uint32_t interval, string message )
+void CBaseGame :: SetAnnounce( uint32_t interval, QString message )
 {
 	m_AnnounceInterval = interval;
 	m_AnnounceMessage = message;
@@ -503,7 +503,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
 		// so rehost it using the current autohost game name
 
-		string GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
+		QString GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
 		CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
 		m_LastGameName = m_GameName;
 		m_GameName = GameName;
@@ -536,7 +536,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 			if( (*i)->GetOutPacketsQueued( ) <= 1 )
 			{
-				(*i)->QueueGameRefresh( m_GameState, m_GameName, string( ), m_Map, m_SaveGame, GetTime( ) - m_CreationTime, m_HostCounter );
+				(*i)->QueueGameRefresh( m_GameState, m_GameName, QString( ), m_Map, m_SaveGame, GetTime( ) - m_CreationTime, m_HostCounter );
 				Refreshed = true;
 			}
 		}
@@ -811,7 +811,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 		if( !m_Lagging )
 		{
-			string LaggingString;
+			QString LaggingString;
 
 			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
@@ -1094,7 +1094,7 @@ void CBaseGame :: SendAll( BYTEARRAY data )
 		(*i)->Send( data );
 }
 
-void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, string message )
+void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString message )
 {
 	// send a private message to one player - it'll be marked [Private] in Warcraft 3
 
@@ -1126,22 +1126,22 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, string m
 	}
 }
 
-void CBaseGame :: SendChat( unsigned char fromPID, unsigned char toPID, string message )
+void CBaseGame :: SendChat( unsigned char fromPID, unsigned char toPID, QString message )
 {
 	SendChat( fromPID, GetPlayerFromPID( toPID ), message );
 }
 
-void CBaseGame :: SendChat( CGamePlayer *player, string message )
+void CBaseGame :: SendChat( CGamePlayer *player, QString message )
 {
 	SendChat( GetHostPID( ), player, message );
 }
 
-void CBaseGame :: SendChat( unsigned char toPID, string message )
+void CBaseGame :: SendChat( unsigned char toPID, QString message )
 {
 	SendChat( GetHostPID( ), toPID, message );
 }
 
-void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
+void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 {
 	// send a public message to all players - it'll be marked [All] in Warcraft 3
 
@@ -1169,12 +1169,12 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
 	}
 }
 
-void CBaseGame :: SendAllChat( string message )
+void CBaseGame :: SendAllChat( QString message )
 {
 	SendAllChat( GetHostPID( ), message );
 }
 
-void CBaseGame :: SendLocalAdminChat( string message )
+void CBaseGame :: SendLocalAdminChat( QString message )
 {
 	if( !m_LocalAdminMessages )
 		return;
@@ -1385,7 +1385,7 @@ void CBaseGame :: SendWelcomeMessage( CGamePlayer *player )
 		// don't print more than 8 lines
 
 		uint32_t Count = 0;
-		string Line;
+		QString Line;
 
 		while( !in.eof( ) && Count < 8 )
 		{
@@ -1418,7 +1418,7 @@ void CBaseGame :: SendEndMessage( )
 		// don't print more than 8 lines
 
 		uint32_t Count = 0;
-		string Line;
+		QString Line;
 
 		while( !in.eof( ) && Count < 8 )
 		{
@@ -1480,7 +1480,7 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 
 	if( m_GameLoaded && player->GetLeftCode( ) == PLAYERLEAVE_DISCONNECT && m_AutoSave )
 	{
-		string SaveGameName = UTIL_FileSafeName( "GHost++ AutoSave " + m_GameName + " (" + player->GetName( ) + ").w3z" );
+		QString SaveGameName = UTIL_FileSafeName( "GHost++ AutoSave " + m_GameName + " (" + player->GetName( ) + ").w3z" );
 		CONSOLE_Print( "[GAME: " + m_GameName + "] auto saving [" + SaveGameName + "] before player drop, shortened send interval = " + UTIL_ToString( GetTicks( ) - m_LastActionSentTicks ) );
 		BYTEARRAY CRC;
 		BYTEARRAY Action;
@@ -1706,7 +1706,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// note: this is not a replacement for spoof checking since it doesn't verify the player's name and it can be spoofed anyway
 
 	uint32_t HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
-	string JoinedRealm;
+	QString JoinedRealm;
 
 	// we use an ID value of 0 to denote joining via LAN
 
@@ -2077,12 +2077,12 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 			// note: the following (commented out) line of code will crash because calling GetUniqueName( ) twice will result in two different return values
 			// and unfortunately iterators are not valid if compared against different containers
 			// this comment shall serve as warning to not make this mistake again since it has now been made twice before in GHost++
-			// string( (*i)->GetUniqueName( ).begin( ), (*i)->GetUniqueName( ).end( ) )
+			// QString( (*i)->GetUniqueName( ).begin( ), (*i)->GetUniqueName( ).end( ) )
 
 			BYTEARRAY UniqueName = (*i)->GetUniqueName( );
 
 			if( (*i)->GetServer( ) == JoinedRealm )
-				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( string( UniqueName.begin( ), UniqueName.end( ) )  ) );
+				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( QString( UniqueName.begin( ), UniqueName.end( ) )  ) );
 		}
 	}
 
@@ -2090,7 +2090,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( m_GHost->m_CheckMultipleIPUsage )
 	{
-		string Others;
+		QString Others;
 
 		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
@@ -2356,7 +2356,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// note: this is not a replacement for spoof checking since it doesn't verify the player's name and it can be spoofed anyway
 
 	uint32_t HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
-	string JoinedRealm;
+	QString JoinedRealm;
 
 	// we use an ID value of 0 to denote joining via LAN
 
@@ -2450,12 +2450,12 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			// note: the following (commented out) line of code will crash because calling GetUniqueName( ) twice will result in two different return values
 			// and unfortunately iterators are not valid if compared against different containers
 			// this comment shall serve as warning to not make this mistake again since it has now been made twice before in GHost++
-			// string( (*i)->GetUniqueName( ).begin( ), (*i)->GetUniqueName( ).end( ) )
+			// QString( (*i)->GetUniqueName( ).begin( ), (*i)->GetUniqueName( ).end( ) )
 
 			BYTEARRAY UniqueName = (*i)->GetUniqueName( );
 
 			if( (*i)->GetServer( ) == JoinedRealm )
-				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( string( UniqueName.begin( ), UniqueName.end( ) )  ) );
+				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( QString( UniqueName.begin( ), UniqueName.end( ) )  ) );
 		}
 	}
 
@@ -2500,7 +2500,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if( m_GHost->m_CheckMultipleIPUsage )
 	{
-		string Others;
+		QString Others;
 
 		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
@@ -2690,7 +2690,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
 				else if( j != LargestBin && (*j).second.size( ) == (*LargestBin).second.size( ) )
 					Tied = true;
 
-				string Players;
+				QString Players;
 
 				for( vector<unsigned char> :: iterator k = (*j).second.begin( ); k != (*j).second.end( ); k++ )
 				{
@@ -2783,8 +2783,8 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			// calculate timestamp
 
-			string MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
-			string SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+			QString MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
+			QString SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
 
 			if( MinString.size( ) == 1 )
 				MinString.insert( 0, "0" );
@@ -2834,20 +2834,20 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			// handle bot commands
 
-			string Message = chatPlayer->GetMessage( );
+			QString Message = chatPlayer->GetMessage( );
 
 			if( Message == "?trigger" )
-				SendChat( player, m_GHost->m_Language->CommandTrigger( string( 1, m_GHost->m_CommandTrigger ) ) );
+				SendChat( player, m_GHost->m_Language->CommandTrigger( QString( 1, m_GHost->m_CommandTrigger ) ) );
 			else if( !Message.empty( ) && Message[0] == m_GHost->m_CommandTrigger )
 			{
 				// extract the command trigger, the command, and the payload
 				// e.g. "!say hello world" -> command: "say", payload: "hello world"
 
-				string Command;
-				string Payload;
-				string :: size_type PayloadStart = Message.find( " " );
+				QString Command;
+				QString Payload;
+				QString :: size_type PayloadStart = Message.find( " " );
 
-				if( PayloadStart != string :: npos )
+				if( PayloadStart != QString :: npos )
 				{
 					Command = Message.substr( 1, PayloadStart - 1 );
 					Payload = Message.substr( PayloadStart + 1 );
@@ -2878,7 +2878,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 	}
 }
 
-bool CBaseGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string payload )
+bool CBaseGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload )
 {
 	// return true if the command itself should be hidden from other players
 
@@ -3063,7 +3063,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 		if( m_GHost->m_AllowDownloads != 0 )
 		{
-			string *MapData = m_Map->GetMapData( );
+			QString *MapData = m_Map->GetMapData( );
 
 			if( !MapData->empty( ) )
 			{
@@ -3159,7 +3159,7 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, uint32_t pong )
 	}
 }
 
-void CBaseGame :: EventGameRefreshed( string server )
+void CBaseGame :: EventGameRefreshed( QString server )
 {
 	if( m_RefreshRehosted )
 	{
@@ -3176,10 +3176,10 @@ void CBaseGame :: EventGameStarted( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
 
-	// encode the HCL command string in the slot handicaps
+	// encode the HCL command QString in the slot handicaps
 	// here's how it works:
-	//  the user inputs a command string to be sent to the map
-	//  it is almost impossible to send a message from the bot to the map so we encode the command string in the slot handicaps
+	//  the user inputs a command QString to be sent to the map
+	//  it is almost impossible to send a message from the bot to the map so we encode the command QString in the slot handicaps
 	//  this works because there are only 6 valid handicaps but Warcraft III allows the bot to set up to 256 handicaps
 	//  we encode the original (unmodified) handicaps in the new handicaps and use the remaining space to store a short message
 	//  only occupied slots deliver their handicaps to the map and we can send one character (from a list) per handicap
@@ -3194,9 +3194,9 @@ void CBaseGame :: EventGameStarted( )
 	{
 		if( m_HCLCommandString.size( ) <= GetSlotsOccupied( ) )
 		{
-			string HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
+			QString HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
 
-			if( m_HCLCommandString.find_first_not_of( HCLChars ) == string :: npos )
+			if( m_HCLCommandString.find_first_not_of( HCLChars ) == QString :: npos )
 			{
 				unsigned char EncodingMap[256];
 				unsigned char j = 0;
@@ -3213,7 +3213,7 @@ void CBaseGame :: EventGameStarted( )
 
 				unsigned char CurrentSlot = 0;
 
-				for( string :: iterator si = m_HCLCommandString.begin( ); si != m_HCLCommandString.end( ); si++ )
+				for( QString :: iterator si = m_HCLCommandString.begin( ); si != m_HCLCommandString.end( ); si++ )
 				{
 					while( m_Slots[CurrentSlot].GetSlotStatus( ) != SLOTSTATUS_OCCUPIED )
 						CurrentSlot++;
@@ -3224,13 +3224,13 @@ void CBaseGame :: EventGameStarted( )
 				}
 
 				SendAllSlotInfo( );
-				CONSOLE_Print( "[GAME: " + m_GameName + "] successfully encoded HCL command string [" + m_HCLCommandString + "]" );
+				CONSOLE_Print( "[GAME: " + m_GameName + "] successfully encoded HCL command QString [" + m_HCLCommandString + "]" );
 			}
 			else
-				CONSOLE_Print( "[GAME: " + m_GameName + "] encoding HCL command string [" + m_HCLCommandString + "] failed because it contains invalid characters" );
+				CONSOLE_Print( "[GAME: " + m_GameName + "] encoding HCL command QString [" + m_HCLCommandString + "] failed because it contains invalid characters" );
 		}
 		else
-			CONSOLE_Print( "[GAME: " + m_GameName + "] encoding HCL command string [" + m_HCLCommandString + "] failed because there aren't enough occupied slots" );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] encoding HCL command QString [" + m_HCLCommandString + "] failed because there aren't enough occupied slots" );
 	}
 
 	// send a final slot info update if necessary
@@ -3324,7 +3324,7 @@ void CBaseGame :: EventGameStarted( )
 		}
 	}
 
-	// build a stat string for use when saving the replay
+	// build a stat QString for use when saving the replay
 	// we have to build this now because the map data is going to be deleted
 
 	BYTEARRAY StatString;
@@ -3338,7 +3338,7 @@ void CBaseGame :: EventGameStarted( )
 	StatString.push_back( 0 );
 	UTIL_AppendByteArray( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
 	StatString = UTIL_EncodeStatString( StatString );
-	m_StatString = string( StatString.begin( ), StatString.end( ) );
+	m_StatString = QString( StatString.begin( ), StatString.end( ) );
 
 	// delete the map data
 
@@ -3409,7 +3409,7 @@ void CBaseGame :: EventGameLoaded( )
 		// don't print more than 8 lines
 
 		uint32_t Count = 0;
-		string Line;
+		QString Line;
 
 		while( !in.eof( ) && Count < 8 )
 		{
@@ -3463,7 +3463,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromSID( unsigned char SID )
 	return NULL;
 }
 
-CGamePlayer *CBaseGame :: GetPlayerFromName( string name, bool sensitive )
+CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 {
 	if( !sensitive )
 		transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
@@ -3472,7 +3472,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( string name, bool sensitive )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
-			string TestName = (*i)->GetName( );
+			QString TestName = (*i)->GetName( );
 
 			if( !sensitive )
 				transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
@@ -3485,22 +3485,22 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( string name, bool sensitive )
 	return NULL;
 }
 
-uint32_t CBaseGame :: GetPlayerFromNamePartial( string name, CGamePlayer **player )
+uint32_t CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **player )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	uint32_t Matches = 0;
 	*player = NULL;
 
-	// try to match each player with the passed string (e.g. "Varlock" would be matched with "lock")
+	// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
-			string TestName = (*i)->GetName( );
+			QString TestName = (*i)->GetName( );
 			transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
 
-			if( TestName.find( name ) != string :: npos )
+			if( TestName.find( name ) != QString :: npos )
 			{
 				Matches++;
 				*player = *i;
@@ -3821,7 +3821,7 @@ void CBaseGame :: OpenSlot( unsigned char SID, bool kick )
 		}
 
 		CGameSlot Slot = m_Slots[SID];
-		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) ); 
+		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) );
 		SendAllSlotInfo( );
 	}
 }
@@ -3843,7 +3843,7 @@ void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 		}
 
 		CGameSlot Slot = m_Slots[SID];
-		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_CLOSED, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) ); 
+		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_CLOSED, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) );
 		SendAllSlotInfo( );
 	}
 }
@@ -4262,7 +4262,7 @@ void CBaseGame :: BalanceSlots( )
 	}
 }
 
-void CBaseGame :: AddToSpoofed( string server, string name, bool sendMessage )
+void CBaseGame :: AddToSpoofed( QString server, QString name, bool sendMessage )
 {
 	CGamePlayer *Player = GetPlayerFromName( name, true );
 
@@ -4276,13 +4276,13 @@ void CBaseGame :: AddToSpoofed( string server, string name, bool sendMessage )
 	}
 }
 
-void CBaseGame :: AddToReserved( string name )
+void CBaseGame :: AddToReserved( QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 
 	// check that the user is not already reserved
 
-	for( vector<string> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
+	for( vector<QString> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
 	{
 		if( *i == name )
 			return;
@@ -4294,7 +4294,7 @@ void CBaseGame :: AddToReserved( string name )
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		string NameLower = (*i)->GetName( );
+		QString NameLower = (*i)->GetName( );
 		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
 
 		if( NameLower == name )
@@ -4302,19 +4302,19 @@ void CBaseGame :: AddToReserved( string name )
 	}
 }
 
-bool CBaseGame :: IsOwner( string name )
+bool CBaseGame :: IsOwner( QString name )
 {
-	string OwnerLower = m_OwnerName;
+	QString OwnerLower = m_OwnerName;
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	transform( OwnerLower.begin( ), OwnerLower.end( ), OwnerLower.begin( ), (int(*)(int))tolower );
 	return name == OwnerLower;
 }
 
-bool CBaseGame :: IsReserved( string name )
+bool CBaseGame :: IsReserved( QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 
-	for( vector<string> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
+	for( vector<QString> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
 	{
 		if( *i == name )
 			return true;
@@ -4357,7 +4357,7 @@ void CBaseGame :: StartCountDown( bool force )
 		}
 		else
 		{
-			// check if the HCL command string is short enough
+			// check if the HCL command QString is short enough
 
 			if( m_HCLCommandString.size( ) > GetSlotsOccupied( ) )
 			{
@@ -4367,7 +4367,7 @@ void CBaseGame :: StartCountDown( bool force )
 
 			// check if everyone has the map
 
-			string StillDownloading;
+			QString StillDownloading;
 
 			for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 			{
@@ -4390,7 +4390,7 @@ void CBaseGame :: StartCountDown( bool force )
 
 			// check if everyone is spoof checked
 
-			string NotSpoofChecked;
+			QString NotSpoofChecked;
 
 			if( m_GHost->m_RequireSpoofChecks )
 			{
@@ -4412,7 +4412,7 @@ void CBaseGame :: StartCountDown( bool force )
 			// check if everyone has been pinged enough (3 times) that the autokicker would have kicked them by now
 			// see function EventPlayerPongToHost for the autokicker code
 
-			string NotPinged;
+			QString NotPinged;
 
 			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
@@ -4453,7 +4453,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 		// check if everyone has the map
 
-		string StillDownloading;
+		QString StillDownloading;
 
 		for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 		{
@@ -4479,7 +4479,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 		// check if everyone is spoof checked
 
-		string NotSpoofChecked;
+		QString NotSpoofChecked;
 
 		if( requireSpoofChecks )
 		{
@@ -4501,7 +4501,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 		// check if everyone has been pinged enough (3 times) that the autokicker would have kicked them by now
 		// see function EventPlayerPongToHost for the autokicker code
 
-		string NotPinged;
+		QString NotPinged;
 
 		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
@@ -4530,9 +4530,9 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 	}
 }
 
-void CBaseGame :: StopPlayers( string reason )
+void CBaseGame :: StopPlayers( QString reason )
 {
-	// disconnect every player and set their left reason to the passed string
+	// disconnect every player and set their left reason to the passed QString
 	// we use this function when we want the code in the Update function to run before the destructor (e.g. saving players to the database)
 	// therefore calling this function when m_GameLoading || m_GameLoaded is roughly equivalent to setting m_Exiting = true
 	// the only difference is whether the code in the Update function is executed or not
@@ -4545,7 +4545,7 @@ void CBaseGame :: StopPlayers( string reason )
 	}
 }
 
-void CBaseGame :: StopLaggers( string reason )
+void CBaseGame :: StopLaggers( QString reason )
 {
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -4613,7 +4613,7 @@ void CBaseGame :: DeleteFakePlayer( )
 	for( unsigned char i = 0; i < m_Slots.size( ); i++ )
 	{
 		if( m_Slots[i].GetPID( ) == m_FakePlayerPID )
-			m_Slots[i] = CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, m_Slots[i].GetTeam( ), m_Slots[i].GetColour( ), m_Slots[i].GetRace( ) ); 
+			m_Slots[i] = CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, m_Slots[i].GetTeam( ), m_Slots[i].GetColour( ), m_Slots[i].GetRace( ) );
 	}
 
 	SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( m_FakePlayerPID, PLAYERLEAVE_LOBBY ) );

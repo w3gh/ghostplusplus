@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@
 #include "statsw3mmd.h"
 
 #include <cmath>
-#include <string.h>
+#include <QString.h>
 #include <time.h>
 
 //
@@ -66,10 +66,10 @@ public:
 // CGame
 //
 
-CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, nOwnerName, nCreatorName, nCreatorServer )
+CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, nOwnerName, nCreatorName, nCreatorServer )
 {
 	m_DBBanLast = NULL;
-	m_DBGame = new CDBGame( 0, string( ), m_Map->GetMapPath( ), string( ), string( ), string( ), 0 );
+	m_DBGame = new CDBGame( 0, QString( ), m_Map->GetMapPath( ), QString( ), QString( ), QString( ), 0 );
 
 	if( m_Map->GetMapType( ) == "w3mmd" )
 		m_Stats = new CStatsW3MMD( this, m_Map->GetMapStatsW3MMDCategory( ) );
@@ -234,7 +234,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 
 			if( DotAPlayerSummary )
 			{
-				string Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName( ),
+				QString Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName( ),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
@@ -341,15 +341,15 @@ void CGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
 	}
 }
 
-bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string payload )
+bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload )
 {
 	bool HideCommand = CBaseGame :: EventPlayerBotCommand( player, command, payload );
 
 	// todotodo: don't be lazy
 
-	string User = player->GetName( );
-	string Command = command;
-	string Payload = payload;
+	QString User = player->GetName( );
+	QString Command = command;
+	QString Payload = payload;
 
 	bool AdminCheck = false;
 
@@ -406,8 +406,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				// extract the victim and the reason
 				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
 
-				string Victim;
-				string Reason;
+				QString Victim;
+				QString Reason;
 				stringstream SS;
 				SS << Payload;
 				SS >> Victim;
@@ -415,28 +415,28 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				if( !SS.eof( ) )
 				{
 					getline( SS, Reason );
-					string :: size_type Start = Reason.find_first_not_of( " " );
+					QString :: size_type Start = Reason.find_first_not_of( " " );
 
-					if( Start != string :: npos )
+					if( Start != QString :: npos )
 						Reason = Reason.substr( Start );
 				}
 
 				if( m_GameLoaded )
 				{
-					string VictimLower = Victim;
+					QString VictimLower = Victim;
 					transform( VictimLower.begin( ), VictimLower.end( ), VictimLower.begin( ), (int(*)(int))tolower );
 					uint32_t Matches = 0;
 					CDBBan *LastMatch = NULL;
 
-					// try to match each player with the passed string (e.g. "Varlock" would be matched with "lock")
+					// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
 					// we use the m_DBBans vector for this in case the player already left and thus isn't in the m_Players vector anymore
 
 					for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 					{
-						string TestName = (*i)->GetName( );
+						QString TestName = (*i)->GetName( );
 						transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
 
-						if( TestName.find( VictimLower ) != string :: npos )
+						if( TestName.find( VictimLower ) != QString :: npos )
 						{
 							Matches++;
 							LastMatch = *i;
@@ -481,7 +481,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				if( Payload.empty( ) || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AnnounceMessageDisabled( ) );
-					SetAnnounce( 0, string( ) );
+					SetAnnounce( 0, QString( ) );
 				}
 				else
 				{
@@ -489,7 +489,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					// e.g. "30 hello everyone" -> interval: "30", message: "hello everyone"
 
 					uint32_t Interval;
-					string Message;
+					QString Message;
 					stringstream SS;
 					SS << Payload;
 					SS >> Interval;
@@ -503,9 +503,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						else
 						{
 							getline( SS, Message );
-							string :: size_type Start = Message.find_first_not_of( " " );
+							QString :: size_type Start = Message.find_first_not_of( " " );
 
-							if( Start != string :: npos )
+							if( Start != QString :: npos )
 								Message = Message.substr( Start );
 
 							SendAllChat( m_GHost->m_Language->AnnounceMessageEnabled( ) );
@@ -616,7 +616,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if( Command == "checkban" && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
 			{
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
-					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, string( ) ) ) );
+					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, QString( ) ) ) );
 			}
 
 			//
@@ -786,7 +786,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				// e.g. "1 human" -> slot: "1", race: "human"
 
 				uint32_t Slot;
-				string Race;
+				QString Race;
 				stringstream SS;
 				SS << Payload;
 				SS >> Slot;
@@ -800,9 +800,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					else
 					{
 						getline( SS, Race );
-						string :: size_type Start = Race.find_first_not_of( " " );
+						QString :: size_type Start = Race.find_first_not_of( " " );
 
-						if( Start != string :: npos )
+						if( Start != QString :: npos )
 							Race = Race.substr( Start );
 
 						transform( Race.begin( ), Race.end( ), Race.begin( ), (int(*)(int))tolower );
@@ -989,7 +989,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "from" )
 			{
-				string Froms;
+				QString Froms;
 
 				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 				{
@@ -1026,9 +1026,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				{
 					if( Payload.size( ) <= m_Slots.size( ) )
 					{
-						string HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
+						QString HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
 
-						if( Payload.find_first_not_of( HCLChars ) == string :: npos )
+						if( Payload.find_first_not_of( HCLChars ) == QString :: npos )
 						{
 							m_HCLCommandString = Payload;
 							SendAllChat( m_GHost->m_Language->SettingHCL( m_HCLCommandString ) );
@@ -1056,7 +1056,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 				while( !SS.eof( ) )
 				{
-					string HoldName;
+					QString HoldName;
 					SS >> HoldName;
 
 					if( SS.fail( ) )
@@ -1260,7 +1260,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 				vector<CGamePlayer *> SortedPlayers = m_Players;
 				sort( SortedPlayers.begin( ), SortedPlayers.end( ), CGamePlayerSortDescByPing( ) );
-				string Pings;
+				QString Pings;
 
 				for( vector<CGamePlayer *> :: iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )
 				{
@@ -1331,7 +1331,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 					// we need to send the game creation message now because private games are not refreshed
 
-					(*i)->QueueGameCreate( m_GameState, m_GameName, string( ), m_Map, NULL, m_HostCounter );
+					(*i)->QueueGameCreate( m_GameState, m_GameName, QString( ), m_Map, NULL, m_HostCounter );
 
 					if( (*i)->GetPasswordHashType( ) != "pvpgn" )
 						(*i)->QueueEnterChat( );
@@ -1412,7 +1412,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				// extract the ip and the port
 				// e.g. "1.2.3.4 6112" -> ip: "1.2.3.4", port: "6112"
 
-				string IP;
+				QString IP;
 				uint32_t Port = 6112;
 				stringstream SS;
 				SS << Payload;
@@ -1622,11 +1622,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				// extract the name and the message
 				// e.g. "Varlock hello there!" -> name: "Varlock", message: "hello there!"
 
-				string Name;
-				string Message;
-				string :: size_type MessageStart = Payload.find( " " );
+				QString Name;
+				QString Message;
+				QString :: size_type MessageStart = Payload.find( " " );
 
-				if( MessageStart != string :: npos )
+				if( MessageStart != QString :: npos )
 				{
 					Name = Payload.substr( 0, MessageStart );
 					Message = Payload.substr( MessageStart + 1 );
@@ -1669,13 +1669,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	if( Command == "stats" && GetTime( ) - player->GetStatsSentTime( ) >= 5 )
 	{
-		string StatsUser = User;
+		QString StatsUser = User;
 
 		if( !Payload.empty( ) )
 			StatsUser = Payload;
 
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			m_PairedGPSChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+			m_PairedGPSChecks.push_back( PairedGPSCheck( QString( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
 		else
 			m_PairedGPSChecks.push_back( PairedGPSCheck( User, m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
 
@@ -1688,13 +1688,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	if( Command == "statsdota" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
 	{
-		string StatsUser = User;
+		QString StatsUser = User;
 
 		if( !Payload.empty( ) )
 			StatsUser = Payload;
 
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+			m_PairedDPSChecks.push_back( PairedDPSCheck( QString( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
 		else
 			m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
 
@@ -1745,7 +1745,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					player->SetKickVote( true );
 					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] started by player [" + User + "]" );
 					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
-					SendAllChat( m_GHost->m_Language->TypeYesToVote( string( 1, m_GHost->m_CommandTrigger ) ) );
+					SendAllChat( m_GHost->m_Language->TypeYesToVote( QString( 1, m_GHost->m_CommandTrigger ) ) );
 				}
 			}
 			else
@@ -1812,7 +1812,7 @@ void CGame :: EventGameStarted( )
 	// so we create a "potential ban" for each player and only store it in the database if requested to by an admin
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), string( ), string( ), string( ), string( ) ) );
+		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), QString( ), QString( ), QString( ), QString( ) ) );
 }
 
 bool CGame :: IsGameDataSaved( )
@@ -1823,5 +1823,5 @@ bool CGame :: IsGameDataSaved( )
 void CGame :: SaveGameData( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] saving game data to database" );
-	m_CallableGameAdd = m_GHost->m_DB->ThreadedGameAdd( m_GHost->m_BNETs.size( ) == 1 ? m_GHost->m_BNETs[0]->GetServer( ) : string( ), m_DBGame->GetMap( ), m_GameName, m_OwnerName, m_GameTicks / 1000, m_GameState, m_CreatorName, m_CreatorServer );
+	m_CallableGameAdd = m_GHost->m_DB->ThreadedGameAdd( m_GHost->m_BNETs.size( ) == 1 ? m_GHost->m_BNETs[0]->GetServer( ) : QString( ), m_DBGame->GetMap( ), m_GameName, m_OwnerName, m_GameTicks / 1000, m_GameState, m_CreatorName, m_CreatorServer );
 }

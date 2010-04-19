@@ -55,11 +55,11 @@
 // CGHost
 //
 
-CGHost :: CGHost( CConfig *CFG, string configFile )
+CGHost :: CGHost( CConfig *CFG, QString configFile )
 	: m_ConfigFile(configFile)
 {
 	m_UDPSocket = new CUDPSocket( );
-	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
+	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", QString( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
 	m_ReconnectSocket = NULL;
 	m_GPSProtocol = new CGPSProtocol( );
@@ -67,7 +67,7 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 	m_CRC->Initialize( );
 	m_SHA = new CSHA1( );
 	m_CurrentGame = NULL;
-	string DBType = CFG->GetString( "db_type", "sqlite3" );
+	QString DBType = CFG->GetString( "db_type", "sqlite3" );
 	CONSOLE_Print( "[GHOST] opening primary database" );
 
 	if( DBType == "mysql" )
@@ -113,7 +113,7 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 			{
 				sockaddr_in *pAddress;
 				pAddress = (sockaddr_in *)&(InterfaceList[i].iiAddress);
-				CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + string( inet_ntoa( pAddress->sin_addr ) ) + "]" );
+				CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + QString( inet_ntoa( pAddress->sin_addr ) ) + "]" );
 				m_LocalAddresses.push_back( UTIL_CreateByteArray( (uint32_t)pAddress->sin_addr.s_addr, false ) );
 			}
 		}
@@ -129,7 +129,7 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 		CONSOLE_Print( "[GHOST] error finding local IP addresses - failed to get local hostname" );
 	else
 	{
-		CONSOLE_Print( "[GHOST] local hostname is [" + string( HostName ) + "]" );
+		CONSOLE_Print( "[GHOST] local hostname is [" + QString( HostName ) + "]" );
 		struct hostent *HostEnt = gethostbyname( HostName );
 
 		if( !HostEnt )
@@ -140,7 +140,7 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 			{
 				struct in_addr Address;
 				memcpy( &Address, HostEnt->h_addr_list[i], sizeof(struct in_addr) );
-				CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + string( inet_ntoa( Address ) ) + "]" );
+				CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + QString( inet_ntoa( Address ) ) + "]" );
 				m_LocalAddresses.push_back( UTIL_CreateByteArray( (uint32_t)Address.s_addr, false ) );
 			}
 		}
@@ -155,8 +155,8 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 	m_HostCounter = 1;
 	m_AutoHostMaximumGames = CFG->GetInt( "autohost_maxgames", 0 );
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
-	m_AutoHostGameName = CFG->GetString( "autohost_gamename", string( ) );
-	m_AutoHostOwner = CFG->GetString( "autohost_owner", string( ) );
+	m_AutoHostGameName = CFG->GetString( "autohost_gamename", QString( ) );
+	m_AutoHostOwner = CFG->GetString( "autohost_owner", QString( ) );
 	m_LastAutoHostTime = GetTime( );
 	m_AutoHostMatchMaking = false;
 	m_AutoHostMinimumScore = 0.0;
@@ -176,8 +176,8 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 	m_DefaultMap = CFG->GetString( "bot_defaultmap", "map" );
 	m_AdminGameCreate = CFG->GetInt( "admingame_create", 0 ) == 0 ? false : true;
 	m_AdminGamePort = CFG->GetInt( "admingame_port", 6113 );
-	m_AdminGamePassword = CFG->GetString( "admingame_password", string( ) );
-	m_AdminGameMap = CFG->GetString( "admingame_map", string( ) );
+	m_AdminGamePassword = CFG->GetString( "admingame_password", QString( ) );
+	m_AdminGameMap = CFG->GetString( "admingame_map", QString( ) );
 	m_LANWar3Version = CFG->GetInt( "lan_war3version", 24 );
 	m_ReplayWar3Version = CFG->GetInt( "replay_war3version", 24 );
 	m_ReplayBuildNumber = CFG->GetInt( "replay_buildnumber", 6059 );
@@ -188,20 +188,20 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 
 	for( uint32_t i = 1; i < 10; i++ )
 	{
-		string Prefix;
+		QString Prefix;
 
 		if( i == 1 )
 			Prefix = "bnet_";
 		else
 			Prefix = "bnet" + UTIL_ToString( i ) + "_";
 
-		string Server = CFG->GetString( Prefix + "server", string( ) );
-		string ServerAlias = CFG->GetString( Prefix + "serveralias", string( ) );
-		string CDKeyROC = CFG->GetString( Prefix + "cdkeyroc", string( ) );
-		string CDKeyTFT = CFG->GetString( Prefix + "cdkeytft", string( ) );
-		string CountryAbbrev = CFG->GetString( Prefix + "countryabbrev", "USA" );
-		string Country = CFG->GetString( Prefix + "country", "United States" );
-		string Locale = CFG->GetString( Prefix + "locale", "system" );
+		QString Server = CFG->GetString( Prefix + "server", QString( ) );
+		QString ServerAlias = CFG->GetString( Prefix + "serveralias", QString( ) );
+		QString CDKeyROC = CFG->GetString( Prefix + "cdkeyroc", QString( ) );
+		QString CDKeyTFT = CFG->GetString( Prefix + "cdkeytft", QString( ) );
+		QString CountryAbbrev = CFG->GetString( Prefix + "countryabbrev", "USA" );
+		QString Country = CFG->GetString( Prefix + "country", "United States" );
+		QString Locale = CFG->GetString( Prefix + "locale", "system" );
 		uint32_t LocaleID;
 
 		if( Locale == "system" )
@@ -215,11 +215,11 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 		else
 			LocaleID = UTIL_ToUInt32( Locale );
 
-		string UserName = CFG->GetString( Prefix + "username", string( ) );
-		string UserPassword = CFG->GetString( Prefix + "password", string( ) );
-		string FirstChannel = CFG->GetString( Prefix + "firstchannel", "The Void" );
-		string RootAdmin = CFG->GetString( Prefix + "rootadmin", string( ) );
-		string BNETCommandTrigger = CFG->GetString( Prefix + "commandtrigger", "!" );
+		QString UserName = CFG->GetString( Prefix + "username", QString( ) );
+		QString UserPassword = CFG->GetString( Prefix + "password", QString( ) );
+		QString FirstChannel = CFG->GetString( Prefix + "firstchannel", "The Void" );
+		QString RootAdmin = CFG->GetString( Prefix + "rootadmin", QString( ) );
+		QString BNETCommandTrigger = CFG->GetString( Prefix + "commandtrigger", "!" );
 
 		if( BNETCommandTrigger.empty( ) )
 			BNETCommandTrigger = "!";
@@ -227,14 +227,14 @@ CGHost :: CGHost( CConfig *CFG, string configFile )
 		bool HoldFriends = CFG->GetInt( Prefix + "holdfriends", 1 ) == 0 ? false : true;
 		bool HoldClan = CFG->GetInt( Prefix + "holdclan", 1 ) == 0 ? false : true;
 		bool PublicCommands = CFG->GetInt( Prefix + "publiccommands", 1 ) == 0 ? false : true;
-		string BNLSServer = CFG->GetString( Prefix + "bnlsserver", string( ) );
+		QString BNLSServer = CFG->GetString( Prefix + "bnlsserver", QString( ) );
 		int BNLSPort = CFG->GetInt( Prefix + "bnlsport", 9367 );
 		int BNLSWardenCookie = CFG->GetInt( Prefix + "bnlswardencookie", 0 );
 		unsigned char War3Version = CFG->GetInt( Prefix + "custom_war3version", 24 );
-		BYTEARRAY EXEVersion = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversion", string( ) ), 4 );
-		BYTEARRAY EXEVersionHash = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversionhash", string( ) ), 4 );
-		string PasswordHashType = CFG->GetString( Prefix + "custom_passwordhashtype", string( ) );
-		string PVPGNRealmName = CFG->GetString( Prefix + "custom_pvpgnrealmname", "PvPGN Realm" );
+		BYTEARRAY EXEVersion = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversion", QString( ) ), 4 );
+		BYTEARRAY EXEVersionHash = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversionhash", QString( ) ), 4 );
+		QString PasswordHashType = CFG->GetString( Prefix + "custom_passwordhashtype", QString( ) );
+		QString PVPGNRealmName = CFG->GetString( Prefix + "custom_pvpgnrealmname", "PvPGN Realm" );
 		uint32_t MaxMessageLength = CFG->GetInt( Prefix + "custom_maxmessagelength", 200 );
 
 		if( Server.empty( ) )
@@ -675,7 +675,7 @@ bool CGHost :: Update( long usecBlock )
 		}
 
 		(*i)->DoRecv( &fd );
-		string *RecvBuffer = (*i)->GetBytes( );
+		QString *RecvBuffer = (*i)->GetBytes( );
 		BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 		// a packet is at least 4 bytes
@@ -778,7 +778,7 @@ bool CGHost :: Update( long usecBlock )
 		{
 			if( m_AutoHostMap->GetValid( ) )
 			{
-				string GameName = m_AutoHostGameName + " #" + UTIL_ToString( m_HostCounter );
+				QString GameName = m_AutoHostGameName + " #" + UTIL_ToString( m_HostCounter );
 
 				if( GameName.size( ) <= 31 )
 				{
@@ -923,7 +923,7 @@ void CGHost :: EventBNETConnectTimedOut( CBNET *bnet )
 		m_CurrentGame->SendAllChat( m_Language->ConnectingToBNETTimedOut( bnet->GetServer( ) ) );
 }
 
-void CGHost :: EventBNETWhisper( CBNET *bnet, string user, string message )
+void CGHost :: EventBNETWhisper( CBNET *bnet, QString user, QString message )
 {
 	if( m_AdminGame )
 	{
@@ -937,7 +937,7 @@ void CGHost :: EventBNETWhisper( CBNET *bnet, string user, string message )
 	}
 }
 
-void CGHost :: EventBNETChat( CBNET *bnet, string user, string message )
+void CGHost :: EventBNETChat( CBNET *bnet, QString user, QString message )
 {
 	if( m_AdminGame )
 	{
@@ -951,7 +951,7 @@ void CGHost :: EventBNETChat( CBNET *bnet, string user, string message )
 	}
 }
 
-void CGHost :: EventBNETEmote( CBNET *bnet, string user, string message )
+void CGHost :: EventBNETEmote( CBNET *bnet, QString user, QString message )
 {
 	if( m_AdminGame )
 	{
@@ -993,20 +993,20 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	delete m_Language;
 	m_Language = new CLanguage( m_LanguageFile );
 	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) );
-	m_BindAddress = CFG->GetString( "bot_bindaddress", string( ) );
+	m_BindAddress = CFG->GetString( "bot_bindaddress", QString( ) );
 	m_ReconnectWaitTime = CFG->GetInt( "bot_reconnectwaittime", 3 );
 	m_MaxGames = CFG->GetInt( "bot_maxgames", 5 );
-	string BotCommandTrigger = CFG->GetString( "bot_commandtrigger", "!" );
+	QString BotCommandTrigger = CFG->GetString( "bot_commandtrigger", "!" );
 
 	if( BotCommandTrigger.empty( ) )
 		BotCommandTrigger = "!";
 
 	m_CommandTrigger = BotCommandTrigger[0];
-	m_MapCFGPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mapcfgpath", string( ) ) );
-	m_SaveGamePath = UTIL_AddPathSeperator( CFG->GetString( "bot_savegamepath", string( ) ) );
-	m_MapPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mappath", string( ) ) );
+	m_MapCFGPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mapcfgpath", QString( ) ) );
+	m_SaveGamePath = UTIL_AddPathSeperator( CFG->GetString( "bot_savegamepath", QString( ) ) );
+	m_MapPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mappath", QString( ) ) );
 	m_SaveReplays = CFG->GetInt( "bot_savereplays", 0 ) == 0 ? false : true;
-	m_ReplayPath = UTIL_AddPathSeperator( CFG->GetString( "bot_replaypath", string( ) ) );
+	m_ReplayPath = UTIL_AddPathSeperator( CFG->GetString( "bot_replaypath", QString( ) ) );
 	m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0GHost" );
 	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 0 ) == 0 ? false : true;
 	m_CheckMultipleIPUsage = CFG->GetInt( "bot_checkmultipleipusage", 1 ) == 0 ? false : true;
@@ -1053,7 +1053,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 void CGHost :: ExtractScripts( )
 {
-	string PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
+	QString PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
 	HANDLE PatchMPQ;
 
 	if( SFileOpenArchive( PatchMPQFileName.c_str( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
@@ -1141,10 +1141,10 @@ void CGHost :: LoadIPToCountryData( )
 		else
 		{
 			unsigned char Percent = 0;
-			string Line;
-			string IP1;
-			string IP2;
-			string Country;
+			QString Line;
+			QString IP1;
+			QString IP2;
+			QString Country;
 			CSVParser parser;
 
 			// get length of file for the progress meter
@@ -1188,7 +1188,7 @@ void CGHost :: LoadIPToCountryData( )
 	}
 }
 
-void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper )
+void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QString gameName, QString ownerName, QString creatorName, QString creatorServer, bool whisper )
 {
 	if( !m_Enabled )
 	{
@@ -1248,8 +1248,8 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 			return;
 		}
 
-		string MapPath1 = m_SaveGame->GetMapPath( );
-		string MapPath2 = map->GetMapPath( );
+		QString MapPath1 = m_SaveGame->GetMapPath( );
+		QString MapPath2 = map->GetMapPath( );
 		transform( MapPath1.begin( ), MapPath1.end( ), MapPath1.begin( ), (int(*)(int))tolower );
 		transform( MapPath2.begin( ), MapPath2.end( ), MapPath2.begin( ), (int(*)(int))tolower );
 
@@ -1349,9 +1349,9 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		}
 
 		if( saveGame )
-			(*i)->QueueGameCreate( gameState, gameName, string( ), map, m_SaveGame, m_CurrentGame->GetHostCounter( ) );
+			(*i)->QueueGameCreate( gameState, gameName, QString( ), map, m_SaveGame, m_CurrentGame->GetHostCounter( ) );
 		else
-			(*i)->QueueGameCreate( gameState, gameName, string( ), map, NULL, m_CurrentGame->GetHostCounter( ) );
+			(*i)->QueueGameCreate( gameState, gameName, QString( ), map, NULL, m_CurrentGame->GetHostCounter( ) );
 	}
 
 	if( m_AdminGame )

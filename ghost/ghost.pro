@@ -13,7 +13,6 @@ SOURCES += util.cpp \
     statsdota.cpp \
     stats.cpp \
     sqlite3.c \
-    socket.cpp \
     sha1.cpp \
     savegame.cpp \
     replay.cpp \

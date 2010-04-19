@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,12 +68,12 @@ BYTEARRAY CPotentialPlayer :: GetExternalIP( )
 	return UTIL_CreateByteArray( Zeros, 4 );
 }
 
-string CPotentialPlayer :: GetExternalIPString( )
+QString CPotentialPlayer :: GetExternalIPString( )
 {
 	if( m_Socket )
 		return m_Socket->GetIPString( );
 
-	return string( );
+	return QString( );
 }
 
 bool CPotentialPlayer :: Update( void *fd )
@@ -101,7 +101,7 @@ void CPotentialPlayer :: ExtractPackets( )
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
-	string *RecvBuffer = m_Socket->GetBytes( );
+	QString *RecvBuffer = m_Socket->GetBytes( );
 	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
@@ -189,7 +189,7 @@ void CPotentialPlayer :: Send( BYTEARRAY data )
 // CGamePlayer
 //
 
-CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
+CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
 {
 	m_PID = nPID;
 	m_Name = nName;
@@ -231,7 +231,7 @@ CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSock
 	m_LastGProxyAckTime = 0;
 }
 
-CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
+CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
 {
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
@@ -288,17 +288,17 @@ CGamePlayer :: ~CGamePlayer( )
 
 }
 
-string CGamePlayer :: GetNameTerminated( )
+QString CGamePlayer :: GetNameTerminated( )
 {
 	// if the player's name contains an unterminated colour code add the colour terminator to the end of their name
 	// this is useful because it allows you to print the player's name in a longer message which doesn't colour all the subsequent text
 
-	string LowerName = m_Name;
+	QString LowerName = m_Name;
 	transform( LowerName.begin( ), LowerName.end( ), LowerName.begin( ), (int(*)(int))tolower );
-	string :: size_type Start = LowerName.find( "|c" );
-	string :: size_type End = LowerName.find( "|r" );
+	QString :: size_type Start = LowerName.find( "|c" );
+	QString :: size_type End = LowerName.find( "|r" );
 
-	if( Start != string :: npos && ( End == string :: npos || End < Start ) )
+	if( Start != QString :: npos && ( End == QString :: npos || End < Start ) )
 		return m_Name + "|r";
 	else
 		return m_Name;
@@ -405,7 +405,7 @@ void CGamePlayer :: ExtractPackets( )
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 
-	string *RecvBuffer = m_Socket->GetBytes( );
+	QString *RecvBuffer = m_Socket->GetBytes( );
 	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes

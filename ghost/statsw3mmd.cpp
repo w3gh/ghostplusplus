@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,11 +26,13 @@
 #include "stats.h"
 #include "statsw3mmd.h"
 
+#include <QByteArray>
+
 //
 // CStatsW3MMD
 //
 
-CStatsW3MMD :: CStatsW3MMD( CBaseGame *nGame, string nCategory ) : CStats( nGame )
+CStatsW3MMD :: CStatsW3MMD( CBaseGame *nGame, QString nCategory ) : CStats( nGame )
 {
 	CONSOLE_Print( "[STATSW3MMD] using Warcraft 3 Map Meta Data stats parser version 1" );
 	CONSOLE_Print( "[STATSW3MMD] using map_statsw3mmdcategory [" + nCategory + "]" );
@@ -47,10 +49,10 @@ CStatsW3MMD :: ~CStatsW3MMD( )
 bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 {
 	unsigned int i = 0;
-	BYTEARRAY *ActionData = Action->GetAction( );
-	BYTEARRAY MissionKey;
-	BYTEARRAY Key;
-	BYTEARRAY Value;
+	QByteArray *ActionData = Action->GetAction( );
+	QByteArray MissionKey;
+	QByteArray Key;
+	QByteArray Value;
 
 	while( ActionData->size( ) >= i + 9 )
 	{
@@ -74,18 +76,18 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 					if( ActionData->size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
 					{
-						Value = BYTEARRAY( ActionData->begin( ) + i + 11 + MissionKey.size( ) + Key.size( ), ActionData->begin( ) + i + 15 + MissionKey.size( ) + Key.size( ) );
-						string MissionKeyString = string( MissionKey.begin( ), MissionKey.end( ) );
-						string KeyString = string( Key.begin( ), Key.end( ) );
-						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
+						Value = ActionData->mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
+						QString MissionKeyString = MissionKey;
+						QString KeyString = Key;
+						uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKeyString + "], key [" + KeyString + "], value [" + UTIL_ToString( ValueInt ) + "]" );
 
-						if( MissionKeyString.size( ) > 4 && MissionKeyString.substr( 0, 4 ) == "val:" )
+						if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "val:" )
 						{
-							string ValueIDString = MissionKeyString.substr( 4 );
+							QString ValueIDString = MissionKeyString.mid( 4 );
 							uint32_t ValueID = UTIL_ToUInt32( ValueIDString );
-							vector<string> Tokens = TokenizeKey( KeyString );
+							vector<QString> Tokens = TokenizeKey( KeyString );
 
 							if( !Tokens.empty( ) )
 							{
@@ -125,7 +127,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefVarP [" + KeyString + "] found, ignoring" );
 									else
 									{
-										if( Tokens[2] == "int" || Tokens[2] == "real" || Tokens[2] == "string" )
+										if( Tokens[2] == "int" || Tokens[2] == "real" || Tokens[2] == "QString" )
 											m_DefVarPs[Tokens[1]] = Tokens[2];
 										else
 											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown DefVarP [" + KeyString + "] found, ignoring" );
@@ -143,7 +145,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] VarP [" + KeyString + "] found without a corresponding DefVarP, ignoring" );
 									else
 									{
-										string ValueType = m_DefVarPs[Tokens[2]];
+										QString ValueType = m_DefVarPs[Tokens[2]];
 
 										if( ValueType == "int" )
 										{
@@ -210,7 +212,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 											if( Tokens[3] == "=" )
 												m_VarPStrings[VP] = Tokens[4];
 											else
-												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown string VarP [" + KeyString + "] operation [" + Tokens[3] + "] found, ignoring" );
+												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown QString VarP [" + KeyString + "] operation [" + Tokens[3] + "] found, ignoring" );
 										}
 									}
 								}
@@ -252,7 +254,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										uint32_t Arguments = UTIL_ToUInt32( Tokens[2] );
 
 										if( Tokens.size( ) == Arguments + 4 )
-											m_DefEvents[Tokens[1]] = vector<string>( Tokens.begin( ) + 3, Tokens.end( ) );
+											m_DefEvents[Tokens[1]] = vector<QString>( Tokens.begin( ) + 3, Tokens.end( ) );
 									}
 								}
 								else if( Tokens[0] == "Event" && Tokens.size( ) >= 2 )
@@ -264,23 +266,23 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + KeyString + "] found without a corresponding DefEvent, ignoring" );
 									else
 									{
-										vector<string> DefEvent = m_DefEvents[Tokens[1]];
+										vector<QString> DefEvent = m_DefEvents[Tokens[1]];
 
 										if( !DefEvent.empty( ) )
 										{
-											string Format = DefEvent[DefEvent.size( ) - 1];
+											QString Format = DefEvent[DefEvent.size( ) - 1];
 
 											if( Tokens.size( ) - 2 != DefEvent.size( ) - 1 )
 												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + KeyString + "] found with " + UTIL_ToString( Tokens.size( ) - 2 ) + " arguments but expected " + UTIL_ToString( DefEvent.size( ) - 1 ) + " arguments, ignoring" );
 											else
 											{
-												// replace the markers in the format string with the arguments
+												// replace the markers in the format QString with the arguments
 
 												for( uint32_t i = 0; i < Tokens.size( ) - 2; i++ )
 												{
 													// check if the marker is a PID marker
 
-													if( DefEvent[i].substr( 0, 4 ) == "pid:" )
+													if( DefEvent[i].midRef( 0, 4 ) == "pid:" )
 													{
 														// replace it with the player's name rather than their PID
 
@@ -316,9 +318,9 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 							m_NextValueID++;
 						}
-						else if( MissionKeyString.size( ) > 4 && MissionKeyString.substr( 0, 4 ) == "chk:" )
+						else if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "chk:" )
 						{
-							string CheckIDString = MissionKeyString.substr( 4 );
+							QString CheckIDString = MissionKeyString.mid( 4 );
 							uint32_t CheckID = UTIL_ToUInt32( CheckIDString );
 
 							// todotodo: cheat detection
@@ -355,9 +357,9 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		// todotodo: there's no reason to create a new callable for each entry in this map
 		// rewrite ThreadedW3MMDPlayerAdd to act more like ThreadedW3MMDVarAdd
 
-		for( map<uint32_t,string> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
+		for( map<uint32_t,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
 		{
-			string Flags = m_Flags[i->first];
+			QString Flags = m_Flags[i->first];
 			uint32_t Leaver = 0;
 			uint32_t Practicing = 0;
 
@@ -365,7 +367,7 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 			{
 				Leaver = 1;
 
-				if( !Flags.empty( ) )
+				if( !Flags.isEmpty( ) )
 					Flags += "/";
 
 				Flags += "leaver";
@@ -375,7 +377,7 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 			{
 				Practicing = 1;
 
-				if( !Flags.empty( ) )
+				if( !Flags.isEmpty( ) )
 					Flags += "/";
 
 				Flags += "practicing";
@@ -403,13 +405,13 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
 }
 
-vector<string> CStatsW3MMD :: TokenizeKey( string key )
+vector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 {
-	vector<string> Tokens;
-	string Token;
+	vector<QString> Tokens;
+	QString Token;
 	bool Escaping = false;
 
-	for( string :: iterator i = key.begin( ); i != key.end( ); i++ )
+	for( QString :: iterator i = key.begin( ); i != key.end( ); i++ )
 	{
 		if( Escaping )
 		{
@@ -420,7 +422,7 @@ vector<string> CStatsW3MMD :: TokenizeKey( string key )
 			else
 			{
 				CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], invalid escape sequence found, ignoring" );
-				return vector<string>( );
+				return vector<QString>( );
 			}
 
 			Escaping = false;
@@ -429,10 +431,10 @@ vector<string> CStatsW3MMD :: TokenizeKey( string key )
 		{
 			if( *i == ' ' )
 			{
-				if( Token.empty( ) )
+				if( Token.isEmpty( ) )
 				{
 					CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-					return vector<string>( );
+					return vector<QString>( );
 				}
 
 				Tokens.push_back( Token );
@@ -445,10 +447,10 @@ vector<string> CStatsW3MMD :: TokenizeKey( string key )
 		}
 	}
 
-	if( Token.empty( ) )
+	if( Token.isEmpty( ) )
 	{
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-		return vector<string>( );
+		return vector<QString>( );
 	}
 
 	Tokens.push_back( Token );

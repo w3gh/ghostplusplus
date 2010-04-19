@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ CConfig :: ~CConfig( )
 
 }
 
-void CConfig :: Read( string file )
+void CConfig :: Read( QString file )
 {
 	ifstream in;
 	in.open( file.c_str( ) );
@@ -47,7 +47,7 @@ void CConfig :: Read( string file )
 	else
 	{
 		CONSOLE_Print( "[CONFIG] loading file [" + file + "]" );
-		string Line;
+		QString Line;
 
 		while( !in.eof( ) )
 		{
@@ -63,17 +63,17 @@ void CConfig :: Read( string file )
 			Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
 			Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
 
-			string :: size_type Split = Line.find( "=" );
+			QString :: size_type Split = Line.find( "=" );
 
-			if( Split == string :: npos )
+			if( Split == QString :: npos )
 				continue;
 
-			string :: size_type KeyStart = Line.find_first_not_of( " " );
-			string :: size_type KeyEnd = Line.find( " ", KeyStart );
-			string :: size_type ValueStart = Line.find_first_not_of( " ", Split + 1 );
-			string :: size_type ValueEnd = Line.size( );
+			QString :: size_type KeyStart = Line.find_first_not_of( " " );
+			QString :: size_type KeyEnd = Line.find( " ", KeyStart );
+			QString :: size_type ValueStart = Line.find_first_not_of( " ", Split + 1 );
+			QString :: size_type ValueEnd = Line.size( );
 
-			if( ValueStart != string :: npos )
+			if( ValueStart != QString :: npos )
 				m_CFG[Line.substr( KeyStart, KeyEnd - KeyStart )] = Line.substr( ValueStart, ValueEnd - ValueStart );
 		}
 
@@ -81,12 +81,12 @@ void CConfig :: Read( string file )
 	}
 }
 
-bool CConfig :: Exists( string key )
+bool CConfig :: Exists( QString key )
 {
 	return m_CFG.find( key ) != m_CFG.end( );
 }
 
-int CConfig :: GetInt( string key, int x )
+int CConfig :: GetInt( QString key, int x )
 {
 	if( m_CFG.find( key ) == m_CFG.end( ) )
 		return x;
@@ -94,7 +94,7 @@ int CConfig :: GetInt( string key, int x )
 		return atoi( m_CFG[key].c_str( ) );
 }
 
-string CConfig :: GetString( string key, string x )
+QString CConfig :: GetString( QString key, QString x )
 {
 	if( m_CFG.find( key ) == m_CFG.end( ) )
 		return x;
@@ -102,7 +102,7 @@ string CConfig :: GetString( string key, string x )
 		return m_CFG[key];
 }
 
-void CConfig :: Set( string key, string x )
+void CConfig :: Set( QString key, QString x )
 {
 	m_CFG[key] = x;
 }

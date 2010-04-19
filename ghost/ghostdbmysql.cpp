@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,10 +41,10 @@
 
 CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 {
-	m_Server = CFG->GetString( "db_mysql_server", string( ) );
+	m_Server = CFG->GetString( "db_mysql_server", QString( ) );
 	m_Database = CFG->GetString( "db_mysql_database", "ghost" );
-	m_User = CFG->GetString( "db_mysql_user", string( ) );
-	m_Password = CFG->GetString( "db_mysql_password", string( ) );
+	m_User = CFG->GetString( "db_mysql_user", QString( ) );
+	m_Password = CFG->GetString( "db_mysql_password", QString( ) );
 	m_Port = CFG->GetInt( "db_mysql_port", 0 );
 	m_BotID = CFG->GetInt( "db_mysql_botid", 0 );
 	m_NumConnections = 1;
@@ -59,7 +59,7 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 
 	if( !( Connection = mysql_init( NULL ) ) )
 	{
-		CONSOLE_Print( string( "[MYSQL] " ) + mysql_error( Connection ) );
+		CONSOLE_Print( QString( "[MYSQL] " ) + mysql_error( Connection ) );
 		m_HasError = true;
 		m_Error = "error initializing MySQL connection";
 		return;
@@ -70,7 +70,7 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 
 	if( !( mysql_real_connect( Connection, m_Server.c_str( ), m_User.c_str( ), m_Password.c_str( ), m_Database.c_str( ), m_Port, NULL, 0 ) ) )
 	{
-		CONSOLE_Print( string( "[MYSQL] " ) + mysql_error( Connection ) );
+		CONSOLE_Print( QString( "[MYSQL] " ) + mysql_error( Connection ) );
 		m_HasError = true;
 		m_Error = "error connecting to MySQL server";
 		return;
@@ -95,7 +95,7 @@ CGHostDBMySQL :: ~CGHostDBMySQL( )
 	mysql_library_end( );
 }
 
-string CGHostDBMySQL :: GetStatus( )
+QString CGHostDBMySQL :: GetStatus( )
 {
 	return "DB STATUS --- Connections: " + UTIL_ToString( m_IdleConnections.size( ) ) + "/" + UTIL_ToString( m_NumConnections ) + " idle. Outstanding callables: " + UTIL_ToString( m_OutstandingCallables ) + ".";
 }
@@ -134,7 +134,7 @@ void CGHostDBMySQL :: CreateThread( CBaseCallable *callable )
 	}
 	catch( boost :: thread_resource_error tre )
 	{
-		CONSOLE_Print( "[MYSQL] error spawning thread on attempt #1 [" + string( tre.what( ) ) + "], pausing execution and trying again in 50ms" );
+		CONSOLE_Print( "[MYSQL] error spawning thread on attempt #1 [" + QString( tre.what( ) ) + "], pausing execution and trying again in 50ms" );
 		MILLISLEEP( 50 );
 
 		try
@@ -143,13 +143,13 @@ void CGHostDBMySQL :: CreateThread( CBaseCallable *callable )
 		}
 		catch( boost :: thread_resource_error tre2 )
 		{
-			CONSOLE_Print( "[MYSQL] error spawning thread on attempt #2 [" + string( tre2.what( ) ) + "], giving up" );
+			CONSOLE_Print( "[MYSQL] error spawning thread on attempt #2 [" + QString( tre2.what( ) ) + "], giving up" );
 			callable->SetReady( true );
 		}
 	}
 }
 
-CCallableAdminCount *CGHostDBMySQL :: ThreadedAdminCount( string server )
+CCallableAdminCount *CGHostDBMySQL :: ThreadedAdminCount( QString server )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -162,7 +162,7 @@ CCallableAdminCount *CGHostDBMySQL :: ThreadedAdminCount( string server )
 	return Callable;
 }
 
-CCallableAdminCheck *CGHostDBMySQL :: ThreadedAdminCheck( string server, string user )
+CCallableAdminCheck *CGHostDBMySQL :: ThreadedAdminCheck( QString server, QString user )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -175,7 +175,7 @@ CCallableAdminCheck *CGHostDBMySQL :: ThreadedAdminCheck( string server, string 
 	return Callable;
 }
 
-CCallableAdminAdd *CGHostDBMySQL :: ThreadedAdminAdd( string server, string user )
+CCallableAdminAdd *CGHostDBMySQL :: ThreadedAdminAdd( QString server, QString user )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -188,7 +188,7 @@ CCallableAdminAdd *CGHostDBMySQL :: ThreadedAdminAdd( string server, string user
 	return Callable;
 }
 
-CCallableAdminRemove *CGHostDBMySQL :: ThreadedAdminRemove( string server, string user )
+CCallableAdminRemove *CGHostDBMySQL :: ThreadedAdminRemove( QString server, QString user )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -201,7 +201,7 @@ CCallableAdminRemove *CGHostDBMySQL :: ThreadedAdminRemove( string server, strin
 	return Callable;
 }
 
-CCallableAdminList *CGHostDBMySQL :: ThreadedAdminList( string server )
+CCallableAdminList *CGHostDBMySQL :: ThreadedAdminList( QString server )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -214,7 +214,7 @@ CCallableAdminList *CGHostDBMySQL :: ThreadedAdminList( string server )
 	return Callable;
 }
 
-CCallableBanCount *CGHostDBMySQL :: ThreadedBanCount( string server )
+CCallableBanCount *CGHostDBMySQL :: ThreadedBanCount( QString server )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -227,7 +227,7 @@ CCallableBanCount *CGHostDBMySQL :: ThreadedBanCount( string server )
 	return Callable;
 }
 
-CCallableBanCheck *CGHostDBMySQL :: ThreadedBanCheck( string server, string user, string ip )
+CCallableBanCheck *CGHostDBMySQL :: ThreadedBanCheck( QString server, QString user, QString ip )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -240,7 +240,7 @@ CCallableBanCheck *CGHostDBMySQL :: ThreadedBanCheck( string server, string user
 	return Callable;
 }
 
-CCallableBanAdd *CGHostDBMySQL :: ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason )
+CCallableBanAdd *CGHostDBMySQL :: ThreadedBanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -253,7 +253,7 @@ CCallableBanAdd *CGHostDBMySQL :: ThreadedBanAdd( string server, string user, st
 	return Callable;
 }
 
-CCallableBanRemove *CGHostDBMySQL :: ThreadedBanRemove( string server, string user )
+CCallableBanRemove *CGHostDBMySQL :: ThreadedBanRemove( QString server, QString user )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -266,20 +266,20 @@ CCallableBanRemove *CGHostDBMySQL :: ThreadedBanRemove( string server, string us
 	return Callable;
 }
 
-CCallableBanRemove *CGHostDBMySQL :: ThreadedBanRemove( string user )
+CCallableBanRemove *CGHostDBMySQL :: ThreadedBanRemove( QString user )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableBanRemove *Callable = new CMySQLCallableBanRemove( string( ), user, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableBanRemove *Callable = new CMySQLCallableBanRemove( QString( ), user, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
 }
 
-CCallableBanList *CGHostDBMySQL :: ThreadedBanList( string server )
+CCallableBanList *CGHostDBMySQL :: ThreadedBanList( QString server )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -292,7 +292,7 @@ CCallableBanList *CGHostDBMySQL :: ThreadedBanList( string server )
 	return Callable;
 }
 
-CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver )
+CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -305,7 +305,7 @@ CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( string server, string map, s
 	return Callable;
 }
 
-CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour )
+CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -318,7 +318,7 @@ CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid,
 	return Callable;
 }
 
-CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck( string name )
+CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck( QString name )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -344,7 +344,7 @@ CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( uint32_t gameid, uin
 	return Callable;
 }
 
-CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -357,7 +357,7 @@ CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid,
 	return Callable;
 }
 
-CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck( string name )
+CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck( QString name )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -370,7 +370,7 @@ CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck
 	return Callable;
 }
 
-CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime )
+CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -383,7 +383,7 @@ CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( string map, uint32_t
 	return Callable;
 }
 
-CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( string category, string name, string server )
+CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( QString category, QString name, QString server )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -396,7 +396,7 @@ CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( string category, strin
 	return Callable;
 }
 
-CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing )
+CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -435,7 +435,7 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -465,18 +465,18 @@ void *CGHostDBMySQL :: GetIdleConnection( )
 // unprototyped global helper functions
 //
 
-string MySQLEscapeString( void *conn, string str )
+QString MySQLEscapeString( void *conn, QString str )
 {
 	char *to = new char[str.size( ) * 2 + 1];
-	unsigned long size = mysql_real_escape_string( (MYSQL *)conn, to, str.c_str( ), str.size( ) );
-	string result( to, size );
+	unsigned long size = mysql_real_escape_QString( (MYSQL *)conn, to, str.c_str( ), str.size( ) );
+	QString result( to, size );
 	delete [] to;
 	return result;
 }
 
-vector<string> MySQLFetchRow( MYSQL_RES *res )
+vector<QString> MySQLFetchRow( MYSQL_RES *res )
 {
-	vector<string> Result;
+	vector<QString> Result;
 
 	MYSQL_ROW Row = mysql_fetch_row( res );
 
@@ -488,9 +488,9 @@ vector<string> MySQLFetchRow( MYSQL_RES *res )
 		for( unsigned int i = 0; i < mysql_num_fields( res ); i++ )
 		{
 			if( Row[i] )
-				Result.push_back( string( Row[i], Lengths[i] ) );
+				Result.push_back( QString( Row[i], Lengths[i] ) );
 			else
-				Result.push_back( string( ) );
+				Result.push_back( QString( ) );
 		}
 	}
 
@@ -501,11 +501,11 @@ vector<string> MySQLFetchRow( MYSQL_RES *res )
 // global helper functions
 //
 
-uint32_t MySQLAdminCount( void *conn, string *error, uint32_t botid, string server )
+uint32_t MySQLAdminCount( void *conn, QString *error, uint32_t botid, QString server )
 {
-	string EscServer = MySQLEscapeString( conn, server );
+	QString EscServer = MySQLEscapeString( conn, server );
 	uint32_t Count = 0;
-	string Query = "SELECT COUNT(*) FROM admins WHERE server='" + EscServer + "'";
+	QString Query = "SELECT COUNT(*) FROM admins WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -515,7 +515,7 @@ uint32_t MySQLAdminCount( void *conn, string *error, uint32_t botid, string serv
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -531,13 +531,13 @@ uint32_t MySQLAdminCount( void *conn, string *error, uint32_t botid, string serv
 	return Count;
 }
 
-bool MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, string user )
+bool MySQLAdminCheck( void *conn, QString *error, uint32_t botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
 	bool IsAdmin = false;
-	string Query = "SELECT * FROM admins WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
+	QString Query = "SELECT * FROM admins WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -547,7 +547,7 @@ bool MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, 
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( !Row.empty( ) )
 				IsAdmin = true;
@@ -561,13 +561,13 @@ bool MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, 
 	return IsAdmin;
 }
 
-bool MySQLAdminAdd( void *conn, string *error, uint32_t botid, string server, string user )
+bool MySQLAdminAdd( void *conn, QString *error, uint32_t botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
 	bool Success = false;
-	string Query = "INSERT INTO admins ( botid, server, name ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "' )";
+	QString Query = "INSERT INTO admins ( botid, server, name ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "' )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -577,13 +577,13 @@ bool MySQLAdminAdd( void *conn, string *error, uint32_t botid, string server, st
 	return Success;
 }
 
-bool MySQLAdminRemove( void *conn, string *error, uint32_t botid, string server, string user )
+bool MySQLAdminRemove( void *conn, QString *error, uint32_t botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
 	bool Success = false;
-	string Query = "DELETE FROM admins WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
+	QString Query = "DELETE FROM admins WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -593,11 +593,11 @@ bool MySQLAdminRemove( void *conn, string *error, uint32_t botid, string server,
 	return Success;
 }
 
-vector<string> MySQLAdminList( void *conn, string *error, uint32_t botid, string server )
+vector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QString server )
 {
-	string EscServer = MySQLEscapeString( conn, server );
-	vector<string> AdminList;
-	string Query = "SELECT name FROM admins WHERE server='" + EscServer + "'";
+	QString EscServer = MySQLEscapeString( conn, server );
+	vector<QString> AdminList;
+	QString Query = "SELECT name FROM admins WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -607,7 +607,7 @@ vector<string> MySQLAdminList( void *conn, string *error, uint32_t botid, string
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			while( !Row.empty( ) )
 			{
@@ -624,11 +624,11 @@ vector<string> MySQLAdminList( void *conn, string *error, uint32_t botid, string
 	return AdminList;
 }
 
-uint32_t MySQLBanCount( void *conn, string *error, uint32_t botid, string server )
+uint32_t MySQLBanCount( void *conn, QString *error, uint32_t botid, QString server )
 {
-	string EscServer = MySQLEscapeString( conn, server );
+	QString EscServer = MySQLEscapeString( conn, server );
 	uint32_t Count = 0;
-	string Query = "SELECT COUNT(*) FROM bans WHERE server='" + EscServer + "'";
+	QString Query = "SELECT COUNT(*) FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -638,7 +638,7 @@ uint32_t MySQLBanCount( void *conn, string *error, uint32_t botid, string server
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -654,14 +654,14 @@ uint32_t MySQLBanCount( void *conn, string *error, uint32_t botid, string server
 	return Count;
 }
 
-CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server, string user, string ip )
+CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
-	string EscIP = MySQLEscapeString( conn, ip );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
+	QString EscIP = MySQLEscapeString( conn, ip );
 	CDBBan *Ban = NULL;
-	string Query;
+	QString Query;
 
 	if( ip.empty( ) )
 		Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
@@ -676,7 +676,7 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 6 )
 				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5] );
@@ -692,17 +692,17 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 	return Ban;
 }
 
-bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason )
+bool MySQLBanAdd( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
-	string EscIP = MySQLEscapeString( conn, ip );
-	string EscGameName = MySQLEscapeString( conn, gamename );
-	string EscAdmin = MySQLEscapeString( conn, admin );
-	string EscReason = MySQLEscapeString( conn, reason );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
+	QString EscIP = MySQLEscapeString( conn, ip );
+	QString EscGameName = MySQLEscapeString( conn, gamename );
+	QString EscAdmin = MySQLEscapeString( conn, admin );
+	QString EscReason = MySQLEscapeString( conn, reason );
 	bool Success = false;
-	string Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', CURDATE( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "' )";
+	QString Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', CURDATE( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "' )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -712,13 +712,13 @@ bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, stri
 	return Success;
 }
 
-bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user )
+bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscUser = MySQLEscapeString( conn, user );
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscUser = MySQLEscapeString( conn, user );
 	bool Success = false;
-	string Query = "DELETE FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
+	QString Query = "DELETE FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -728,12 +728,12 @@ bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, s
 	return Success;
 }
 
-bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string user )
+bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
-	string EscUser = MySQLEscapeString( conn, user );
+	QString EscUser = MySQLEscapeString( conn, user );
 	bool Success = false;
-	string Query = "DELETE FROM bans WHERE name='" + EscUser + "'";
+	QString Query = "DELETE FROM bans WHERE name='" + EscUser + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -743,11 +743,11 @@ bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string user )
 	return Success;
 }
 
-vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string server )
+vector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QString server )
 {
-	string EscServer = MySQLEscapeString( conn, server );
+	QString EscServer = MySQLEscapeString( conn, server );
 	vector<CDBBan *> BanList;
-	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "'";
+	QString Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -757,7 +757,7 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			while( Row.size( ) == 6 )
 			{
@@ -774,16 +774,16 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 	return BanList;
 }
 
-uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver )
+uint32_t MySQLGameAdd( void *conn, QString *error, uint32_t botid, QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
 {
 	uint32_t RowID = 0;
-	string EscServer = MySQLEscapeString( conn, server );
-	string EscMap = MySQLEscapeString( conn, map );
-	string EscGameName = MySQLEscapeString( conn, gamename );
-	string EscOwnerName = MySQLEscapeString( conn, ownername );
-	string EscCreatorName = MySQLEscapeString( conn, creatorname );
-	string EscCreatorServer = MySQLEscapeString( conn, creatorserver );
-	string Query = "INSERT INTO games ( botid, server, map, datetime, gamename, ownername, duration, gamestate, creatorname, creatorserver ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscMap + "', NOW( ), '" + EscGameName + "', '" + EscOwnerName + "', " + UTIL_ToString( duration ) + ", " + UTIL_ToString( gamestate ) + ", '" + EscCreatorName + "', '" + EscCreatorServer + "' )";
+	QString EscServer = MySQLEscapeString( conn, server );
+	QString EscMap = MySQLEscapeString( conn, map );
+	QString EscGameName = MySQLEscapeString( conn, gamename );
+	QString EscOwnerName = MySQLEscapeString( conn, ownername );
+	QString EscCreatorName = MySQLEscapeString( conn, creatorname );
+	QString EscCreatorServer = MySQLEscapeString( conn, creatorserver );
+	QString Query = "INSERT INTO games ( botid, server, map, datetime, gamename, ownername, duration, gamestate, creatorname, creatorserver ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscMap + "', NOW( ), '" + EscGameName + "', '" + EscOwnerName + "', " + UTIL_ToString( duration ) + ", " + UTIL_ToString( gamestate ) + ", '" + EscCreatorName + "', '" + EscCreatorServer + "' )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -793,15 +793,15 @@ uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server,
 	return RowID;
 }
 
-uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour )
+uint32_t MySQLGamePlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	uint32_t RowID = 0;
-	string EscName = MySQLEscapeString( conn, name );
-	string EscIP = MySQLEscapeString( conn, ip );
-	string EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
-	string EscLeftReason = MySQLEscapeString( conn, leftreason );
-	string Query = "INSERT INTO gameplayers ( botid, gameid, name, ip, spoofed, reserved, loadingtime, `left`, leftreason, team, colour, spoofedrealm ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", '" + EscName + "', '" + EscIP + "', " + UTIL_ToString( spoofed ) + ", " + UTIL_ToString( reserved ) + ", " + UTIL_ToString( loadingtime ) + ", " + UTIL_ToString( left ) + ", '" + EscLeftReason + "', " + UTIL_ToString( team ) + ", " + UTIL_ToString( colour ) + ", '" + EscSpoofedRealm + "' )";
+	QString EscName = MySQLEscapeString( conn, name );
+	QString EscIP = MySQLEscapeString( conn, ip );
+	QString EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
+	QString EscLeftReason = MySQLEscapeString( conn, leftreason );
+	QString Query = "INSERT INTO gameplayers ( botid, gameid, name, ip, spoofed, reserved, loadingtime, `left`, leftreason, team, colour, spoofedrealm ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", '" + EscName + "', '" + EscIP + "', " + UTIL_ToString( spoofed ) + ", " + UTIL_ToString( reserved ) + ", " + UTIL_ToString( loadingtime ) + ", " + UTIL_ToString( left ) + ", '" + EscLeftReason + "', " + UTIL_ToString( team ) + ", " + UTIL_ToString( colour ) + ", '" + EscSpoofedRealm + "' )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -811,12 +811,12 @@ uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t
 	return RowID;
 }
 
-CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	string EscName = MySQLEscapeString( conn, name );
+	QString EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
-	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE LOWER(name)='" + EscName + "'";
+	QString Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE LOWER(name)='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -826,12 +826,12 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 12 )
 			{
-				string FirstGameDateTime = Row[0];
-				string LastGameDateTime = Row[1];
+				QString FirstGameDateTime = Row[0];
+				QString LastGameDateTime = Row[1];
 				uint32_t TotalGames = UTIL_ToUInt32( Row[2] );
 				uint32_t MinLoadingTime = UTIL_ToUInt32( Row[3] );
 				uint32_t AvgLoadingTime = UTIL_ToUInt32( Row[4] );
@@ -842,7 +842,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 				uint32_t MinDuration = UTIL_ToUInt32( Row[9] );
 				uint32_t AvgDuration = UTIL_ToUInt32( Row[10] );
 				uint32_t MaxDuration = UTIL_ToUInt32( Row[11] );
-				GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
+				GamePlayerSummary = new CDBGamePlayerSummary( QString( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
 			}
 			else
 				*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
@@ -856,10 +856,10 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	return GamePlayerSummary;
 }
 
-uint32_t MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+uint32_t MySQLDotAGameAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
 {
 	uint32_t RowID = 0;
-	string Query = "INSERT INTO dotagames ( botid, gameid, winner, min, sec ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( winner ) + ", " + UTIL_ToString( min ) + ", " + UTIL_ToString( sec ) + " )";
+	QString Query = "INSERT INTO dotagames ( botid, gameid, winner, min, sec ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( winner ) + ", " + UTIL_ToString( min ) + ", " + UTIL_ToString( sec ) + " )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -869,17 +869,17 @@ uint32_t MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t g
 	return RowID;
 }
 
-uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+uint32_t MySQLDotAPlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	uint32_t RowID = 0;
-	string EscItem1 = MySQLEscapeString( conn, item1 );
-	string EscItem2 = MySQLEscapeString( conn, item2 );
-	string EscItem3 = MySQLEscapeString( conn, item3 );
-	string EscItem4 = MySQLEscapeString( conn, item4 );
-	string EscItem5 = MySQLEscapeString( conn, item5 );
-	string EscItem6 = MySQLEscapeString( conn, item6 );
-	string EscHero = MySQLEscapeString( conn, hero );
-	string Query = "INSERT INTO dotaplayers ( botid, gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( colour ) + ", " + UTIL_ToString( kills ) + ", " + UTIL_ToString( deaths ) + ", " + UTIL_ToString( creepkills ) + ", " + UTIL_ToString( creepdenies ) + ", " + UTIL_ToString( assists ) + ", " + UTIL_ToString( gold ) + ", " + UTIL_ToString( neutralkills ) + ", '" + EscItem1 + "', '" + EscItem2 + "', '" + EscItem3 + "', '" + EscItem4 + "', '" + EscItem5 + "', '" + EscItem6 + "', '" + EscHero + "', " + UTIL_ToString( newcolour ) + ", " + UTIL_ToString( towerkills ) + ", " + UTIL_ToString( raxkills ) + ", " + UTIL_ToString( courierkills ) + " )";
+	QString EscItem1 = MySQLEscapeString( conn, item1 );
+	QString EscItem2 = MySQLEscapeString( conn, item2 );
+	QString EscItem3 = MySQLEscapeString( conn, item3 );
+	QString EscItem4 = MySQLEscapeString( conn, item4 );
+	QString EscItem5 = MySQLEscapeString( conn, item5 );
+	QString EscItem6 = MySQLEscapeString( conn, item6 );
+	QString EscHero = MySQLEscapeString( conn, hero );
+	QString Query = "INSERT INTO dotaplayers ( botid, gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( colour ) + ", " + UTIL_ToString( kills ) + ", " + UTIL_ToString( deaths ) + ", " + UTIL_ToString( creepkills ) + ", " + UTIL_ToString( creepdenies ) + ", " + UTIL_ToString( assists ) + ", " + UTIL_ToString( gold ) + ", " + UTIL_ToString( neutralkills ) + ", '" + EscItem1 + "', '" + EscItem2 + "', '" + EscItem3 + "', '" + EscItem4 + "', '" + EscItem5 + "', '" + EscItem6 + "', '" + EscHero + "', " + UTIL_ToString( newcolour ) + ", " + UTIL_ToString( towerkills ) + ", " + UTIL_ToString( raxkills ) + ", " + UTIL_ToString( courierkills ) + " )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -889,12 +889,12 @@ uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, uint32_t
 	return RowID;
 }
 
-CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	string EscName = MySQLEscapeString( conn, name );
+	QString EscName = MySQLEscapeString( conn, name );
 	CDBDotAPlayerSummary *DotAPlayerSummary = NULL;
-	string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
+	QString Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -904,7 +904,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 10 )
 			{
@@ -926,7 +926,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate total wins
 
-					string Query2 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=1 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=2 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
+					QString Query2 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=1 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=2 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
 
 					if( mysql_real_query( (MYSQL *)conn, Query2.c_str( ), Query2.size( ) ) != 0 )
 						*error = mysql_error( (MYSQL *)conn );
@@ -936,7 +936,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 						if( Result2 )
 						{
-							vector<string> Row2 = MySQLFetchRow( Result2 );
+							vector<QString> Row2 = MySQLFetchRow( Result2 );
 
 							if( Row2.size( ) == 1 )
 								TotalWins = UTIL_ToUInt32( Row2[0] );
@@ -951,7 +951,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate total losses
 
-					string Query3 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=2 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=1 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
+					QString Query3 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=2 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=1 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
 
 					if( mysql_real_query( (MYSQL *)conn, Query3.c_str( ), Query3.size( ) ) != 0 )
 						*error = mysql_error( (MYSQL *)conn );
@@ -961,7 +961,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 						if( Result3 )
 						{
-							vector<string> Row3 = MySQLFetchRow( Result3 );
+							vector<QString> Row3 = MySQLFetchRow( Result3 );
 
 							if( Row3.size( ) == 1 )
 								TotalLosses = UTIL_ToUInt32( Row3[0] );
@@ -976,7 +976,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// done
 
-					DotAPlayerSummary = new CDBDotAPlayerSummary( string( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalCreepKills, TotalCreepDenies, TotalAssists, TotalNeutralKills, TotalTowerKills, TotalRaxKills, TotalCourierKills );
+					DotAPlayerSummary = new CDBDotAPlayerSummary( QString( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalCreepKills, TotalCreepDenies, TotalAssists, TotalNeutralKills, TotalTowerKills, TotalRaxKills, TotalCourierKills );
 				}
 			}
 			else
@@ -991,14 +991,14 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	return DotAPlayerSummary;
 }
 
-bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime )
+bool MySQLDownloadAdd( void *conn, QString *error, uint32_t botid, QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
 {
 	bool Success = false;
-	string EscMap = MySQLEscapeString( conn, map );
-	string EscName = MySQLEscapeString( conn, name );
-	string EscIP = MySQLEscapeString( conn, ip );
-	string EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
-	string Query = "INSERT INTO downloads ( botid, map, mapsize, datetime, name, ip, spoofed, spoofedrealm, downloadtime ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscMap + "', " + UTIL_ToString( mapsize ) + ", NOW( ), '" + EscName + "', '" + EscIP + "', " + UTIL_ToString( spoofed ) + ", '" + EscSpoofedRealm + "', " + UTIL_ToString( downloadtime ) + " )";
+	QString EscMap = MySQLEscapeString( conn, map );
+	QString EscName = MySQLEscapeString( conn, name );
+	QString EscIP = MySQLEscapeString( conn, ip );
+	QString EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
+	QString Query = "INSERT INTO downloads ( botid, map, mapsize, datetime, name, ip, spoofed, spoofedrealm, downloadtime ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscMap + "', " + UTIL_ToString( mapsize ) + ", NOW( ), '" + EscName + "', '" + EscIP + "', " + UTIL_ToString( spoofed ) + ", '" + EscSpoofedRealm + "', " + UTIL_ToString( downloadtime ) + " )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1008,14 +1008,14 @@ bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, ui
 	return Success;
 }
 
-double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server )
+double MySQLScoreCheck( void *conn, QString *error, uint32_t botid, QString category, QString name, QString server )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	string EscCategory = MySQLEscapeString( conn, category );
-	string EscName = MySQLEscapeString( conn, name );
-	string EscServer = MySQLEscapeString( conn, server );
+	QString EscCategory = MySQLEscapeString( conn, category );
+	QString EscName = MySQLEscapeString( conn, name );
+	QString EscServer = MySQLEscapeString( conn, server );
 	double Score = -100000.0;
-	string Query = "SELECT score FROM scores WHERE category='" + EscCategory + "' AND name='" + EscName + "' AND server='" + EscServer + "'";
+	QString Query = "SELECT score FROM scores WHERE category='" + EscCategory + "' AND name='" + EscName + "' AND server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1025,7 +1025,7 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			vector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Score = UTIL_ToDouble( Row[0] );
@@ -1041,14 +1041,14 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 	return Score;
 }
 
-uint32_t MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing )
+uint32_t MySQLW3MMDPlayerAdd( void *conn, QString *error, uint32_t botid, QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	uint32_t RowID = 0;
-	string EscCategory = MySQLEscapeString( conn, category );
-	string EscName = MySQLEscapeString( conn, name );
-	string EscFlag = MySQLEscapeString( conn, flag );
-	string Query = "INSERT INTO w3mmdplayers ( botid, category, gameid, pid, name, flag, leaver, practicing ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscCategory + "', " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( pid ) + ", '" + EscName + "', '" + EscFlag + "', " + UTIL_ToString( leaver ) + ", " + UTIL_ToString( practicing ) + " )";
+	QString EscCategory = MySQLEscapeString( conn, category );
+	QString EscName = MySQLEscapeString( conn, name );
+	QString EscFlag = MySQLEscapeString( conn, flag );
+	QString Query = "INSERT INTO w3mmdplayers ( botid, category, gameid, pid, name, flag, leaver, practicing ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscCategory + "', " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( pid ) + ", '" + EscName + "', '" + EscFlag + "', " + UTIL_ToString( leaver ) + ", " + UTIL_ToString( practicing ) + " )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1058,17 +1058,17 @@ uint32_t MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string 
 	return RowID;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints )
 {
 	if( var_ints.empty( ) )
 		return false;
 
 	bool Success = false;
-	string Query;
+	QString Query;
 
 	for( map<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
-		string EscVarName = MySQLEscapeString( conn, i->first.second );
+		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
 		if( Query.empty( ) )
 			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_int ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second ) + " )";
@@ -1084,17 +1084,17 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals )
 {
 	if( var_reals.empty( ) )
 		return false;
 
 	bool Success = false;
-	string Query;
+	QString Query;
 
 	for( map<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
 	{
-		string EscVarName = MySQLEscapeString( conn, i->first.second );
+		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
 		if( Query.empty( ) )
 			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_real ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second, 10 ) + " )";
@@ -1110,21 +1110,21 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,string> var_strings )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,QString> var_strings )
 {
 	if( var_strings.empty( ) )
 		return false;
 
 	bool Success = false;
-	string Query;
+	QString Query;
 
-	for( map<VarP,string> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
+	for( map<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
 	{
-		string EscVarName = MySQLEscapeString( conn, i->first.second );
-		string EscValueString = MySQLEscapeString( conn, i->second );
+		QString EscVarName = MySQLEscapeString( conn, i->first.second );
+		QString EscValueString = MySQLEscapeString( conn, i->second );
 
 		if( Query.empty( ) )
-			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_string ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', '" + EscValueString + "' )";
+			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_QString ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', '" + EscValueString + "' )";
 		else
 			Query += ", ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', '" + EscValueString + "' )";
 	}

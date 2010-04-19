@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -73,7 +73,7 @@ CMap :: CMap( CGHost *nGHost )
 	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
 }
 
-CMap :: CMap( CGHost *nGHost, CConfig *CFG, string nCFGFile )
+CMap :: CMap( CGHost *nGHost, CConfig *CFG, QString nCFGFile )
 {
 	m_GHost = nGHost;
 	Load( CFG, nCFGFile );
@@ -162,34 +162,34 @@ uint32_t CMap :: GetMapGameType( )
 {
 	/* spec stolen from Strilanc as follows:
 
-    Public Enum GameTypes As UInteger
-        None = 0
-        Unknown0 = 1 << 0 '[always seems to be set?]
+	Public Enum GameTypes As UInteger
+		None = 0
+		Unknown0 = 1 << 0 '[always seems to be set?]
 
-        '''<summary>Setting this bit causes wc3 to check the map and disc if it is not signed by Blizzard</summary>
-        AuthenticatedMakerBlizzard = 1 << 3
-        OfficialMeleeGame = 1 << 5
+		'''<summary>Setting this bit causes wc3 to check the map and disc if it is not signed by Blizzard</summary>
+		AuthenticatedMakerBlizzard = 1 << 3
+		OfficialMeleeGame = 1 << 5
 
 		SavedGame = 1 << 9
-        PrivateGame = 1 << 11
+		PrivateGame = 1 << 11
 
-        MakerUser = 1 << 13
-        MakerBlizzard = 1 << 14
-        TypeMelee = 1 << 15
-        TypeScenario = 1 << 16
-        SizeSmall = 1 << 17
-        SizeMedium = 1 << 18
-        SizeLarge = 1 << 19
-        ObsFull = 1 << 20
-        ObsOnDeath = 1 << 21
-        ObsNone = 1 << 22
+		MakerUser = 1 << 13
+		MakerBlizzard = 1 << 14
+		TypeMelee = 1 << 15
+		TypeScenario = 1 << 16
+		SizeSmall = 1 << 17
+		SizeMedium = 1 << 18
+		SizeLarge = 1 << 19
+		ObsFull = 1 << 20
+		ObsOnDeath = 1 << 21
+		ObsNone = 1 << 22
 
-        MaskObs = ObsFull Or ObsOnDeath Or ObsNone
-        MaskMaker = MakerBlizzard Or MakerUser
-        MaskType = TypeMelee Or TypeScenario
-        MaskSize = SizeLarge Or SizeMedium Or SizeSmall
-        MaskFilterable = MaskObs Or MaskMaker Or MaskType Or MaskSize
-    End Enum
+		MaskObs = ObsFull Or ObsOnDeath Or ObsNone
+		MaskMaker = MakerBlizzard Or MakerUser
+		MaskType = TypeMelee Or TypeScenario
+		MaskSize = SizeLarge Or SizeMedium Or SizeSmall
+		MaskFilterable = MaskObs Or MaskMaker Or MaskType Or MaskSize
+	End Enum
 
 	*/
 
@@ -249,14 +249,14 @@ unsigned char CMap :: GetMapLayoutStyle( )
 	return 3;
 }
 
-void CMap :: Load( CConfig *CFG, string nCFGFile )
+void CMap :: Load( CConfig *CFG, QString nCFGFile )
 {
 	m_Valid = true;
 	m_CFGFile = nCFGFile;
 
 	// load the map data
 
-	m_MapLocalPath = CFG->GetString( "map_localpath", string( ) );
+	m_MapLocalPath = CFG->GetString( "map_localpath", QString( ) );
 	m_MapData.clear( );
 
 	if( !m_MapLocalPath.empty( ) )
@@ -264,7 +264,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	// load the map MPQ
 
-	string MapMPQFileName = m_GHost->m_MapPath + m_MapLocalPath;
+	QString MapMPQFileName = m_GHost->m_MapPath + m_MapLocalPath;
 	HANDLE MapMPQ;
 	bool MapMPQReady = false;
 
@@ -300,13 +300,13 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 		// calculate map_crc (this is not the CRC) and map_sha1
 		// a big thank you to Strilanc for figuring the map_crc algorithm out
 
-		string CommonJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "common.j" );
+		QString CommonJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "common.j" );
 
 		if( CommonJ.empty( ) )
 			CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - unable to read file [" + m_GHost->m_MapCFGPath + "common.j]" );
 		else
 		{
-			string BlizzardJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "blizzard.j" );
+			QString BlizzardJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "blizzard.j" );
 
 			if( BlizzardJ.empty( ) )
 				CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - unable to read file [" + m_GHost->m_MapCFGPath + "blizzard.j]" );
@@ -398,7 +398,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 				if( MapMPQReady )
 				{
-					vector<string> FileList;
+					vector<QString> FileList;
 					FileList.push_back( "war3map.j" );
 					FileList.push_back( "scripts\\war3map.j" );
 					FileList.push_back( "war3map.w3e" );
@@ -411,7 +411,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 					FileList.push_back( "war3map.w3q" );
 					bool FoundScript = false;
 
-					for( vector<string> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
+					for( vector<QString> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
 					{
 						// don't use scripts\war3map.j if we've already used war3map.j (yes, some maps have both but only war3map.j is used)
 
@@ -497,11 +497,11 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 					if( SFileReadFile( SubFile, SubFileData, FileLength, &BytesRead ) )
 					{
-						istringstream ISS( string( SubFileData, BytesRead ) );
+						istringstream ISS( QString( SubFileData, BytesRead ) );
 
 						// war3map.w3i format found at http://www.wc3campaigns.net/tools/specs/index.html by Zepir/PitzerMike
 
-						string GarbageString;
+						QString GarbageString;
 						uint32_t FileFormat;
 						uint32_t RawMapWidth;
 						uint32_t RawMapHeight;
@@ -716,44 +716,44 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 	if( MapMPQReady )
 		SFileCloseArchive( MapMPQ );
 
-	m_MapPath = CFG->GetString( "map_path", string( ) );
+	m_MapPath = CFG->GetString( "map_path", QString( ) );
 
 	if( MapSize.empty( ) )
-		MapSize = UTIL_ExtractNumbers( CFG->GetString( "map_size", string( ) ), 4 );
+		MapSize = UTIL_ExtractNumbers( CFG->GetString( "map_size", QString( ) ), 4 );
 	else if( CFG->Exists( "map_size" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_size with config value map_size = " + CFG->GetString( "map_size", string( ) ) );
-		MapSize = UTIL_ExtractNumbers( CFG->GetString( "map_size", string( ) ), 4 );
+		CONSOLE_Print( "[MAP] overriding calculated map_size with config value map_size = " + CFG->GetString( "map_size", QString( ) ) );
+		MapSize = UTIL_ExtractNumbers( CFG->GetString( "map_size", QString( ) ), 4 );
 	}
 
 	m_MapSize = MapSize;
 
 	if( MapInfo.empty( ) )
-		MapInfo = UTIL_ExtractNumbers( CFG->GetString( "map_info", string( ) ), 4 );
+		MapInfo = UTIL_ExtractNumbers( CFG->GetString( "map_info", QString( ) ), 4 );
 	else if( CFG->Exists( "map_info" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_info with config value map_info = " + CFG->GetString( "map_info", string( ) ) );
-		MapInfo = UTIL_ExtractNumbers( CFG->GetString( "map_info", string( ) ), 4 );
+		CONSOLE_Print( "[MAP] overriding calculated map_info with config value map_info = " + CFG->GetString( "map_info", QString( ) ) );
+		MapInfo = UTIL_ExtractNumbers( CFG->GetString( "map_info", QString( ) ), 4 );
 	}
 
 	m_MapInfo = MapInfo;
 
 	if( MapCRC.empty( ) )
-		MapCRC = UTIL_ExtractNumbers( CFG->GetString( "map_crc", string( ) ), 4 );
+		MapCRC = UTIL_ExtractNumbers( CFG->GetString( "map_crc", QString( ) ), 4 );
 	else if( CFG->Exists( "map_crc" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_crc with config value map_crc = " + CFG->GetString( "map_crc", string( ) ) );
-		MapCRC = UTIL_ExtractNumbers( CFG->GetString( "map_crc", string( ) ), 4 );
+		CONSOLE_Print( "[MAP] overriding calculated map_crc with config value map_crc = " + CFG->GetString( "map_crc", QString( ) ) );
+		MapCRC = UTIL_ExtractNumbers( CFG->GetString( "map_crc", QString( ) ), 4 );
 	}
 
 	m_MapCRC = MapCRC;
 
 	if( MapSHA1.empty( ) )
-		MapSHA1 = UTIL_ExtractNumbers( CFG->GetString( "map_sha1", string( ) ), 20 );
+		MapSHA1 = UTIL_ExtractNumbers( CFG->GetString( "map_sha1", QString( ) ), 20 );
 	else if( CFG->Exists( "map_sha1" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_sha1 with config value map_sha1 = " + CFG->GetString( "map_sha1", string( ) ) );
-		MapSHA1 = UTIL_ExtractNumbers( CFG->GetString( "map_sha1", string( ) ), 20 );
+		CONSOLE_Print( "[MAP] overriding calculated map_sha1 with config value map_sha1 = " + CFG->GetString( "map_sha1", QString( ) ) );
+		MapSHA1 = UTIL_ExtractNumbers( CFG->GetString( "map_sha1", QString( ) ), 20 );
 	}
 
 	m_MapSHA1 = MapSHA1;
@@ -772,35 +772,35 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 		MapOptions = CFG->GetInt( "map_options", 0 );
 	else if( CFG->Exists( "map_options" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_options with config value map_options = " + CFG->GetString( "map_options", string( ) ) );
+		CONSOLE_Print( "[MAP] overriding calculated map_options with config value map_options = " + CFG->GetString( "map_options", QString( ) ) );
 		MapOptions = CFG->GetInt( "map_options", 0 );
 	}
 
 	m_MapOptions = MapOptions;
 
 	if( MapWidth.empty( ) )
-		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", string( ) ), 2 );
+		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", QString( ) ), 2 );
 	else if( CFG->Exists( "map_width" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_width with config value map_width = " + CFG->GetString( "map_width", string( ) ) );
-		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", string( ) ), 2 );
+		CONSOLE_Print( "[MAP] overriding calculated map_width with config value map_width = " + CFG->GetString( "map_width", QString( ) ) );
+		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", QString( ) ), 2 );
 	}
 
 	m_MapWidth = MapWidth;
 
 	if( MapHeight.empty( ) )
-		MapHeight = UTIL_ExtractNumbers( CFG->GetString( "map_height", string( ) ), 2 );
+		MapHeight = UTIL_ExtractNumbers( CFG->GetString( "map_height", QString( ) ), 2 );
 	else if( CFG->Exists( "map_height" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_height with config value map_height = " + CFG->GetString( "map_height", string( ) ) );
-		MapHeight = UTIL_ExtractNumbers( CFG->GetString( "map_height", string( ) ), 2 );
+		CONSOLE_Print( "[MAP] overriding calculated map_height with config value map_height = " + CFG->GetString( "map_height", QString( ) ) );
+		MapHeight = UTIL_ExtractNumbers( CFG->GetString( "map_height", QString( ) ), 2 );
 	}
 
 	m_MapHeight = MapHeight;
-	m_MapType = CFG->GetString( "map_type", string( ) );
-	m_MapMatchMakingCategory = CFG->GetString( "map_matchmakingcategory", string( ) );
-	m_MapStatsW3MMDCategory = CFG->GetString( "map_statsw3mmdcategory", string( ) );
-	m_MapDefaultHCL = CFG->GetString( "map_defaulthcl", string( ) );
+	m_MapType = CFG->GetString( "map_type", QString( ) );
+	m_MapMatchMakingCategory = CFG->GetString( "map_matchmakingcategory", QString( ) );
+	m_MapStatsW3MMDCategory = CFG->GetString( "map_statsw3mmdcategory", QString( ) );
+	m_MapDefaultHCL = CFG->GetString( "map_defaulthcl", QString( ) );
 	m_MapDefaultPlayerScore = CFG->GetInt( "map_defaultplayerscore", 1000 );
 	m_MapLoadInGame = CFG->GetInt( "map_loadingame", 0 ) == 0 ? false : true;
 
@@ -808,7 +808,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 		MapNumPlayers = CFG->GetInt( "map_numplayers", 0 );
 	else if( CFG->Exists( "map_numplayers" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_numplayers with config value map_numplayers = " + CFG->GetString( "map_numplayers", string( ) ) );
+		CONSOLE_Print( "[MAP] overriding calculated map_numplayers with config value map_numplayers = " + CFG->GetString( "map_numplayers", QString( ) ) );
 		MapNumPlayers = CFG->GetInt( "map_numplayers", 0 );
 	}
 
@@ -818,7 +818,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 		MapNumTeams = CFG->GetInt( "map_numteams", 0 );
 	else if( CFG->Exists( "map_numteams" ) )
 	{
-		CONSOLE_Print( "[MAP] overriding calculated map_numteams with config value map_numteams = " + CFG->GetString( "map_numteams", string( ) ) );
+		CONSOLE_Print( "[MAP] overriding calculated map_numteams with config value map_numteams = " + CFG->GetString( "map_numteams", QString( ) ) );
 		MapNumTeams = CFG->GetInt( "map_numteams", 0 );
 	}
 
@@ -828,7 +828,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 	{
 		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
 		{
-			string SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), string( ) );
+			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
 			if( SlotString.empty( ) )
 				break;
@@ -844,7 +844,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
 		{
-			string SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), string( ) );
+			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
 			if( SlotString.empty( ) )
 				break;
@@ -891,7 +891,7 @@ void CMap :: CheckValid( )
 	else if( m_MapPath[0] == '\\' )
 		CONSOLE_Print( "[MAP] warning - map_path starts with '\\', any replays saved by GHost++ will not be playable in Warcraft III" );
 
-	if( m_MapPath.find( '/' ) != string :: npos )
+	if( m_MapPath.find( '/' ) != QString :: npos )
 		CONSOLE_Print( "[MAP] warning - map_path contains forward slashes '/' but it must use Windows style back slashes '\\'" );
 
 	if( m_MapSize.size( ) != 4 )

@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@
 #include "game_base.h"
 #include "game_admin.h"
 
-#include <string.h>
+#include <QString.h>
 
 #include <boost/filesystem.hpp>
 
@@ -44,7 +44,7 @@ using namespace boost :: filesystem;
 // CAdminGame
 //
 
-CAdminGame :: CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nPassword ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, string( ), string( ), string( ) )
+CAdminGame :: CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nPassword ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, QString( ), QString( ), QString( ) )
 {
 	m_VirtualHostName = "|cFFC04040Admin";
 	m_MuteLobby = true;
@@ -268,7 +268,7 @@ bool CAdminGame :: Update( void *fd, void *send_fd )
 	return CBaseGame :: Update( fd, send_fd );
 }
 
-void CAdminGame :: SendAdminChat( string message )
+void CAdminGame :: SendAdminChat( QString message )
 {
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -318,15 +318,15 @@ void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoin
 	CBaseGame :: EventPlayerJoined( potential, joinPlayer );
 }
 
-bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string payload )
+bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload )
 {
 	CBaseGame :: EventPlayerBotCommand( player, command, payload );
 
 	// todotodo: don't be lazy
 
-	string User = player->GetName( );
-	string Command = command;
-	string Payload = payload;
+	QString User = player->GetName( );
+	QString Command = command;
+	QString Payload = payload;
 
 	if( player->GetLoggedIn( ) )
 	{
@@ -345,8 +345,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the name and the server
 			// e.g. "Varlock useast.battle.net" -> name: "Varlock", server: "useast.battle.net"
 
-			string Name;
-			string Server;
+			QString Name;
+			QString Server;
 			stringstream SS;
 			SS << Payload;
 			SS >> Name;
@@ -363,7 +363,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 			if( !Server.empty( ) )
 			{
-				string Servers;
+				QString Servers;
 				bool FoundServer = false;
 
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
@@ -417,7 +417,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 				uint32_t MaximumGames;
 				uint32_t AutoStartPlayers;
-				string GameName;
+				QString GameName;
 				stringstream SS;
 				SS << Payload;
 				SS >> MaximumGames;
@@ -437,9 +437,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 						else
 						{
 							getline( SS, GameName );
-							string :: size_type Start = GameName.find_first_not_of( " " );
+							QString :: size_type Start = GameName.find_first_not_of( " " );
 
-							if( Start != string :: npos )
+							if( Start != QString :: npos )
 								GameName = GameName.substr( Start );
 
 							SendChat( player, m_GHost->m_Language->AutoHostEnabled( ) );
@@ -488,7 +488,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				uint32_t AutoStartPlayers;
 				double MinimumScore;
 				double MaximumScore;
-				string GameName;
+				QString GameName;
 				stringstream SS;
 				SS << Payload;
 				SS >> MaximumGames;
@@ -520,9 +520,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 								else
 								{
 									getline( SS, GameName );
-									string :: size_type Start = GameName.find_first_not_of( " " );
+									QString :: size_type Start = GameName.find_first_not_of( " " );
 
-									if( Start != string :: npos )
+									if( Start != QString :: npos )
 										GameName = GameName.substr( Start );
 
 									SendChat( player, m_GHost->m_Language->AutoHostEnabled( ) );
@@ -554,8 +554,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the name and the server
 			// e.g. "Varlock useast.battle.net" -> name: "Varlock", server: "useast.battle.net"
 
-			string Name;
-			string Server;
+			QString Name;
+			QString Server;
 			stringstream SS;
 			SS << Payload;
 			SS >> Name;
@@ -572,7 +572,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 			if( !Server.empty( ) )
 			{
-				string Servers;
+				QString Servers;
 				bool FoundServer = false;
 
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
@@ -609,8 +609,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the name and the server
 			// e.g. "Varlock useast.battle.net" -> name: "Varlock", server: "useast.battle.net"
 
-			string Name;
-			string Server;
+			QString Name;
+			QString Server;
 			stringstream SS;
 			SS << Payload;
 			SS >> Name;
@@ -627,7 +627,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 			if( !Server.empty( ) )
 			{
-				string Servers;
+				QString Servers;
 				bool FoundServer = false;
 
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
@@ -662,7 +662,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 		if( Command == "countadmins" )
 		{
-			string Server = Payload;
+			QString Server = Payload;
 
 			if( Server.empty( ) && m_GHost->m_BNETs.size( ) == 1 )
 				Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -677,7 +677,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 		if( Command == "countbans" )
 		{
-			string Server = Payload;
+			QString Server = Payload;
 
 			if( Server.empty( ) && m_GHost->m_BNETs.size( ) == 1 )
 				Server = m_GHost->m_BNETs[0]->GetServer( );
@@ -695,8 +695,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the name and the server
 			// e.g. "Varlock useast.battle.net" -> name: "Varlock", server: "useast.battle.net"
 
-			string Name;
-			string Server;
+			QString Name;
+			QString Server;
 			stringstream SS;
 			SS << Payload;
 			SS >> Name;
@@ -713,7 +713,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 			if( !Server.empty( ) )
 			{
-				string Servers;
+				QString Servers;
 				bool FoundServer = false;
 
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
@@ -822,11 +822,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		{
 			// only load files in the current directory just to be safe
 
-			if( Payload.find( "/" ) != string :: npos || Payload.find( "\\" ) != string :: npos )
+			if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
 				SendChat( player, m_GHost->m_Language->UnableToLoadReplaysOutside( ) );
 			else
 			{
-				string File = m_GHost->m_ReplayPath + Payload + ".w3g";
+				QString File = m_GHost->m_ReplayPath + Payload + ".w3g";
 
 				if( UTIL_FileExists( File ) )
 				{
@@ -893,7 +893,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		//
 
 		if( Command == "hostsg" && !Payload.empty( ) )
-			m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, true, Payload, User, User, string( ), false );
+			m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, true, Payload, User, User, QString( ), false );
 
 		//
 		// !LOAD (load config file)
@@ -905,12 +905,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				SendChat( player, m_GHost->m_Language->CurrentlyLoadedMapCFGIs( m_GHost->m_Map->GetCFGFile( ) ) );
 			else
 			{
-				string FoundMapConfigs;
+				QString FoundMapConfigs;
 
 				try
 				{
 					path MapCFGPath( m_GHost->m_MapCFGPath );
-					string Pattern = Payload;
+					QString Pattern = Payload;
 					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
 					if( !exists( MapCFGPath ) )
@@ -926,12 +926,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 						for( directory_iterator i( MapCFGPath ); i != EndIterator; i++ )
 						{
-							string FileName = i->filename( );
-							string Stem = i->path( ).stem( );
+							QString FileName = i->filename( );
+							QString Stem = i->path( ).stem( );
 							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
 
-							if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != string :: npos )
+							if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != QString :: npos )
 							{
 								LastMatch = i->path( );
 								Matches++;
@@ -955,10 +955,10 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 							SendChat( player, m_GHost->m_Language->NoMapConfigsFound( ) );
 						else if( Matches == 1 )
 						{
-							string File = LastMatch.filename( );
+							QString File = LastMatch.filename( );
 							SendChat( player, m_GHost->m_Language->LoadingConfigFile( m_GHost->m_MapCFGPath + File ) );
 							CConfig MapCFG;
-							MapCFG.Read( LastMatch.string( ) );
+							MapCFG.Read( LastMatch.QString( ) );
 							m_GHost->m_Map->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
 						}
 						else
@@ -967,7 +967,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				}
 				catch( const exception &ex )
 				{
-					CONSOLE_Print( string( "[ADMINGAME] error listing map configs - caught exception [" ) + ex.what( ) + "]" );
+					CONSOLE_Print( QString( "[ADMINGAME] error listing map configs - caught exception [" ) + ex.what( ) + "]" );
 					SendChat( player, m_GHost->m_Language->ErrorListingMapConfigs( ) );
 				}
 			}
@@ -981,12 +981,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		{
 			// only load files in the current directory just to be safe
 
-			if( Payload.find( "/" ) != string :: npos || Payload.find( "\\" ) != string :: npos )
+			if( Payload.find( "/" ) != QString :: npos || Payload.find( "\\" ) != QString :: npos )
 				SendChat( player, m_GHost->m_Language->UnableToLoadSaveGamesOutside( ) );
 			else
 			{
-				string File = m_GHost->m_SaveGamePath + Payload + ".w3z";
-				string FileNoPath = Payload + ".w3z";
+				QString File = m_GHost->m_SaveGamePath + Payload + ".w3z";
+				QString FileNoPath = Payload + ".w3z";
 
 				if( UTIL_FileExists( File ) )
 				{
@@ -1016,12 +1016,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				SendChat( player, m_GHost->m_Language->CurrentlyLoadedMapCFGIs( m_GHost->m_Map->GetCFGFile( ) ) );
 			else
 			{
-				string FoundMaps;
+				QString FoundMaps;
 
 				try
 				{
 					path MapPath( m_GHost->m_MapPath );
-					string Pattern = Payload;
+					QString Pattern = Payload;
 					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
 					if( !exists( MapPath ) )
@@ -1037,12 +1037,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 
 						for( directory_iterator i( MapPath ); i != EndIterator; i++ )
 						{
-							string FileName = i->filename( );
-							string Stem = i->path( ).stem( );
+							QString FileName = i->filename( );
+							QString Stem = i->path( ).stem( );
 							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
 
-							if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != string :: npos )
+							if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != QString :: npos )
 							{
 								LastMatch = i->path( );
 								Matches++;
@@ -1066,7 +1066,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 							SendChat( player, m_GHost->m_Language->NoMapsFound( ) );
 						else if( Matches == 1 )
 						{
-							string File = LastMatch.filename( );
+							QString File = LastMatch.filename( );
 							SendChat( player, m_GHost->m_Language->LoadingConfigFile( File ) );
 
 							// hackhack: create a config file in memory with the required information to load the map
@@ -1082,7 +1082,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				}
 				catch( const exception &ex )
 				{
-					CONSOLE_Print( string( "[ADMINGAME] error listing maps - caught exception [" ) + ex.what( ) + "]" );
+					CONSOLE_Print( QString( "[ADMINGAME] error listing maps - caught exception [" ) + ex.what( ) + "]" );
 					SendChat( player, m_GHost->m_Language->ErrorListingMaps( ) );
 				}
 			}
@@ -1093,7 +1093,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		//
 
 		if( Command == "priv" && !Payload.empty( ) )
-			m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, Payload, User, User, string( ), false );
+			m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, Payload, User, User, QString( ), false );
 
 		//
 		// !PRIVBY (host private game by other player)
@@ -1104,15 +1104,15 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the owner and the game name
 			// e.g. "Varlock dota 6.54b arem ~~~" -> owner: "Varlock", game name: "dota 6.54b arem ~~~"
 
-			string Owner;
-			string GameName;
-			string :: size_type GameNameStart = Payload.find( " " );
+			QString Owner;
+			QString GameName;
+			QString :: size_type GameNameStart = Payload.find( " " );
 
-			if( GameNameStart != string :: npos )
+			if( GameNameStart != QString :: npos )
 			{
 				Owner = Payload.substr( 0, GameNameStart );
 				GameName = Payload.substr( GameNameStart + 1 );
-				m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Owner, User, string( ), false );
+				m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Owner, User, QString( ), false );
 			}
 		}
 
@@ -1121,7 +1121,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		//
 
 		if( Command == "pub" && !Payload.empty( ) )
-			m_GHost->CreateGame( m_GHost->m_Map, GAME_PUBLIC, false, Payload, User, User, string( ), false );
+			m_GHost->CreateGame( m_GHost->m_Map, GAME_PUBLIC, false, Payload, User, User, QString( ), false );
 
 		//
 		// !PUBBY (host public game by other player)
@@ -1132,15 +1132,15 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the owner and the game name
 			// e.g. "Varlock dota 6.54b arem ~~~" -> owner: "Varlock", game name: "dota 6.54b arem ~~~"
 
-			string Owner;
-			string GameName;
-			string :: size_type GameNameStart = Payload.find( " " );
+			QString Owner;
+			QString GameName;
+			QString :: size_type GameNameStart = Payload.find( " " );
 
-			if( GameNameStart != string :: npos )
+			if( GameNameStart != QString :: npos )
 			{
 				Owner = Payload.substr( 0, GameNameStart );
 				GameName = Payload.substr( GameNameStart + 1 );
-				m_GHost->CreateGame( m_GHost->m_Map, GAME_PUBLIC, false, GameName, Owner, User, string( ), false );
+				m_GHost->CreateGame( m_GHost->m_Map, GAME_PUBLIC, false, GameName, Owner, User, QString( ), false );
 			}
 		}
 
@@ -1174,7 +1174,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// e.g. "3 hello everyone" -> game number: "3", message: "hello everyone"
 
 			uint32_t GameNumber;
-			string Message;
+			QString Message;
 			stringstream SS;
 			SS << Payload;
 			SS >> GameNumber;
@@ -1188,9 +1188,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				else
 				{
 					getline( SS, Message );
-					string :: size_type Start = Message.find_first_not_of( " " );
+					QString :: size_type Start = Message.find_first_not_of( " " );
 
-					if( Start != string :: npos )
+					if( Start != QString :: npos )
 						Message = Message.substr( Start );
 
 					if( GameNumber - 1 < m_GHost->m_Games.size( ) )
@@ -1243,11 +1243,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			// extract the name and the message
 			// e.g. "Varlock hello there!" -> name: "Varlock", message: "hello there!"
 
-			string Name;
-			string Message;
-			string :: size_type MessageStart = Payload.find( " " );
+			QString Name;
+			QString Message;
+			QString :: size_type MessageStart = Payload.find( " " );
 
-			if( MessageStart != string :: npos )
+			if( MessageStart != QString :: npos )
 			{
 				Name = Payload.substr( 0, MessageStart );
 				Message = Payload.substr( MessageStart + 1 );

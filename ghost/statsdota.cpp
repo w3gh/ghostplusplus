@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,8 @@
 #include "game_base.h"
 #include "stats.h"
 #include "statsdota.h"
+
+#include <QRegExp>
 
 //
 // CStatsDOTA
@@ -55,12 +57,12 @@ CStatsDOTA :: ~CStatsDOTA( )
 bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 {
 	unsigned int i = 0;
-	BYTEARRAY *ActionData = Action->GetAction( );
-	BYTEARRAY Data;
-	BYTEARRAY Key;
-	BYTEARRAY Value;
+	QByteArray *ActionData = Action->GetAction( );
+	QByteArray Data;
+	QByteArray Key;
+	QByteArray Value;
 
-	// dota actions with real time replay data start with 0x6b then the null terminated string "dr.x"
+	// dota actions with real time replay data start with 0x6b then the null terminated QString "dr.x"
 	// unfortunately more than one action can be sent in a single packet and the length of each action isn't explicitly represented in the packet
 	// so we have to either parse all the actions and calculate the length based on the type or we can search for an identifying sequence
 	// parsing the actions would be more correct but would be a lot more difficult to write for relatively little gain
@@ -75,13 +77,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 
 			if( ActionData->size( ) >= i + 7 )
 			{
-				// the first null terminated string should either be the strings "Data" or "Global" or a player id in ASCII representation, e.g. "1" or "2"
+				// the first null terminated QString should either be the strings "Data" or "Global" or a player id in ASCII representation, e.g. "1" or "2"
 
 				Data = UTIL_ExtractCString( *ActionData, i + 6 );
 
 				if( ActionData->size( ) >= i + 8 + Data.size( ) )
 				{
-					// the second null terminated string should be the key
+					// the second null terminated QString should be the key
 
 					Key = UTIL_ExtractCString( *ActionData, i + 7 + Data.size( ) );
 
@@ -89,10 +91,10 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 					{
 						// the 4 byte integer should be the value
 
-						Value = BYTEARRAY( ActionData->begin( ) + i + 8 + Data.size( ) + Key.size( ), ActionData->begin( ) + i + 12 + Data.size( ) + Key.size( ) );
-						string DataString = string( Data.begin( ), Data.end( ) );
-						string KeyString = string( Key.begin( ), Key.end( ) );
-						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
+						Value = ActionData->mid(i + 8 + Data.size( ) + Key.size( ), 4 );
+						QString DataString = Data;
+						QString KeyString = Key;
+						uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
@@ -102,11 +104,11 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 							// you could use these to calculate killing sprees and double or triple kills (you'd have to make up your own time restrictions though)
 							// you could also build a table of "who killed who" data
 
-							if( KeyString.size( ) >= 5 && KeyString.substr( 0, 4 ) == "Hero" )
+							if( KeyString.size( ) >= 5 && KeyString.mid( 0, 4 ) == "Hero" )
 							{
 								// a hero died
 
-								string VictimColourString = KeyString.substr( 4 );
+								QString VictimColourString = KeyString.mid( 4 );
 								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
@@ -121,7 +123,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Scourge killed player [" + Victim->GetName( ) + "]" );
 								}
 							}
-							else if( KeyString.size( ) >= 8 && KeyString.substr( 0, 7 ) == "Courier" )
+							else if( KeyString.size( ) >= 8 && KeyString.mid( 0, 7 ) == "Courier" )
 							{
 								// a courier died
 
@@ -133,7 +135,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 									m_Players[ValueInt]->SetCourierKills( m_Players[ValueInt]->GetCourierKills( ) + 1 );
 								}
 
-								string VictimColourString = KeyString.substr( 7 );
+								QString VictimColourString = KeyString.mid( 7 );
 								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
@@ -148,7 +150,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Scourge killed a courier owned by player [" + Victim->GetName( ) + "]" );
 								}
 							}
-							else if( KeyString.size( ) >= 8 && KeyString.substr( 0, 5 ) == "Tower" )
+							else if( KeyString.size( ) >= 8 && KeyString.mid( 0, 5 ) == "Tower" )
 							{
 								// a tower died
 
@@ -160,12 +162,12 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 									m_Players[ValueInt]->SetTowerKills( m_Players[ValueInt]->GetTowerKills( ) + 1 );
 								}
 
-								string Alliance = KeyString.substr( 5, 1 );
-								string Level = KeyString.substr( 6, 1 );
-								string Side = KeyString.substr( 7, 1 );
+								QString Alliance = KeyString.mid( 5, 1 );
+								QString Level = KeyString.mid( 6, 1 );
+								QString Side = KeyString.mid( 7, 1 );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
-								string AllianceString;
-								string SideString;
+								QString AllianceString;
+								QString SideString;
 
 								if( Alliance == "0" )
 									AllianceString = "Sentinel";
@@ -193,7 +195,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Scourge destroyed a level [" + Level + "] " + AllianceString + " tower (" + SideString + ")" );
 								}
 							}
-							else if( KeyString.size( ) >= 6 && KeyString.substr( 0, 3 ) == "Rax" )
+							else if( KeyString.size( ) >= 6 && KeyString.mid( 0, 3 ) == "Rax" )
 							{
 								// a rax died
 
@@ -205,13 +207,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 									m_Players[ValueInt]->SetRaxKills( m_Players[ValueInt]->GetRaxKills( ) + 1 );
 								}
 
-								string Alliance = KeyString.substr( 3, 1 );
-								string Side = KeyString.substr( 4, 1 );
-								string Type = KeyString.substr( 5, 1 );
+								QString Alliance = KeyString.mid( 3, 1 );
+								QString Side = KeyString.mid( 4, 1 );
+								QString Type = KeyString.mid( 5, 1 );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
-								string AllianceString;
-								string SideString;
-								string TypeString;
+								QString AllianceString;
+								QString SideString;
+								QString TypeString;
 
 								if( Alliance == "0" )
 									AllianceString = "Sentinel";
@@ -246,19 +248,19 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Scourge destroyed a " + TypeString + " " + AllianceString + " rax (" + SideString + ")" );
 								}
 							}
-							else if( KeyString.size( ) >= 6 && KeyString.substr( 0, 6 ) == "Throne" )
+							else if( KeyString.size( ) >= 6 && KeyString.mid( 0, 6 ) == "Throne" )
 							{
 								// the frozen throne got hurt
 
 								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Frozen Throne is now at " + UTIL_ToString( ValueInt ) + "% HP" );
 							}
-							else if( KeyString.size( ) >= 4 && KeyString.substr( 0, 4 ) == "Tree" )
+							else if( KeyString.size( ) >= 4 && KeyString.mid( 0, 4 ) == "Tree" )
 							{
 								// the world tree got hurt
 
 								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the World Tree is now at " + UTIL_ToString( ValueInt ) + "% HP" );
 							}
-							else if( KeyString.size( ) >= 2 && KeyString.substr( 0, 2 ) == "CK" )
+							else if( KeyString.size( ) >= 2 && KeyString.mid( 0, 2 ) == "CK" )
 							{
 								// a player disconnected
 							}
@@ -286,7 +288,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 							else if( KeyString == "s" )
 								m_Sec = ValueInt;
 						}
-						else if( DataString.size( ) <= 2 && DataString.find_first_not_of( "1234567890" ) == string :: npos )
+						else if( DataString.size( ) <= 2 && DataString.indexOf(QRegExp( "[^0-9]" )) == -1 )
 						{
 							// these are only received at the end of the game
 
@@ -330,19 +332,19 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								else if( KeyString == "7" )
 									m_Players[ID]->SetNeutralKills( ValueInt );
 								else if( KeyString == "8_0" )
-									m_Players[ID]->SetItem( 0, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 0, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "8_1" )
-									m_Players[ID]->SetItem( 1, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 1, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "8_2" )
-									m_Players[ID]->SetItem( 2, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 2, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "8_3" )
-									m_Players[ID]->SetItem( 3, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 3, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "8_4" )
-									m_Players[ID]->SetItem( 4, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 4, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "8_5" )
-									m_Players[ID]->SetItem( 5, string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetItem( 5, QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "9" )
-									m_Players[ID]->SetHero( string( Value.rbegin( ), Value.rend( ) ) );
+									m_Players[ID]->SetHero( QString( UTIL_QByteArrayReverse(Value) ) );
 								else if( KeyString == "id" )
 								{
 									// DotA sends id values from 1-10 with 1-5 being sentinel players and 6-10 being scourge players

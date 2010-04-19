@@ -1,17 +1,20 @@
 #include <signal.h>
 #include <QtCore/QCoreApplication>
 #include <QTime>
+#include <QString>
+#include <QFile>
+#include <QTextStream>
 
 #include "ghost.h"
 #include "util.h"
 #include "config.h"
 
 QTime gBasicTime;
+QFile gLogFile;
+QTextStream gLogStream(&gLogFile);
 
-string gCFGFile;
-string gLogFile;
+QString gCFGFile;
 uint32_t gLogMethod;
-ofstream *gLog = NULL;
 CGHost *gGHost = NULL;
 
 uint32_t GetTime()
@@ -52,49 +55,30 @@ void SignalCatcher( int s )
 		exit( 1 );
 }
 
-void CONSOLE_Print( string message )
+void CONSOLE_Print( QString message )
 {
 	cout << message << endl;
 
 	// logging
 
-	if( !gLogFile.empty( ) )
+	if (!gLogFile.fileName().isEmpty())
 	{
 		if( gLogMethod == 1 )
 		{
-			ofstream Log;
-			Log.open( gLogFile.c_str( ), ios :: app );
+			gLogFile.open(QFile::WriteOnly | QFile::Append);
 
-			if( !Log.fail( ) )
+			if( gLogFile.isWritable() )
 			{
-				time_t Now = time( NULL );
-				string Time = asctime( localtime( &Now ) );
-
-				// erase the newline
-
-				Time.erase( Time.size( ) - 1 );
-				Log << "[" << Time << "] " << message << endl;
-				Log.close( );
+				gLogStream << "[" << QTime::currentTime().toString() << "] " << QString::fromStdString(message) << endl;
+				gLogFile.close();
 			}
 		}
-		else if( gLogMethod == 2 )
-		{
-			if( gLog && !gLog->fail( ) )
-			{
-				time_t Now = time( NULL );
-				string Time = asctime( localtime( &Now ) );
-
-				// erase the newline
-
-				Time.erase( Time.size( ) - 1 );
-				*gLog << "[" << Time << "] " << message << endl;
-				gLog->flush( );
-			}
-		}
+		else if( gLogMethod == 2 && gLogFile.isWritable() )
+			gLogStream << "[" << QTime::currentTime().toString() << "] " << QString::fromStdString(message) << endl;
 	}
 }
 
-void DEBUG_Print( string message )
+void DEBUG_Print( QString message )
 {
 	cout << message << endl;
 }
@@ -127,10 +111,10 @@ int main( int argc, char **argv )
 	CConfig CFG;
 	CFG.Read( "default.cfg" );
 	CFG.Read( gCFGFile );
-	gLogFile = CFG.GetString( "bot_log", string( ) );
+	gLogFile.setFileName(QString::fromStdString(CFG.GetString( "bot_log", QString( ) )));
 	gLogMethod = CFG.GetInt( "bot_logmethod", 1 );
 
-	if( !gLogFile.empty( ) )
+	if( !gLogFile.fileName().isEmpty() )
 	{
 		if( gLogMethod == 1 )
 		{
@@ -143,23 +127,22 @@ int main( int argc, char **argv )
 			// log method 2: open the log on startup, flush the log for every message, close the log on shutdown
 			// the log file CANNOT be edited/moved/deleted while GHost++ is running
 
-			gLog = new ofstream( );
-			gLog->open( gLogFile.c_str( ), ios :: app );
+			gLogFile.open(QFile::WriteOnly | QFile::Append);
 		}
 	}
 
 	CONSOLE_Print( "[GHOST] starting up" );
 
-	if( !gLogFile.empty( ) )
+	if( !gLogFile.fileName().isEmpty() )
 	{
 		if( gLogMethod == 1 )
-			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile + "] will not be locked" );
+			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile.fileName().toStdString() + "] will not be locked" );
 		else if( gLogMethod == 2 )
 		{
-			if( gLog->fail( ) )
-				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile + "] for appending, logging is disabled" );
+			if( gLogFile.error() != QFile::NoError )
+				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile.fileName().toStdString() + "] for appending, logging is disabled" );
 			else
-				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile + "] is now locked" );
+				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile.fileName().toStdString() + "] is now locked" );
 		}
 	}
 	else
@@ -174,42 +157,6 @@ int main( int argc, char **argv )
 	// disable SIGPIPE since some systems like OS X don't define MSG_NOSIGNAL
 
 	signal( SIGPIPE, SIG_IGN );
-#endif
-
-#ifdef WIN32
-	// initialize timer resolution
-	// attempt to set the resolution as low as possible from 1ms to 5ms
-
-	unsigned int TimerResolution = 0;
-
-	for( unsigned int i = 1; i <= 5; i++ )
-	{
-		if( timeBeginPeriod( i ) == TIMERR_NOERROR )
-		{
-			TimerResolution = i;
-			break;
-		}
-		else if( i < 5 )
-			CONSOLE_Print( "[GHOST] error setting Windows timer resolution to " + UTIL_ToString( i ) + " milliseconds, trying a higher resolution" );
-		else
-		{
-			CONSOLE_Print( "[GHOST] error setting Windows timer resolution" );
-			return 1;
-		}
-	}
-
-	CONSOLE_Print( "[GHOST] using Windows timer with resolution " + UTIL_ToString( TimerResolution ) + " milliseconds" );
-#elif __APPLE__
-	// not sure how to get the resolution
-#else
-	// print the timer resolution
-
-	struct timespec Resolution;
-
-	if( clock_getres( CLOCK_MONOTONIC, &Resolution ) == -1 )
-		CONSOLE_Print( "[GHOST] error getting monotonic timer resolution" );
-	else
-		CONSOLE_Print( "[GHOST] using monotonic timer with resolution " + UTIL_ToString( (double)( Resolution.tv_nsec / 1000 ), 2 ) + " microseconds" );
 #endif
 
 #ifdef WIN32
@@ -234,14 +181,7 @@ int main( int argc, char **argv )
 
 	gGHost = new CGHost( &CFG, gCFGFile );
 
-	while( 1 )
-	{
-		// block for 50ms on all sockets - if you intend to perform any timed actions more frequently you should change this
-		// that said it's likely we'll loop more often than this due to there being data waiting on one of the sockets but there aren't any guarantees
-
-		if( gGHost->Update( 50000 ) )
-			break;
-	}
+	int ret = a.exec();
 
 	// shutdown ghost
 
@@ -260,13 +200,5 @@ int main( int argc, char **argv )
 	timeEndPeriod( TimerResolution );
 #endif
 
-	if( gLog )
-	{
-		if( !gLog->fail( ) )
-			gLog->close( );
-
-		delete gLog;
-	}
-
-	return a.exec();
+	return ret;
 }

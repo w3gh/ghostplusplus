@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,7 +45,7 @@ protected:
 	queue<CCommandPacket *> m_Packets;
 	bool m_DeleteMe;
 	bool m_Error;
-	string m_ErrorString;
+	QString m_ErrorString;
 	CIncomingJoinPlayer *m_IncomingJoinPlayer;
 
 public:
@@ -54,11 +54,11 @@ public:
 
 	virtual CTCPSocket *GetSocket( )				{ return m_Socket; }
 	virtual BYTEARRAY GetExternalIP( );
-	virtual string GetExternalIPString( );
+	virtual QString GetExternalIPString( );
 	virtual queue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
 	virtual bool GetDeleteMe( )						{ return m_DeleteMe; }
 	virtual bool GetError( )						{ return m_Error; }
-	virtual string GetErrorString( )				{ return m_ErrorString; }
+	virtual QString GetErrorString( )				{ return m_ErrorString; }
 	virtual CIncomingJoinPlayer *GetJoinPlayer( )	{ return m_IncomingJoinPlayer; }
 
 	virtual void SetSocket( CTCPSocket *nSocket )	{ m_Socket = nSocket; }
@@ -83,13 +83,13 @@ class CGamePlayer : public CPotentialPlayer
 {
 private:
 	unsigned char m_PID;
-	string m_Name;								// the player's name
+	QString m_Name;								// the player's name
 	BYTEARRAY m_InternalIP;						// the player's internal IP address as reported by the player when connecting
 	vector<uint32_t> m_Pings;					// store the last few (20) pings received so we can take an average
 	queue<uint32_t> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
-	string m_LeftReason;						// the reason the player left the game
-	string m_SpoofedRealm;						// the realm the player last spoof checked on
-	string m_JoinedRealm;						// the realm the player joined on (probable, can be spoofed)
+	QString m_LeftReason;						// the reason the player left the game
+	QString m_SpoofedRealm;						// the realm the player last spoof checked on
+	QString m_JoinedRealm;						// the realm the player joined on (probable, can be spoofed)
 	uint32_t m_TotalPacketsSent;
 	uint32_t m_TotalPacketsReceived;
 	uint32_t m_LeftCode;						// the code to be sent in W3GS_PLAYERLEAVE_OTHERS for why this player left the game
@@ -128,19 +128,19 @@ private:
 	uint32_t m_LastGProxyAckTime;
 
 public:
-	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved );
-	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved );
+	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved );
+	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved );
 	virtual ~CGamePlayer( );
 
 	unsigned char GetPID( )						{ return m_PID; }
-	string GetName( )							{ return m_Name; }
+	QString GetName( )							{ return m_Name; }
 	BYTEARRAY GetInternalIP( )					{ return m_InternalIP; }
 	unsigned int GetNumPings( )					{ return m_Pings.size( ); }
 	unsigned int GetNumCheckSums( )				{ return m_CheckSums.size( ); }
 	queue<uint32_t> *GetCheckSums( )			{ return &m_CheckSums; }
-	string GetLeftReason( )						{ return m_LeftReason; }
-	string GetSpoofedRealm( )					{ return m_SpoofedRealm; }
-	string GetJoinedRealm( )					{ return m_JoinedRealm; }
+	QString GetLeftReason( )						{ return m_LeftReason; }
+	QString GetSpoofedRealm( )					{ return m_SpoofedRealm; }
+	QString GetJoinedRealm( )					{ return m_JoinedRealm; }
 	uint32_t GetLeftCode( )						{ return m_LeftCode; }
 	uint32_t GetLoginAttempts( )				{ return m_LoginAttempts; }
 	uint32_t GetSyncCounter( )					{ return m_SyncCounter; }
@@ -174,8 +174,8 @@ public:
 	bool GetGProxyDisconnectNoticeSent( )		{ return m_GProxyDisconnectNoticeSent; }
 	uint32_t GetGProxyReconnectKey( )			{ return m_GProxyReconnectKey; }
 
-	void SetLeftReason( string nLeftReason )										{ m_LeftReason = nLeftReason; }
-	void SetSpoofedRealm( string nSpoofedRealm )									{ m_SpoofedRealm = nSpoofedRealm; }
+	void SetLeftReason( QString nLeftReason )										{ m_LeftReason = nLeftReason; }
+	void SetSpoofedRealm( QString nSpoofedRealm )									{ m_SpoofedRealm = nSpoofedRealm; }
 	void SetLeftCode( uint32_t nLeftCode )											{ m_LeftCode = nLeftCode; }
 	void SetLoginAttempts( uint32_t nLoginAttempts )								{ m_LoginAttempts = nLoginAttempts; }
 	void SetSyncCounter( uint32_t nSyncCounter )									{ m_SyncCounter = nSyncCounter; }
@@ -202,7 +202,7 @@ public:
 	void SetLeftMessageSent( bool nLeftMessageSent )								{ m_LeftMessageSent = nLeftMessageSent; }
 	void SetGProxyDisconnectNoticeSent( bool nGProxyDisconnectNoticeSent )			{ m_GProxyDisconnectNoticeSent = nGProxyDisconnectNoticeSent; }
 
-	string GetNameTerminated( );
+	QString GetNameTerminated( );
 	uint32_t GetPing( bool LCPing );
 
 	void AddLoadInGameData( BYTEARRAY nLoadInGameData )								{ m_LoadInGameData.push( nLoadInGameData ); }

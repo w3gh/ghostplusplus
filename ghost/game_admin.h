@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,19 +32,19 @@ class CCallableBanCount;
 // class CCallableBanAdd;
 class CCallableBanRemove;
 
-typedef pair<string,CCallableAdminCount *> PairedAdminCount;
-typedef pair<string,CCallableAdminAdd *> PairedAdminAdd;
-typedef pair<string,CCallableAdminRemove *> PairedAdminRemove;
-typedef pair<string,CCallableBanCount *> PairedBanCount;
-// typedef pair<string,CCallableBanAdd *> PairedBanAdd;
-typedef pair<string,CCallableBanRemove *> PairedBanRemove;
+typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
+typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
+typedef pair<QString,CCallableAdminRemove *> PairedAdminRemove;
+typedef pair<QString,CCallableBanCount *> PairedBanCount;
+// typedef pair<QString,CCallableBanAdd *> PairedBanAdd;
+typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
 
-typedef pair<string,uint32_t> TempBan;
+typedef pair<QString,uint32_t> TempBan;
 
 class CAdminGame : public CBaseGame
 {
 protected:
-	string m_Password;
+	QString m_Password;
 	vector<TempBan> m_TempBans;
 	vector<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
 	vector<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
@@ -54,14 +54,14 @@ protected:
 	vector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
 
 public:
-	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nPassword );
+	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nPassword );
 	virtual ~CAdminGame( );
 
 	virtual bool Update( void *fd, void *send_fd );
-	virtual void SendAdminChat( string message );
+	virtual void SendAdminChat( QString message );
 	virtual void SendWelcomeMessage( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
-	virtual bool EventPlayerBotCommand( CGamePlayer *player, string command, string payload );
+	virtual bool EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload );
 };
 
 #endif
