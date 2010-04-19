@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,17 +28,17 @@
 class CConfig
 {
 private:
-	QMap<string, string> m_CFG;
+	QMap<QString, QString> m_CFG;
 
 public:
 	CConfig( );
 	~CConfig( );
 
-	void Read( string file );
-	bool Exists( string key );
-	int GetInt( string key, int x );
-	string GetString( string key, string x );
-	void Set( string key, string x );
+	void Read( QString file );
+	bool Exists( QString key );
+	int GetInt( QString key, int x );
+	QString GetString( QString key, QString x );
+	void Set( QString key, QString x );
 };
 
 #endif

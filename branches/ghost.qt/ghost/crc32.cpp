@@ -29,14 +29,14 @@ uint32_t CCRC32 :: Reflect( uint32_t ulReflect, char cChar )
 	return ulValue;
 }
 
-uint32_t CCRC32 :: FullCRC( unsigned char *sData, uint32_t ulLength )
+uint32_t CCRC32 :: FullCRC( QString data )
 {
 	uint32_t ulCRC = 0xFFFFFFFF;
-	PartialCRC( &ulCRC, sData, ulLength );
+	PartialCRC( &ulCRC, (const unsigned char*)data.toStdString().c_str(), data.toStdString().size() );
 	return ulCRC ^ 0xFFFFFFFF;
 }
 
-void CCRC32 :: PartialCRC( uint32_t *ulInCRC, unsigned char *sData, uint32_t ulLength )
+void CCRC32 :: PartialCRC( uint32_t *ulInCRC, const unsigned char *sData, uint32_t ulLength )
 {
 	while( ulLength-- )
 		*ulInCRC = ( *ulInCRC >> 8 ) ^ ulTable[( *ulInCRC & 0xFF ) ^ *sData++];

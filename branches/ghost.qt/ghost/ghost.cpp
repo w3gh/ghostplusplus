@@ -42,6 +42,8 @@
 
 #include <signal.h>
 #include <stdlib.h>
+#include <QFile>
+#include <QTextStream>
 
 #ifdef WIN32
  #include <ws2tcpip.h>		// for WSAIoctl
@@ -275,7 +277,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 #endif
 		}
 
-		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, LocaleID, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger[0], HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
+		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, LocaleID, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger.at(0).toAscii(), HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
 	}
 
 	if( m_BNETs.isEmpty( ) )
@@ -676,7 +678,7 @@ bool CGHost :: Update( long usecBlock )
 
 		(*i)->DoRecv( &fd );
 		QString *RecvBuffer = (*i)->GetBytes( );
-		QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+		QByteArray Bytes = RecvBuffer->toUtf8();
 
 		// a packet is at least 4 bytes
 
@@ -720,7 +722,7 @@ bool CGHost :: Update( long usecBlock )
 							{
 								// reconnect successful!
 
-								*RecvBuffer = RecvBuffer->substr( Length );
+								*RecvBuffer = RecvBuffer->mid( Length );
 								Match->EventGProxyReconnect( *i, LastPacket );
 								i = m_ReconnectSockets.erase( i );
 								continue;
@@ -1001,7 +1003,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	if( BotCommandTrigger.isEmpty( ) )
 		BotCommandTrigger = "!";
 
-	m_CommandTrigger = BotCommandTrigger[0];
+	m_CommandTrigger = BotCommandTrigger[0].toAscii();
 	m_MapCFGPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mapcfgpath", QString( ) ) );
 	m_SaveGamePath = UTIL_AddPathSeperator( CFG->GetString( "bot_savegamepath", QString( ) ) );
 	m_MapPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mappath", QString( ) ) );
@@ -1056,7 +1058,7 @@ void CGHost :: ExtractScripts( )
 	QString PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
 	HANDLE PatchMPQ;
 
-	if( SFileOpenArchive( PatchMPQFileName.c_str( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
+	if( SFileOpenArchive( (char*)PatchMPQFileName.data( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
 	{
 		CONSOLE_Print( "[GHOST] loading MPQ file [" + PatchMPQFileName + "]" );
 		HANDLE SubFile;
@@ -1075,7 +1077,7 @@ void CGHost :: ExtractScripts( )
 				if( SFileReadFile( SubFile, SubFileData, FileLength, &BytesRead ) )
 				{
 					CONSOLE_Print( "[GHOST] extracting Scripts\\common.j from MPQ file to [" + m_MapCFGPath + "common.j]" );
-					UTIL_FileWrite( m_MapCFGPath + "common.j", (unsigned char *)SubFileData, BytesRead );
+					UTIL_FileWrite( m_MapCFGPath + "common.j", QByteArray(SubFileData, BytesRead) );
 				}
 				else
 					CONSOLE_Print( "[GHOST] warning - unable to extract Scripts\\common.j from MPQ file" );
@@ -1102,7 +1104,7 @@ void CGHost :: ExtractScripts( )
 				if( SFileReadFile( SubFile, SubFileData, FileLength, &BytesRead ) )
 				{
 					CONSOLE_Print( "[GHOST] extracting Scripts\\blizzard.j from MPQ file to [" + m_MapCFGPath + "blizzard.j]" );
-					UTIL_FileWrite( m_MapCFGPath + "blizzard.j", (unsigned char *)SubFileData, BytesRead );
+					UTIL_FileWrite( m_MapCFGPath + "blizzard.j", QByteArray(SubFileData, BytesRead) );
 				}
 				else
 					CONSOLE_Print( "[GHOST] warning - unable to extract Scripts\\blizzard.j from MPQ file" );
@@ -1123,10 +1125,11 @@ void CGHost :: ExtractScripts( )
 
 void CGHost :: LoadIPToCountryData( )
 {
-	ifstream in;
-	in.open( "ip-to-country.csv" );
+	QFile f("ip-to-country.csv");
+	f.open(QFile::ReadOnly);
+	QTextStream in(&f);
 
-	if( in.fail( ) )
+	if( f.error() != QFile::NoError )
 		CONSOLE_Print( "[GHOST] warning - unable to read file [ip-to-country.csv], iptocountry data not loaded" );
 	else
 	{
@@ -1149,13 +1152,11 @@ void CGHost :: LoadIPToCountryData( )
 
 			// get length of file for the progress meter
 
-			in.seekg( 0, ios :: end );
-			uint32_t FileLength = in.tellg( );
-			in.seekg( 0, ios :: beg );
+			uint32_t FileLength = f.size();
 
-			while( !in.eof( ) )
+			while( !in.atEnd( ) )
 			{
-				getline( in, Line );
+				Line = in.readLine();
 
 				if( Line.isEmpty( ) )
 					continue;
@@ -1169,7 +1170,7 @@ void CGHost :: LoadIPToCountryData( )
 				// it's probably going to take awhile to load the iptocountry data (~10 seconds on my 3.2 GHz P4 when using SQLite3)
 				// so let's print a progress meter just to keep the user from getting worried
 
-				unsigned char NewPercent = (unsigned char)( (float)in.tellg( ) / FileLength * 100 );
+				unsigned char NewPercent = (unsigned char)( (float)f.pos() / FileLength * 100 );
 
 				if( NewPercent != Percent && NewPercent % 10 == 0 )
 				{
@@ -1184,7 +1185,7 @@ void CGHost :: LoadIPToCountryData( )
 				CONSOLE_Print( "[GHOST] finished loading [ip-to-country.csv]" );
 		}
 
-		in.close( );
+		f.close( );
 	}
 }
 
@@ -1248,10 +1249,9 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 			return;
 		}
 
-		QString MapPath1 = m_SaveGame->GetMapPath( );
+		QString MapPath1 = m_SaveGame->GetMapPath( ).toLower();
 		QString MapPath2 = map->GetMapPath( );
-		transform( MapPath1.begin( ), MapPath1.end( ), MapPath1.begin( ), (int(*)(int))tolower );
-		transform( MapPath2.begin( ), MapPath2.end( ), MapPath2.begin( ), (int(*)(int))tolower );
+		MapPath2 = MapPath2.toLower();
 
 		if( MapPath1 != MapPath2 )
 		{

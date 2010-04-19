@@ -37,21 +37,22 @@ CConfig :: ~CConfig( )
 
 }
 
+#include <QFile>
+#include <QStringList>
 void CConfig :: Read( QString file )
 {
-	ifstream in;
-	in.open( file.c_str( ) );
+	QFile f(file);
 
-	if( in.fail( ) )
+	if( !f.open(QFile::ReadOnly) )
 		CONSOLE_Print( "[CONFIG] warning - unable to read file [" + file + "]" );
 	else
 	{
 		CONSOLE_Print( "[CONFIG] loading file [" + file + "]" );
 		QString Line;
 
-		while( !in.eof( ) )
+		while( !f.atEnd() )
 		{
-			getline( in, Line );
+			Line = f.readLine();
 
 			// ignore blank lines and comments
 
@@ -60,30 +61,20 @@ void CConfig :: Read( QString file )
 
 			// remove newlines and partial newlines to help fix issues with Windows formatted config files on Linux systems
 
-			Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
-			Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
+			Line.replace('\r', "").replace('\n', "");
 
-			QString :: size_type Split = Line.find( "=" );
+			QStringList parts = Line.split('=');
 
-			if( Split == QString :: npos )
-				continue;
-
-			QString :: size_type KeyStart = Line.find_first_not_of( " " );
-			QString :: size_type KeyEnd = Line.find( " ", KeyStart );
-			QString :: size_type ValueStart = Line.find_first_not_of( " ", Split + 1 );
-			QString :: size_type ValueEnd = Line.size( );
-
-			if( ValueStart != QString :: npos )
-				m_CFG[Line.mid( KeyStart, KeyEnd - KeyStart )] = Line.mid( ValueStart, ValueEnd - ValueStart );
+			m_CFG[parts.at(0).trimmed()] = parts.at(1).trimmed();
 		}
 
-		in.close( );
+		f.close( );
 	}
 }
 
 bool CConfig :: Exists( QString key )
 {
-	return m_CFG.find( key ) != m_CFG.end( );
+	return m_CFG.contains(key);
 }
 
 int CConfig :: GetInt( QString key, int x )
@@ -91,7 +82,7 @@ int CConfig :: GetInt( QString key, int x )
 	if( m_CFG.find( key ) == m_CFG.end( ) )
 		return x;
 	else
-		return atoi( m_CFG[key].c_str( ) );
+		return m_CFG[key].toInt();
 }
 
 QString CConfig :: GetString( QString key, QString x )

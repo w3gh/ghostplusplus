@@ -390,7 +390,7 @@ QByteArray UTIL_FileRead( QString file )
 	return f.readAll();
 }
 
-bool UTIL_FileWrite( QString file, unsigned char *data, uint32_t length )
+bool UTIL_FileWrite( QString file, const QByteArray &data )
 {
 	QFile f(file);
 	f.open(QFile::Truncate);
@@ -401,7 +401,7 @@ bool UTIL_FileWrite( QString file, unsigned char *data, uint32_t length )
 		return false;
 	}
 
-	f.write((char*)data, length);
+	f.write(data);
 	return true;
 }
 

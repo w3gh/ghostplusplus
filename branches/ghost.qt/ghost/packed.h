@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,8 +34,8 @@ public:
 
 protected:
 	bool m_Valid;
-	string m_Compressed;
-	string m_Decompressed;
+	QByteArray m_Compressed;
+	QByteArray m_Decompressed;
 	uint32_t m_HeaderSize;
 	uint32_t m_CompressedSize;
 	uint32_t m_HeaderVersion;
@@ -68,10 +68,10 @@ public:
 	virtual void SetFlags( uint16_t nFlags )						{ m_Flags = nFlags; }
 	virtual void SetReplayLength( uint32_t nReplayLength )			{ m_ReplayLength = nReplayLength; }
 
-	virtual void Load( string fileName, bool allBlocks );
-	virtual bool Save( bool TFT, string fileName );
-	virtual bool Extract( string inFileName, string outFileName );
-	virtual bool Pack( bool TFT, string inFileName, string outFileName );
+	virtual void Load( QString fileName, bool allBlocks );
+	virtual bool Save( bool TFT, QString fileName );
+	virtual bool Extract( QString inFileName, QString outFileName );
+	virtual bool Pack( bool TFT, QString inFileName, QString outFileName );
 	virtual void Decompress( bool allBlocks );
 	virtual void Compress( bool TFT );
 };

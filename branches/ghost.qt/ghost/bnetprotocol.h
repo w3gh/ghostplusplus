@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,7 @@
 // CBNETProtocol
 //
 
+#include "includes.h"
 #define BNET_HEADER_CONSTANT 255
 
 class CIncomingGameHost;
@@ -109,11 +110,11 @@ public:
 	QByteArray GetServerToken( )				{ return m_ServerToken; }
 	QByteArray GetMPQFileTime( )				{ return m_MPQFileTime; }
 	QByteArray GetIX86VerFileName( )			{ return m_IX86VerFileName; }
-	string GetIX86VerFileNameString( )		{ return string( m_IX86VerFileName.begin( ), m_IX86VerFileName.end( ) ); }
+	QString GetIX86VerFileNameString( )		{ return m_IX86VerFileName; }
 	QByteArray GetValueStringFormula( )		{ return m_ValueStringFormula; }
-	string GetValueStringFormulaString( )	{ return string( m_ValueStringFormula.begin( ), m_ValueStringFormula.end( ) ); }
+	QString GetValueStringFormulaString( )	{ return m_ValueStringFormula; }
 	QByteArray GetKeyState( )				{ return m_KeyState; }
-	string GetKeyStateDescription( )		{ return string( m_KeyStateDescription.begin( ), m_KeyStateDescription.end( ) ); }
+	QString GetKeyStateDescription( )		{ return m_KeyStateDescription; }
 	QByteArray GetSalt( )					{ return m_Salt; }
 	QByteArray GetServerPublicKey( )			{ return m_ServerPublicKey; }
 	QByteArray GetUniqueName( )				{ return m_UniqueName; }
@@ -142,19 +143,19 @@ public:
 	QByteArray SEND_PROTOCOL_INITIALIZE_SELECTOR( );
 	QByteArray SEND_SID_NULL( );
 	QByteArray SEND_SID_STOPADV( );
-	QByteArray SEND_SID_GETADVLISTEX( string gameName );
+	QByteArray SEND_SID_GETADVLISTEX( QString gameName );
 	QByteArray SEND_SID_ENTERCHAT( );
-	QByteArray SEND_SID_JOINCHANNEL( string channel );
-	QByteArray SEND_SID_CHATCOMMAND( string command );
+	QByteArray SEND_SID_JOINCHANNEL( QString channel );
+	QByteArray SEND_SID_CHATCOMMAND( QString command );
 	QByteArray SEND_SID_CHECKAD( );
-	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter );
-	QByteArray SEND_SID_NOTIFYJOIN( string gameName );
+	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter );
+	QByteArray SEND_SID_NOTIFYJOIN( QString gameName );
 	QByteArray SEND_SID_PING( QByteArray pingValue );
-	QByteArray SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, string accountName );
+	QByteArray SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, QString accountName );
 	QByteArray SEND_SID_NETGAMEPORT( uint16_t serverPort );
-	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, string countryAbbrev, string country );
-	QByteArray SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, string exeInfo, string keyOwnerName );
-	QByteArray SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicKey, string accountName );
+	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country );
+	QByteArray SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, QString exeInfo, QString keyOwnerName );
+	QByteArray SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicKey, QString accountName );
 	QByteArray SEND_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray clientPasswordProof );
 	QByteArray SEND_SID_WARDEN( QByteArray wardenResponse );
 	QByteArray SEND_SID_FRIENDSLIST( );
@@ -176,17 +177,17 @@ class CIncomingGameHost
 private:
 	QByteArray m_IP;
 	uint16_t m_Port;
-	string m_GameName;
+	QString m_GameName;
 	QByteArray m_HostCounter;
 
 public:
-	CIncomingGameHost( QByteArray &nIP, uint16_t nPort, string nGameName, QByteArray &nHostCounter );
+	CIncomingGameHost( QByteArray &nIP, uint16_t nPort, QString nGameName, QByteArray &nHostCounter );
 	~CIncomingGameHost( );
 
 	QByteArray GetIP( )			{ return m_IP; }
-	string GetIPString( );
+	QString GetIPString( );
 	uint16_t GetPort( )			{ return m_Port; }
-	string GetGameName( )		{ return m_GameName; }
+	QString GetGameName( )		{ return m_GameName; }
 	QByteArray GetHostCounter( )	{ return m_HostCounter; }
 };
 
@@ -199,17 +200,17 @@ class CIncomingChatEvent
 private:
 	CBNETProtocol :: IncomingChatEvent m_ChatEvent;
 	uint32_t m_Ping;
-	string m_User;
-	string m_Message;
+	QString m_User;
+	QString m_Message;
 
 public:
-	CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, string nUser, string nMessage );
+	CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, QString nUser, QString nMessage );
 	~CIncomingChatEvent( );
 
 	CBNETProtocol :: IncomingChatEvent GetChatEvent( )	{ return m_ChatEvent; }
 	uint32_t GetPing( )									{ return m_Ping; }
-	string GetUser( )									{ return m_User; }
-	string GetMessage( )								{ return m_Message; }
+	QString GetUser( )									{ return m_User; }
+	QString GetMessage( )								{ return m_Message; }
 };
 
 //
@@ -219,25 +220,25 @@ public:
 class CIncomingFriendList
 {
 private:
-	string m_Account;
+	QString m_Account;
 	unsigned char m_Status;
 	unsigned char m_Area;
-	string m_Location;
+	QString m_Location;
 
 public:
-	CIncomingFriendList( string nAccount, unsigned char nStatus, unsigned char nArea, string nLocation );
+	CIncomingFriendList( QString nAccount, unsigned char nStatus, unsigned char nArea, QString nLocation );
 	~CIncomingFriendList( );
 
-	string GetAccount( )		{ return m_Account; }
+	QString GetAccount( )		{ return m_Account; }
 	unsigned char GetStatus( )	{ return m_Status; }
 	unsigned char GetArea( )	{ return m_Area; }
-	string GetLocation( )		{ return m_Location; }
-	string GetDescription( );
+	QString GetLocation( )		{ return m_Location; }
+	QString GetDescription( );
 
 private:
-	string ExtractStatus( unsigned char status );
-	string ExtractArea( unsigned char area );
-	string ExtractLocation( string location );
+	QString ExtractStatus( unsigned char status );
+	QString ExtractArea( unsigned char area );
+	QString ExtractLocation( QString location );
 };
 
 //
@@ -247,18 +248,18 @@ private:
 class CIncomingClanList
 {
 private:
-	string m_Name;
+	QString m_Name;
 	unsigned char m_Rank;
 	unsigned char m_Status;
 
 public:
-	CIncomingClanList( string nName, unsigned char nRank, unsigned char nStatus );
+	CIncomingClanList( QString nName, unsigned char nRank, unsigned char nStatus );
 	~CIncomingClanList( );
 
-	string GetName( )			{ return m_Name; }
-	string GetRank( );
-	string GetStatus( );
-	string GetDescription( );
+	QString GetName( )			{ return m_Name; }
+	QString GetRank( );
+	QString GetStatus( );
+	QString GetDescription( );
 };
 
 #endif

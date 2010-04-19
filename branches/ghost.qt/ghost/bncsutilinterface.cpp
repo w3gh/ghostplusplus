@@ -31,7 +31,7 @@
 CBNCSUtilInterface :: CBNCSUtilInterface( QString userName, QString userPassword )
 {
 	// m_nls = (void *)nls_init( userName.c_str( ), userPassword.c_str( ) );
-	m_NLS = new NLS( userName, userPassword );
+	m_NLS = new NLS( userName.toStdString(), userPassword.toStdString() );
 }
 
 CBNCSUtilInterface :: ~CBNCSUtilInterface( )
@@ -45,7 +45,7 @@ void CBNCSUtilInterface :: Reset( QString userName, QString userPassword )
 	// nls_free( (nls_t *)m_nls );
 	// m_nls = (void *)nls_init( userName.c_str( ), userPassword.c_str( ) );
 	delete (NLS *)m_NLS;
-	m_NLS = new NLS( userName, userPassword );
+	m_NLS = new NLS( userName.toStdString(), userPassword.toStdString() );
 }
 
 bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, QByteArray clientToken, QByteArray serverToken )
@@ -69,11 +69,11 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 
 		char buf[1024];
 		uint32_t EXEVersion;
-		getExeInfo( FileWar3EXE.c_str( ), (char *)&buf, 1024, (uint32_t *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
+		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (uint32_t *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
 		m_EXEVersion = UTIL_CreateQByteArray( EXEVersion, false );
 		uint32_t EXEVersionHash;
-		checkRevisionFlat( valueStringFormula.c_str( ), FileWar3EXE.c_str( ), FileStormDLL.c_str( ), FileGameDLL.c_str( ), extractMPQNumber( mpqFileName.c_str( ) ), (unsigned long *)&EXEVersionHash );
+		checkRevisionFlat( valueStringFormula.toStdString().c_str( ), FileWar3EXE.toStdString().c_str( ), FileStormDLL.toStdString().c_str( ), FileGameDLL.toStdString().c_str( ), extractMPQNumber( mpqFileName.toStdString().c_str( ) ), (unsigned long *)&EXEVersionHash );
 		m_EXEVersionHash = UTIL_CreateQByteArray( EXEVersionHash, false );
 		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
 
@@ -122,8 +122,8 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QBy
 	// set m_M1
 
 	char buf[20];
-	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).c_str( ), QString( salt.begin( ), salt.end( ) ).c_str( ) );
-	( (NLS *)m_NLS )->getClientSessionKey( buf, QString( salt.begin( ), salt.end( ) ).c_str( ), QString( serverKey.begin( ), serverKey.end( ) ).c_str( ) );
+	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).toStdString().c_str( ), QString( salt.begin( ), salt.end( ) ).toStdString().c_str( ) );
+	( (NLS *)m_NLS )->getClientSessionKey( buf, salt.data(), serverKey.data() );
 	m_M1 = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
 	return true;
 }
@@ -133,7 +133,7 @@ bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
 	// set m_PvPGNPasswordHash
 
 	char buf[20];
-	hashPassword( userPassword.c_str( ), buf );
+	hashPassword( userPassword.toStdString().c_str( ), buf );
 	m_PvPGNPasswordHash = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
 	return true;
 }
@@ -142,7 +142,7 @@ QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToke
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	QByteArray KeyInfo;
-	CDKeyDecoder Decoder( key.c_str( ), key.size( ) );
+	CDKeyDecoder Decoder( key.toStdString().c_str( ), key.size( ) );
 
 	if( Decoder.isKeyValid( ) )
 	{

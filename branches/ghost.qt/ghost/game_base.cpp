@@ -36,6 +36,10 @@
 #include <cmath>
 #include <QString>
 #include <time.h>
+#include <QTextStream>
+#include <QFile>
+#include <QStringList>
+#include <QRegExp>
 
 #include "next_combination.h"
 
@@ -157,19 +161,19 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 	if( !m_GHost->m_IPBlackListFile.isEmpty( ) )
 	{
-		ifstream in;
-		in.open( m_GHost->m_IPBlackListFile.c_str( ) );
+		QFile f(m_GHost->m_IPBlackListFile);
 
-		if( in.fail( ) )
+		if( !f.open(QFile::ReadOnly) )
 			CONSOLE_Print( "[GAME: " + m_GameName + "] error loading IP blacklist file [" + m_GHost->m_IPBlackListFile + "]" );
 		else
 		{
+			QTextStream in(&f);
 			CONSOLE_Print( "[GAME: " + m_GameName + "] loading IP blacklist file [" + m_GHost->m_IPBlackListFile + "]" );
 			QString Line;
 
-			while( !in.eof( ) )
+			while( !in.atEnd( ) )
 			{
-				getline( in, Line );
+				Line = in.readLine();
 
 				// ignore blank lines and comments
 
@@ -178,19 +182,17 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 				// remove newlines and partial newlines to help fix issues with Windows formatted files on Linux systems
 
-				Line.erase( remove( Line.begin( ), Line.end( ), ' ' ), Line.end( ) );
-				Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
-				Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
+				Line.replace(QRegExp("[ \r\n]"), "");
 
 				// ignore lines that don't look like IP addresses
 
-				if( Line.find_first_not_of( "1234567890." ) != QString :: npos )
+				if( Line.indexOf( QRegExp("[^0-9\.]") ) != -1 )
 					continue;
 
 				m_IPBlackList.insert( Line );
 			}
 
-			in.close( );
+			f.close( );
 
 			CONSOLE_Print( "[GAME: " + m_GameName + "] loaded " + UTIL_ToString( m_IPBlackList.size( ) ) + " lines from IP blacklist file" );
 		}
@@ -475,11 +477,11 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 				uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
 				QByteArray MapWidth;
-				MapWidth.push_back( 0 );
-				MapWidth.push_back( 0 );
+				MapWidth.push_back( (char)0 );
+				MapWidth.push_back( (char)0 );
 				QByteArray MapHeight;
-				MapHeight.push_back( 0 );
-				MapHeight.push_back( 0 );
+				MapHeight.push_back( (char)0 );
+				MapHeight.push_back( (char)0 );
 				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, FixedHostCounter ) );
 			}
 			else
@@ -1214,10 +1216,10 @@ void CBaseGame :: SendVirtualHostPlayerInfo( CGamePlayer *player )
 		return;
 
 	QByteArray IP;
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
 	Send( player, m_Protocol->SEND_W3GS_PLAYERINFO( m_VirtualHostPID, m_VirtualHostName, IP, IP ) );
 }
 
@@ -1227,10 +1229,10 @@ void CBaseGame :: SendFakePlayerInfo( CGamePlayer *player )
 		return;
 
 	QByteArray IP;
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
 	Send( player, m_Protocol->SEND_W3GS_PLAYERINFO( m_FakePlayerPID, "FakePlayer", IP, IP ) );
 }
 
@@ -1359,10 +1361,9 @@ void CBaseGame :: SendWelcomeMessage( CGamePlayer *player )
 {
 	// read from motd.txt if available (thanks to zeeg for this addition)
 
-	ifstream in;
-	in.open( m_GHost->m_MOTDFile.c_str( ) );
+	QFile f(m_GHost->m_MOTDFile);
 
-	if( in.fail( ) )
+	if( !f.open(QFile::ReadOnly) )
 	{
 		// default welcome message
 
@@ -1383,26 +1384,10 @@ void CBaseGame :: SendWelcomeMessage( CGamePlayer *player )
 	{
 		// custom welcome message
 		// don't print more than 8 lines
+		QStringList data = QString::fromUtf8(f.readAll()).replace('\r', "").split('\n');
 
-		uint32_t Count = 0;
-		QString Line;
-
-		while( !in.eof( ) && Count < 8 )
-		{
-			getline( in, Line );
-
-			if( Line.isEmpty( ) )
-			{
-				if( !in.eof( ) )
-					SendChat( player, " " );
-			}
-			else
-				SendChat( player, Line );
-
-			Count++;
-		}
-
-		in.close( );
+		for (int i = 0; i < data.size() && i < 8; i++)
+			SendChat( player, data.at(i) );
 	}
 }
 
@@ -1410,32 +1395,15 @@ void CBaseGame :: SendEndMessage( )
 {
 	// read from gameover.txt if available
 
-	ifstream in;
-	in.open( m_GHost->m_GameOverFile.c_str( ) );
+	QFile f(m_GHost->m_GameOverFile);
 
-	if( !in.fail( ) )
+	if( f.open(QFile::ReadOnly) )
 	{
 		// don't print more than 8 lines
+		QStringList data = QString::fromUtf8(f.readAll()).replace('\r', "").split('\n');
 
-		uint32_t Count = 0;
-		QString Line;
-
-		while( !in.eof( ) && Count < 8 )
-		{
-			getline( in, Line );
-
-			if( Line.isEmpty( ) )
-			{
-				if( !in.eof( ) )
-					SendAllChat( " " );
-			}
-			else
-				SendAllChat( Line );
-
-			Count++;
-		}
-
-		in.close( );
+		for (int i = 0; i < data.size() && i < 8; i++)
+			SendAllChat( data.at(i) );
 	}
 }
 
@@ -2027,10 +1995,10 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	SendFakePlayerInfo( Player );
 
 	QByteArray BlankIP;
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -2082,7 +2050,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 			QByteArray UniqueName = (*i)->GetUniqueName( );
 
 			if( (*i)->GetServer( ) == JoinedRealm )
-				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( QString( UniqueName.begin( ), UniqueName.end( ) )  ) );
+				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( UniqueName ) );
 		}
 	}
 
@@ -2400,10 +2368,10 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	SendFakePlayerInfo( Player );
 
 	QByteArray BlankIP;
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
-	BlankIP.push_back( 0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
+	BlankIP.push_back( (char)0 );
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -2455,7 +2423,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			QByteArray UniqueName = (*i)->GetUniqueName( );
 
 			if( (*i)->GetServer( ) == JoinedRealm )
-				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( QString( UniqueName.begin( ), UniqueName.end( ) )  ) );
+				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( UniqueName.end( )) );
 		}
 	}
 
@@ -2569,10 +2537,7 @@ void CBaseGame :: EventPlayerLoaded( CGamePlayer *player )
 		QQueue<QByteArray> *LoadInGameData = player->GetLoadInGameData( );
 
 		while( !LoadInGameData->empty( ) )
-		{
-			Send( player, LoadInGameData->front( ) );
-			LoadInGameData->pop( );
-		}
+			Send( player, LoadInGameData->dequeue( ) );
 
 		// start the lag screen for the new player
 
@@ -2618,7 +2583,7 @@ void CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *actio
 
 	// check for players saving the game and notify everyone
 
-	if( !action->GetAction( )->empty( ) && (*action->GetAction( ))[0] == 6 )
+	if( !action->GetAction( )->isEmpty( ) && (*action->GetAction( ))[0] == 6 )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] is saving the game" );
 		SendAllChat( m_GHost->m_Language->PlayerIsSavingTheGame( player->GetName( ) ) );
@@ -2682,17 +2647,17 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
 
 			for( QMap<uint32_t, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
 			{
-				if( (*j).second.size( ) > (*LargestBin).second.size( ) )
+				if( j.value().size( ) > LargestBin.value().size( ) )
 				{
 					LargestBin = j;
 					Tied = false;
 				}
-				else if( j != LargestBin && (*j).second.size( ) == (*LargestBin).second.size( ) )
+				else if( j != LargestBin && j.value().size( ) == LargestBin.value().size( ) )
 					Tied = true;
 
 				QString Players;
 
-				for( QVector<unsigned char> :: iterator k = (*j).second.begin( ); k != (*j).second.end( ); k++ )
+				for( QVector<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
 				{
 					CGamePlayer *Player = GetPlayerFromPID( *k );
 
@@ -2709,7 +2674,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
 				StateNumber++;
 			}
 
-			FirstCheckSum = (*LargestBin).first;
+			FirstCheckSum = LargestBin.key();
 
 			if( Tied )
 			{
@@ -2735,9 +2700,9 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
 					// the most common case will be 9v1 (e.g. one player desynced and the others were unaffected) and this will kick the single outlier
 					// another (very unlikely) possibility is 8v1v1 or 8v2 and this will kick both of the outliers, regardless of whether their game states match
 
-					if( (*j).first != (*LargestBin).first )
+					if( j.key() != LargestBin.key() )
 					{
-						for( QVector<unsigned char> :: iterator k = (*j).second.begin( ); k != (*j).second.end( ); k++ )
+						for( QVector<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
 						{
 							CGamePlayer *Player = GetPlayerFromPID( *k );
 
@@ -2761,7 +2726,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetDeleteMe( ) )
-			(*i)->GetCheckSums( )->pop( );
+			(*i)->GetCheckSums( )->dequeue( );
 	}
 
 	// add checksum to replay
@@ -2845,9 +2810,9 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 				QString Command;
 				QString Payload;
-				QString :: size_type PayloadStart = Message.find( " " );
+				int PayloadStart = Message.indexOf( ' ' );
 
-				if( PayloadStart != QString :: npos )
+				if( PayloadStart != -1 )
 				{
 					Command = Message.mid( 1, PayloadStart - 1 );
 					Payload = Message.mid( PayloadStart + 1 );
@@ -2855,7 +2820,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 				else
 					Command = Message.mid( 1 );
 
-				transform( Command.begin( ), Command.end( ), Command.begin( ), (int(*)(int))tolower );
+				Command = Command.toLower();
 
 				// don't allow EventPlayerBotCommand to veto a previous instruction to set Relay to false
 				// so if Relay is already false (e.g. because the player is muted) then it cannot be forced back to true here
@@ -3065,7 +3030,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 		{
 			QString *MapData = m_Map->GetMapData( );
 
-			if( !MapData->empty( ) )
+			if( !MapData->isEmpty( ) )
 			{
 				if( m_GHost->m_AllowDownloads == 1 || ( m_GHost->m_AllowDownloads == 2 && player->GetDownloadAllowed( ) ) )
 				{
@@ -3196,7 +3161,7 @@ void CBaseGame :: EventGameStarted( )
 		{
 			QString HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
 
-			if( m_HCLCommandString.find_first_not_of( HCLChars ) == QString :: npos )
+			if( m_HCLCommandString.indexOf( QRegExp( "[^" + HCLChars + "]" ) ) == -1 )
 			{
 				unsigned char EncodingMap[256];
 				unsigned char j = 0;
@@ -3219,7 +3184,7 @@ void CBaseGame :: EventGameStarted( )
 						CurrentSlot++;
 
 					unsigned char HandicapIndex = ( m_Slots[CurrentSlot].GetHandicap( ) - 50 ) / 10;
-					unsigned char CharIndex = HCLChars.find( *si );
+					unsigned char CharIndex = HCLChars.indexOf( *si );
 					m_Slots[CurrentSlot++].SetHandicap( EncodingMap[HandicapIndex + CharIndex * 6] );
 				}
 
@@ -3329,16 +3294,16 @@ void CBaseGame :: EventGameStarted( )
 
 	QByteArray StatString;
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapGameFlags( ) );
-	StatString.push_back( 0 );
+	StatString.push_back( (char)0 );
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapWidth( ) );
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapHeight( ) );
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapCRC( ) );
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapPath( ) );
 	UTIL_AppendQByteArray( StatString, "GHost++" );
-	StatString.push_back( 0 );
+	StatString.push_back( (char)0 );
 	UTIL_AppendQByteArray( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
 	StatString = UTIL_EncodeStatString( StatString );
-	m_StatString = QString( StatString.begin( ), StatString.end( ) );
+	m_StatString = StatString;
 
 	// delete the map data
 
@@ -3401,32 +3366,15 @@ void CBaseGame :: EventGameLoaded( )
 
 	// read from gameloaded.txt if available
 
-	ifstream in;
-	in.open( m_GHost->m_GameLoadedFile.c_str( ) );
+	QFile f(m_GHost->m_GameLoadedFile);
 
-	if( !in.fail( ) )
+	if( f.open(QFile::ReadOnly) )
 	{
 		// don't print more than 8 lines
 
-		uint32_t Count = 0;
-		QString Line;
-
-		while( !in.eof( ) && Count < 8 )
-		{
-			getline( in, Line );
-
-			if( Line.isEmpty( ) )
-			{
-				if( !in.eof( ) )
-					SendAllChat( " " );
-			}
-			else
-				SendAllChat( Line );
-
-			Count++;
-		}
-
-		in.close( );
+		QStringList data = QString::fromUtf8(f.readAll()).replace('\r', "").split('\n');
+		for (int i = 0; i < 8 && i < data.size(); i++)
+			SendAllChat(data.at(i));
 	}
 }
 
@@ -3466,7 +3414,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromSID( unsigned char SID )
 CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 {
 	if( !sensitive )
-		transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+		name = name.toLower();
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -3475,7 +3423,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 			QString TestName = (*i)->GetName( );
 
 			if( !sensitive )
-				transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
+				TestName = TestName.toLower();
 
 			if( TestName == name )
 				return *i;
@@ -3487,7 +3435,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 
 uint32_t CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **player )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 	uint32_t Matches = 0;
 	*player = NULL;
 
@@ -3497,10 +3445,9 @@ uint32_t CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **play
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
-			QString TestName = (*i)->GetName( );
-			transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
+			QString TestName = (*i)->GetName( ).toLower();
 
-			if( TestName.find( name ) != QString :: npos )
+			if( TestName.indexOf( name ) != -1 )
 			{
 				Matches++;
 				*player = *i;
@@ -4043,13 +3990,14 @@ QVector<unsigned char> CBaseGame :: BalanceSlotsRecursive( QVector<unsigned char
 				// for example, it could contain one, two, or more actual teams worth of players
 				// so recurse using the second "team" as the full set of players to perform the balancing on
 
-				QVector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( QVector<unsigned char>( PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ), TeamSizes, PlayerScores, i + 1 );
+				QVector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( PlayerIDs.mid(Mid), TeamSizes, PlayerScores, i + 1 );
 
 				// BestSubOrdering now contains the best ordering of all the remaining players (the "right team") given this particular combination of players into two "teams"
 				// in order to calculate the largest difference in total scores we need to recombine the subordering with the first team
 
-				QVector<unsigned char> TestOrdering = QVector<unsigned char>( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid );
-				TestOrdering.insert( TestOrdering.end( ), BestSubOrdering.begin( ), BestSubOrdering.end( ) );
+				QVector<unsigned char> TestOrdering = PlayerIDs.mid(0, Mid);
+				for (int k = 0; k < BestSubOrdering.size(); k++)
+					TestOrdering.push_back(BestSubOrdering.at(k));
 
 				// now calculate the team scores for all the teams that we know about (e.g. on subsequent recursion steps this will NOT be every possible team)
 
@@ -4278,7 +4226,7 @@ void CBaseGame :: AddToSpoofed( QString server, QString name, bool sendMessage )
 
 void CBaseGame :: AddToReserved( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	// check that the user is not already reserved
 
@@ -4294,8 +4242,7 @@ void CBaseGame :: AddToReserved( QString name )
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		QString NameLower = (*i)->GetName( );
-		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
+		QString NameLower = (*i)->GetName( ).toLower();
 
 		if( NameLower == name )
 			(*i)->SetReserved( true );
@@ -4304,15 +4251,13 @@ void CBaseGame :: AddToReserved( QString name )
 
 bool CBaseGame :: IsOwner( QString name )
 {
-	QString OwnerLower = m_OwnerName;
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	transform( OwnerLower.begin( ), OwnerLower.end( ), OwnerLower.begin( ), (int(*)(int))tolower );
-	return name == OwnerLower;
+	QString OwnerLower = m_OwnerName.toLower();
+	return name.toLower() == OwnerLower;
 }
 
 bool CBaseGame :: IsReserved( QString name )
 {
-	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	name = name.toLower();
 
 	for( QVector<QString> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
 	{
@@ -4565,10 +4510,10 @@ void CBaseGame :: CreateVirtualHost( )
 
 	m_VirtualHostPID = GetNewPID( );
 	QByteArray IP;
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
-	IP.push_back( 0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
+	IP.push_back( (char)0 );
 	SendAll( m_Protocol->SEND_W3GS_PLAYERINFO( m_VirtualHostPID, m_VirtualHostName, IP, IP ) );
 }
 
@@ -4595,10 +4540,10 @@ void CBaseGame :: CreateFakePlayer( )
 
 		m_FakePlayerPID = GetNewPID( );
 		QByteArray IP;
-		IP.push_back( 0 );
-		IP.push_back( 0 );
-		IP.push_back( 0 );
-		IP.push_back( 0 );
+		IP.push_back( (char)0 );
+		IP.push_back( (char)0 );
+		IP.push_back( (char)0 );
+		IP.push_back( (char)0 );
 		SendAll( m_Protocol->SEND_W3GS_PLAYERINFO( m_FakePlayerPID, "FakePlayer", IP, IP ) );
 		m_Slots[SID] = CGameSlot( m_FakePlayerPID, 100, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
 		SendAllSlotInfo( );

@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,14 +45,14 @@ class CCallableGamePlayerSummaryCheck;
 class CCallableDotAPlayerSummaryCheck;
 class CDBBan;
 
-typedef pair<string,CCallableAdminCount *> PairedAdminCount;
-typedef pair<string,CCallableAdminAdd *> PairedAdminAdd;
-typedef pair<string,CCallableAdminRemove *> PairedAdminRemove;
-typedef pair<string,CCallableBanCount *> PairedBanCount;
-typedef pair<string,CCallableBanAdd *> PairedBanAdd;
-typedef pair<string,CCallableBanRemove *> PairedBanRemove;
-typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
-typedef pair<string,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
+typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
+typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
+typedef pair<QString,CCallableAdminRemove *> PairedAdminRemove;
+typedef pair<QString,CCallableBanCount *> PairedBanCount;
+typedef pair<QString,CCallableBanAdd *> PairedBanAdd;
+typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
+typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
+typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
 class CBNET
 {
@@ -78,31 +78,31 @@ private:
 	QVector<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
 	CCallableAdminList *m_CallableAdminList;		// threaded database admin list in progress
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
-	QVector<string> m_Admins;						// vector of cached admins
+	QVector<QString> m_Admins;						// vector of cached admins
 	QVector<CDBBan *> m_Bans;						// vector of cached bans
 	bool m_Exiting;									// set to true and this class will be deleted next update
-	string m_Server;								// battle.net server to connect to
-	string m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
-	string m_ServerAlias;							// battle.net server alias (short name, e.g. "USEast")
-	string m_BNLSServer;							// BNLS server to connect to (for warden handling)
+	QString m_Server;								// battle.net server to connect to
+	QString m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
+	QString m_ServerAlias;							// battle.net server alias (short name, e.g. "USEast")
+	QString m_BNLSServer;							// BNLS server to connect to (for warden handling)
 	uint16_t m_BNLSPort;							// BNLS port
 	uint32_t m_BNLSWardenCookie;					// BNLS warden cookie
-	string m_CDKeyROC;								// ROC CD key
-	string m_CDKeyTFT;								// TFT CD key
-	string m_CountryAbbrev;							// country abbreviation
-	string m_Country;								// country
+	QString m_CDKeyROC;								// ROC CD key
+	QString m_CDKeyTFT;								// TFT CD key
+	QString m_CountryAbbrev;							// country abbreviation
+	QString m_Country;								// country
 	uint32_t m_LocaleID;							// see: http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
-	string m_UserName;								// battle.net username
-	string m_UserPassword;							// battle.net password
-	string m_FirstChannel;							// the first chat channel to join upon entering chat (note: we hijack this to store the last channel when entering a game)
-	string m_CurrentChannel;						// the current chat channel
-	string m_RootAdmin;								// the root admin
+	QString m_UserName;								// battle.net username
+	QString m_UserPassword;							// battle.net password
+	QString m_FirstChannel;							// the first chat channel to join upon entering chat (note: we hijack this to store the last channel when entering a game)
+	QString m_CurrentChannel;						// the current chat channel
+	QString m_RootAdmin;								// the root admin
 	char m_CommandTrigger;							// the character prefix to identify commands
 	unsigned char m_War3Version;					// custom warcraft 3 version for PvPGN users
 	QByteArray m_EXEVersion;							// custom exe version for PvPGN users
 	QByteArray m_EXEVersionHash;						// custom exe version hash for PvPGN users
-	string m_PasswordHashType;						// password hash type for PvPGN users
-	string m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
+	QString m_PasswordHashType;						// password hash type for PvPGN users
+	QString m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
 	uint32_t m_MaxMessageLength;					// maximum message length for PvPGN users
 	uint32_t m_HostCounterID;						// the host counter ID to identify players from this realm
 	uint32_t m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
@@ -121,24 +121,24 @@ private:
 	bool m_PublicCommands;							// whether to allow public commands or not
 
 public:
-	CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
+	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, uint32_t nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
 	~CBNET( );
 
 	bool GetExiting( )					{ return m_Exiting; }
-	string GetServer( )					{ return m_Server; }
-	string GetServerAlias( )			{ return m_ServerAlias; }
-	string GetCDKeyROC( )				{ return m_CDKeyROC; }
-	string GetCDKeyTFT( )				{ return m_CDKeyTFT; }
-	string GetUserName( )				{ return m_UserName; }
-	string GetUserPassword( )			{ return m_UserPassword; }
-	string GetFirstChannel( )			{ return m_FirstChannel; }
-	string GetCurrentChannel( )			{ return m_CurrentChannel; }
-	string GetRootAdmin( )				{ return m_RootAdmin; }
+	QString GetServer( )					{ return m_Server; }
+	QString GetServerAlias( )			{ return m_ServerAlias; }
+	QString GetCDKeyROC( )				{ return m_CDKeyROC; }
+	QString GetCDKeyTFT( )				{ return m_CDKeyTFT; }
+	QString GetUserName( )				{ return m_UserName; }
+	QString GetUserPassword( )			{ return m_UserPassword; }
+	QString GetFirstChannel( )			{ return m_FirstChannel; }
+	QString GetCurrentChannel( )			{ return m_CurrentChannel; }
+	QString GetRootAdmin( )				{ return m_RootAdmin; }
 	char GetCommandTrigger( )			{ return m_CommandTrigger; }
 	QByteArray GetEXEVersion( )			{ return m_EXEVersion; }
 	QByteArray GetEXEVersionHash( )		{ return m_EXEVersionHash; }
-	string GetPasswordHashType( )		{ return m_PasswordHashType; }
-	string GetPVPGNRealmName( )			{ return m_PVPGNRealmName; }
+	QString GetPasswordHashType( )		{ return m_PasswordHashType; }
+	QString GetPVPGNRealmName( )			{ return m_PVPGNRealmName; }
 	uint32_t GetHostCounterID( )		{ return m_HostCounterID; }
 	bool GetLoggedIn( )					{ return m_LoggedIn; }
 	bool GetInChat( )					{ return m_InChat; }
@@ -158,30 +158,30 @@ public:
 
 	// functions to send packets to battle.net
 
-	void SendJoinChannel( string channel );
+	void SendJoinChannel( QString channel );
 	void SendGetFriendsList( );
 	void SendGetClanList( );
 	void QueueEnterChat( );
-	void QueueChatCommand( string chatCommand );
-	void QueueChatCommand( string chatCommand, string user, bool whisper );
-	void QueueGameCreate( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
-	void QueueGameRefresh( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter );
+	void QueueChatCommand( QString chatCommand );
+	void QueueChatCommand( QString chatCommand, QString user, bool whisper );
+	void QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
+	void QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter );
 	void QueueGameUncreate( );
 
 	void UnqueuePackets( unsigned char type );
-	void UnqueueChatCommand( string chatCommand );
+	void UnqueueChatCommand( QString chatCommand );
 	void UnqueueGameRefreshes( );
 
 	// other functions
 
-	bool IsAdmin( string name );
-	bool IsRootAdmin( string name );
-	CDBBan *IsBannedName( string name );
-	CDBBan *IsBannedIP( string ip );
-	void AddAdmin( string name );
-	void AddBan( string name, string ip, string gamename, string admin, string reason );
-	void RemoveAdmin( string name );
-	void RemoveBan( string name );
+	bool IsAdmin( QString name );
+	bool IsRootAdmin( QString name );
+	CDBBan *IsBannedName( QString name );
+	CDBBan *IsBannedIP( QString ip );
+	void AddAdmin( QString name );
+	void AddBan( QString name, QString ip, QString gamename, QString admin, QString reason );
+	void RemoveAdmin( QString name );
+	void RemoveBan( QString name );
 	void HoldFriends( CBaseGame *game );
 	void HoldClan( CBaseGame *game );
 };

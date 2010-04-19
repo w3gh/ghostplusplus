@@ -84,7 +84,7 @@ extern "C" {
 ** the sqlite3.h file specify the version of SQLite with which
 ** that header file is associated.
 **
-** The "version" of SQLite is a string of the form "X.Y.Z".
+** The "version" of SQLite is a QString of the form "X.Y.Z".
 ** The phrase "alpha" or "beta" might be appended after the Z.
 ** The X value is major version number always 3 in SQLite3.
 ** The X value only changes when backwards compatibility is
@@ -114,8 +114,8 @@ extern "C" {
 ** [SQLITE_VERSION_NUMBER].
 **
 ** The sqlite3_libversion() function returns the same information as is
-** in the sqlite3_version[] string constant.  The function is provided
-** for use in DLLs since DLL users usually do not have direct access to string
+** in the sqlite3_version[] QString constant.  The function is provided
+** for use in DLLs since DLL users usually do not have direct access to QString
 ** constants within the DLL.
 **
 ** Requirements: [H10021] [H10022] [H10023]
@@ -264,8 +264,8 @@ typedef int (*sqlite3_callback)(void*,int,char**, char**);
 ** message returned through the 5th parameter when it has finished using
 ** the error message.
 **
-** If the SQL statement in the 2nd parameter is NULL or an empty string
-** or a string containing only whitespace and comments, then no SQL
+** If the SQL statement in the 2nd parameter is NULL or an empty QString
+** or a QString containing only whitespace and comments, then no SQL
 ** statements are evaluated and the database is not changed.
 **
 ** The sqlite3_exec() interface is implemented in terms of
@@ -657,9 +657,9 @@ typedef struct sqlite3_mutex sqlite3_mutex;
 ** be unique across all VFS modules.
 **
 ** SQLite will guarantee that the zFilename parameter to xOpen
-** is either a NULL pointer or string obtained
+** is either a NULL pointer or QString obtained
 ** from xFullPathname().  SQLite further guarantees that
-** the string will be valid and unchanged until xClose() is
+** the QString will be valid and unchanged until xClose() is
 ** called. Because of the previous sentence,
 ** the [sqlite3_file] can safely store a pointer to the
 ** filename if it needs to remember the filename for some reason.
@@ -1370,11 +1370,11 @@ void sqlite3_interrupt(sqlite3*);
 ** These routines are useful during command-line input to determine if the
 ** currently entered text seems to form a complete SQL statement or
 ** if additional input is needed before sending the text into
-** SQLite for parsing.  These routines return 1 if the input string
+** SQLite for parsing.  These routines return 1 if the input QString
 ** appears to be a complete SQL statement.  A statement is judged to be
 ** complete if it ends with a semicolon token and is not a prefix of a
 ** well-formed CREATE TRIGGER statement.  Semicolons that are embedded within
-** string literals or quoted identifier names or comments are not
+** QString literals or quoted identifier names or comments are not
 ** independent tokens (they are part of the token in which they are
 ** embedded) and thus do not count as a statement terminator.  Whitespace
 ** and comments that follow the final semicolon are ignored.
@@ -1397,7 +1397,7 @@ void sqlite3_interrupt(sqlite3*);
 ** UTF-8 string.
 **
 ** The input to [sqlite3_complete16()] must be a zero-terminated
-** UTF-16 string in native byte order.
+** UTF-16 QString in native byte order.
 */
 int sqlite3_complete(const char *sql);
 int sqlite3_complete16(const void *sql);
@@ -1511,7 +1511,7 @@ int sqlite3_busy_timeout(sqlite3*, int ms);
 ** to zero-terminated strings that  contain the names of the columns.
 ** The remaining entries all point to query results.  NULL values result
 ** in NULL pointers.  All other values are in their UTF-8 zero-terminated
-** string representation as returned by [sqlite3_column_text()].
+** QString representation as returned by [sqlite3_column_text()].
 **
 ** A result table might consist of one or more memory allocations.
 ** It is not safe to pass a result table directly to [sqlite3_free()].
@@ -1545,7 +1545,7 @@ int sqlite3_busy_timeout(sqlite3*, int ms);
 **
 ** The sqlite3_get_table() function evaluates one or more
 ** semicolon-separated SQL statements in the zero-terminated UTF-8
-** string of its 2nd parameter.  It returns a result table to the
+** QString of its 2nd parameter.  It returns a result table to the
 ** pointer given in its 3rd parameter.
 **
 ** After the calling function has finished using the result, it should
@@ -1604,7 +1604,7 @@ void sqlite3_free_table(char **result);
 ** As long as the buffer size is greater than zero, sqlite3_snprintf()
 ** guarantees that the buffer is always zero-terminated.  The first
 ** parameter "n" is the total size of the buffer, including space for
-** the zero terminator.  So the longest string that can be completely
+** the zero terminator.  So the longest QString that can be completely
 ** written will be n-1 characters.
 **
 ** These routines all implement some additional formatting
@@ -1613,12 +1613,12 @@ void sqlite3_free_table(char **result);
 ** is are "%q", "%Q", and "%z" options.
 **
 ** The %q option works like %s in that it substitutes a null-terminated
-** string from the argument list.  But %q also doubles every '\'' character.
-** %q is designed for use inside a string literal.  By doubling each '\''
+** QString from the argument list.  But %q also doubles every '\'' character.
+** %q is designed for use inside a QString literal.  By doubling each '\''
 ** character it escapes that character and allows it to be inserted into
 ** the string.
 **
-** For example, assume the string variable zText contains text as follows:
+** For example, assume the QString variable zText contains text as follows:
 **
 ** <blockquote><pre>
 **  char *zText = "It's a happy day!";
@@ -1632,7 +1632,7 @@ void sqlite3_free_table(char **result);
 **  sqlite3_free(zSQL);
 ** </pre></blockquote>
 **
-** Because the %q format string is used, the '\'' character in zText
+** Because the %q format QString is used, the '\'' character in zText
 ** is escaped and the SQL generated is as follows:
 **
 ** <blockquote><pre>
@@ -1647,7 +1647,7 @@ void sqlite3_free_table(char **result);
 ** </pre></blockquote>
 **
 ** This second example is an SQL syntax error.  As a general rule you should
-** always use %q instead of %s when inserting text into a string literal.
+** always use %q instead of %s when inserting text into a QString literal.
 **
 ** The %Q option works like %q except it also adds single quotes around
 ** the outside of the total string.  Additionally, if the parameter in the
@@ -1664,7 +1664,7 @@ void sqlite3_free_table(char **result);
 ** variable even if the zText variable is a NULL pointer.
 **
 ** The "%z" formatting option works exactly like "%s" with the
-** addition that after the string has been read and copied into
+** addition that after the QString has been read and copied into
 ** the result, [sqlite3_free()] is called on the input string. {END}
 **
 ** Requirements:
@@ -2118,9 +2118,9 @@ int sqlite3_open_v2(
 **
 ** The sqlite3_errmsg() and sqlite3_errmsg16() return English-language
 ** text that describes the error, as either UTF-8 or UTF-16 respectively.
-** Memory to hold the error message string is managed internally.
+** Memory to hold the error message QString is managed internally.
 ** The application does not need to worry about freeing the result.
-** However, the error string might be overwritten or deallocated by
+** However, the error QString might be overwritten or deallocated by
 ** subsequent calls to other SQLite interface functions.
 **
 ** When the serialized [threading mode] is in use, it might be the
@@ -2221,7 +2221,7 @@ int sqlite3_limit(sqlite3*, int id, int newVal);
 **
 ** <dl>
 ** <dt>SQLITE_LIMIT_LENGTH</dt>
-** <dd>The maximum size of any string or BLOB or table row.<dd>
+** <dd>The maximum size of any QString or BLOB or table row.<dd>
 **
 ** <dt>SQLITE_LIMIT_SQL_LENGTH</dt>
 ** <dd>The maximum length of an SQL statement.</dd>
@@ -2286,11 +2286,11 @@ int sqlite3_limit(sqlite3*, int id, int newVal);
 ** If the nByte argument is less than zero, then zSql is read up to the
 ** first zero terminator. If nByte is non-negative, then it is the maximum
 ** number of  bytes read from zSql.  When nByte is non-negative, the
-** zSql string ends at either the first '\000' or '\u0000' character or
+** zSql QString ends at either the first '\000' or '\u0000' character or
 ** the nByte-th byte, whichever comes first. If the caller knows
-** that the supplied string is nul-terminated, then there is a small
+** that the supplied QString is nul-terminated, then there is a small
 ** performance advantage to be gained by passing an nByte parameter that
-** is equal to the number of bytes in the input string <i>including</i>
+** is equal to the number of bytes in the input QString <i>including</i>
 ** the nul-terminator bytes.
 **
 ** If pzTail is not NULL then *pzTail is made to point to the first byte
@@ -2301,7 +2301,7 @@ int sqlite3_limit(sqlite3*, int id, int newVal);
 ** *ppStmt is left pointing to a compiled [prepared statement] that can be
 ** executed using [sqlite3_step()].  If there is an error, *ppStmt is set
 ** to NULL.  If the input text contains no SQL (if the input is an empty
-** string or a comment) then *ppStmt is set to NULL.
+** QString or a comment) then *ppStmt is set to NULL.
 ** The calling procedure is responsible for deleting the compiled
 ** SQL statement using [sqlite3_finalize()] after it has finished with it.
 ** ppStmt may not be NULL.
@@ -2476,12 +2476,12 @@ typedef struct sqlite3_context sqlite3_context;
 ** In those routines that have a fourth argument, its value is the
 ** number of bytes in the parameter.  To be clear: the value is the
 ** number of <u>bytes</u> in the value, not the number of characters.
-** If the fourth parameter is negative, the length of the string is
+** If the fourth parameter is negative, the length of the QString is
 ** the number of bytes up to the first zero terminator.
 **
 ** The fifth argument to sqlite3_bind_blob(), sqlite3_bind_text(), and
 ** sqlite3_bind_text16() is a destructor used to dispose of the BLOB or
-** string after SQLite has finished with it. If the fifth argument is
+** QString after SQLite has finished with it. If the fifth argument is
 ** the special value [SQLITE_STATIC], then SQLite assumes that the
 ** information is in static, unmanaged space and does not need to be freed.
 ** If the fifth argument has the value [SQLITE_TRANSIENT], then
@@ -2559,7 +2559,7 @@ int sqlite3_bind_parameter_count(sqlite3_stmt*);
 ** This routine returns a pointer to the name of the n-th
 ** [SQL parameter] in a [prepared statement].
 ** SQL parameters of the form "?NNN" or ":AAA" or "@AAA" or "$AAA"
-** have a name which is the string "?NNN" or ":AAA" or "@AAA" or "$AAA"
+** have a name which is the QString "?NNN" or ":AAA" or "@AAA" or "$AAA"
 ** respectively.
 ** In other words, the initial ":" or "$" or "@" or "?"
 ** is included as part of the name.
@@ -2569,7 +2569,7 @@ int sqlite3_bind_parameter_count(sqlite3_stmt*);
 ** The first host parameter has an index of 1, not 0.
 **
 ** If the value n is out of range or if the n-th parameter is
-** nameless, then NULL is returned.  The returned string is
+** nameless, then NULL is returned.  The returned QString is
 ** always in UTF-8 encoding even if the named parameter was
 ** originally specified as UTF-16 in [sqlite3_prepare16()] or
 ** [sqlite3_prepare16_v2()].
@@ -2631,13 +2631,13 @@ int sqlite3_column_count(sqlite3_stmt *pStmt);
 **
 ** These routines return the name assigned to a particular column
 ** in the result set of a [SELECT] statement.  The sqlite3_column_name()
-** interface returns a pointer to a zero-terminated UTF-8 string
+** interface returns a pointer to a zero-terminated UTF-8 QString
 ** and sqlite3_column_name16() returns a pointer to a zero-terminated
 ** UTF-16 string.  The first parameter is the [prepared statement]
 ** that implements the [SELECT] statement. The second parameter is the
 ** column number.  The leftmost column is number 0.
 **
-** The returned string pointer is valid until either the [prepared statement]
+** The returned QString pointer is valid until either the [prepared statement]
 ** is destroyed by [sqlite3_finalize()] or until the next call to
 ** sqlite3_column_name() or sqlite3_column_name16() on the same column.
 **
@@ -2665,7 +2665,7 @@ const void *sqlite3_column_name16(sqlite3_stmt*, int N);
 ** either a UTF-8 or UTF-16 string.  The _database_ routines return
 ** the database name, the _table_ routines return the table name, and
 ** the origin_ routines return the column name.
-** The returned string is valid until the [prepared statement] is destroyed
+** The returned QString is valid until the [prepared statement] is destroyed
 ** using [sqlite3_finalize()] or until the same information is requested
 ** again in a different encoding.
 **
@@ -2717,7 +2717,7 @@ const void *sqlite3_column_origin_name16(sqlite3_stmt*,int);
 ** expression or subquery) then the declared type of the table
 ** column is returned.  If the Nth column of the result set is an
 ** expression or subquery, then a NULL pointer is returned.
-** The returned string is always UTF-8 encoded. {END}
+** The returned QString is always UTF-8 encoded. {END}
 **
 ** For example, given the database schema:
 **
@@ -2727,7 +2727,7 @@ const void *sqlite3_column_origin_name16(sqlite3_stmt*,int);
 **
 ** SELECT c1 + 1, c1 FROM t1;
 **
-** this routine would return the string "VARIANT" for the second result
+** this routine would return the QString "VARIANT" for the second result
 ** column (i==1), and a NULL pointer for the first result column (i==0).
 **
 ** SQLite uses dynamic run-time typing.  So just because a column
@@ -2832,7 +2832,7 @@ int sqlite3_data_count(sqlite3_stmt *pStmt);
 ** <ul>
 ** <li> 64-bit signed integer
 ** <li> 64-bit IEEE floating point number
-** <li> string
+** <li> QString
 ** <li> BLOB
 ** <li> NULL
 ** </ul> {END}
@@ -2890,12 +2890,12 @@ int sqlite3_data_count(sqlite3_stmt *pStmt);
 ** versions of SQLite may change the behavior of sqlite3_column_type()
 ** following a type conversion.
 **
-** If the result is a BLOB or UTF-8 string then the sqlite3_column_bytes()
+** If the result is a BLOB or UTF-8 QString then the sqlite3_column_bytes()
 ** routine returns the number of bytes in that BLOB or string.
 ** If the result is a UTF-16 string, then sqlite3_column_bytes() converts
-** the string to UTF-8 and then returns the number of bytes.
+** the QString to UTF-8 and then returns the number of bytes.
 ** If the result is a numeric value then sqlite3_column_bytes() uses
-** [sqlite3_snprintf()] to convert that value to a UTF-8 string and returns
+** [sqlite3_snprintf()] to convert that value to a UTF-8 QString and returns
 ** the number of bytes in that string.
 ** The value returned does not include the zero terminator at the end
 ** of the string.  For clarity: the value returned is the number of
@@ -3229,7 +3229,7 @@ SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int64,int),void
 ** except that  these routines take a single [protected sqlite3_value] object
 ** pointer instead of a [sqlite3_stmt*] pointer and an integer column number.
 **
-** The sqlite3_value_text16() interface extracts a UTF-16 string
+** The sqlite3_value_text16() interface extracts a UTF-16 QString
 ** in the native byte-order of the host machine.  The
 ** sqlite3_value_text16be() and sqlite3_value_text16le() interfaces
 ** extract UTF-16 strings as big-endian and little-endian respectively.
@@ -3238,7 +3238,7 @@ SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int64,int),void
 ** numeric affinity to the value.  This means that an attempt is
 ** made to convert the value to an integer or floating point.  If
 ** such a conversion is possible without loss of information (in other
-** words, if the value is a string that looks like a number)
+** words, if the value is a QString that looks like a number)
 ** then the conversion is performed.  Otherwise no conversion occurs.
 ** The [SQLITE_INTEGER | datatype] after conversion is returned.
 **
@@ -3338,7 +3338,7 @@ sqlite3 *sqlite3_context_db_handle(sqlite3_context*);
 ** function. The compiled version of the regular expression is stored as
 ** metadata associated with the SQL value passed as the regular expression
 ** pattern.  The compiled regular expression can be reused on multiple
-** invocations of the same function so that the original pattern string
+** invocations of the same function so that the original pattern QString
 ** does not need to be recompiled on each invocation.
 **
 ** The sqlite3_get_auxdata() interface returns a pointer to the metadata
@@ -3421,11 +3421,11 @@ typedef void (*sqlite3_destructor_type)(void*);
 **
 ** The sqlite3_result_error() and sqlite3_result_error16() functions
 ** cause the implemented SQL function to throw an exception.
-** SQLite uses the string pointed to by the
+** SQLite uses the QString pointed to by the
 ** 2nd parameter of sqlite3_result_error() or sqlite3_result_error16()
 ** as the text of an error message.  SQLite interprets the error
-** message string from sqlite3_result_error() as UTF-8. SQLite
-** interprets the string from sqlite3_result_error16() as UTF-16 in native
+** message QString from sqlite3_result_error() as UTF-8. SQLite
+** interprets the QString from sqlite3_result_error16() as UTF-16 in native
 ** byte order.  If the third parameter to sqlite3_result_error()
 ** or sqlite3_result_error16() is negative then SQLite takes as the error
 ** message all text up through the first zero character.
@@ -3442,7 +3442,7 @@ typedef void (*sqlite3_destructor_type)(void*);
 ** or sqlite3_result_error16() resets the error code to SQLITE_ERROR.
 **
 ** The sqlite3_result_toobig() interface causes SQLite to throw an error
-** indicating that a string or BLOB is to long to represent.
+** indicating that a QString or BLOB is to long to represent.
 **
 ** The sqlite3_result_nomem() interface causes SQLite to throw an error
 ** indicating that a memory allocation failed.
@@ -3460,7 +3460,7 @@ typedef void (*sqlite3_destructor_type)(void*);
 ** The sqlite3_result_text(), sqlite3_result_text16(),
 ** sqlite3_result_text16le(), and sqlite3_result_text16be() interfaces
 ** set the return value of the application-defined function to be
-** a text string which is represented as UTF-8, UTF-16 native byte order,
+** a text QString which is represented as UTF-8, UTF-16 native byte order,
 ** UTF-16 little endian, or UTF-16 big endian, respectively.
 ** SQLite takes the text result from the application from
 ** the 2nd parameter of the sqlite3_result_text* interfaces.
@@ -3526,9 +3526,9 @@ void sqlite3_result_zeroblob(sqlite3_context*, int n);
 ** These functions are used to add new collation sequences to the
 ** [database connection] specified as the first argument.
 **
-** The name of the new collation sequence is specified as a UTF-8 string
+** The name of the new collation sequence is specified as a UTF-8 QString
 ** for sqlite3_create_collation() and sqlite3_create_collation_v2()
-** and a UTF-16 string for sqlite3_create_collation16(). In all cases
+** and a UTF-16 QString for sqlite3_create_collation16(). In all cases
 ** the name is passed as the second function argument.
 **
 ** The third argument may be one of the constants [SQLITE_UTF8],
@@ -3552,7 +3552,7 @@ void sqlite3_result_zeroblob(sqlite3_context*, int n);
 ** each represented by a (length, data) pair and encoded in the encoding
 ** that was passed as the third argument when the collation sequence was
 ** registered. {END}  The application defined collation routine should
-** return negative, zero or positive if the first string is less than,
+** return negative, zero or positive if the first QString is less than,
 ** equal to, or greater than the second string. i.e. (STRING1 - STRING2).
 **
 ** The sqlite3_create_collation_v2() works like sqlite3_create_collation()
@@ -3679,7 +3679,7 @@ int sqlite3_sleep(int);
 /*
 ** CAPI3REF: Name Of The Folder Holding Temporary Files {H10310} <S20000>
 **
-** If this global variable is made to point to a string which is
+** If this global variable is made to point to a QString which is
 ** the name of a folder (a.k.a. directory), then all temporary files
 ** created by SQLite will be placed in that directory.  If this variable
 ** is a NULL pointer, then SQLite performs a search for an appropriate
@@ -3696,7 +3696,7 @@ int sqlite3_sleep(int);
 **
 ** The [temp_store_directory pragma] may modify this variable and cause
 ** it to point to memory obtained from [sqlite3_malloc].  Furthermore,
-** the [temp_store_directory pragma] always assumes that any string
+** the [temp_store_directory pragma] always assumes that any QString
 ** that this variable points to is held in memory obtained from 
 ** [sqlite3_malloc] and the pragma may attempt to free that memory
 ** using [sqlite3_free].
@@ -4323,10 +4323,10 @@ SQLITE_EXPERIMENTAL int sqlite3_create_module_v2(
 ** common to all module implementations.
 **
 ** Virtual tables methods can set an error message by assigning a
-** string obtained from [sqlite3_mprintf()] to zErrMsg.  The method should
-** take care that any prior string is freed by a call to [sqlite3_free()]
-** prior to assigning a new string to zErrMsg.  After the error message
-** is delivered up to the client application, the string will be automatically
+** QString obtained from [sqlite3_mprintf()] to zErrMsg.  The method should
+** take care that any prior QString is freed by a call to [sqlite3_free()]
+** prior to assigning a new QString to zErrMsg.  After the error message
+** is delivered up to the client application, the QString will be automatically
 ** freed by sqlite3_free() and the zErrMsg field will be zeroed.
 */
 struct sqlite3_vtab {

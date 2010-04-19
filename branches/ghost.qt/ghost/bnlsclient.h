@@ -36,7 +36,7 @@ private:
 	CBNLSProtocol *m_Protocol;						// battle.net protocol
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	bool m_WasConnected;
-	string m_Server;
+	QString m_Server;
 	uint16_t m_Port;
 	uint32_t m_LastNullTime;
 	uint32_t m_WardenCookie;						// the warden cookie
@@ -46,7 +46,7 @@ private:
 	uint32_t m_TotalWardenOut;
 
 public:
-	CBNLSClient( string nServer, uint16_t nPort, uint32_t nWardenCookie );
+	CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie );
 	~CBNLSClient( );
 
 	QByteArray GetWardenResponse( );
