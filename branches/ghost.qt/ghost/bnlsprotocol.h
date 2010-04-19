@@ -65,20 +65,20 @@ public:
 
 	// receive functions
 
-	BYTEARRAY RECEIVE_BNLS_WARDEN( BYTEARRAY data );
+	QByteArray RECEIVE_BNLS_WARDEN( QByteArray data );
 
 	// send functions
 
-	BYTEARRAY SEND_BNLS_NULL( );
-	BYTEARRAY SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t seed );
-	BYTEARRAY SEND_BNLS_WARDEN_RAW( uint32_t cookie, BYTEARRAY raw );
-	BYTEARRAY SEND_BNLS_WARDEN_RUNMODULE( uint32_t cookie );
+	QByteArray SEND_BNLS_NULL( );
+	QByteArray SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t seed );
+	QByteArray SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray raw );
+	QByteArray SEND_BNLS_WARDEN_RUNMODULE( uint32_t cookie );
 
 	// other functions
 
 private:
-	bool AssignLength( BYTEARRAY &content );
-	bool ValidateLength( BYTEARRAY &content );
+	bool AssignLength( QByteArray &content );
+	bool ValidateLength( QByteArray &content );
 };
 
 #endif

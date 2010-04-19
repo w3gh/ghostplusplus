@@ -48,7 +48,7 @@ void CBNCSUtilInterface :: Reset( QString userName, QString userPassword )
 	m_NLS = new NLS( userName, userPassword );
 }
 
-bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, BYTEARRAY clientToken, BYTEARRAY serverToken )
+bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, QByteArray clientToken, QByteArray serverToken )
 {
 	// set m_EXEVersion, m_EXEVersionHash, m_EXEInfo, m_InfoROC, m_InfoTFT
 
@@ -71,14 +71,14 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 		uint32_t EXEVersion;
 		getExeInfo( FileWar3EXE.c_str( ), (char *)&buf, 1024, (uint32_t *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
-		m_EXEVersion = UTIL_CreateByteArray( EXEVersion, false );
+		m_EXEVersion = UTIL_CreateQByteArray( EXEVersion, false );
 		uint32_t EXEVersionHash;
 		checkRevisionFlat( valueStringFormula.c_str( ), FileWar3EXE.c_str( ), FileStormDLL.c_str( ), FileGameDLL.c_str( ), extractMPQNumber( mpqFileName.c_str( ) ), (unsigned long *)&EXEVersionHash );
-		m_EXEVersionHash = UTIL_CreateByteArray( EXEVersionHash, false );
-		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_ByteArrayToUInt32( clientToken, false ), UTIL_ByteArrayToUInt32( serverToken, false ) );
+		m_EXEVersionHash = UTIL_CreateQByteArray( EXEVersionHash, false );
+		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
 
 		if( TFT )
-			m_KeyInfoTFT = CreateKeyInfo( keyTFT, UTIL_ByteArrayToUInt32( clientToken, false ), UTIL_ByteArrayToUInt32( serverToken, false ) );
+			m_KeyInfoTFT = CreateKeyInfo( keyTFT, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
 
 		if( m_KeyInfoROC.size( ) == 36 && ( !TFT || m_KeyInfoTFT.size( ) == 36 ) )
 			return true;
@@ -113,18 +113,18 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGON( )
 	char buf[32];
 	// nls_get_A( (nls_t *)m_nls, buf );
 	( (NLS *)m_NLS )->getPublicKey( buf );
-	m_ClientKey = UTIL_CreateByteArray( (unsigned char *)buf, 32 );
+	m_ClientKey = UTIL_CreateQByteArray( (unsigned char *)buf, 32 );
 	return true;
 }
 
-bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY salt, BYTEARRAY serverKey )
+bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QByteArray serverKey )
 {
 	// set m_M1
 
 	char buf[20];
 	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).c_str( ), QString( salt.begin( ), salt.end( ) ).c_str( ) );
 	( (NLS *)m_NLS )->getClientSessionKey( buf, QString( salt.begin( ), salt.end( ) ).c_str( ), QString( serverKey.begin( ), serverKey.end( ) ).c_str( ) );
-	m_M1 = UTIL_CreateByteArray( (unsigned char *)buf, 20 );
+	m_M1 = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
 	return true;
 }
 
@@ -134,26 +134,26 @@ bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
 
 	char buf[20];
 	hashPassword( userPassword.c_str( ), buf );
-	m_PvPGNPasswordHash = UTIL_CreateByteArray( (unsigned char *)buf, 20 );
+	m_PvPGNPasswordHash = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
 	return true;
 }
 
-BYTEARRAY CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken )
+QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
-	BYTEARRAY KeyInfo;
+	QByteArray KeyInfo;
 	CDKeyDecoder Decoder( key.c_str( ), key.size( ) );
 
 	if( Decoder.isKeyValid( ) )
 	{
-		UTIL_AppendByteArray( KeyInfo, UTIL_CreateByteArray( (uint32_t)key.size( ), false ) );
-		UTIL_AppendByteArray( KeyInfo, UTIL_CreateByteArray( Decoder.getProduct( ), false ) );
-		UTIL_AppendByteArray( KeyInfo, UTIL_CreateByteArray( Decoder.getVal1( ), false ) );
-		UTIL_AppendByteArray( KeyInfo, UTIL_CreateByteArray( Zeros, 4 ) );
+		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( (uint32_t)key.size( ), false ) );
+		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getProduct( ), false ) );
+		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getVal1( ), false ) );
+		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Zeros, 4 ) );
 		size_t Length = Decoder.calculateHash( clientToken, serverToken );
 		char *buf = new char[Length];
 		Length = Decoder.getHash( buf );
-		UTIL_AppendByteArray( KeyInfo, UTIL_CreateByteArray( (unsigned char *)buf, Length ) );
+		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( (unsigned char *)buf, Length ) );
 		delete [] buf;
 	}
 

@@ -98,10 +98,10 @@ private:
 	bool m_Valid;
 	string m_CFGFile;
 	string m_MapPath;							// config value: map path
-	BYTEARRAY m_MapSize;						// config value: map size (4 bytes)
-	BYTEARRAY m_MapInfo;						// config value: map info (4 bytes) -> this is the real CRC
-	BYTEARRAY m_MapCRC;							// config value: map crc (4 bytes) -> this is not the real CRC, it's the "xoro" value
-	BYTEARRAY m_MapSHA1;						// config value: map sha1 (20 bytes)
+	QByteArray m_MapSize;						// config value: map size (4 bytes)
+	QByteArray m_MapInfo;						// config value: map info (4 bytes) -> this is the real CRC
+	QByteArray m_MapCRC;							// config value: map crc (4 bytes) -> this is not the real CRC, it's the "xoro" value
+	QByteArray m_MapSHA1;						// config value: map sha1 (20 bytes)
 	unsigned char m_MapSpeed;
 	unsigned char m_MapVisibility;
 	unsigned char m_MapObservers;
@@ -111,8 +111,8 @@ private:
 	unsigned char m_MapFilterSize;
 	unsigned char m_MapFilterObs;
 	uint32_t m_MapOptions;
-	BYTEARRAY m_MapWidth;						// config value: map width (2 bytes)
-	BYTEARRAY m_MapHeight;						// config value: map height (2 bytes)
+	QByteArray m_MapWidth;						// config value: map width (2 bytes)
+	QByteArray m_MapHeight;						// config value: map height (2 bytes)
 	string m_MapType;							// config value: map type (for stats class)
 	string m_MapMatchMakingCategory;			// config value: map matchmaking category (for matchmaking)
 	string m_MapStatsW3MMDCategory;				// config value: map stats w3mmd category (for saving w3mmd stats)
@@ -123,7 +123,7 @@ private:
 	string m_MapData;							// the map data itself, for sending the map to players
 	uint32_t m_MapNumPlayers;
 	uint32_t m_MapNumTeams;
-	vector<CGameSlot> m_Slots;
+	QVector<CGameSlot> m_Slots;
 
 public:
 	CMap( CGHost *nGHost );
@@ -133,20 +133,20 @@ public:
 	bool GetValid( )						{ return m_Valid; }
 	string GetCFGFile( )					{ return m_CFGFile; }
 	string GetMapPath( )					{ return m_MapPath; }
-	BYTEARRAY GetMapSize( )					{ return m_MapSize; }
-	BYTEARRAY GetMapInfo( )					{ return m_MapInfo; }
-	BYTEARRAY GetMapCRC( )					{ return m_MapCRC; }
-	BYTEARRAY GetMapSHA1( )					{ return m_MapSHA1; }
+	QByteArray GetMapSize( )					{ return m_MapSize; }
+	QByteArray GetMapInfo( )					{ return m_MapInfo; }
+	QByteArray GetMapCRC( )					{ return m_MapCRC; }
+	QByteArray GetMapSHA1( )					{ return m_MapSHA1; }
 	unsigned char GetMapSpeed( )			{ return m_MapSpeed; }
 	unsigned char GetMapVisibility( )		{ return m_MapVisibility; }
 	unsigned char GetMapObservers( )		{ return m_MapObservers; }
 	unsigned char GetMapFlags( )			{ return m_MapFlags; }
-	BYTEARRAY GetMapGameFlags( );
+	QByteArray GetMapGameFlags( );
 	uint32_t GetMapGameType( );
 	uint32_t GetMapOptions( )				{ return m_MapOptions; }
 	unsigned char GetMapLayoutStyle( );
-	BYTEARRAY GetMapWidth( )				{ return m_MapWidth; }
-	BYTEARRAY GetMapHeight( )				{ return m_MapHeight; }
+	QByteArray GetMapWidth( )				{ return m_MapWidth; }
+	QByteArray GetMapHeight( )				{ return m_MapHeight; }
 	string GetMapType( )					{ return m_MapType; }
 	string GetMapMatchMakingCategory( )		{ return m_MapMatchMakingCategory; }
 	string GetMapStatsW3MMDCategory( )		{ return m_MapStatsW3MMDCategory; }
@@ -157,7 +157,7 @@ public:
 	string *GetMapData( )					{ return &m_MapData; }
 	uint32_t GetMapNumPlayers( )			{ return m_MapNumPlayers; }
 	uint32_t GetMapNumTeams( )				{ return m_MapNumTeams; }
-	vector<CGameSlot> GetSlots( )			{ return m_Slots; }
+	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }
 
 	void Load( CConfig *CFG, string nCFGFile );
 	void CheckValid( );

@@ -33,15 +33,15 @@ private:
 	QString m_Category;
 	uint32_t m_NextValueID;
 	uint32_t m_NextCheckID;
-	map<uint32_t,QString> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
-	map<uint32_t,QString> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
-	map<uint32_t,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
-	map<uint32_t,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
-	map<QString,QString> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
-	map<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
-	map<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
-	map<VarP,QString> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
-	map<QString, vector<QString> > m_DefEvents;	// event -> vector of arguments + format
+	QMap<uint32_t,QString> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
+	QMap<uint32_t,QString> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
+	QMap<uint32_t,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
+	QMap<uint32_t,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
+	QMap<QString,QString> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
+	QMap<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
+	QMap<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
+	QMap<VarP,QString> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
+	QMap<QString, QVector<QString> > m_DefEvents;	// event -> vector of arguments + format
 
 public:
 	CStatsW3MMD( CBaseGame *nGame, QString nCategory );
@@ -49,7 +49,7 @@ public:
 
 	virtual bool ProcessAction( CIncomingAction *Action );
 	virtual void Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID );
-	virtual vector<QString> TokenizeKey( QString key );
+	virtual QVector<QString> TokenizeKey( QString key );
 };
 
 #endif

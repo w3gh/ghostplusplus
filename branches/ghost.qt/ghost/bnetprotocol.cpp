@@ -25,7 +25,7 @@
 CBNETProtocol :: CBNETProtocol( )
 {
 	unsigned char ClientToken[] = { 220, 1, 203, 7 };
-	m_ClientToken = UTIL_CreateByteArray( ClientToken, 4 );
+	m_ClientToken = UTIL_CreateQByteArray( ClientToken, 4 );
 }
 
 CBNETProtocol :: ~CBNETProtocol( )
@@ -37,7 +37,7 @@ CBNETProtocol :: ~CBNETProtocol( )
 // RECEIVE FUNCTIONS //
 ///////////////////////
 
-bool CBNETProtocol :: RECEIVE_SID_NULL( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_NULL( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_NULL" );
 	// DEBUG_Print( data );
@@ -48,7 +48,7 @@ bool CBNETProtocol :: RECEIVE_SID_NULL( BYTEARRAY data )
 	return ValidateLength( data );
 }
 
-CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( BYTEARRAY data )
+CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_GETADVLISTEX" );
 	// DEBUG_Print( data );
@@ -66,23 +66,23 @@ CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
 	{
-		BYTEARRAY GamesFound = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray GamesFound = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-		if( UTIL_ByteArrayToUInt32( GamesFound, false ) > 0 && data.size( ) >= 25 )
+		if( UTIL_QByteArrayToUInt32( GamesFound, false ) > 0 && data.size( ) >= 25 )
 		{
-			BYTEARRAY Port = BYTEARRAY( data.begin( ) + 18, data.begin( ) + 20 );
-			BYTEARRAY IP = BYTEARRAY( data.begin( ) + 20, data.begin( ) + 24 );
-			BYTEARRAY GameName = UTIL_ExtractCString( data, 24 );
+			QByteArray Port = QByteArray( data.begin( ) + 18, data.begin( ) + 20 );
+			QByteArray IP = QByteArray( data.begin( ) + 20, data.begin( ) + 24 );
+			QByteArray GameName = UTIL_ExtractCString( data, 24 );
 
 			if( data.size( ) >= GameName.size( ) + 35 )
 			{
-				BYTEARRAY HostCounter;
+				QByteArray HostCounter;
 				HostCounter.push_back( UTIL_ExtractHex( data, GameName.size( ) + 27, true ) );
 				HostCounter.push_back( UTIL_ExtractHex( data, GameName.size( ) + 29, true ) );
 				HostCounter.push_back( UTIL_ExtractHex( data, GameName.size( ) + 31, true ) );
 				HostCounter.push_back( UTIL_ExtractHex( data, GameName.size( ) + 33, true ) );
 				return new CIncomingGameHost(	IP,
-												UTIL_ByteArrayToUInt16( Port, false ),
+												UTIL_QByteArrayToUInt16( Port, false ),
 												QString( GameName.begin( ), GameName.end( ) ),
 												HostCounter );
 			}
@@ -92,7 +92,7 @@ CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( BYTEARRAY data )
 	return NULL;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_ENTERCHAT" );
 	// DEBUG_Print( data );
@@ -110,7 +110,7 @@ bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( BYTEARRAY data )
 	return false;
 }
 
-CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
+CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_CHATEVENT" );
 	// DEBUG_Print( data );
@@ -126,12 +126,12 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 29 )
 	{
-		BYTEARRAY EventID = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
-		BYTEARRAY Ping = BYTEARRAY( data.begin( ) + 12, data.begin( ) + 16 );
-		BYTEARRAY User = UTIL_ExtractCString( data, 28 );
-		BYTEARRAY Message = UTIL_ExtractCString( data, User.size( ) + 29 );
+		QByteArray EventID = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray Ping = QByteArray( data.begin( ) + 12, data.begin( ) + 16 );
+		QByteArray User = UTIL_ExtractCString( data, 28 );
+		QByteArray Message = UTIL_ExtractCString( data, User.size( ) + 29 );
 
-		switch( UTIL_ByteArrayToUInt32( EventID, false ) )
+		switch( UTIL_QByteArrayToUInt32( EventID, false ) )
 		{
 		case CBNETProtocol :: EID_SHOWUSER:
 		case CBNETProtocol :: EID_JOIN:
@@ -148,8 +148,8 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 		case CBNETProtocol :: EID_INFO:
 		case CBNETProtocol :: EID_ERROR:
 		case CBNETProtocol :: EID_EMOTE:
-			return new CIncomingChatEvent(	(CBNETProtocol :: IncomingChatEvent)UTIL_ByteArrayToUInt32( EventID, false ),
-												UTIL_ByteArrayToUInt32( Ping, false ),
+			return new CIncomingChatEvent(	(CBNETProtocol :: IncomingChatEvent)UTIL_QByteArrayToUInt32( EventID, false ),
+												UTIL_QByteArrayToUInt32( Ping, false ),
 												QString( User.begin( ), User.end( ) ),
 												QString( Message.begin( ), Message.end( ) ) );
 		}
@@ -159,7 +159,7 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 	return NULL;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_CHECKAD( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_CHECKAD( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_CHECKAD" );
 	// DEBUG_Print( data );
@@ -170,7 +170,7 @@ bool CBNETProtocol :: RECEIVE_SID_CHECKAD( BYTEARRAY data )
 	return ValidateLength( data );
 }
 
-bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_STARTADVEX3" );
 	// DEBUG_Print( data );
@@ -181,16 +181,16 @@ bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
 	{
-		BYTEARRAY Status = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray Status = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-		if( UTIL_ByteArrayToUInt32( Status, false ) == 0 )
+		if( UTIL_QByteArrayToUInt32( Status, false ) == 0 )
 			return true;
 	}
 
 	return false;
 }
 
-BYTEARRAY CBNETProtocol :: RECEIVE_SID_PING( BYTEARRAY data )
+QByteArray CBNETProtocol :: RECEIVE_SID_PING( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_PING" );
 	// DEBUG_Print( data );
@@ -200,12 +200,12 @@ BYTEARRAY CBNETProtocol :: RECEIVE_SID_PING( BYTEARRAY data )
 	// 4 bytes					-> Ping
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
-		return BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		return QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-	return BYTEARRAY( );
+	return QByteArray( );
 }
 
-bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_LOGONRESPONSE" );
 	// DEBUG_Print( data );
@@ -216,16 +216,16 @@ bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
 	{
-		BYTEARRAY Status = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray Status = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-		if( UTIL_ByteArrayToUInt32( Status, false ) == 1 )
+		if( UTIL_QByteArrayToUInt32( Status, false ) == 1 )
 			return true;
 	}
 
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_INFO" );
 	// DEBUG_Print( data );
@@ -241,9 +241,9 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 25 )
 	{
-		m_LogonType = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
-		m_ServerToken = BYTEARRAY( data.begin( ) + 8, data.begin( ) + 12 );
-		m_MPQFileTime = BYTEARRAY( data.begin( ) + 16, data.begin( ) + 24 );
+		m_LogonType = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
+		m_ServerToken = QByteArray( data.begin( ) + 8, data.begin( ) + 12 );
+		m_MPQFileTime = QByteArray( data.begin( ) + 16, data.begin( ) + 24 );
 		m_IX86VerFileName = UTIL_ExtractCString( data, 24 );
 		m_ValueStringFormula = UTIL_ExtractCString( data, m_IX86VerFileName.size( ) + 25 );
 		return true;
@@ -252,7 +252,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( BYTEARRAY data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_CHECK" );
 	// DEBUG_Print( data );
@@ -264,17 +264,17 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 9 )
 	{
-		m_KeyState = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		m_KeyState = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 		m_KeyStateDescription = UTIL_ExtractCString( data, 8 );
 
-		if( UTIL_ByteArrayToUInt32( m_KeyState, false ) == KR_GOOD )
+		if( UTIL_QByteArrayToUInt32( m_KeyState, false ) == KR_GOOD )
 			return true;
 	}
 
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_ACCOUNTLOGON" );
 	// DEBUG_Print( data );
@@ -288,12 +288,12 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
 	{
-		BYTEARRAY status = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray status = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-		if( UTIL_ByteArrayToUInt32( status, false ) == 0 && data.size( ) >= 72 )
+		if( UTIL_QByteArrayToUInt32( status, false ) == 0 && data.size( ) >= 72 )
 		{
-			m_Salt = BYTEARRAY( data.begin( ) + 8, data.begin( ) + 40 );
-			m_ServerPublicKey = BYTEARRAY( data.begin( ) + 40, data.begin( ) + 72 );
+			m_Salt = QByteArray( data.begin( ) + 8, data.begin( ) + 40 );
+			m_ServerPublicKey = QByteArray( data.begin( ) + 40, data.begin( ) + 72 );
 			return true;
 		}
 	}
@@ -301,7 +301,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( BYTEARRAY data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_ACCOUNTLOGONPROOF" );
 	// DEBUG_Print( data );
@@ -312,16 +312,16 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY data )
 
 	if( ValidateLength( data ) && data.size( ) >= 8 )
 	{
-		BYTEARRAY Status = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		QByteArray Status = QByteArray( data.begin( ) + 4, data.begin( ) + 8 );
 
-		if( UTIL_ByteArrayToUInt32( Status, false ) == 0 )
+		if( UTIL_QByteArrayToUInt32( Status, false ) == 0 )
 			return true;
 	}
 
 	return false;
 }
 
-BYTEARRAY CBNETProtocol :: RECEIVE_SID_WARDEN( BYTEARRAY data )
+QByteArray CBNETProtocol :: RECEIVE_SID_WARDEN( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_WARDEN" );
 	// DEBUG_PRINT( data );
@@ -331,12 +331,12 @@ BYTEARRAY CBNETProtocol :: RECEIVE_SID_WARDEN( BYTEARRAY data )
 	// n bytes					-> Data
 
 	if( ValidateLength( data ) && data.size( ) >= 4 )
-		return BYTEARRAY( data.begin( ) + 4, data.end( ) );
+		return QByteArray( data.begin( ) + 4, data.end( ) );
 
-	return BYTEARRAY( );
+	return QByteArray( );
 }
 
-vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRAY data )
+QVector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_FRIENDSLIST" );
 	// DEBUG_Print( data );
@@ -351,7 +351,7 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 	//		4 bytes				-> ???
 	//		null term QString	-> Location
 
-	vector<CIncomingFriendList *> Friends;
+	QVector<CIncomingFriendList *> Friends;
 
 	if( ValidateLength( data ) && data.size( ) >= 5 )
 	{
@@ -365,7 +365,7 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 			if( data.size( ) < i + 1 )
 				break;
 
-			BYTEARRAY Account = UTIL_ExtractCString( data, i );
+			QByteArray Account = UTIL_ExtractCString( data, i );
 			i += Account.size( ) + 1;
 
 			if( data.size( ) < i + 7 )
@@ -374,7 +374,7 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 			unsigned char Status = data[i];
 			unsigned char Area = data[i + 1];
 			i += 6;
-			BYTEARRAY Location = UTIL_ExtractCString( data, i );
+			QByteArray Location = UTIL_ExtractCString( data, i );
 			i += Location.size( ) + 1;
 			Friends.push_back( new CIncomingFriendList(	QString( Account.begin( ), Account.end( ) ),
 														Status,
@@ -386,7 +386,7 @@ vector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( BYTEARRA
 	return Friends;
 }
 
-vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARRAY data )
+QVector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_CLANMEMBERLIST" );
 	// DEBUG_Print( data );
@@ -401,7 +401,7 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 	//		1 byte				-> Status
 	//		null term QString	-> Location
 
-	vector<CIncomingClanList *> ClanList;
+	QVector<CIncomingClanList *> ClanList;
 
 	if( ValidateLength( data ) && data.size( ) >= 9 )
 	{
@@ -415,7 +415,7 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 			if( data.size( ) < i + 1 )
 				break;
 
-			BYTEARRAY Name = UTIL_ExtractCString( data, i );
+			QByteArray Name = UTIL_ExtractCString( data, i );
 			i += Name.size( ) + 1;
 
 			if( data.size( ) < i + 3 )
@@ -427,7 +427,7 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 
 			// in the original VB source the location QString is read but discarded, so that's what I do here
 
-			BYTEARRAY Location = UTIL_ExtractCString( data, i );
+			QByteArray Location = UTIL_ExtractCString( data, i );
 			i += Location.size( ) + 1;
 			ClanList.push_back( new CIncomingClanList(	QString( Name.begin( ), Name.end( ) ),
 														Rank,
@@ -438,7 +438,7 @@ vector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( BYTEARR
 	return ClanList;
 }
 
-CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRAY data )
+CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_CLANMEMBERSTATUSCHANGE" );
 	// DEBUG_Print( data );
@@ -452,7 +452,7 @@ CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRA
 
 	if( ValidateLength( data ) && data.size( ) >= 5 )
 	{
-		BYTEARRAY Name = UTIL_ExtractCString( data, 4 );
+		QByteArray Name = UTIL_ExtractCString( data, 4 );
 
 		if( data.size( ) >= Name.size( ) + 7 )
 		{
@@ -461,7 +461,7 @@ CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRA
 
 			// in the original VB source the location QString is read but discarded, so that's what I do here
 
-			BYTEARRAY Location = UTIL_ExtractCString( data, Name.size( ) + 7 );
+			QByteArray Location = UTIL_ExtractCString( data, Name.size( ) + 7 );
 			return new CIncomingClanList(	QString( Name.begin( ), Name.end( ) ),
 											Rank,
 											Status );
@@ -475,18 +475,18 @@ CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( BYTEARRA
 // SEND FUNCTIONS //
 ////////////////////
 
-BYTEARRAY CBNETProtocol :: SEND_PROTOCOL_INITIALIZE_SELECTOR( )
+QByteArray CBNETProtocol :: SEND_PROTOCOL_INITIALIZE_SELECTOR( )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( 1 );
 	// DEBUG_Print( "SENT PROTOCOL_INITIALIZE_SELECTOR" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_NULL( )
+QByteArray CBNETProtocol :: SEND_SID_NULL( )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_NULL );				// SID_NULL
 	packet.push_back( 0 );						// packet length will be assigned later
@@ -497,9 +497,9 @@ BYTEARRAY CBNETProtocol :: SEND_SID_NULL( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_STOPADV( )
+QByteArray CBNETProtocol :: SEND_SID_STOPADV( )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_STOPADV );			// SID_STOPADV
 	packet.push_back( 0 );						// packet length will be assigned later
@@ -510,23 +510,23 @@ BYTEARRAY CBNETProtocol :: SEND_SID_STOPADV( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
+QByteArray CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
 {
 	unsigned char MapFilter1[]	= { 255, 3, 0, 0 };
 	unsigned char MapFilter2[]	= { 255, 3, 0, 0 };
 	unsigned char MapFilter3[]	= {   0, 0, 0, 0 };
 	unsigned char NumGames[]	= {   1, 0, 0, 0 };
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
 	packet.push_back( SID_GETADVLISTEX );				// SID_GETADVLISTEX
 	packet.push_back( 0 );								// packet length will be assigned later
 	packet.push_back( 0 );								// packet length will be assigned later
-	UTIL_AppendByteArray( packet, MapFilter1, 4 );		// Map Filter
-	UTIL_AppendByteArray( packet, MapFilter2, 4 );		// Map Filter
-	UTIL_AppendByteArray( packet, MapFilter3, 4 );		// Map Filter
-	UTIL_AppendByteArray( packet, NumGames, 4 );		// maximum number of games to list
-	UTIL_AppendByteArrayFast( packet, gameName );		// Game Name
+	UTIL_AppendQByteArray( packet, MapFilter1, 4 );		// Map Filter
+	UTIL_AppendQByteArray( packet, MapFilter2, 4 );		// Map Filter
+	UTIL_AppendQByteArray( packet, MapFilter3, 4 );		// Map Filter
+	UTIL_AppendQByteArray( packet, NumGames, 4 );		// maximum number of games to list
+	UTIL_AppendQByteArrayFast( packet, gameName );		// Game Name
 	packet.push_back( 0 );								// Game Password is NULL
 	packet.push_back( 0 );								// Game Stats is NULL
 	AssignLength( packet );
@@ -535,9 +535,9 @@ BYTEARRAY CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_ENTERCHAT( )
+QByteArray CBNETProtocol :: SEND_SID_ENTERCHAT( )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_ENTERCHAT );			// SID_ENTERCHAT
 	packet.push_back( 0 );						// packet length will be assigned later
@@ -550,63 +550,63 @@ BYTEARRAY CBNETProtocol :: SEND_SID_ENTERCHAT( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
+QByteArray CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
 {
 	unsigned char NoCreateJoin[]	= { 2, 0, 0, 0 };
 	unsigned char FirstJoin[]		= { 1, 0, 0, 0 };
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );				// BNET header constant
 	packet.push_back( SID_JOINCHANNEL );					// SID_JOINCHANNEL
 	packet.push_back( 0 );									// packet length will be assigned later
 	packet.push_back( 0 );									// packet length will be assigned later
 
 	if( channel.size( ) > 0 )
-		UTIL_AppendByteArray( packet, NoCreateJoin, 4 );	// flags for no create join
+		UTIL_AppendQByteArray( packet, NoCreateJoin, 4 );	// flags for no create join
 	else
-		UTIL_AppendByteArray( packet, FirstJoin, 4 );		// flags for first join
+		UTIL_AppendQByteArray( packet, FirstJoin, 4 );		// flags for first join
 
-	UTIL_AppendByteArrayFast( packet, channel );
+	UTIL_AppendQByteArrayFast( packet, channel );
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_JOINCHANNEL" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_CHATCOMMAND( QString command )
+QByteArray CBNETProtocol :: SEND_SID_CHATCOMMAND( QString command )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );		// BNET header constant
 	packet.push_back( SID_CHATCOMMAND );			// SID_CHATCOMMAND
 	packet.push_back( 0 );							// packet length will be assigned later
 	packet.push_back( 0 );							// packet length will be assigned later
-	UTIL_AppendByteArrayFast( packet, command );	// Message
+	UTIL_AppendQByteArrayFast( packet, command );	// Message
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CHATCOMMAND" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_CHECKAD( )
+QByteArray CBNETProtocol :: SEND_SID_CHECKAD( )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_CHECKAD );			// SID_CHECKAD
 	packet.push_back( 0 );						// packet length will be assigned later
 	packet.push_back( 0 );						// packet length will be assigned later
-	UTIL_AppendByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendByteArray( packet, Zeros, 4 );	// ???
+	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
+	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
+	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
+	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CHECKAD" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, BYTEARRAY mapCRC, BYTEARRAY mapSHA1, uint32_t hostCounter )
+QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter )
 {
 	// todotodo: sort out how GameType works, the documentation is horrendous
 
@@ -644,23 +644,23 @@ Flags:
 
 	HostCounterString = QString( HostCounterString.rbegin( ), HostCounterString.rend( ) );
 
-	BYTEARRAY packet;
+	QByteArray packet;
 
 	// make the stat QString
 
-	BYTEARRAY StatString;
-	UTIL_AppendByteArrayFast( StatString, mapFlags );
+	QByteArray StatString;
+	UTIL_AppendQByteArrayFast( StatString, mapFlags );
 	StatString.push_back( 0 );
-	UTIL_AppendByteArrayFast( StatString, mapWidth );
-	UTIL_AppendByteArrayFast( StatString, mapHeight );
-	UTIL_AppendByteArrayFast( StatString, mapCRC );
-	UTIL_AppendByteArrayFast( StatString, mapPath );
-	UTIL_AppendByteArrayFast( StatString, hostName );
+	UTIL_AppendQByteArrayFast( StatString, mapWidth );
+	UTIL_AppendQByteArrayFast( StatString, mapHeight );
+	UTIL_AppendQByteArrayFast( StatString, mapCRC );
+	UTIL_AppendQByteArrayFast( StatString, mapPath );
+	UTIL_AppendQByteArrayFast( StatString, hostName );
 	StatString.push_back( 0 );
-	UTIL_AppendByteArrayFast( StatString, mapSHA1 );
+	UTIL_AppendQByteArrayFast( StatString, mapSHA1 );
 	StatString = UTIL_EncodeStatString( StatString );
 
-	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.empty( ) && !hostName.empty( ) && !mapPath.empty( ) && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 && StatString.size( ) < 128 && HostCounterString.size( ) == 8 )
+	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.isEmpty( ) && !hostName.isEmpty( ) && !mapPath.isEmpty( ) && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 && StatString.size( ) < 128 && HostCounterString.size( ) == 8 )
 	{
 		// make the rest of the packet
 
@@ -672,15 +672,15 @@ Flags:
 		packet.push_back( 0 );											// State continued...
 		packet.push_back( 0 );											// State continued...
 		packet.push_back( 0 );											// State continued...
-		UTIL_AppendByteArray( packet, upTime, false );					// time since creation
-		UTIL_AppendByteArrayFast( packet, mapGameType );				// Game Type, Parameter
-		UTIL_AppendByteArray( packet, Unknown, 4 );						// ???
-		UTIL_AppendByteArray( packet, CustomGame, 4 );					// Custom Game
-		UTIL_AppendByteArrayFast( packet, gameName );					// Game Name
+		UTIL_AppendQByteArray( packet, upTime, false );					// time since creation
+		UTIL_AppendQByteArrayFast( packet, mapGameType );				// Game Type, Parameter
+		UTIL_AppendQByteArray( packet, Unknown, 4 );						// ???
+		UTIL_AppendQByteArray( packet, CustomGame, 4 );					// Custom Game
+		UTIL_AppendQByteArrayFast( packet, gameName );					// Game Name
 		packet.push_back( 0 );											// Game Password is NULL
 		packet.push_back( 98 );											// Slots Free (ascii 98 = char 'b' = 11 slots free) - note: do not reduce this as this is the # of PID's Warcraft III will allocate
-		UTIL_AppendByteArrayFast( packet, HostCounterString, false );	// Host Counter
-		UTIL_AppendByteArrayFast( packet, StatString );					// Stat String
+		UTIL_AppendQByteArrayFast( packet, HostCounterString, false );	// Host Counter
+		UTIL_AppendQByteArrayFast( packet, StatString );					// Stat String
 		packet.push_back( 0 );											// Stat String null terminator (the stat QString is encoded to remove all even numbers i.e. zeros)
 		AssignLength( packet );
 	}
@@ -692,19 +692,19 @@ Flags:
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
+QByteArray CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
 {
 	unsigned char ProductID[]		= {  0, 0, 0, 0 };
 	unsigned char ProductVersion[]	= { 14, 0, 0, 0 };	// Warcraft III is 14
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
 	packet.push_back( SID_NOTIFYJOIN );					// SID_NOTIFYJOIN
 	packet.push_back( 0 );								// packet length will be assigned later
 	packet.push_back( 0 );								// packet length will be assigned later
-	UTIL_AppendByteArray( packet, ProductID, 4 );		// Product ID
-	UTIL_AppendByteArray( packet, ProductVersion, 4 );	// Product Version
-	UTIL_AppendByteArrayFast( packet, gameName );		// Game Name
+	UTIL_AppendQByteArray( packet, ProductID, 4 );		// Product ID
+	UTIL_AppendQByteArray( packet, ProductVersion, 4 );	// Product Version
+	UTIL_AppendQByteArrayFast( packet, gameName );		// Game Name
 	packet.push_back( 0 );								// Game Password is NULL
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_NOTIFYJOIN" );
@@ -712,9 +712,9 @@ BYTEARRAY CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_PING( BYTEARRAY pingValue )
+QByteArray CBNETProtocol :: SEND_SID_PING( QByteArray pingValue )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 
 	if( pingValue.size( ) == 4 )
 	{
@@ -722,7 +722,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_PING( BYTEARRAY pingValue )
 		packet.push_back( SID_PING );					// SID_PING
 		packet.push_back( 0 );							// packet length will be assigned later
 		packet.push_back( 0 );							// packet length will be assigned later
-		UTIL_AppendByteArrayFast( packet, pingValue );	// Ping Value
+		UTIL_AppendQByteArrayFast( packet, pingValue );	// Ping Value
 		AssignLength( packet );
 	}
 	else
@@ -733,40 +733,40 @@ BYTEARRAY CBNETProtocol :: SEND_SID_PING( BYTEARRAY pingValue )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_LOGONRESPONSE( BYTEARRAY clientToken, BYTEARRAY serverToken, BYTEARRAY passwordHash, QString accountName )
+QByteArray CBNETProtocol :: SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, QString accountName )
 {
-	// todotodo: check that the passed BYTEARRAY sizes are correct (don't know what they should be right now so I can't do this today)
+	// todotodo: check that the passed QByteArray sizes are correct (don't know what they should be right now so I can't do this today)
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
 	packet.push_back( SID_LOGONRESPONSE );				// SID_LOGONRESPONSE
 	packet.push_back( 0 );								// packet length will be assigned later
 	packet.push_back( 0 );								// packet length will be assigned later
-	UTIL_AppendByteArrayFast( packet, clientToken );	// Client Token
-	UTIL_AppendByteArrayFast( packet, serverToken );	// Server Token
-	UTIL_AppendByteArrayFast( packet, passwordHash );	// Password Hash
-	UTIL_AppendByteArrayFast( packet, accountName );	// Account Name
+	UTIL_AppendQByteArrayFast( packet, clientToken );	// Client Token
+	UTIL_AppendQByteArrayFast( packet, serverToken );	// Server Token
+	UTIL_AppendQByteArrayFast( packet, passwordHash );	// Password Hash
+	UTIL_AppendQByteArrayFast( packet, accountName );	// Account Name
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_LOGONRESPONSE" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
+QByteArray CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
 	packet.push_back( SID_NETGAMEPORT );				// SID_NETGAMEPORT
 	packet.push_back( 0 );								// packet length will be assigned later
 	packet.push_back( 0 );								// packet length will be assigned later
-	UTIL_AppendByteArray( packet, serverPort, false );	// local game server port
+	UTIL_AppendQByteArray( packet, serverPort, false );	// local game server port
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_NETGAMEPORT" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country )
+QByteArray CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country )
 {
 	unsigned char ProtocolID[]		= {   0,   0,   0,   0 };
 	unsigned char PlatformID[]		= {  54,  56,  88,  73 };	// "IX86"
@@ -777,34 +777,34 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint
 	unsigned char LocalIP[]			= { 127,   0,   0,   1 };
 	unsigned char TimeZoneBias[]	= {  44,   1,   0,   0 };	// 300 minutes (GMT -0500)
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );				// BNET header constant
 	packet.push_back( SID_AUTH_INFO );						// SID_AUTH_INFO
 	packet.push_back( 0 );									// packet length will be assigned later
 	packet.push_back( 0 );									// packet length will be assigned later
-	UTIL_AppendByteArray( packet, ProtocolID, 4 );			// Protocol ID
-	UTIL_AppendByteArray( packet, PlatformID, 4 );			// Platform ID
+	UTIL_AppendQByteArray( packet, ProtocolID, 4 );			// Protocol ID
+	UTIL_AppendQByteArray( packet, PlatformID, 4 );			// Platform ID
 
 	if( TFT )
-		UTIL_AppendByteArray( packet, ProductID_TFT, 4 );	// Product ID (TFT)
+		UTIL_AppendQByteArray( packet, ProductID_TFT, 4 );	// Product ID (TFT)
 	else
-		UTIL_AppendByteArray( packet, ProductID_ROC, 4 );	// Product ID (ROC)
+		UTIL_AppendQByteArray( packet, ProductID_ROC, 4 );	// Product ID (ROC)
 
-	UTIL_AppendByteArray( packet, Version, 4 );				// Version
-	UTIL_AppendByteArray( packet, Language, 4 );			// Language (hardcoded as enUS to ensure battle.net sends the bot messages in English)
-	UTIL_AppendByteArray( packet, LocalIP, 4 );				// Local IP for NAT compatibility
-	UTIL_AppendByteArray( packet, TimeZoneBias, 4 );		// Time Zone Bias
-	UTIL_AppendByteArray( packet, localeID, false );		// Locale ID
-	UTIL_AppendByteArray( packet, localeID, false );		// Language ID (copying the locale ID should be sufficient since we don't care about sublanguages)
-	UTIL_AppendByteArrayFast( packet, countryAbbrev );		// Country Abbreviation
-	UTIL_AppendByteArrayFast( packet, country );			// Country
+	UTIL_AppendQByteArray( packet, Version, 4 );				// Version
+	UTIL_AppendQByteArray( packet, Language, 4 );			// Language (hardcoded as enUS to ensure battle.net sends the bot messages in English)
+	UTIL_AppendQByteArray( packet, LocalIP, 4 );				// Local IP for NAT compatibility
+	UTIL_AppendQByteArray( packet, TimeZoneBias, 4 );		// Time Zone Bias
+	UTIL_AppendQByteArray( packet, localeID, false );		// Locale ID
+	UTIL_AppendQByteArray( packet, localeID, false );		// Language ID (copying the locale ID should be sufficient since we don't care about sublanguages)
+	UTIL_AppendQByteArrayFast( packet, countryAbbrev );		// Country Abbreviation
+	UTIL_AppendQByteArrayFast( packet, country );			// Country
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_AUTH_INFO" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken, BYTEARRAY exeVersion, BYTEARRAY exeVersionHash, BYTEARRAY keyInfoROC, BYTEARRAY keyInfoTFT, QString exeInfo, QString keyOwnerName )
+QByteArray CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, QString exeInfo, QString keyOwnerName )
 {
 	uint32_t NumKeys = 0;
 
@@ -813,7 +813,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken,
 	else
 		NumKeys = 1;
 
-	BYTEARRAY packet;
+	QByteArray packet;
 
 	if( clientToken.size( ) == 4 && exeVersion.size( ) == 4 && exeVersionHash.size( ) == 4 && keyInfoROC.size( ) == 36 && ( !TFT || keyInfoTFT.size( ) == 36 ) )
 	{
@@ -821,18 +821,18 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken,
 		packet.push_back( SID_AUTH_CHECK );					// SID_AUTH_CHECK
 		packet.push_back( 0 );								// packet length will be assigned later
 		packet.push_back( 0 );								// packet length will be assigned later
-		UTIL_AppendByteArrayFast( packet, clientToken );	// Client Token
-		UTIL_AppendByteArrayFast( packet, exeVersion );		// EXE Version
-		UTIL_AppendByteArrayFast( packet, exeVersionHash );	// EXE Version Hash
-		UTIL_AppendByteArray( packet, NumKeys, false );		// number of keys in this packet
-		UTIL_AppendByteArray( packet, (uint32_t)0, false );	// boolean Using Spawn (32 bit)
-		UTIL_AppendByteArrayFast( packet, keyInfoROC );		// ROC Key Info
+		UTIL_AppendQByteArrayFast( packet, clientToken );	// Client Token
+		UTIL_AppendQByteArrayFast( packet, exeVersion );		// EXE Version
+		UTIL_AppendQByteArrayFast( packet, exeVersionHash );	// EXE Version Hash
+		UTIL_AppendQByteArray( packet, NumKeys, false );		// number of keys in this packet
+		UTIL_AppendQByteArray( packet, (uint32_t)0, false );	// boolean Using Spawn (32 bit)
+		UTIL_AppendQByteArrayFast( packet, keyInfoROC );		// ROC Key Info
 
 		if( TFT )
-			UTIL_AppendByteArrayFast( packet, keyInfoTFT );	// TFT Key Info
+			UTIL_AppendQByteArrayFast( packet, keyInfoTFT );	// TFT Key Info
 
-		UTIL_AppendByteArrayFast( packet, exeInfo );		// EXE Info
-		UTIL_AppendByteArrayFast( packet, keyOwnerName );	// CD Key Owner Name
+		UTIL_AppendQByteArrayFast( packet, exeInfo );		// EXE Info
+		UTIL_AppendQByteArrayFast( packet, keyOwnerName );	// CD Key Owner Name
 		AssignLength( packet );
 	}
 	else
@@ -843,9 +843,9 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken,
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey, QString accountName )
+QByteArray CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicKey, QString accountName )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 
 	if( clientPublicKey.size( ) == 32 )
 	{
@@ -853,8 +853,8 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey
 		packet.push_back( SID_AUTH_ACCOUNTLOGON );				// SID_AUTH_ACCOUNTLOGON
 		packet.push_back( 0 );									// packet length will be assigned later
 		packet.push_back( 0 );									// packet length will be assigned later
-		UTIL_AppendByteArrayFast( packet, clientPublicKey );	// Client Key
-		UTIL_AppendByteArrayFast( packet, accountName );		// Account Name
+		UTIL_AppendQByteArrayFast( packet, clientPublicKey );	// Client Key
+		UTIL_AppendQByteArrayFast( packet, accountName );		// Account Name
 		AssignLength( packet );
 	}
 	else
@@ -865,9 +865,9 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY clientPasswordProof )
+QByteArray CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray clientPasswordProof )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 
 	if( clientPasswordProof.size( ) == 20 )
 	{
@@ -875,7 +875,7 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY clientPass
 		packet.push_back( SID_AUTH_ACCOUNTLOGONPROOF );				// SID_AUTH_ACCOUNTLOGONPROOF
 		packet.push_back( 0 );										// packet length will be assigned later
 		packet.push_back( 0 );										// packet length will be assigned later
-		UTIL_AppendByteArrayFast( packet, clientPasswordProof );	// Client Password Proof
+		UTIL_AppendQByteArrayFast( packet, clientPasswordProof );	// Client Password Proof
 		AssignLength( packet );
 	}
 	else
@@ -886,23 +886,23 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY clientPass
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_WARDEN( BYTEARRAY wardenResponse )
+QByteArray CBNETProtocol :: SEND_SID_WARDEN( QByteArray wardenResponse )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
 	packet.push_back( SID_WARDEN );						// SID_WARDEN
 	packet.push_back( 0 );								// packet length will be assigned later
 	packet.push_back( 0 );								// packet length will be assigned later
-	UTIL_AppendByteArrayFast( packet, wardenResponse );	// warden response
+	UTIL_AppendQByteArrayFast( packet, wardenResponse );	// warden response
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_WARDEN" );
 	// DEBUG_Print( packet );
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_FRIENDSLIST( )
+QByteArray CBNETProtocol :: SEND_SID_FRIENDSLIST( )
 {
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_FRIENDSLIST );		// SID_FRIENDSLIST
 	packet.push_back( 0 );						// packet length will be assigned later
@@ -913,16 +913,16 @@ BYTEARRAY CBNETProtocol :: SEND_SID_FRIENDSLIST( )
 	return packet;
 }
 
-BYTEARRAY CBNETProtocol :: SEND_SID_CLANMEMBERLIST( )
+QByteArray CBNETProtocol :: SEND_SID_CLANMEMBERLIST( )
 {
 	unsigned char Cookie[] = { 0, 0, 0, 0 };
 
-	BYTEARRAY packet;
+	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );	// BNET header constant
 	packet.push_back( SID_CLANMEMBERLIST );		// SID_CLANMEMBERLIST
 	packet.push_back( 0 );						// packet length will be assigned later
 	packet.push_back( 0 );						// packet length will be assigned later
-	UTIL_AppendByteArray( packet, Cookie, 4 );	// cookie
+	UTIL_AppendQByteArray( packet, Cookie, 4 );	// cookie
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CLANMEMBERLIST" );
 	// DEBUG_Print( packet );
@@ -933,15 +933,15 @@ BYTEARRAY CBNETProtocol :: SEND_SID_CLANMEMBERLIST( )
 // OTHER FUNCTIONS //
 /////////////////////
 
-bool CBNETProtocol :: AssignLength( BYTEARRAY &content )
+bool CBNETProtocol :: AssignLength( QByteArray &content )
 {
 	// insert the actual length of the content array into bytes 3 and 4 (indices 2 and 3)
 
-	BYTEARRAY LengthBytes;
+	QByteArray LengthBytes;
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateByteArray( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateQByteArray( (uint16_t)content.size( ), false );
 		content[2] = LengthBytes[0];
 		content[3] = LengthBytes[1];
 		return true;
@@ -950,18 +950,18 @@ bool CBNETProtocol :: AssignLength( BYTEARRAY &content )
 	return false;
 }
 
-bool CBNETProtocol :: ValidateLength( BYTEARRAY &content )
+bool CBNETProtocol :: ValidateLength( QByteArray &content )
 {
 	// verify that bytes 3 and 4 (indices 2 and 3) of the content array describe the length
 
 	uint16_t Length;
-	BYTEARRAY LengthBytes;
+	QByteArray LengthBytes;
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
 		LengthBytes.push_back( content[2] );
 		LengthBytes.push_back( content[3] );
-		Length = UTIL_ByteArrayToUInt16( LengthBytes, false );
+		Length = UTIL_QByteArrayToUInt16( LengthBytes, false );
 
 		if( Length == content.size( ) )
 			return true;
@@ -974,7 +974,7 @@ bool CBNETProtocol :: ValidateLength( BYTEARRAY &content )
 // CIncomingGameHost
 //
 
-CIncomingGameHost :: CIncomingGameHost( BYTEARRAY &nIP, uint16_t nPort, QString nGameName, BYTEARRAY &nHostCounter )
+CIncomingGameHost :: CIncomingGameHost( QByteArray &nIP, uint16_t nPort, QString nGameName, QByteArray &nHostCounter )
 {
 	m_IP = nIP;
 	m_Port = nPort;
@@ -1062,7 +1062,7 @@ QString CIncomingFriendList :: ExtractStatus( unsigned char status )
 	if( status & 4 )
 		Result += "<Away>";
 
-	if( Result.empty( ) )
+	if( Result.isEmpty( ) )
 		Result = "<None>";
 
 	return Result;
@@ -1087,10 +1087,10 @@ QString CIncomingFriendList :: ExtractLocation( QString location )
 {
 	QString Result;
 
-	if( location.substr( 0, 4 ) == "PX3W" )
-		Result = location.substr( 4 );
+	if( location.mid( 0, 4 ) == "PX3W" )
+		Result = location.mid( 4 );
 
-	if( Result.empty( ) )
+	if( Result.isEmpty( ) )
 		Result = ".";
 
 	return Result;

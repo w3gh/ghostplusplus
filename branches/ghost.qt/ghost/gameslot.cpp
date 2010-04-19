@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@
 // CGameSlot
 //
 
-CGameSlot :: CGameSlot( BYTEARRAY &n )
+CGameSlot :: CGameSlot( QByteArray &n )
 {
 	if( n.size( ) >= 7 )
 	{
@@ -74,14 +74,19 @@ CGameSlot :: CGameSlot( unsigned char nPID, unsigned char nDownloadStatus, unsig
 	m_Handicap = nHandicap;
 }
 
+CGameSlot :: CGameSlot( )
+{
+	// do not use this one, only for vector growing
+}
+
 CGameSlot :: ~CGameSlot( )
 {
 
 }
 
-BYTEARRAY CGameSlot :: GetByteArray( ) const
+QByteArray CGameSlot :: GetQByteArray( ) const
 {
-	BYTEARRAY b;
+	QByteArray b;
 	b.push_back( m_PID );
 	b.push_back( m_DownloadStatus );
 	b.push_back( m_SlotStatus );

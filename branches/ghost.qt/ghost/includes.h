@@ -36,17 +36,16 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#include <map>
 #include <queue>
 #include <set>
-#include <QString>
-#include <vector>
 
+#include <QMap>
+#include <QQueue>
+#include <QString>
 #include <QByteArray>
 
 using namespace std;
 
-typedef vector<unsigned char> BYTEARRAY;
 typedef pair<unsigned char,QString> PIDPlayer;
 
 // time
@@ -69,6 +68,6 @@ uint32_t GetTicks( );		// milliseconds
 
 void CONSOLE_Print( QString message );
 void DEBUG_Print( QString message );
-void DEBUG_Print( BYTEARRAY b );
+void DEBUG_Print( QByteArray b );
 
 #endif

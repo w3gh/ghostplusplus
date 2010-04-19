@@ -21,6 +21,7 @@
 #ifndef GAME_BASE_H
 #define GAME_BASE_H
 
+#include "includes.h"
 #include "gameslot.h"
 
 //
@@ -48,16 +49,16 @@ public:
 protected:
 	CTCPServer *m_Socket;							// listening socket
 	CGameProtocol *m_Protocol;						// game protocol
-	vector<CGameSlot> m_Slots;						// vector of slots
-	vector<CPotentialPlayer *> m_Potentials;		// vector of potential players (connections that haven't sent a W3GS_REQJOIN packet yet)
-	vector<CGamePlayer *> m_Players;				// vector of players
-	vector<CCallableScoreCheck *> m_ScoreChecks;
-	queue<CIncomingAction *> m_Actions;				// queue of actions to be sent
-	vector<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
+	QVector<CGameSlot> m_Slots;						// vector of slots
+	QVector<CPotentialPlayer *> m_Potentials;		// vector of potential players (connections that haven't sent a W3GS_REQJOIN packet yet)
+	QVector<CGamePlayer *> m_Players;				// vector of players
+	QVector<CCallableScoreCheck *> m_ScoreChecks;
+	QQueue<CIncomingAction *> m_Actions;				// queue of actions to be sent
+	QVector<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
 	set<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
 	set<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
-	vector<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
-	vector<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
+	QVector<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
+	QVector<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
 	CMap *m_Map;									// map data
 	CSaveGame *m_SaveGame;							// savegame data (this is a pointer to global data)
 	CReplay *m_Replay;								// replay
@@ -129,8 +130,8 @@ public:
 	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CBaseGame( );
 
-	virtual vector<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
-	virtual vector<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
+	virtual QVector<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
+	virtual QVector<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
 	virtual CSaveGame *GetSaveGame( )				{ return m_SaveGame; }
 	virtual uint16_t GetHostPort( )					{ return m_HostPort; }
 	virtual unsigned char GetGameState( )			{ return m_GameState; }
@@ -150,8 +151,8 @@ public:
 	virtual bool GetGameLoaded( )					{ return m_GameLoaded; }
 	virtual bool GetLagging( )						{ return m_Lagging; }
 
-	virtual void SetEnforceSlots( vector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
-	virtual void SetEnforcePlayers( vector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
+	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
+	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
 	virtual void SetExiting( bool nExiting )							{ m_Exiting = nExiting; }
 	virtual void SetAutoStartPlayers( uint32_t nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
 	virtual void SetMinimumScore( double nMinimumScore )				{ m_MinimumScore = nMinimumScore; }
@@ -176,10 +177,10 @@ public:
 
 	// generic functions to send packets to players
 
-	virtual void Send( CGamePlayer *player, BYTEARRAY data );
-	virtual void Send( unsigned char PID, BYTEARRAY data );
-	virtual void Send( BYTEARRAY PIDs, BYTEARRAY data );
-	virtual void SendAll( BYTEARRAY data );
+	virtual void Send( CGamePlayer *player, QByteArray data );
+	virtual void Send( unsigned char PID, QByteArray data );
+	virtual void Send( QByteArray PIDs, QByteArray data );
+	virtual void SendAll( QByteArray data );
 
 	// functions to send packets to players
 
@@ -238,8 +239,8 @@ public:
 	virtual CGamePlayer *GetPlayerFromColour( unsigned char colour );
 	virtual unsigned char GetNewPID( );
 	virtual unsigned char GetNewColour( );
-	virtual BYTEARRAY GetPIDs( );
-	virtual BYTEARRAY GetPIDs( unsigned char excludePID );
+	virtual QByteArray GetPIDs( );
+	virtual QByteArray GetPIDs( unsigned char excludePID );
 	virtual unsigned char GetHostPID( );
 	virtual unsigned char GetEmptySlot( bool reserved );
 	virtual unsigned char GetEmptySlot( unsigned char team, unsigned char PID );
@@ -251,7 +252,7 @@ public:
 	virtual void OpenAllSlots( );
 	virtual void CloseAllSlots( );
 	virtual void ShuffleSlots( );
-	virtual vector<unsigned char> BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
+	virtual QVector<unsigned char> BalanceSlotsRecursive( QVector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
 	virtual void BalanceSlots( );
 	virtual void AddToSpoofed( QString server, QString name, bool sendMessage );
 	virtual void AddToReserved( QString name );

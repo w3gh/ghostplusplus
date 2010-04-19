@@ -78,13 +78,13 @@ public:
 	virtual bool AdminCheck( QString server, QString user );
 	virtual bool AdminAdd( QString server, QString user );
 	virtual bool AdminRemove( QString server, QString user );
-	virtual vector<QString> AdminList( QString server );
+	virtual QVector<QString> AdminList( QString server );
 	virtual uint32_t BanCount( QString server );
 	virtual CDBBan *BanCheck( QString server, QString user, QString ip );
 	virtual bool BanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
 	virtual bool BanRemove( QString server, QString user );
 	virtual bool BanRemove( QString user );
-	virtual vector<CDBBan *> BanList( QString server );
+	virtual QVector<CDBBan *> BanList( QString server );
 	virtual uint32_t GameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver );
 	virtual uint32_t GamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour );
 	virtual uint32_t GamePlayerCount( QString name );
@@ -97,9 +97,9 @@ public:
 	virtual bool FromAdd( uint32_t ip1, uint32_t ip2, QString country );
 	virtual bool DownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
 	virtual uint32_t W3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings );
 
 	// threaded database functions
 
@@ -124,9 +124,9 @@ public:
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( QString category, QString name, QString server );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings );
 };
 
 //
@@ -245,14 +245,14 @@ class CCallableAdminList : virtual public CBaseCallable
 {
 protected:
 	QString m_Server;
-	vector<QString> m_Result;
+	QVector<QString> m_Result;
 
 public:
 	CCallableAdminList( QString nServer ) : CBaseCallable( ), m_Server( nServer ) { }
 	virtual ~CCallableAdminList( );
 
-	virtual vector<QString> GetResult( )					{ return m_Result; }
-	virtual void SetResult( vector<QString> nResult )	{ m_Result = nResult; }
+	virtual QVector<QString> GetResult( )					{ return m_Result; }
+	virtual void SetResult( QVector<QString> nResult )	{ m_Result = nResult; }
 };
 
 class CCallableBanCount : virtual public CBaseCallable
@@ -335,14 +335,14 @@ class CCallableBanList : virtual public CBaseCallable
 {
 protected:
 	QString m_Server;
-	vector<CDBBan *> m_Result;
+	QVector<CDBBan *> m_Result;
 
 public:
 	CCallableBanList( QString nServer ) : CBaseCallable( ), m_Server( nServer ) { }
 	virtual ~CCallableBanList( );
 
-	virtual vector<CDBBan *> GetResult( )				{ return m_Result; }
-	virtual void SetResult( vector<CDBBan *> nResult )	{ m_Result = nResult; }
+	virtual QVector<CDBBan *> GetResult( )				{ return m_Result; }
+	virtual void SetResult( QVector<CDBBan *> nResult )	{ m_Result = nResult; }
 };
 
 class CCallableGameAdd : virtual public CBaseCallable
@@ -531,9 +531,9 @@ class CCallableW3MMDVarAdd : virtual public CBaseCallable
 {
 protected:
 	uint32_t m_GameID;
-	map<VarP,int32_t> m_VarInts;
-	map<VarP,double> m_VarReals;
-	map<VarP,QString> m_VarStrings;
+	QMap<VarP,int32_t> m_VarInts;
+	QMap<VarP,double> m_VarReals;
+	QMap<VarP,QString> m_VarStrings;
 
 	enum ValueType {
 		VALUETYPE_INT = 1,
@@ -545,9 +545,9 @@ protected:
 	bool m_Result;
 
 public:
-	CCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,int32_t> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
-	CCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,double> nVarReals ) : CBaseCallable( ), m_GameID( nGameID ), m_VarReals( nVarReals ), m_ValueType( VALUETYPE_REAL ), m_Result( false ) { }
-	CCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,QString> nVarStrings ) : CBaseCallable( ), m_GameID( nGameID ), m_VarStrings( nVarStrings ), m_ValueType( VALUETYPE_STRING ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,int32_t> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,double> nVarReals ) : CBaseCallable( ), m_GameID( nGameID ), m_VarReals( nVarReals ), m_ValueType( VALUETYPE_REAL ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,QString> nVarStrings ) : CBaseCallable( ), m_GameID( nGameID ), m_VarStrings( nVarStrings ), m_ValueType( VALUETYPE_STRING ), m_Result( false ) { }
 	virtual ~CCallableW3MMDVarAdd( );
 
 	virtual bool GetResult( )				{ return m_Result; }

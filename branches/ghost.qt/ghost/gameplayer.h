@@ -27,6 +27,8 @@ class CGameProtocol;
 class CGame;
 class CIncomingJoinPlayer;
 
+#include "includes.h"
+
 //
 // CPotentialPlayer
 //
@@ -42,7 +44,7 @@ protected:
 	// it also allows us to convert CPotentialPlayers to CGamePlayers without the CPotentialPlayer's destructor closing the socket
 
 	CTCPSocket *m_Socket;
-	queue<CCommandPacket *> m_Packets;
+	QQueue<CCommandPacket *> m_Packets;
 	bool m_DeleteMe;
 	bool m_Error;
 	QString m_ErrorString;
@@ -53,9 +55,9 @@ public:
 	virtual ~CPotentialPlayer( );
 
 	virtual CTCPSocket *GetSocket( )				{ return m_Socket; }
-	virtual BYTEARRAY GetExternalIP( );
+	virtual QByteArray GetExternalIP( );
 	virtual QString GetExternalIPString( );
-	virtual queue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
+	virtual QQueue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
 	virtual bool GetDeleteMe( )						{ return m_DeleteMe; }
 	virtual bool GetError( )						{ return m_Error; }
 	virtual QString GetErrorString( )				{ return m_ErrorString; }
@@ -72,7 +74,7 @@ public:
 
 	// other functions
 
-	virtual void Send( BYTEARRAY data );
+	virtual void Send( QByteArray data );
 };
 
 //
@@ -84,9 +86,9 @@ class CGamePlayer : public CPotentialPlayer
 private:
 	unsigned char m_PID;
 	QString m_Name;								// the player's name
-	BYTEARRAY m_InternalIP;						// the player's internal IP address as reported by the player when connecting
-	vector<uint32_t> m_Pings;					// store the last few (20) pings received so we can take an average
-	queue<uint32_t> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
+	QByteArray m_InternalIP;						// the player's internal IP address as reported by the player when connecting
+	QVector<uint32_t> m_Pings;					// store the last few (20) pings received so we can take an average
+	QQueue<uint32_t> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
 	QString m_LeftReason;						// the reason the player left the game
 	QString m_SpoofedRealm;						// the realm the player last spoof checked on
 	QString m_JoinedRealm;						// the realm the player joined on (probable, can be spoofed)
@@ -105,7 +107,7 @@ private:
 	uint32_t m_StatsSentTime;					// GetTime when we sent this player's stats to the chat (to prevent players from spamming !stats)
 	uint32_t m_StatsDotASentTime;				// GetTime when we sent this player's dota stats to the chat (to prevent players from spamming !statsdota)
 	uint32_t m_LastGProxyWaitNoticeSentTime;
-	queue<BYTEARRAY> m_LoadInGameData;			// queued data to be sent when the player finishes loading when using "load in game"
+	QQueue<QByteArray> m_LoadInGameData;			// queued data to be sent when the player finishes loading when using "load in game"
 	double m_Score;								// the player's generic "score" for the matchmaking algorithm
 	bool m_LoggedIn;							// if the player has logged in or not (used with CAdminGame only)
 	bool m_Spoofed;								// if the player has spoof checked or not
@@ -123,21 +125,21 @@ private:
 	bool m_LeftMessageSent;						// if the playerleave message has been sent or not
 	bool m_GProxy;								// if the player is using GProxy++
 	bool m_GProxyDisconnectNoticeSent;			// if a disconnection notice has been sent or not when using GProxy++
-	queue<BYTEARRAY> m_GProxyBuffer;
+	QQueue<QByteArray> m_GProxyBuffer;
 	uint32_t m_GProxyReconnectKey;
 	uint32_t m_LastGProxyAckTime;
 
 public:
-	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved );
-	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, BYTEARRAY nInternalIP, bool nReserved );
+	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
+	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
 	virtual ~CGamePlayer( );
 
 	unsigned char GetPID( )						{ return m_PID; }
 	QString GetName( )							{ return m_Name; }
-	BYTEARRAY GetInternalIP( )					{ return m_InternalIP; }
+	QByteArray GetInternalIP( )					{ return m_InternalIP; }
 	unsigned int GetNumPings( )					{ return m_Pings.size( ); }
 	unsigned int GetNumCheckSums( )				{ return m_CheckSums.size( ); }
-	queue<uint32_t> *GetCheckSums( )			{ return &m_CheckSums; }
+	QQueue<uint32_t> *GetCheckSums( )			{ return &m_CheckSums; }
 	QString GetLeftReason( )						{ return m_LeftReason; }
 	QString GetSpoofedRealm( )					{ return m_SpoofedRealm; }
 	QString GetJoinedRealm( )					{ return m_JoinedRealm; }
@@ -154,7 +156,7 @@ public:
 	uint32_t GetStatsSentTime( )				{ return m_StatsSentTime; }
 	uint32_t GetStatsDotASentTime( )			{ return m_StatsDotASentTime; }
 	uint32_t GetLastGProxyWaitNoticeSentTime( )	{ return m_LastGProxyWaitNoticeSentTime; }
-	queue<BYTEARRAY> *GetLoadInGameData( )		{ return &m_LoadInGameData; }
+	QQueue<QByteArray> *GetLoadInGameData( )		{ return &m_LoadInGameData; }
 	double GetScore( )							{ return m_Score; }
 	bool GetLoggedIn( )							{ return m_LoggedIn; }
 	bool GetSpoofed( )							{ return m_Spoofed; }
@@ -205,7 +207,7 @@ public:
 	QString GetNameTerminated( );
 	uint32_t GetPing( bool LCPing );
 
-	void AddLoadInGameData( BYTEARRAY nLoadInGameData )								{ m_LoadInGameData.push( nLoadInGameData ); }
+	void AddLoadInGameData( QByteArray nLoadInGameData )							{ m_LoadInGameData.enqueue( nLoadInGameData ); }
 
 	// processing functions
 
@@ -215,7 +217,7 @@ public:
 
 	// other functions
 
-	virtual void Send( BYTEARRAY data );
+	virtual void Send( QByteArray data );
 	virtual void EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPacket );
 };
 

@@ -47,21 +47,21 @@ CBNLSClient :: ~CBNLSClient( )
 	delete m_Socket;
 	delete m_Protocol;
 
-	while( !m_Packets.empty( ) )
+	while( !m_Packets.isEmpty( ) )
 	{
 		delete m_Packets.front( );
-		m_Packets.pop( );
+		m_Packets.dequeue( );
 	}
 }
 
-BYTEARRAY CBNLSClient :: GetWardenResponse( )
+QByteArray CBNLSClient :: GetWardenResponse( )
 {
-	BYTEARRAY WardenResponse;
+	QByteArray WardenResponse;
 
-	if( !m_WardenResponses.empty( ) )
+	if( !m_WardenResponses.isEmpty( ) )
 	{
 		WardenResponse = m_WardenResponses.front( );
-		m_WardenResponses.pop( );
+		m_WardenResponses.dequeue( );
 		m_TotalWardenOut++;
 	}
 
@@ -105,10 +105,10 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 			m_LastNullTime = GetTime( );
 		}
 
-		while( !m_OutPackets.empty( ) )
+		while( !m_OutPackets.isEmpty( ) )
 		{
 			m_Socket->PutBytes( m_OutPackets.front( ) );
-			m_OutPackets.pop( );
+			m_OutPackets.dequeue( );
 		}
 
 		m_Socket->DoSend( (fd_set *)send_fd );
@@ -136,19 +136,19 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 void CBNLSClient :: ExtractPackets( )
 {
 	QString *RecvBuffer = m_Socket->GetBytes( );
-	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+	QByteArray Bytes = UTIL_CreateQByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	while( Bytes.size( ) >= 3 )
 	{
-		uint16_t Length = UTIL_ByteArrayToUInt16( Bytes, false );
+		uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false );
 
 		if( Length >= 3 )
 		{
 			if( Bytes.size( ) >= Length )
 			{
-				m_Packets.push( new CCommandPacket( 0, Bytes[2], BYTEARRAY( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
+				m_Packets.enqueue( new CCommandPacket( 0, Bytes[2], QByteArray( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
 				*RecvBuffer = RecvBuffer->substr( Length );
-				Bytes = BYTEARRAY( Bytes.begin( ) + Length, Bytes.end( ) );
+				Bytes = QByteArray( Bytes.begin( ) + Length, Bytes.end( ) );
 			}
 			else
 				return;
@@ -164,17 +164,17 @@ void CBNLSClient :: ExtractPackets( )
 
 void CBNLSClient :: ProcessPackets( )
 {
-	while( !m_Packets.empty( ) )
+	while( !m_Packets.isEmpty( ) )
 	{
 		CCommandPacket *Packet = m_Packets.front( );
-		m_Packets.pop( );
+		m_Packets.dequeue( );
 
 		if( Packet->GetID( ) == CBNLSProtocol :: BNLS_WARDEN )
 		{
-			BYTEARRAY WardenResponse = m_Protocol->RECEIVE_BNLS_WARDEN( Packet->GetData( ) );
+			QByteArray WardenResponse = m_Protocol->RECEIVE_BNLS_WARDEN( Packet->GetData( ) );
 
-			if( !WardenResponse.empty( ) )
-				m_WardenResponses.push( WardenResponse );
+			if( !WardenResponse.isEmpty( ) )
+				m_WardenResponses.enqueue( WardenResponse );
 		}
 
 		delete Packet;
@@ -183,11 +183,11 @@ void CBNLSClient :: ProcessPackets( )
 
 void CBNLSClient :: QueueWardenSeed( uint32_t seed )
 {
-	m_OutPackets.push( m_Protocol->SEND_BNLS_WARDEN_SEED( m_WardenCookie, seed ) );
+	m_OutPackets.enqueue( m_Protocol->SEND_BNLS_WARDEN_SEED( m_WardenCookie, seed ) );
 }
 
-void CBNLSClient :: QueueWardenRaw( BYTEARRAY wardenRaw )
+void CBNLSClient :: QueueWardenRaw( QByteArray wardenRaw )
 {
-	m_OutPackets.push( m_Protocol->SEND_BNLS_WARDEN_RAW( m_WardenCookie, wardenRaw ) );
+	m_OutPackets.enqueue( m_Protocol->SEND_BNLS_WARDEN_RAW( m_WardenCookie, wardenRaw ) );
 	m_TotalWardenIn++;
 }

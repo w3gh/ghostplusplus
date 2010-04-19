@@ -84,7 +84,7 @@ CMap :: ~CMap( )
 
 }
 
-BYTEARRAY CMap :: GetMapGameFlags( )
+QByteArray CMap :: GetMapGameFlags( )
 {
 	/*
 
@@ -155,7 +155,7 @@ BYTEARRAY CMap :: GetMapGameFlags( )
 	if( m_MapFlags & MAPFLAG_RANDOMRACES )
 		GameFlags |= 0x04000000;
 
-	return UTIL_CreateByteArray( GameFlags, false );
+	return UTIL_CreateQByteArray( GameFlags, false );
 }
 
 uint32_t CMap :: GetMapGameType( )
@@ -259,7 +259,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	m_MapLocalPath = CFG->GetString( "map_localpath", QString( ) );
 	m_MapData.clear( );
 
-	if( !m_MapLocalPath.empty( ) )
+	if( !m_MapLocalPath.isEmpty( ) )
 		m_MapData = UTIL_FileRead( m_GHost->m_MapPath + m_MapLocalPath );
 
 	// load the map MPQ
@@ -278,37 +278,37 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	// try to calculate map_size, map_info, map_crc, map_sha1
 
-	BYTEARRAY MapSize;
-	BYTEARRAY MapInfo;
-	BYTEARRAY MapCRC;
-	BYTEARRAY MapSHA1;
+	QByteArray MapSize;
+	QByteArray MapInfo;
+	QByteArray MapCRC;
+	QByteArray MapSHA1;
 
-	if( !m_MapData.empty( ) )
+	if( !m_MapData.isEmpty( ) )
 	{
 		m_GHost->m_SHA->Reset( );
 
 		// calculate map_size
 
-		MapSize = UTIL_CreateByteArray( (uint32_t)m_MapData.size( ), false );
-		CONSOLE_Print( "[MAP] calculated map_size = " + UTIL_ByteArrayToDecString( MapSize ) );
+		MapSize = UTIL_CreateQByteArray( (uint32_t)m_MapData.size( ), false );
+		CONSOLE_Print( "[MAP] calculated map_size = " + UTIL_QByteArrayToDecString( MapSize ) );
 
 		// calculate map_info (this is actually the CRC)
 
-		MapInfo = UTIL_CreateByteArray( (uint32_t)m_GHost->m_CRC->FullCRC( (unsigned char *)m_MapData.c_str( ), m_MapData.size( ) ), false );
-		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_ByteArrayToDecString( MapInfo ) );
+		MapInfo = UTIL_CreateQByteArray( (uint32_t)m_GHost->m_CRC->FullCRC( (unsigned char *)m_MapData.c_str( ), m_MapData.size( ) ), false );
+		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_QByteArrayToDecString( MapInfo ) );
 
 		// calculate map_crc (this is not the CRC) and map_sha1
 		// a big thank you to Strilanc for figuring the map_crc algorithm out
 
 		QString CommonJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "common.j" );
 
-		if( CommonJ.empty( ) )
+		if( CommonJ.isEmpty( ) )
 			CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - unable to read file [" + m_GHost->m_MapCFGPath + "common.j]" );
 		else
 		{
 			QString BlizzardJ = UTIL_FileRead( m_GHost->m_MapCFGPath + "blizzard.j" );
 
-			if( BlizzardJ.empty( ) )
+			if( BlizzardJ.isEmpty( ) )
 				CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - unable to read file [" + m_GHost->m_MapCFGPath + "blizzard.j]" );
 			else
 			{
@@ -398,7 +398,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 				if( MapMPQReady )
 				{
-					vector<QString> FileList;
+					QVector<QString> FileList;
 					FileList.push_back( "war3map.j" );
 					FileList.push_back( "scripts\\war3map.j" );
 					FileList.push_back( "war3map.w3e" );
@@ -411,7 +411,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					FileList.push_back( "war3map.w3q" );
 					bool FoundScript = false;
 
-					for( vector<QString> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
+					for( QVector<QString> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
 					{
 						// don't use scripts\war3map.j if we've already used war3map.j (yes, some maps have both but only war3map.j is used)
 
@@ -453,15 +453,15 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					if( !FoundScript )
 						CONSOLE_Print( "[MAP] couldn't find war3map.j or scripts\\war3map.j in MPQ file, calculated map_crc/sha1 is probably wrong" );
 
-					MapCRC = UTIL_CreateByteArray( Val, false );
-					CONSOLE_Print( "[MAP] calculated map_crc = " + UTIL_ByteArrayToDecString( MapCRC ) );
+					MapCRC = UTIL_CreateQByteArray( Val, false );
+					CONSOLE_Print( "[MAP] calculated map_crc = " + UTIL_QByteArrayToDecString( MapCRC ) );
 
 					m_GHost->m_SHA->Final( );
 					unsigned char SHA1[20];
 					memset( SHA1, 0, sizeof( unsigned char ) * 20 );
 					m_GHost->m_SHA->GetHash( SHA1 );
-					MapSHA1 = UTIL_CreateByteArray( SHA1, 20 );
-					CONSOLE_Print( "[MAP] calculated map_sha1 = " + UTIL_ByteArrayToDecString( MapSHA1 ) );
+					MapSHA1 = UTIL_CreateQByteArray( SHA1, 20 );
+					CONSOLE_Print( "[MAP] calculated map_sha1 = " + UTIL_QByteArrayToDecString( MapSHA1 ) );
 				}
 				else
 					CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - map MPQ file not loaded" );
@@ -474,13 +474,13 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	// try to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams
 
 	uint32_t MapOptions = 0;
-	BYTEARRAY MapWidth;
-	BYTEARRAY MapHeight;
+	QByteArray MapWidth;
+	QByteArray MapHeight;
 	uint32_t MapNumPlayers = 0;
 	uint32_t MapNumTeams = 0;
-	vector<CGameSlot> Slots;
+	QVector<CGameSlot> Slots;
 
-	if( !m_MapData.empty( ) )
+	if( !m_MapData.isEmpty( ) )
 	{
 		if( MapMPQReady )
 		{
@@ -635,7 +635,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 								{
 									if( PlayerMask & 1 )
 									{
-										for( vector<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); k++ )
+										for( QVector<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); k++ )
 										{
 											if( (*k).GetColour( ) == j )
 												(*k).SetTeam( i );
@@ -653,10 +653,10 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
 							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
-							MapWidth = UTIL_CreateByteArray( (uint16_t)RawMapWidth, false );
-							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_ByteArrayToDecString( MapWidth ) );
-							MapHeight = UTIL_CreateByteArray( (uint16_t)RawMapHeight, false );
-							CONSOLE_Print( "[MAP] calculated map_height = " + UTIL_ByteArrayToDecString( MapHeight ) );
+							MapWidth = UTIL_CreateQByteArray( (uint16_t)RawMapWidth, false );
+							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_QByteArrayToDecString( MapWidth ) );
+							MapHeight = UTIL_CreateQByteArray( (uint16_t)RawMapHeight, false );
+							CONSOLE_Print( "[MAP] calculated map_height = " + UTIL_QByteArrayToDecString( MapHeight ) );
 							MapNumPlayers = RawMapNumPlayers - ClosedSlots;
 							CONSOLE_Print( "[MAP] calculated map_numplayers = " + UTIL_ToString( MapNumPlayers ) );
 							MapNumTeams = RawMapNumTeams;
@@ -664,9 +664,9 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							uint32_t SlotNum = 1;
 
-							for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+							for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 							{
-								CONSOLE_Print( "[MAP] calculated map_slot" + UTIL_ToString( SlotNum ) + " = " + UTIL_ByteArrayToDecString( (*i).GetByteArray( ) ) );
+								CONSOLE_Print( "[MAP] calculated map_slot" + UTIL_ToString( SlotNum ) + " = " + UTIL_QByteArrayToDecString( (*i).GetQByteArray( ) ) );
 								SlotNum++;
 							}
 
@@ -678,7 +678,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 								unsigned char Team = 0;
 
-								for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+								for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 								{
 									(*i).SetTeam( Team++ );
 									(*i).SetRace( SLOTRACE_RANDOM );
@@ -689,7 +689,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 							{
 								// make races selectable
 
-								for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+								for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 									(*i).SetRace( (*i).GetRace( ) | SLOTRACE_SELECTABLE );
 							}
 						}
@@ -718,7 +718,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapPath = CFG->GetString( "map_path", QString( ) );
 
-	if( MapSize.empty( ) )
+	if( MapSize.isEmpty( ) )
 		MapSize = UTIL_ExtractNumbers( CFG->GetString( "map_size", QString( ) ), 4 );
 	else if( CFG->Exists( "map_size" ) )
 	{
@@ -728,7 +728,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapSize = MapSize;
 
-	if( MapInfo.empty( ) )
+	if( MapInfo.isEmpty( ) )
 		MapInfo = UTIL_ExtractNumbers( CFG->GetString( "map_info", QString( ) ), 4 );
 	else if( CFG->Exists( "map_info" ) )
 	{
@@ -738,7 +738,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapInfo = MapInfo;
 
-	if( MapCRC.empty( ) )
+	if( MapCRC.isEmpty( ) )
 		MapCRC = UTIL_ExtractNumbers( CFG->GetString( "map_crc", QString( ) ), 4 );
 	else if( CFG->Exists( "map_crc" ) )
 	{
@@ -748,7 +748,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapCRC = MapCRC;
 
-	if( MapSHA1.empty( ) )
+	if( MapSHA1.isEmpty( ) )
 		MapSHA1 = UTIL_ExtractNumbers( CFG->GetString( "map_sha1", QString( ) ), 20 );
 	else if( CFG->Exists( "map_sha1" ) )
 	{
@@ -778,7 +778,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapOptions = MapOptions;
 
-	if( MapWidth.empty( ) )
+	if( MapWidth.isEmpty( ) )
 		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", QString( ) ), 2 );
 	else if( CFG->Exists( "map_width" ) )
 	{
@@ -788,7 +788,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapWidth = MapWidth;
 
-	if( MapHeight.empty( ) )
+	if( MapHeight.isEmpty( ) )
 		MapHeight = UTIL_ExtractNumbers( CFG->GetString( "map_height", QString( ) ), 2 );
 	else if( CFG->Exists( "map_height" ) )
 	{
@@ -824,16 +824,16 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	m_MapNumTeams = MapNumTeams;
 
-	if( Slots.empty( ) )
+	if( Slots.isEmpty( ) )
 	{
 		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
 		{
 			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
-			if( SlotString.empty( ) )
+			if( SlotString.isEmpty( ) )
 				break;
 
-			BYTEARRAY SlotData = UTIL_ExtractNumbers( SlotString, 9 );
+			QByteArray SlotData = UTIL_ExtractNumbers( SlotString, 9 );
 			Slots.push_back( CGameSlot( SlotData ) );
 		}
 	}
@@ -846,10 +846,10 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 		{
 			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
-			if( SlotString.empty( ) )
+			if( SlotString.isEmpty( ) )
 				break;
 
-			BYTEARRAY SlotData = UTIL_ExtractNumbers( SlotString, 9 );
+			QByteArray SlotData = UTIL_ExtractNumbers( SlotString, 9 );
 			Slots.push_back( CGameSlot( SlotData ) );
 		}
 	}
@@ -862,7 +862,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	{
 		CONSOLE_Print( "[MAP] forcing races to random" );
 
-		for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+		for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 			(*i).SetRace( SLOTRACE_RANDOM );
 	}
 
@@ -883,7 +883,7 @@ void CMap :: CheckValid( )
 {
 	// todotodo: should this code fix any errors it sees rather than just warning the user?
 
-	if( m_MapPath.empty( ) )
+	if( m_MapPath.isEmpty( ) )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_path detected" );
@@ -899,7 +899,7 @@ void CMap :: CheckValid( )
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected" );
 	}
-	else if( !m_MapData.empty( ) && m_MapData.size( ) != UTIL_ByteArrayToUInt32( m_MapSize, false ) )
+	else if( !m_MapData.isEmpty( ) && m_MapData.size( ) != UTIL_QByteArrayToUInt32( m_MapSize, false ) )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with actual map data" );
@@ -968,7 +968,7 @@ void CMap :: CheckValid( )
 		CONSOLE_Print( "[MAP] invalid map_numteams detected" );
 	}
 
-	if( m_Slots.empty( ) || m_Slots.size( ) > 12 )
+	if( m_Slots.isEmpty( ) || m_Slots.size( ) > 12 )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_slot<x> detected" );

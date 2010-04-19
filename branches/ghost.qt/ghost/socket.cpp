@@ -260,7 +260,7 @@ void CTCPSocket :: DoRecv( fd_set *fd )
 		{
 			// success! add the received data to the buffer
 
-			if( !m_LogFile.empty( ) )
+			if( !m_LogFile.isEmpty( ) )
 			{
 				ofstream Log;
 				Log.open( m_LogFile.c_str( ), ios :: app );
@@ -280,7 +280,7 @@ void CTCPSocket :: DoRecv( fd_set *fd )
 
 void CTCPSocket :: DoSend( fd_set *send_fd )
 {
-	if( m_Socket == INVALID_SOCKET || m_HasError || !m_Connected || m_SendBuffer.empty( ) )
+	if( m_Socket == INVALID_SOCKET || m_HasError || !m_Connected || m_SendBuffer.isEmpty( ) )
 		return;
 
 	if( FD_ISSET( m_Socket, send_fd ) )
@@ -302,7 +302,7 @@ void CTCPSocket :: DoSend( fd_set *send_fd )
 		{
 			// success! only some of the data may have been sent, remove it from the buffer
 
-			if( !m_LogFile.empty( ) )
+			if( !m_LogFile.isEmpty( ) )
 			{
 				ofstream Log;
 				Log.open( m_LogFile.c_str( ), ios :: app );
@@ -314,7 +314,7 @@ void CTCPSocket :: DoSend( fd_set *send_fd )
 				}
 			}
 
-			m_SendBuffer = m_SendBuffer.substr( s );
+			m_SendBuffer = m_SendBuffer.mid( s );
 			m_LastSend = GetTime( );
 		}
 	}
@@ -369,7 +369,7 @@ void CTCPClient :: Connect( QString localaddress, QString address, uint16_t port
 	if( m_Socket == INVALID_SOCKET || m_HasError || m_Connecting || m_Connected )
 		return;
 
-	if( !localaddress.empty( ) )
+	if( !localaddress.isEmpty( ) )
 	{
 		struct sockaddr_in LocalSIN;
 		memset( &LocalSIN, 0, sizeof( LocalSIN ) );
@@ -492,7 +492,7 @@ bool CTCPServer :: Listen( QString address, uint16_t port )
 
 	m_SIN.sin_family = AF_INET;
 
-	if( !address.empty( ) )
+	if( !address.isEmpty( ) )
 	{
 		if( ( m_SIN.sin_addr.s_addr = inet_addr( address.c_str( ) ) ) == INADDR_NONE )
 			m_SIN.sin_addr.s_addr = INADDR_ANY;
@@ -641,7 +641,7 @@ bool CUDPSocket :: Broadcast( uint16_t port, QByteArray message )
 
 void CUDPSocket :: SetBroadcastTarget( QString subnet )
 {
-	if( subnet.empty( ) )
+	if( subnet.isEmpty( ) )
 	{
 		CONSOLE_Print( "[UDPSOCKET] using default broadcast target" );
 		m_BroadcastTarget.s_addr = INADDR_BROADCAST;
@@ -735,7 +735,7 @@ bool CUDPServer :: Bind( QString address, uint16_t port )
 	struct sockaddr_in sin;
 	sin.sin_family = AF_INET;
 
-	if( !address.empty( ) )
+	if( !address.isEmpty( ) )
 	{
 		if( ( sin.sin_addr.s_addr = inet_addr( address.c_str( ) ) ) == INADDR_NONE )
 			sin.sin_addr.s_addr = INADDR_ANY;

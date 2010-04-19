@@ -23,6 +23,7 @@
 
 #include <QString>
 #include <QByteArray>
+#include <QVector>
 
 // byte arrays
 
@@ -82,9 +83,9 @@ QByteArray UTIL_DecodeStatString( QByteArray &data );
 // other
 
 bool UTIL_IsLanIP( QByteArray ip );
-bool UTIL_IsLocalIP( QByteArray ip, vector<QByteArray> &localIPs );
+bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs );
 void UTIL_Replace( QString &Text, QString Key, QString Value );
-vector<QString> UTIL_Tokenize( QString s, char delim );
+QVector<QString> UTIL_Tokenize( QString s, char delim );
 
 // math
 

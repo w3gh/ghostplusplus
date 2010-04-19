@@ -66,7 +66,7 @@ CIncomingJoinPlayer *CGameProtocol :: RECEIVE_W3GS_REQJOIN( QByteArray data )
 		uint32_t HostCounter = UTIL_QByteArrayToUInt32( data, false, 4 );
 		QByteArray Name = UTIL_ExtractCString( data, 19 );
 
-		if( !Name.empty( ) && data.size( ) >= Name.size( ) + 30 )
+		if( !Name.isEmpty( ) && data.size( ) >= Name.size( ) + 30 )
 		{
 			QByteArray InternalIP = QByteArray( data.begin( ) + Name.size( ) + 26, data.begin( ) + Name.size( ) + 30 );
 			return new CIncomingJoinPlayer( HostCounter, QString( Name.begin( ), Name.end( ) ), InternalIP );
@@ -309,7 +309,7 @@ QByteArray CGameProtocol :: SEND_W3GS_PING_FROM_HOST( )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 
@@ -362,7 +362,7 @@ QByteArray CGameProtocol :: SEND_W3GS_PLAYERINFO( unsigned char PID, QString nam
 
 	QByteArray packet;
 
-	if( !name.empty( ) && name.size( ) <= 15 && externalIP.size( ) == 4 && internalIP.size( ) == 4 )
+	if( !name.isEmpty( ) && name.size( ) <= 15 && externalIP.size( ) == 4 && internalIP.size( ) == 4 )
 	{
 		packet.push_back( W3GS_HEADER_CONSTANT );							// W3GS header constant
 		packet.push_back( W3GS_PLAYERINFO );								// W3GS_PLAYERINFO
@@ -440,7 +440,7 @@ QByteArray CGameProtocol :: SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	QByteArray SlotInfo = EncodeSlotInfo( slots, randomSeed, layoutStyle, playerSlots );
 	QByteArray packet;
@@ -482,7 +482,7 @@ QByteArray CGameProtocol :: SEND_W3GS_COUNTDOWN_END( )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( queue<CIncomingAction *> actions, uint16_t sendInterval )
+QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, uint16_t sendInterval )
 {
 	QByteArray packet;
 	packet.push_back( W3GS_HEADER_CONSTANT );				// W3GS header constant
@@ -493,14 +493,14 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( queue<CIncomingAction *> 
 
 	// create subpacket
 
-	if( !actions.empty( ) )
+	if( !actions.isEmpty( ) )
 	{
 		QByteArray subpacket;
 
-		while( !actions.empty( ) )
+		while( !actions.isEmpty( ) )
 		{
 			CIncomingAction *Action = actions.front( );
-			actions.pop( );
+			actions.dequeue( );
 			subpacket.push_back( Action->GetPID( ) );
 			UTIL_AppendQByteArray( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
 			UTIL_AppendQByteArrayFast( subpacket, *Action->GetAction( ) );
@@ -527,7 +527,7 @@ QByteArray CGameProtocol :: SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QBy
 {
 	QByteArray packet;
 
-	if( !toPIDs.empty( ) && !message.empty( ) && message.size( ) < 255 )
+	if( !toPIDs.isEmpty( ) && !message.isEmpty( ) && message.size( ) < 255 )
 	{
 		packet.push_back( W3GS_HEADER_CONSTANT );		// W3GS header constant
 		packet.push_back( W3GS_CHAT_FROM_HOST );		// W3GS_CHAT_FROM_HOST
@@ -549,13 +549,13 @@ QByteArray CGameProtocol :: SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QBy
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_START_LAG( vector<CGamePlayer *> players, bool loadInGame )
+QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QVector<CGamePlayer *> players, bool loadInGame )
 {
 	QByteArray packet;
 
 	unsigned char NumLaggers = 0;
 
-	for( vector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
+	for( QVector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
 	{
 		if( loadInGame )
 		{
@@ -577,7 +577,7 @@ QByteArray CGameProtocol :: SEND_W3GS_START_LAG( vector<CGamePlayer *> players, 
 		packet.push_back( 0 );						// packet length will be assigned later
 		packet.push_back( NumLaggers );
 
-		for( vector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
+		for( QVector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
 		{
 			if( loadInGame )
 			{
@@ -663,7 +663,7 @@ QByteArray CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Vers
 
 	QByteArray packet;
 
-	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.empty( ) && !hostName.empty( ) && !mapPath.empty( ) && mapCRC.size( ) == 4 )
+	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.isEmpty( ) && !hostName.isEmpty( ) && !mapPath.isEmpty( ) && mapCRC.size( ) == 4 )
 	{
 		// make the stat QString
 
@@ -779,7 +779,7 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPCHECK( QString mapPath, QByteArray mapS
 
 	QByteArray packet;
 
-	if( !mapPath.empty( ) && mapSize.size( ) == 4 && mapInfo.size( ) == 4 && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 )
+	if( !mapPath.isEmpty( ) && mapSize.size( ) == 4 && mapInfo.size( ) == 4 && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 )
 	{
 		packet.push_back( W3GS_HEADER_CONSTANT );		// W3GS header constant
 		packet.push_back( W3GS_MAPCHECK );				// W3GS_MAPCHECK
@@ -861,7 +861,7 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION2( queue<CIncomingAction *> actions )
+QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *> actions )
 {
 	QByteArray packet;
 	packet.push_back( W3GS_HEADER_CONSTANT );				// W3GS header constant
@@ -873,14 +873,14 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION2( queue<CIncomingAction *>
 
 	// create subpacket
 
-	if( !actions.empty( ) )
+	if( !actions.isEmpty( ) )
 	{
 		QByteArray subpacket;
 
-		while( !actions.empty( ) )
+		while( !actions.isEmpty( ) )
 		{
 			CIncomingAction *Action = actions.front( );
-			actions.pop( );
+			actions.dequeue( );
 			subpacket.push_back( Action->GetPID( ) );
 			UTIL_AppendQByteArray( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
 			UTIL_AppendQByteArrayFast( subpacket, *Action->GetAction( ) );
@@ -944,7 +944,7 @@ bool CGameProtocol :: ValidateLength( QByteArray &content )
 	return false;
 }
 
-QByteArray CGameProtocol :: EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: EncodeSlotInfo( QVector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	QByteArray SlotInfo;
 	SlotInfo.push_back( (unsigned char)slots.size( ) );		// number of slots

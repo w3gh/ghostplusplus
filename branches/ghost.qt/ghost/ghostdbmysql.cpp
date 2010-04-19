@@ -76,17 +76,17 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 		return;
 	}
 
-	m_IdleConnections.push( Connection );
+	m_IdleConnections.enqueue( Connection );
 }
 
 CGHostDBMySQL :: ~CGHostDBMySQL( )
 {
 	CONSOLE_Print( "[MYSQL] closing " + UTIL_ToString( m_IdleConnections.size( ) ) + "/" + UTIL_ToString( m_NumConnections ) + " idle MySQL connections" );
 
-	while( !m_IdleConnections.empty( ) )
+	while( !m_IdleConnections.isEmpty( ) )
 	{
 		mysql_close( (MYSQL *)m_IdleConnections.front( ) );
-		m_IdleConnections.pop( );
+		m_IdleConnections.dequeue( );
 	}
 
 	if( m_OutstandingCallables > 0 )
@@ -112,14 +112,14 @@ void CGHostDBMySQL :: RecoverCallable( CBaseCallable *callable )
 			m_NumConnections--;
 		}
 		else
-			m_IdleConnections.push( MySQLCallable->GetConnection( ) );
+			m_IdleConnections.enqueue( MySQLCallable->GetConnection( ) );
 
 		if( m_OutstandingCallables == 0 )
 			CONSOLE_Print( "[MYSQL] recovered a mysql callable with zero outstanding" );
 		else
 			m_OutstandingCallables--;
 
-		if( !MySQLCallable->GetError( ).empty( ) )
+		if( !MySQLCallable->GetError( ).isEmpty( ) )
 			CONSOLE_Print( "[MYSQL] error --- " + MySQLCallable->GetError( ) );
 	}
 	else
@@ -409,7 +409,7 @@ CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( QString catego
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -422,7 +422,7 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -435,7 +435,7 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -452,10 +452,10 @@ void *CGHostDBMySQL :: GetIdleConnection( )
 {
 	void *Connection = NULL;
 
-	if( !m_IdleConnections.empty( ) )
+	if( !m_IdleConnections.isEmpty( ) )
 	{
 		Connection = m_IdleConnections.front( );
-		m_IdleConnections.pop( );
+		m_IdleConnections.dequeue( );
 	}
 
 	return Connection;
@@ -474,9 +474,9 @@ QString MySQLEscapeString( void *conn, QString str )
 	return result;
 }
 
-vector<QString> MySQLFetchRow( MYSQL_RES *res )
+QVector<QString> MySQLFetchRow( MYSQL_RES *res )
 {
-	vector<QString> Result;
+	QVector<QString> Result;
 
 	MYSQL_ROW Row = mysql_fetch_row( res );
 
@@ -515,7 +515,7 @@ uint32_t MySQLAdminCount( void *conn, QString *error, uint32_t botid, QString se
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -547,9 +547,9 @@ bool MySQLAdminCheck( void *conn, QString *error, uint32_t botid, QString server
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
-			if( !Row.empty( ) )
+			if( !Row.isEmpty( ) )
 				IsAdmin = true;
 
 			mysql_free_result( Result );
@@ -593,10 +593,10 @@ bool MySQLAdminRemove( void *conn, QString *error, uint32_t botid, QString serve
 	return Success;
 }
 
-vector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QString server )
+QVector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	vector<QString> AdminList;
+	QVector<QString> AdminList;
 	QString Query = "SELECT name FROM admins WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -607,9 +607,9 @@ vector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QStr
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
-			while( !Row.empty( ) )
+			while( !Row.isEmpty( ) )
 			{
 				AdminList.push_back( Row[0] );
 				Row = MySQLFetchRow( Result );
@@ -638,7 +638,7 @@ uint32_t MySQLBanCount( void *conn, QString *error, uint32_t botid, QString serv
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -663,7 +663,7 @@ CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString serve
 	CDBBan *Ban = NULL;
 	QString Query;
 
-	if( ip.empty( ) )
+	if( ip.isEmpty( ) )
 		Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
 	else
 		Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE (server='" + EscServer + "' AND name='" + EscUser + "') OR ip='" + EscIP + "'";
@@ -676,7 +676,7 @@ CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString serve
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 6 )
 				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5] );
@@ -743,10 +743,10 @@ bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString user )
 	return Success;
 }
 
-vector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QString server )
+QVector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	vector<CDBBan *> BanList;
+	QVector<CDBBan *> BanList;
 	QString Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -757,7 +757,7 @@ vector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QStri
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			while( Row.size( ) == 6 )
 			{
@@ -826,7 +826,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, u
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 12 )
 			{
@@ -904,7 +904,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, u
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 10 )
 			{
@@ -936,7 +936,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, u
 
 						if( Result2 )
 						{
-							vector<QString> Row2 = MySQLFetchRow( Result2 );
+							QVector<QString> Row2 = MySQLFetchRow( Result2 );
 
 							if( Row2.size( ) == 1 )
 								TotalWins = UTIL_ToUInt32( Row2[0] );
@@ -961,7 +961,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, u
 
 						if( Result3 )
 						{
-							vector<QString> Row3 = MySQLFetchRow( Result3 );
+							QVector<QString> Row3 = MySQLFetchRow( Result3 );
 
 							if( Row3.size( ) == 1 )
 								TotalLosses = UTIL_ToUInt32( Row3[0] );
@@ -1025,7 +1025,7 @@ double MySQLScoreCheck( void *conn, QString *error, uint32_t botid, QString cate
 
 		if( Result )
 		{
-			vector<QString> Row = MySQLFetchRow( Result );
+			QVector<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Score = UTIL_ToDouble( Row[0] );
@@ -1058,19 +1058,19 @@ uint32_t MySQLW3MMDPlayerAdd( void *conn, QString *error, uint32_t botid, QStrin
 	return RowID;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
-	if( var_ints.empty( ) )
+	if( var_ints.isEmpty( ) )
 		return false;
 
 	bool Success = false;
 	QString Query;
 
-	for( map<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
+	for( QMap<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
-		if( Query.empty( ) )
+		if( Query.isEmpty( ) )
 			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_int ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second ) + " )";
 		else
 			Query += ", ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second ) + " )";
@@ -1084,19 +1084,19 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t game
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,double> var_reals )
 {
-	if( var_reals.empty( ) )
+	if( var_reals.isEmpty( ) )
 		return false;
 
 	bool Success = false;
 	QString Query;
 
-	for( map<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
+	for( QMap<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
-		if( Query.empty( ) )
+		if( Query.isEmpty( ) )
 			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_real ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second, 10 ) + " )";
 		else
 			Query += ", ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', " + UTIL_ToString( i->second, 10 ) + " )";
@@ -1110,20 +1110,20 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t game
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, map<VarP,QString> var_strings )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,QString> var_strings )
 {
-	if( var_strings.empty( ) )
+	if( var_strings.isEmpty( ) )
 		return false;
 
 	bool Success = false;
 	QString Query;
 
-	for( map<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
+	for( QMap<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 		QString EscValueString = MySQLEscapeString( conn, i->second );
 
-		if( Query.empty( ) )
+		if( Query.isEmpty( ) )
 			Query = "INSERT INTO w3mmdvars ( botid, gameid, pid, varname, value_QString ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', '" + EscValueString + "' )";
 		else
 			Query += ", ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( i->first.first ) + ", '" + EscVarName + "', '" + EscValueString + "' )";
@@ -1180,7 +1180,7 @@ void CMySQLCallableAdminCount :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLAdminCount( m_Connection, &m_Error, m_SQLBotID, m_Server );
 
 	Close( );
@@ -1190,7 +1190,7 @@ void CMySQLCallableAdminCheck :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLAdminCheck( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User );
 
 	Close( );
@@ -1200,7 +1200,7 @@ void CMySQLCallableAdminAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLAdminAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User );
 
 	Close( );
@@ -1210,7 +1210,7 @@ void CMySQLCallableAdminRemove :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLAdminRemove( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User );
 
 	Close( );
@@ -1220,7 +1220,7 @@ void CMySQLCallableAdminList :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLAdminList( m_Connection, &m_Error, m_SQLBotID, m_Server );
 
 	Close( );
@@ -1230,7 +1230,7 @@ void CMySQLCallableBanCount :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLBanCount( m_Connection, &m_Error, m_SQLBotID, m_Server );
 
 	Close( );
@@ -1240,7 +1240,7 @@ void CMySQLCallableBanCheck :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLBanCheck( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User, m_IP );
 
 	Close( );
@@ -1250,7 +1250,7 @@ void CMySQLCallableBanAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLBanAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User, m_IP, m_GameName, m_Admin, m_Reason );
 
 	Close( );
@@ -1260,9 +1260,9 @@ void CMySQLCallableBanRemove :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 	{
-		if( m_Server.empty( ) )
+		if( m_Server.isEmpty( ) )
 			m_Result = MySQLBanRemove( m_Connection, &m_Error, m_SQLBotID, m_User );
 		else
 			m_Result = MySQLBanRemove( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User );
@@ -1275,7 +1275,7 @@ void CMySQLCallableBanList :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLBanList( m_Connection, &m_Error, m_SQLBotID, m_Server );
 
 	Close( );
@@ -1285,7 +1285,7 @@ void CMySQLCallableGameAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLGameAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_Map, m_GameName, m_OwnerName, m_Duration, m_GameState, m_CreatorName, m_CreatorServer );
 
 	Close( );
@@ -1295,7 +1295,7 @@ void CMySQLCallableGamePlayerAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLGamePlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Name, m_IP, m_Spoofed, m_SpoofedRealm, m_Reserved, m_LoadingTime, m_Left, m_LeftReason, m_Team, m_Colour );
 
 	Close( );
@@ -1305,7 +1305,7 @@ void CMySQLCallableGamePlayerSummaryCheck :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
 
 	Close( );
@@ -1315,7 +1315,7 @@ void CMySQLCallableDotAGameAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLDotAGameAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Winner, m_Min, m_Sec );
 
 	Close( );
@@ -1325,7 +1325,7 @@ void CMySQLCallableDotAPlayerAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLDotAPlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Colour, m_Kills, m_Deaths, m_CreepKills, m_CreepDenies, m_Assists, m_Gold, m_NeutralKills, m_Item1, m_Item2, m_Item3, m_Item4, m_Item5, m_Item6, m_Hero, m_NewColour, m_TowerKills, m_RaxKills, m_CourierKills );
 
 	Close( );
@@ -1335,7 +1335,7 @@ void CMySQLCallableDotAPlayerSummaryCheck :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLDotAPlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
 
 	Close( );
@@ -1345,7 +1345,7 @@ void CMySQLCallableDownloadAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLDownloadAdd( m_Connection, &m_Error, m_SQLBotID, m_Map, m_MapSize, m_Name, m_IP, m_Spoofed, m_SpoofedRealm, m_DownloadTime );
 
 	Close( );
@@ -1355,7 +1355,7 @@ void CMySQLCallableScoreCheck :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLScoreCheck( m_Connection, &m_Error, m_SQLBotID, m_Category, m_Name, m_Server );
 
 	Close( );
@@ -1365,7 +1365,7 @@ void CMySQLCallableW3MMDPlayerAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 		m_Result = MySQLW3MMDPlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_Category, m_GameID, m_PID, m_Name, m_Flag, m_Leaver, m_Practicing );
 
 	Close( );
@@ -1375,7 +1375,7 @@ void CMySQLCallableW3MMDVarAdd :: operator( )( )
 {
 	Init( );
 
-	if( m_Error.empty( ) )
+	if( m_Error.isEmpty( ) )
 	{
 		if( m_ValueType == VALUETYPE_INT )
 			m_Result = MySQLW3MMDVarAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_VarInts );

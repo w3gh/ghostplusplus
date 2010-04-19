@@ -173,7 +173,7 @@ private:
 	string m_Password;
 	uint16_t m_Port;
 	uint32_t m_BotID;
-	queue<void *> m_IdleConnections;
+	QQueue<void *> m_IdleConnections;
 	uint32_t m_NumConnections;
 	uint32_t m_OutstandingCallables;
 
@@ -208,9 +208,9 @@ public:
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,string> var_strings );
 
 	// other database functions
 
@@ -225,13 +225,13 @@ uint32_t MySQLAdminCount( void *conn, string *error, uint32_t botid, string serv
 bool MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, string user );
 bool MySQLAdminAdd( void *conn, string *error, uint32_t botid, string server, string user );
 bool MySQLAdminRemove( void *conn, string *error, uint32_t botid, string server, string user );
-vector<string> MySQLAdminList( void *conn, string *error, uint32_t botid, string server );
+QVector<string> MySQLAdminList( void *conn, string *error, uint32_t botid, string server );
 uint32_t MySQLBanCount( void *conn, string *error, uint32_t botid, string server );
 CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server, string user, string ip );
 bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason );
 bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user );
 bool MySQLBanRemove( void *conn, string *error, uint32_t botid, string user );
-vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string server );
+QVector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string server );
 uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
 CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
@@ -241,9 +241,9 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server );
 uint32_t MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints );
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals );
-bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,string> var_strings );
+bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, QMap<VarP,int32_t> var_ints );
+bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, QMap<VarP,double> var_reals );
+bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, QMap<VarP,string> var_strings );
 
 //
 // MySQL Callables
@@ -482,9 +482,9 @@ public:
 class CMySQLCallableW3MMDVarAdd : public CCallableW3MMDVarAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,int32_t> nVarInts, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarInts ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,double> nVarReals, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarReals ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, map<VarP,string> nVarStrings, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarStrings ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,int32_t> nVarInts, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarInts ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,double> nVarReals, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarReals ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,string> nVarStrings, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarStrings ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableW3MMDVarAdd( ) { }
 
 	virtual void operator( )( );

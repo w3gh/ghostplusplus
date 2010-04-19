@@ -72,9 +72,9 @@ bool CGHostDB :: AdminRemove( QString server, QString user )
 	return false;
 }
 
-vector<QString> CGHostDB :: AdminList( QString server )
+QVector<QString> CGHostDB :: AdminList( QString server )
 {
-	return vector<QString>( );
+	return QVector<QString>( );
 }
 
 uint32_t CGHostDB :: BanCount( QString server )
@@ -102,9 +102,9 @@ bool CGHostDB :: BanRemove( QString user )
 	return false;
 }
 
-vector<CDBBan *> CGHostDB :: BanList( QString server )
+QVector<CDBBan *> CGHostDB :: BanList( QString server )
 {
-	return vector<CDBBan *>( );
+	return QVector<CDBBan *>( );
 }
 
 uint32_t CGHostDB :: GameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
@@ -167,17 +167,17 @@ uint32_t CGHostDB :: W3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t
 	return 0;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints )
+bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals )
+bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
+bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
 {
 	return false;
 }
@@ -287,17 +287,17 @@ CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString category, u
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
 {
 	return NULL;
 }

@@ -513,12 +513,12 @@ bool UTIL_IsLanIP( QByteArray ip )
 	return false;
 }
 
-bool UTIL_IsLocalIP( QByteArray ip, vector<QByteArray> &localIPs )
+bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs )
 {
 	if( ip.size( ) != 4 )
 		return false;
 
-	for( vector<QByteArray> :: iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
+	for( QVector<QByteArray> :: iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
 	{
 		if( (*i).size( ) != 4 )
 			continue;
@@ -535,9 +535,9 @@ void UTIL_Replace( QString &Text, QString Key, QString Value )
 	Text.replace(Key, Value);
 }
 
-vector<QString> UTIL_Tokenize( QString s, char delim )
+QVector<QString> UTIL_Tokenize( QString s, char delim )
 {
-	vector<QString> Tokens;
+	QVector<QString> Tokens;
 	QString Token;
 
 	for( QString :: iterator i = s.begin( ); i != s.end( ); i++ )

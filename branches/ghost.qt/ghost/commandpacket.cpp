@@ -25,7 +25,7 @@
 // CCommandPacket
 //
 
-CCommandPacket :: CCommandPacket( unsigned char nPacketType, int nID, BYTEARRAY nData )
+CCommandPacket :: CCommandPacket( unsigned char nPacketType, int nID, QByteArray nData )
 {
 	m_PacketType = nPacketType;
 	m_ID = nID;

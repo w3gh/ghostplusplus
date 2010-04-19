@@ -133,7 +133,7 @@ CGHostDBSQLite :: CGHostDBSQLite( CConfig *CFG ) : CGHostDB( CFG )
 
 		if( RC == SQLITE_ROW )
 		{
-			vector<QString> *Row = m_DB->GetRow( );
+			QVector<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				SchemaNumber = (*Row)[0];
@@ -148,7 +148,7 @@ CGHostDBSQLite :: CGHostDBSQLite( CConfig *CFG ) : CGHostDB( CFG )
 	else
 		CONSOLE_Print( "[SQLITE3] prepare error getting schema number - " + m_DB->GetError( ) );
 
-	if( SchemaNumber.empty( ) )
+	if( SchemaNumber.isEmpty( ) )
 	{
 		// couldn't find the schema number
 		// unfortunately the very first schema didn't have a config table
@@ -659,9 +659,9 @@ bool CGHostDBSQLite :: AdminRemove( QString server, QString user )
 	return Success;
 }
 
-vector<QString> CGHostDBSQLite :: AdminList( QString server )
+QVector<QString> CGHostDBSQLite :: AdminList( QString server )
 {
-	vector<QString> AdminList;
+	QVector<QString> AdminList;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT name FROM admins WHERE server=?", (void **)&Statement );
 
@@ -672,7 +672,7 @@ vector<QString> CGHostDBSQLite :: AdminList( QString server )
 
 		while( RC == SQLITE_ROW )
 		{
-			vector<QString> *Row = m_DB->GetRow( );
+			QVector<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				AdminList.push_back( (*Row)[0] );
@@ -721,7 +721,7 @@ CDBBan *CGHostDBSQLite :: BanCheck( QString server, QString user, QString ip )
 	CDBBan *Ban = NULL;
 	sqlite3_stmt *Statement;
 
-	if( ip.empty( ) )
+	if( ip.isEmpty( ) )
 		m_DB->Prepare( "SELECT name, ip, date, gamename, admin, reason FROM bans WHERE server=? AND name=?", (void **)&Statement );
 	else
 		m_DB->Prepare( "SELECT name, ip, date, gamename, admin, reason FROM bans WHERE (server=? AND name=?) OR ip=?", (void **)&Statement );
@@ -731,14 +731,14 @@ CDBBan *CGHostDBSQLite :: BanCheck( QString server, QString user, QString ip )
 		sqlite3_bind_text( Statement, 1, server.c_str( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_text( Statement, 2, user.c_str( ), -1, SQLITE_TRANSIENT );
 
-		if( !ip.empty( ) )
+		if( !ip.isEmpty( ) )
 			sqlite3_bind_text( Statement, 3, ip.c_str( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
 		{
-			vector<QString> *Row = m_DB->GetRow( );
+			QVector<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 6 )
 				Ban = new CDBBan( server, (*Row)[0], (*Row)[1], (*Row)[2], (*Row)[3], (*Row)[4], (*Row)[5] );
@@ -838,9 +838,9 @@ bool CGHostDBSQLite :: BanRemove( QString user )
 	return Success;
 }
 
-vector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
+QVector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 {
-	vector<CDBBan *> BanList;
+	QVector<CDBBan *> BanList;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT name, ip, date, gamename, admin, reason FROM bans WHERE server=?", (void **)&Statement );
 
@@ -851,7 +851,7 @@ vector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 
 		while( RC == SQLITE_ROW )
 		{
-			vector<QString> *Row = m_DB->GetRow( );
+			QVector<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 6 )
 				BanList.push_back( new CDBBan( server, (*Row)[0], (*Row)[1], (*Row)[2], (*Row)[3], (*Row)[4], (*Row)[5] ) );
@@ -1224,7 +1224,7 @@ QString CGHostDBSQLite :: FromCheck( uint32_t ip )
 
 		if( RC == SQLITE_ROW )
 		{
-			vector<QString> *Row = m_DB->GetRow( );
+			QVector<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				From = (*Row)[0];
@@ -1336,15 +1336,15 @@ uint32_t CGHostDBSQLite :: W3MMDPlayerAdd( QString category, uint32_t gameid, ui
 	return RowID;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints )
+bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
-	if( var_ints.empty( ) )
+	if( var_ints.isEmpty( ) )
 		return false;
 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( map<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
+	for( QMap<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_int ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1381,15 +1381,15 @@ bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints 
 	return Success;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals )
+bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
 {
-	if( var_reals.empty( ) )
+	if( var_reals.isEmpty( ) )
 		return false;
 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( map<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
+	for( QMap<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_real ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1426,15 +1426,15 @@ bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals 
 	return Success;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
+bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
 {
-	if( var_strings.empty( ) )
+	if( var_strings.isEmpty( ) )
 		return false;
 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( map<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
+	for( QMap<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_QString ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1623,7 +1623,7 @@ CCallableW3MMDPlayerAdd *CGHostDBSQLite :: ThreadedW3MMDPlayerAdd( QString categ
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_ints );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_ints ) );
@@ -1631,7 +1631,7 @@ CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, ma
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_reals );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_reals ) );
@@ -1639,7 +1639,7 @@ CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, ma
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_strings );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_strings ) );

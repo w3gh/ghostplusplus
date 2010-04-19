@@ -163,14 +163,14 @@ class CSQLITE3
 private:
 	void *m_DB;
 	bool m_Ready;
-	vector<string> m_Row;
+	QVector<string> m_Row;
 
 public:
 	CSQLITE3( string filename );
 	~CSQLITE3( );
 
 	bool GetReady( )			{ return m_Ready; }
-	vector<string> *GetRow( )	{ return &m_Row; }
+	QVector<string> *GetRow( )	{ return &m_Row; }
 	string GetError( );
 
 	int Prepare( string query, void **Statement );
@@ -216,13 +216,13 @@ public:
 	virtual bool AdminCheck( string server, string user );
 	virtual bool AdminAdd( string server, string user );
 	virtual bool AdminRemove( string server, string user );
-	virtual vector<string> AdminList( string server );
+	virtual QVector<string> AdminList( string server );
 	virtual uint32_t BanCount( string server );
 	virtual CDBBan *BanCheck( string server, string user, string ip );
 	virtual bool BanAdd( string server, string user, string ip, string gamename, string admin, string reason );
 	virtual bool BanRemove( string server, string user );
 	virtual bool BanRemove( string user );
-	virtual vector<CDBBan *> BanList( string server );
+	virtual QVector<CDBBan *> BanList( string server );
 	virtual uint32_t GameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual uint32_t GamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
 	virtual uint32_t GamePlayerCount( string name );
@@ -235,9 +235,9 @@ public:
 	virtual bool FromAdd( uint32_t ip1, uint32_t ip2, string country );
 	virtual bool DownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual uint32_t W3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
-	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
+	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,string> var_strings );
 
 	// threaded database functions
 	// note: these are not actually implemented with threads at the moment, they WILL block until the query is complete
@@ -262,9 +262,9 @@ public:
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,string> var_strings );
 };
 
 #endif

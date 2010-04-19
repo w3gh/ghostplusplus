@@ -83,7 +83,7 @@ void DEBUG_Print( QString message )
 	cout << message << endl;
 }
 
-void DEBUG_Print( BYTEARRAY b )
+void DEBUG_Print( QByteArray b )
 {
 	cout << "{ ";
 
