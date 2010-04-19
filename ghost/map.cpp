@@ -460,7 +460,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					unsigned char SHA1[20];
 					memset( SHA1, 0, sizeof( unsigned char ) * 20 );
 					m_GHost->m_SHA->GetHash( SHA1 );
-					MapSHA1 = QByteArray( SHA1, 20 );
+					MapSHA1 = QByteArray( (char*) SHA1, 20 );
 					CONSOLE_Print( "[MAP] calculated map_sha1 = " + UTIL_QByteArrayToDecString( MapSHA1 ) );
 				}
 				else

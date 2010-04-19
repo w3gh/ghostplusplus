@@ -1123,7 +1123,7 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 			if( message.size( ) > 127 )
 				message = message.mid( 0, 127 );
 
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateQByteArray( player->GetPID( ) ), 32, UTIL_CreateQByteArray( ExtraFlags, 4 ), message ) );
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray( (char*)player->GetPID( ) ), 32, QByteArray( (char*)ExtraFlags, 4 ), message ) );
 		}
 	}
 }

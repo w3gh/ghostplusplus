@@ -113,7 +113,7 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGON( )
 	char buf[32];
 	// nls_get_A( (nls_t *)m_nls, buf );
 	( (NLS *)m_NLS )->getPublicKey( buf );
-	m_ClientKey = UTIL_CreateQByteArray( (unsigned char *)buf, 32 );
+	m_ClientKey = QByteArray( (char *)buf, 32 );
 	return true;
 }
 
@@ -124,7 +124,7 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QBy
 	char buf[20];
 	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).toStdString().c_str( ), QString( salt.begin( ), salt.end( ) ).toStdString().c_str( ) );
 	( (NLS *)m_NLS )->getClientSessionKey( buf, salt.data(), serverKey.data() );
-	m_M1 = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
+	m_M1 = QByteArray( (char *)buf, 20 );
 	return true;
 }
 
@@ -134,7 +134,7 @@ bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
 
 	char buf[20];
 	hashPassword( userPassword.toStdString().c_str( ), buf );
-	m_PvPGNPasswordHash = UTIL_CreateQByteArray( (unsigned char *)buf, 20 );
+	m_PvPGNPasswordHash = QByteArray( (char *)buf, 20 );
 	return true;
 }
 
@@ -149,11 +149,11 @@ QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToke
 		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( (uint32_t)key.size( ), false ) );
 		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getProduct( ), false ) );
 		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getVal1( ), false ) );
-		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Zeros, 4 ) );
+		UTIL_AppendQByteArray( KeyInfo, QByteArray( (char*)Zeros, 4 ) );
 		size_t Length = Decoder.calculateHash( clientToken, serverToken );
 		char *buf = new char[Length];
 		Length = Decoder.getHash( buf );
-		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( (unsigned char *)buf, Length ) );
+		UTIL_AppendQByteArray( KeyInfo, QByteArray( buf, Length ) );
 		delete [] buf;
 	}
 
