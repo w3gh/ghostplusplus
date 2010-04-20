@@ -302,7 +302,7 @@ void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoin
 				// tempbanned, goodbye
 
 				potential->GetSocket( )->write( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_WRONGPASSWORD ) );
-				potential->SetDeleteMe( true );
+				potential->deleteLater();
 				CONSOLE_Print( "[ADMINGAME] player [" + joinPlayer->GetName( ) + "] at ip [" + (*i).first + "] is trying to join the game but is tempbanned" );
 				return;
 			}
@@ -1233,7 +1233,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			if( LoginAttempts >= 1 )
 			{
-				player->SetDeleteMe( true );
+				player->deleteLater();
 				player->SetLeftReason( "was kicked for too many failed login attempts" );
 				player->SetLeftCode( PLAYERLEAVE_LOBBY );
 				OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );

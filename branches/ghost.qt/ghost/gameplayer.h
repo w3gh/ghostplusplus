@@ -40,10 +40,14 @@ class CPotentialPlayer
 {
 	Q_OBJECT
 
+signals:
+	void aboutToDelete();
+
 public slots:
 	void EventDataReady();
 	virtual void EventConnectionError(QAbstractSocket::SocketError);
 	virtual void EventConnectionClosed();
+	virtual void deleteLater();
 
 public:
 	CGameProtocol *m_Protocol;
@@ -56,7 +60,6 @@ protected:
 
 	QTcpSocket *m_Socket;
 	QQueue<CCommandPacket *> m_Packets;
-	bool m_DeleteMe;
 	bool m_Error;
 	QString m_ErrorString;
 	CIncomingJoinPlayer *m_IncomingJoinPlayer;
@@ -69,13 +72,11 @@ public:
 	virtual QByteArray GetExternalIP( );
 	virtual QString GetExternalIPString( );
 	virtual QQueue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
-	virtual bool GetDeleteMe( )						{ return m_DeleteMe; }
 	virtual bool GetError( )						{ return m_Error; }
 	virtual QString GetErrorString( )				{ return m_ErrorString; }
 	virtual CIncomingJoinPlayer *GetJoinPlayer( )	{ return m_IncomingJoinPlayer; }
 
 	virtual void SetSocket( QTcpSocket *nSocket )	{ m_Socket = nSocket; }
-	virtual void SetDeleteMe( bool nDeleteMe )		{ m_DeleteMe = nDeleteMe; }
 
 	// processing functions
 

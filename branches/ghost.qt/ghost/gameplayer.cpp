@@ -43,7 +43,6 @@ CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame
 	m_Socket = nSocket;
 	m_Socket->setParent(this);
 
-	m_DeleteMe = false;
 	m_Error = false;
 	m_IncomingJoinPlayer = NULL;
 
@@ -52,18 +51,19 @@ CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame
 	QObject::connect(nSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
 }
 
+void CPotentialPlayer::deleteLater()
+{
+	emit aboutToDelete();
+	QObject::deleteLater();
+}
+
 CPotentialPlayer :: ~CPotentialPlayer( )
 {
-	if( m_Socket )
-		delete m_Socket;
-
 	while( !m_Packets.isEmpty( ) )
-	{
-		delete m_Packets.front( );
-		m_Packets.dequeue( );
-	}
+		delete m_Packets.dequeue( );
 
 	delete m_IncomingJoinPlayer;
+	m_IncomingJoinPlayer = NULL;
 }
 
 void CPotentialPlayer::EventDataReady()
@@ -76,25 +76,28 @@ void CPotentialPlayer::EventDataReady()
 
 void CPotentialPlayer::EventConnectionError(QAbstractSocket::SocketError /*error*/)
 {
+	DEBUG_Print("CPotentialPlayer::EventConnectionError()");
 	deleteLater();
 }
 
 void CPotentialPlayer::EventConnectionClosed()
 {
+	DEBUG_Print("CPotentialPlayer::EventConnectionClosed()");
 	deleteLater();
 }
 
 void CGamePlayer::EventPingTimeout()
 {
+	DEBUG_Print("EventPingTimeout()");
 	Send(m_Protocol->SEND_W3GS_PING_FROM_HOST( ) );
 }
 
 void CGamePlayer::EventACKTimeout()
 {
+	DEBUG_Print("EventACKTimeout()");
 	// GProxy++ acks
 
-	if( m_Socket )
-		m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_ACK( m_TotalPacketsReceived ) );
+	Send( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_ACK( m_TotalPacketsReceived ) );
 }
 
 void CGamePlayer::EventWhoisTimeout()
@@ -387,7 +390,7 @@ void CGamePlayer::init()
 	QTimer::singleShot(4000, this, SLOT(EventWhoisTimeout()));
 
 	QObject::connect(this, SIGNAL(finishedLoading()), m_Game, SLOT(EventPlayerLoaded()));
-	QObject::connect(this, SIGNAL(destroyed()), m_Game, SLOT(EventPlayerDeleted()));
+	QObject::connect(this, SIGNAL(aboutToDelete()), m_Game, SLOT(EventPlayerDeleted()));
 	m_SendGProxyMessageTimer.setInterval(20000);
 	QObject::connect(&m_SendGProxyMessageTimer, SIGNAL(timeout()), this, SLOT(EventSendGProxyMessage()));
 
@@ -672,6 +675,7 @@ void CGamePlayer :: Send( QByteArray data )
 	// must start counting packet total from beginning of connection
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
 	// this prevents us from buffering packets for non-GProxy++ clients
+	DEBUG_Print("Sending " + data.toHex());
 
 	m_TotalPacketsSent++;
 

@@ -528,6 +528,7 @@ void CBaseGame::EventBroadcastTimeout()
 		m_BroadcastTimer.stop();
 		return;
 	}
+	DEBUG_Print("EventBroadcastTimeout");
 
 	// construct a fixed host counter which will be used to identify players from this "realm" (i.e. LAN)
 	// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
@@ -593,6 +594,7 @@ void CBaseGame::EventRefreshError()
 
 	if (m_CountDownStarted)
 		return;
+	DEBUG_Print("EventRefreshError");
 
 	// auto rehost if there was a refresh error in autohosted games
 	m_RefreshError = true;
@@ -633,6 +635,7 @@ void CBaseGame::EventRefreshTimeout()
 		m_RefreshTimer.stop();
 		return;
 	}
+	DEBUG_Print("EventRefreshTimeout");
 
 	// refresh every 3 seconds
 	if( !m_RefreshError && m_GameState == GAME_PUBLIC && GetSlotsOpen( ) > 0)
@@ -779,22 +782,11 @@ void CBaseGame::EventAutostartTimeout()
 
 void CBaseGame::EventGameOverTimeout()
 {
-	bool AlreadyStopped = true;
+	if( m_Players.size() == 0 )
+		return;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-	{
-		if( !(*i)->GetDeleteMe( ) )
-		{
-			AlreadyStopped = false;
-			break;
-		}
-	}
-
-	if( !AlreadyStopped )
-	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
-		StopPlayers( "was disconnected (gameover timer finished)" );
-	}
+	CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
+	StopPlayers( "was disconnected (gameover timer finished)" );
 }
 
 void CBaseGame::EventVotekickTimeout()
@@ -826,8 +818,6 @@ void CBaseGame::EventNewConnection()
 
 	if( !NewSocket )
 		return;
-
-	CONSOLE_Print("New socket connected: " + QString::number((int)NewSocket));
 
 	// check the IP blacklist
 	if( m_IPBlackList.find( NewSocket->localAddress().toString() ) != m_IPBlackList.end( ) )
@@ -1364,7 +1354,10 @@ void CBaseGame :: EventPlayerDeleted()
 	CGamePlayer *player = (CGamePlayer*)QObject::sender();
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
 
-	m_Players.remove(m_Players.indexOf(player));
+	int ind = m_Players.indexOf(player);
+
+	if (ind != -1)
+		m_Players.remove(ind);
 
 	// create the virtual host player if there is room
 	if( !m_GameLoading && !m_GameLoaded && GetNumPlayers( ) < 12 )
@@ -1537,7 +1530,6 @@ void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
 
 void CBaseGame::EventPlayerLaggedOut(CGamePlayer *player)
 {
-	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionTimedOut( ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
@@ -1550,7 +1542,6 @@ void CBaseGame :: EventPlayerDisconnectPlayerError( CGamePlayer *player )
 	// at the time of this comment there's only one player error and that's when we receive a bad packet from the player
 	// since TCP has checks and balances for data corruption the chances of this are pretty slim
 
-	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionPlayerError( player->GetErrorString( ) ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
@@ -1582,7 +1573,6 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 		return;
 	}
 
-	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionSocketError( player->GetSocket( )->errorString( ) ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
@@ -1614,7 +1604,6 @@ void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
 		return;
 	}
 
-	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionClosedByRemoteHost( ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
@@ -1805,7 +1794,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		{
 			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but isn't in the enforced list" );
 			potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-			potential->SetDeleteMe( true );
+			potential->deleteLater();
 			return;
 		}
 
@@ -1829,7 +1818,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 				if( KickedPlayer )
 				{
-					KickedPlayer->SetDeleteMe( true );
+					KickedPlayer->deleteLater();
 					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
 					KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -1862,7 +1851,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 			if( KickedPlayer )
 			{
-				KickedPlayer->SetDeleteMe( true );
+				KickedPlayer->deleteLater();
 				KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
 				KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -2096,7 +2085,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with the virtual host name" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -2107,7 +2096,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but that name is already taken" );
 		// SendAllChat( m_GHost->m_Language->TryingToJoinTheGameButTaken( joinPlayer->GetName( ) ) );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -2117,7 +2106,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -2199,7 +2188,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 				CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but no furthest player was found (this should be impossible)" );
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-				potential->SetDeleteMe( true );
+				potential->deleteLater();
 				return;
 			}
 
@@ -2213,14 +2202,14 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the furthest rating [" + UTIL_ToString( score, 2 ) + "] from the average [" + UTIL_ToString( AverageScore, 2 ) + "]" );
 
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-				potential->SetDeleteMe( true );
+				potential->deleteLater();
 				return;
 			}
 
 			// kick the furthest player
 
 			SID = GetSIDFromPID( FurthestPlayer->GetPID( ) );
-			FurthestPlayer->SetDeleteMe( true );
+			FurthestPlayer->deleteLater();
 
 			if( FurthestPlayer->GetScore( ) < -99999.0 )
 				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( "N/A", UTIL_ToString( AverageScore, 2 ) ) );
@@ -2259,7 +2248,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 				CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but no lowest player was found (this should be impossible)" );
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-				potential->SetDeleteMe( true );
+				potential->deleteLater();
 				return;
 			}
 
@@ -2273,14 +2262,14 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the lowest rating [" + UTIL_ToString( score, 2 ) + "]" );
 
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-				potential->SetDeleteMe( true );
+				potential->deleteLater();
 				return;
 			}
 
 			// kick the lowest player
 
 			SID = GetSIDFromPID( LowestPlayer->GetPID( ) );
-			LowestPlayer->SetDeleteMe( true );
+			LowestPlayer->deleteLater();
 
 			if( LowestPlayer->GetScore( ) < -99999.0 )
 				LowestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingLowestScore( "N/A" ) );
@@ -2305,7 +2294,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	if( SID >= m_Slots.size( ) )
 	{
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -2351,7 +2340,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	Player->SetScore( score );
 	m_Players.push_back( Player );
 	potential->SetSocket( NULL );
-	potential->SetDeleteMe( true );
+	potential->deleteLater();
 	m_Slots[SID] = CGameSlot( Player->GetPID( ), 255, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
 
 	// send slot info to the new player
@@ -2507,8 +2496,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 void CBaseGame :: EventPlayerLeft( CGamePlayer *player, quint32 reason )
 {
 	// this function is only called when a player leave packet is received, not when there's a socket error, kick, etc...
+	DEBUG_Print("EventPlayerLeft");
 
-	player->SetDeleteMe( true );
+	player->deleteLater();
 
 	if( reason == PLAYERLEAVE_GPROXY )
 		player->SetLeftReason( m_GHost->m_Language->WasUnrecoverablyDroppedFromGProxy( ) );
@@ -2598,7 +2588,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( !(*i)->GetDeleteMe( ) && (*i)->GetCheckSums( )->empty( ) )
+		if( (*i)->GetCheckSums( )->empty( ) )
 			return;
 	}
 
@@ -2609,12 +2599,9 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( !(*i)->GetDeleteMe( ) )
-		{
-			FoundPlayer = true;
-			FirstCheckSum = (*i)->GetCheckSums( )->front( );
-			break;
-		}
+		FoundPlayer = true;
+		FirstCheckSum = (*i)->GetCheckSums( )->front( );
+		break;
 	}
 
 	if( !FoundPlayer )
@@ -2624,7 +2611,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( !(*i)->GetDeleteMe( ) && (*i)->GetCheckSums( )->front( ) != FirstCheckSum )
+		if( (*i)->GetCheckSums( )->front( ) != FirstCheckSum )
 		{
 			CONSOLE_Print( "[GAME: " + m_GameName + "] desync detected" );
 			SendAllChat( m_GHost->m_Language->DesyncDetected( ) );
@@ -2636,10 +2623,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 			QMap<quint32, QVector<unsigned char> > Bins;
 
 			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-			{
-				if( !(*j)->GetDeleteMe( ) )
-					Bins[(*j)->GetCheckSums( )->front( )].push_back( (*j)->GetPID( ) );
-			}
+				Bins[(*j)->GetCheckSums( )->front( )].push_back( (*j)->GetPID( ) );
 
 			quint32 StateNumber = 1;
 			QMap<quint32, QVector<unsigned char> > :: iterator LargestBin = Bins.begin( );
@@ -2708,7 +2692,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 							if( Player )
 							{
-								Player->SetDeleteMe( true );
+								Player->deleteLater();
 								Player->SetLeftReason( m_GHost->m_Language->WasDroppedDesync( ) );
 								Player->SetLeftCode( PLAYERLEAVE_LOST );
 							}
@@ -2724,10 +2708,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 	}
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-	{
-		if( !(*i)->GetDeleteMe( ) )
-			(*i)->GetCheckSums( )->dequeue( );
-	}
+		(*i)->GetCheckSums( )->dequeue( );
 
 	// add checksum to replay
 
@@ -3049,7 +3030,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 			}
 			else
 			{
-				player->SetDeleteMe( true );
+				player->deleteLater();
 				player->SetLeftReason( "doesn't have the map and there is no local copy of the map to send" );
 				player->SetLeftCode( PLAYERLEAVE_LOBBY );
 				OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
@@ -3057,7 +3038,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 		}
 		else
 		{
-			player->SetDeleteMe( true );
+			player->deleteLater();
 			player->SetLeftReason( "doesn't have the map and map downloads are disabled" );
 			player->SetLeftCode( PLAYERLEAVE_LOBBY );
 			OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
@@ -3138,12 +3119,12 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, quint32 /*pong*/ )
 	// also don't kick anyone if the game is loading or loaded - this could happen because we send pings during loading but we stop sending them after the game is loaded
 	// see the Update function for where we send pings
 
-	if( !m_GameLoading && !m_GameLoaded && !player->GetDeleteMe( ) && !player->GetReserved( ) && player->GetNumPings( ) >= 3 && player->GetPing( m_GHost->m_LCPings ) > m_GHost->m_AutoKickPing )
+	if( !m_GameLoading && !m_GameLoaded && !player->GetReserved( ) && player->GetNumPings( ) >= 3 && player->GetPing( m_GHost->m_LCPings ) > m_GHost->m_AutoKickPing )
 	{
 		// send a chat message because we don't normally do so when a player leaves the lobby
 
 		SendAllChat( m_GHost->m_Language->AutokickingPlayerForExcessivePing( player->GetName( ), UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) ) );
-		player->SetDeleteMe( true );
+		player->deleteLater();
 		player->SetLeftReason( "was autokicked for excessive ping of " + UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) );
 		player->SetLeftCode( PLAYERLEAVE_LOBBY );
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
@@ -3787,7 +3768,7 @@ void CBaseGame :: OpenSlot( unsigned char SID, bool kick )
 
 			if( Player )
 			{
-				Player->SetDeleteMe( true );
+				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when opening a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
 			}
@@ -3809,7 +3790,7 @@ void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 
 			if( Player )
 			{
-				Player->SetDeleteMe( true );
+				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when closing a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
 			}
@@ -3831,7 +3812,7 @@ void CBaseGame :: ComputerSlot( unsigned char SID, unsigned char skill, bool kic
 
 			if( Player )
 			{
-				Player->SetDeleteMe( true );
+				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when creating a computer in a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
 			}
@@ -4513,7 +4494,7 @@ void CBaseGame :: StopPlayers( QString reason )
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		(*i)->SetDeleteMe( true );
+		(*i)->deleteLater();
 		(*i)->SetLeftReason( reason );
 		(*i)->SetLeftCode( PLAYERLEAVE_LOST );
 	}
@@ -4525,7 +4506,7 @@ void CBaseGame :: StopLaggers( QString reason )
 	{
 		if( (*i)->GetLagging( ) )
 		{
-			(*i)->SetDeleteMe( true );
+			(*i)->deleteLater();
 			(*i)->SetLeftReason( reason );
 			(*i)->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 		}
