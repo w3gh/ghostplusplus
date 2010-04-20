@@ -44,7 +44,7 @@
 // CBNET
 //
 
-CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, uint32_t nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
+CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID )
 	: QObject(NULL)
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
@@ -314,7 +314,7 @@ void CBNET::socketDataReady()
 	// check if at least one packet is waiting to be sent and if we've waited long enough to prevent flooding
 	// this formula has changed many times but currently we wait 1 second if the last packet was "small", 3.5 seconds if it was "medium", and 4 seconds if it was "big"
 
-	uint32_t WaitTicks = 0;
+	quint32 WaitTicks = 0;
 
 	if( m_LastOutPacketSize < 10 )
 		WaitTicks = 1000;
@@ -376,7 +376,7 @@ void CBNET::EventCallableUpdateTimeout()
 	{
 		if( i->second->GetReady( ) )
 		{
-			uint32_t Count = i->second->GetResult( );
+			quint32 Count = i->second->GetResult( );
 
 			if( Count == 0 )
 				QueueChatCommand( m_GHost->m_Language->ThereAreNoAdmins( m_Server ), i->first, !i->first.isEmpty( ) );
@@ -437,7 +437,7 @@ void CBNET::EventCallableUpdateTimeout()
 	{
 		if( i->second->GetReady( ) )
 		{
-			uint32_t Count = i->second->GetResult( );
+			quint32 Count = i->second->GetResult( );
 
 			if( Count == 0 )
 				QueueChatCommand( m_GHost->m_Language->ThereAreNoBannedUsers( m_Server ), i->first, !i->first.isEmpty( ) );
@@ -616,7 +616,7 @@ void CBNET :: ExtractPackets( )
 
 		// bytes 2 and 3 contain the length of the packet
 
-		uint16_t Length = UTIL_QByteArrayToUInt16( header, false, 2 );
+		quint16 Length = UTIL_QByteArrayToUInt16( header, false, 2 );
 
 		if( Length < 4 )
 		{
@@ -1045,7 +1045,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						// extract the interval and the message
 						// e.g. "30 hello everyone" -> interval: "30", message: "hello everyone"
 
-						uint32_t Interval;
+						quint32 Interval;
 						QString Message;
 						QTextStream SS(&Payload);
 						SS >> Interval;
@@ -1096,8 +1096,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							// extract the maximum games, auto start players, and the game name
 							// e.g. "5 10 BattleShips Pro" -> maximum games: "5", auto start players: "10", game name: "BattleShips Pro"
 
-							uint32_t MaximumGames;
-							uint32_t AutoStartPlayers;
+							quint32 MaximumGames;
+							quint32 AutoStartPlayers;
 							QString GameName;
 							QTextStream SS(&Payload);
 							SS >> MaximumGames;
@@ -1167,8 +1167,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							// extract the maximum games, auto start players, minimum score, maximum score, and the game name
 							// e.g. "5 10 800 1200 BattleShips Pro" -> maximum games: "5", auto start players: "10", minimum score: "800", maximum score: "1200", game name: "BattleShips Pro"
 
-							uint32_t MaximumGames;
-							uint32_t AutoStartPlayers;
+							quint32 MaximumGames;
+							quint32 AutoStartPlayers;
 							double MinimumScore;
 							double MaximumScore;
 							QString GameName;
@@ -1242,7 +1242,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 					else
 					{
-						uint32_t AutoStartPlayers = UTIL_ToUInt32( Payload );
+						quint32 AutoStartPlayers = UTIL_ToUInt32( Payload );
 
 						if( AutoStartPlayers != 0 )
 						{
@@ -1304,7 +1304,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						while( !SS.atEnd( ) )
 						{
-							uint32_t SID;
+							quint32 SID;
 							SS >> SID;
 
 							if( SS.status() != QTextStream::Ok )
@@ -1404,7 +1404,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 				if( Command == "downloads" && !Payload.isEmpty( ) )
 				{
-					uint32_t Downloads = UTIL_ToUInt32( Payload );
+					quint32 Downloads = UTIL_ToUInt32( Payload );
 
 					if( Downloads == 0 )
 					{
@@ -1622,7 +1622,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							else
 							{
 								QStringList files = MapCFGPath.entryList(QStringList("*" + Pattern + "*"), QDir::Files, QDir::Name);
-								uint32_t Matches = files.size();
+								quint32 Matches = files.size();
 
 								if( Matches == 0 )
 									QueueChatCommand( m_GHost->m_Language->NoMapConfigsFound( ), User, Whisper );
@@ -1711,7 +1711,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							else
 							{
 								QStringList files = MapPath.entryList(QStringList("*"+Pattern+"*"), QDir::Files, QDir::Name);
-								uint32_t Matches = files.size();
+								quint32 Matches = files.size();
 
 								if( Matches == 0 )
 									QueueChatCommand( m_GHost->m_Language->NoMapsFound( ), User, Whisper );
@@ -1764,7 +1764,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						while( !SS.atEnd( ) )
 						{
-							uint32_t SID;
+							quint32 SID;
 							SS >> SID;
 
 							if( SS.status() != QTextStream::Ok )
@@ -1973,8 +1973,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					if( !m_GHost->m_CurrentGame->GetLocked( ) )
 					{
-						uint32_t SID1;
-						uint32_t SID2;
+						quint32 SID1;
+						quint32 SID2;
 						QTextStream SS(&Payload);
 
 						SS >> SID1;
@@ -2222,7 +2222,7 @@ void CBNET :: QueueChatCommand( QString chatCommand, QString user, bool whisper 
 		QueueChatCommand( chatCommand );
 }
 
-void CBNET :: QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *savegame, uint32_t hostCounter )
+void CBNET :: QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *savegame, quint32 hostCounter )
 {
 	if( m_LoggedIn && map )
 	{
@@ -2237,7 +2237,7 @@ void CBNET :: QueueGameCreate( unsigned char state, QString gameName, QString ho
 	}
 }
 
-void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter )
+void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter )
 {
 	if( hostName.isEmpty( ) )
 	{
@@ -2254,11 +2254,11 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 		// when a player joins a game we can obtain the ID from the received host counter
 		// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
-		uint32_t FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( m_HostCounterID << 28 );
+		quint32 FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( m_HostCounterID << 28 );
 
 		if( saveGame )
 		{
-			uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+			quint32 MapGameType = MAPGAMETYPE_SAVEDGAME;
 
 			// the state should always be private when creating a saved game
 
@@ -2277,11 +2277,11 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			if( m_GHost->m_Reconnect )
 				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateBYTEARRAY( (uint16_t)0, false ), UTIL_CreateBYTEARRAY( (uint16_t)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateBYTEARRAY( (quint16)0, false ), UTIL_CreateBYTEARRAY( (quint16)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 		else
 		{
-			uint32_t MapGameType = map->GetMapGameType( );
+			quint32 MapGameType = map->GetMapGameType( );
 			MapGameType |= MAPGAMETYPE_UNKNOWN0;
 
 			if( state == GAME_PRIVATE )
@@ -2313,7 +2313,7 @@ void CBNET :: QueueGameUncreate( )
 void CBNET :: UnqueuePackets( unsigned char type )
 {
 	QQueue<QByteArray> Packets;
-	uint32_t Unqueued = 0;
+	quint32 Unqueued = 0;
 
 	while( !m_OutPackets.isEmpty( ) )
 	{
@@ -2342,7 +2342,7 @@ void CBNET :: UnqueueChatCommand( QString chatCommand )
 
 	QByteArray PacketToUnqueue = m_Protocol->SEND_SID_CHATCOMMAND( chatCommand );
 	QQueue<QByteArray> Packets;
-	uint32_t Unqueued = 0;
+	quint32 Unqueued = 0;
 
 	while( !m_OutPackets.isEmpty( ) )
 	{

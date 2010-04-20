@@ -86,25 +86,25 @@ public:
 	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
 	bool m_Enabled;							// set to false to prevent new games from being created
 	QString m_Version;						// GHost++ version QString
-	uint32_t m_HostCounter;					// the current host counter (a unique number to identify a game, incremented each time a game is created)
+	quint32 m_HostCounter;					// the current host counter (a unique number to identify a game, incremented each time a game is created)
 	QString m_AutoHostGameName;				// the base game name to auto host with
 	QString m_AutoHostOwner;
 	QString m_AutoHostServer;
 	int m_AutoHostMaximumGames;		// maximum number of games to auto host
-	uint32_t m_AutoHostAutoStartPlayers;	// when using auto hosting auto start the game when this many players have joined
+	quint32 m_AutoHostAutoStartPlayers;	// when using auto hosting auto start the game when this many players have joined
 	bool m_AutoHostMatchMaking;
 	double m_AutoHostMinimumScore;
 	double m_AutoHostMaximumScore;
 	bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
-	uint32_t m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
+	quint32 m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
 	QString m_LanguageFile;					// config value: language file
 	QString m_Warcraft3Path;					// config value: Warcraft 3 path
 	bool m_TFT;								// config value: TFT enabled or not
 	QString m_BindAddress;					// config value: the address to host games on
-	uint16_t m_HostPort;					// config value: the port to host games on
+	quint16 m_HostPort;					// config value: the port to host games on
 	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
-	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
-	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
+	quint16 m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
+	quint32 m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
 	int m_MaxGames;							// config value: maximum number of games in progress
 	char m_CommandTrigger;					// config value: the command trigger inside games
 	QString m_MapCFGPath;					// config value: map cfg path
@@ -115,39 +115,39 @@ public:
 	QString m_VirtualHostName;				// config value: virtual host name
 	bool m_HideIPAddresses;					// config value: hide IP addresses from players
 	bool m_CheckMultipleIPUsage;			// config value: check for multiple IP address usage
-	uint32_t m_SpoofChecks;					// config value: do automatic spoof checks or not
+	quint32 m_SpoofChecks;					// config value: do automatic spoof checks or not
 	bool m_RequireSpoofChecks;				// config value: require spoof checks or not
 	bool m_ReserveAdmins;					// config value: consider admins to be reserved players or not
 	bool m_RefreshMessages;					// config value: display refresh messages or not (by default)
 	bool m_AutoLock;						// config value: auto lock games when the owner is present
 	bool m_AutoSave;						// config value: auto save before someone disconnects
-	uint32_t m_AllowDownloads;				// config value: allow map downloads or not
+	quint32 m_AllowDownloads;				// config value: allow map downloads or not
 	bool m_PingDuringDownloads;				// config value: ping during map downloads or not
-	uint32_t m_MaxDownloaders;				// config value: maximum number of map downloaders at the same time
-	uint32_t m_MaxDownloadSpeed;			// config value: maximum total map download speed in KB/sec
+	quint32 m_MaxDownloaders;				// config value: maximum number of map downloaders at the same time
+	quint32 m_MaxDownloadSpeed;			// config value: maximum total map download speed in KB/sec
 	bool m_LCPings;							// config value: use LC style pings (divide actual pings by two)
-	uint32_t m_AutoKickPing;				// config value: auto kick players with ping higher than this
-	uint32_t m_BanMethod;					// config value: ban method (ban by name/ip/both)
+	quint32 m_AutoKickPing;				// config value: auto kick players with ping higher than this
+	quint32 m_BanMethod;					// config value: ban method (ban by name/ip/both)
 	QString m_IPBlackListFile;				// config value: IP blacklist file (ipblacklist.txt)
-	uint32_t m_LobbyTimeLimit;				// config value: auto close the game lobby after this many minutes without any reserved players
-	uint32_t m_Latency;						// config value: the latency (by default)
-	uint32_t m_SyncLimit;					// config value: the maximum number of packets a player can fall out of sync before starting the lag screen (by default)
+	quint32 m_LobbyTimeLimit;				// config value: auto close the game lobby after this many minutes without any reserved players
+	quint32 m_Latency;						// config value: the latency (by default)
+	quint32 m_SyncLimit;					// config value: the maximum number of packets a player can fall out of sync before starting the lag screen (by default)
 	bool m_VoteKickAllowed;					// config value: if votekicks are allowed or not
-	uint32_t m_VoteKickPercentage;			// config value: percentage of players required to vote yes for a votekick to pass
+	quint32 m_VoteKickPercentage;			// config value: percentage of players required to vote yes for a votekick to pass
 	QString m_DefaultMap;					// config value: default map (map.cfg)
 	QString m_MOTDFile;						// config value: motd.txt
 	QString m_GameLoadedFile;				// config value: gameloaded.txt
 	QString m_GameOverFile;					// config value: gameover.txt
 	bool m_LocalAdminMessages;				// config value: send local admin messages or not
 	bool m_AdminGameCreate;					// config value: create the admin game or not
-	uint16_t m_AdminGamePort;				// config value: the port to host the admin game on
+	quint16 m_AdminGamePort;				// config value: the port to host the admin game on
 	QString m_AdminGamePassword;				// config value: the admin game password
 	QString m_AdminGameMap;					// config value: the admin game map config to use
 	unsigned char m_LANWar3Version;			// config value: LAN warcraft 3 version
-	uint32_t m_ReplayWar3Version;			// config value: replay warcraft 3 version (for saving replays)
-	uint32_t m_ReplayBuildNumber;			// config value: replay build number (for saving replays)
+	quint32 m_ReplayWar3Version;			// config value: replay warcraft 3 version (for saving replays)
+	quint32 m_ReplayBuildNumber;			// config value: replay build number (for saving replays)
 	bool m_TCPNoDelay;						// config value: use Nagle's algorithm or not
-	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
+	quint32 m_MatchMakingMethod;			// config value: the matchmaking method
 	QString m_ConfigFile;
 
 	CGHost( CConfig *CFG, QString configFile );

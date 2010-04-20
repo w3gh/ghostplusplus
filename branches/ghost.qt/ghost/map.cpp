@@ -114,7 +114,7 @@ QByteArray CMap :: GetMapGameFlags( )
 
 	*/
 
-	uint32_t GameFlags = 0;
+	quint32 GameFlags = 0;
 
 	// speed
 
@@ -161,7 +161,7 @@ QByteArray CMap :: GetMapGameFlags( )
 	return UTIL_CreateBYTEARRAY( GameFlags, false );
 }
 
-uint32_t CMap :: GetMapGameType( )
+quint32 CMap :: GetMapGameType( )
 {
 	/* spec stolen from Strilanc as follows:
 
@@ -199,7 +199,7 @@ uint32_t CMap :: GetMapGameType( )
 	// note: we allow "conflicting" flags to be set at the same time (who knows if this is a good idea)
 	// we also don't set any flags this class is unaware of such as Unknown0, SavedGame, and PrivateGame
 
-	uint32_t GameType = 0;
+	quint32 GameType = 0;
 
 	// maker
 
@@ -292,12 +292,12 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		// calculate map_size
 
-		MapSize = UTIL_CreateBYTEARRAY( (uint32_t)m_MapData.size( ), false );
+		MapSize = UTIL_CreateBYTEARRAY( (quint32)m_MapData.size( ), false );
 		CONSOLE_Print( "[MAP] calculated map_size = " + UTIL_QByteArrayToDecString( MapSize ) );
 
 		// calculate map_info (this is actually the CRC)
 
-		MapInfo = UTIL_CreateBYTEARRAY( (uint32_t)m_GHost->m_CRC->FullCRC( m_MapData ), false );
+		MapInfo = UTIL_CreateBYTEARRAY( (quint32)m_GHost->m_CRC->FullCRC( m_MapData ), false );
 		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_QByteArrayToDecString( MapInfo ) );
 
 		// calculate map_crc (this is not the CRC) and map_sha1
@@ -315,7 +315,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 				CONSOLE_Print( "[MAP] unable to calculate map_crc/sha1 - unable to read file [" + m_GHost->m_MapCFGPath + "blizzard.j]" );
 			else
 			{
-				uint32_t Val = 0;
+				quint32 Val = 0;
 
 				// update: it's possible for maps to include their own copies of common.j and/or blizzard.j
 				// this code now overrides the default copies if required
@@ -331,7 +331,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 					if( SFileOpenFileEx( MapMPQ, "Scripts\\common.j", 0, &SubFile ) )
 					{
-						uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+						quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 						if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 						{
@@ -367,7 +367,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 					if( SFileOpenFileEx( MapMPQ, "Scripts\\blizzard.j", 0, &SubFile ) )
 					{
-						uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+						quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 						if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 						{
@@ -425,7 +425,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 						if( SFileOpenFileEx( MapMPQ, (*i).toStdString().c_str( ), 0, &SubFile ) )
 						{
-							uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+							quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 							if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 							{
@@ -476,11 +476,11 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	// try to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams
 
-	uint32_t MapOptions = 0;
+	quint32 MapOptions = 0;
 	QByteArray MapWidth;
 	QByteArray MapHeight;
-	uint32_t MapNumPlayers = 0;
-	uint32_t MapNumTeams = 0;
+	quint32 MapNumPlayers = 0;
+	quint32 MapNumTeams = 0;
 	QVector<CGameSlot> Slots;
 
 	if( !m_MapData.isEmpty( ) )
@@ -491,7 +491,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 			if( SFileOpenFileEx( MapMPQ, "war3map.w3i", 0, &SubFile ) )
 			{
-				uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+				quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 				if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 				{
@@ -505,12 +505,12 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 						// war3map.w3i format found at http://www.wc3campaigns.net/tools/specs/index.html by Zepir/PitzerMike
 
 						string GarbageString;
-						uint32_t FileFormat;
-						uint32_t RawMapWidth;
-						uint32_t RawMapHeight;
-						uint32_t RawMapFlags;
-						uint32_t RawMapNumPlayers;
-						uint32_t RawMapNumTeams;
+						quint32 FileFormat;
+						quint32 RawMapWidth;
+						quint32 RawMapHeight;
+						quint32 RawMapFlags;
+						quint32 RawMapNumPlayers;
+						quint32 RawMapNumTeams;
 
 						ISS.read( (char *)&FileFormat, 4 );				// file format (18 = ROC, 25 = TFT)
 
@@ -573,14 +573,14 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 							}
 
 							ISS.read( (char *)&RawMapNumPlayers, 4 );	// number of players
-							uint32_t ClosedSlots = 0;
+							quint32 ClosedSlots = 0;
 
-							for( uint32_t i = 0; i < RawMapNumPlayers; i++ )
+							for( quint32 i = 0; i < RawMapNumPlayers; i++ )
 							{
 								CGameSlot Slot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 1, SLOTRACE_RANDOM );
-								uint32_t Colour;
-								uint32_t Status;
-								uint32_t Race;
+								quint32 Colour;
+								quint32 Status;
+								quint32 Race;
 
 								ISS.read( (char *)&Colour, 4 );			// colour
 								Slot.SetColour( Colour );
@@ -626,10 +626,10 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							ISS.read( (char *)&RawMapNumTeams, 4 );		// number of teams
 
-							for( uint32_t i = 0; i < RawMapNumTeams; i++ )
+							for( quint32 i = 0; i < RawMapNumTeams; i++ )
 							{
-								uint32_t Flags;
-								uint32_t PlayerMask;
+								quint32 Flags;
+								quint32 PlayerMask;
 
 								ISS.read( (char *)&Flags, 4 );			// flags
 								ISS.read( (char *)&PlayerMask, 4 );		// player mask
@@ -656,16 +656,16 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
 							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
-							MapWidth = UTIL_CreateBYTEARRAY( (uint16_t)RawMapWidth, false );
+							MapWidth = UTIL_CreateBYTEARRAY( (quint16)RawMapWidth, false );
 							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_QByteArrayToDecString( MapWidth ) );
-							MapHeight = UTIL_CreateBYTEARRAY( (uint16_t)RawMapHeight, false );
+							MapHeight = UTIL_CreateBYTEARRAY( (quint16)RawMapHeight, false );
 							CONSOLE_Print( "[MAP] calculated map_height = " + UTIL_QByteArrayToDecString( MapHeight ) );
 							MapNumPlayers = RawMapNumPlayers - ClosedSlots;
 							CONSOLE_Print( "[MAP] calculated map_numplayers = " + UTIL_ToString( MapNumPlayers ) );
 							MapNumTeams = RawMapNumTeams;
 							CONSOLE_Print( "[MAP] calculated map_numteams = " + UTIL_ToString( MapNumTeams ) );
 
-							uint32_t SlotNum = 1;
+							quint32 SlotNum = 1;
 
 							for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 							{
@@ -829,7 +829,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	if( Slots.isEmpty( ) )
 	{
-		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
+		for( quint32 Slot = 1; Slot <= 12; Slot++ )
 		{
 			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
@@ -845,7 +845,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 		CONSOLE_Print( "[MAP] overriding slots" );
 		Slots.clear( );
 
-		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
+		for( quint32 Slot = 1; Slot <= 12; Slot++ )
 		{
 			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
 
@@ -978,18 +978,18 @@ void CMap :: CheckValid( )
 	}
 }
 
-uint32_t CMap :: XORRotateLeft( unsigned char *data, uint32_t length )
+quint32 CMap :: XORRotateLeft( unsigned char *data, quint32 length )
 {
 	// a big thank you to Strilanc for figuring this out
 
-	uint32_t i = 0;
-	uint32_t Val = 0;
+	quint32 i = 0;
+	quint32 Val = 0;
 
 	if( length > 3 )
 	{
 		while( i < length - 3 )
 		{
-			Val = ROTL( Val ^ ( (uint32_t)data[i] + (uint32_t)( data[i + 1] << 8 ) + (uint32_t)( data[i + 2] << 16 ) + (uint32_t)( data[i + 3] << 24 ) ), 3 );
+			Val = ROTL( Val ^ ( (quint32)data[i] + (quint32)( data[i + 1] << 8 ) + (quint32)( data[i + 2] << 16 ) + (quint32)( data[i + 3] << 24 ) ), 3 );
 			i += 4;
 		}
 	}

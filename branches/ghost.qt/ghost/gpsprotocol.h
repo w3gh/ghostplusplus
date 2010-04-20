@@ -45,14 +45,14 @@ public:
 
 	// send functions
 
-	QByteArray SEND_GPSC_INIT( uint32_t version );
-	QByteArray SEND_GPSC_RECONNECT( unsigned char PID, uint32_t reconnectKey, uint32_t lastPacket );
-	QByteArray SEND_GPSC_ACK( uint32_t lastPacket );
+	QByteArray SEND_GPSC_INIT( quint32 version );
+	QByteArray SEND_GPSC_RECONNECT( unsigned char PID, quint32 reconnectKey, quint32 lastPacket );
+	QByteArray SEND_GPSC_ACK( quint32 lastPacket );
 
-	QByteArray SEND_GPSS_INIT( uint16_t reconnectPort, unsigned char PID, uint32_t reconnectKey, unsigned char numEmptyActions );
-	QByteArray SEND_GPSS_RECONNECT( uint32_t lastPacket );
-	QByteArray SEND_GPSS_ACK( uint32_t lastPacket );
-	QByteArray SEND_GPSS_REJECT( uint32_t reason );
+	QByteArray SEND_GPSS_INIT( quint16 reconnectPort, unsigned char PID, quint32 reconnectKey, unsigned char numEmptyActions );
+	QByteArray SEND_GPSS_RECONNECT( quint32 lastPacket );
+	QByteArray SEND_GPSS_ACK( quint32 lastPacket );
+	QByteArray SEND_GPSS_REJECT( quint32 reason );
 
 	// other functions
 

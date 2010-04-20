@@ -14,9 +14,9 @@ void CCRC32 :: Initialize( )
 	}
 }
 
-uint32_t CCRC32 :: Reflect( uint32_t ulReflect, char cChar )
+quint32 CCRC32 :: Reflect( quint32 ulReflect, char cChar )
 {
-	uint32_t ulValue = 0;
+	quint32 ulValue = 0;
 
 	for( int iPos = 1; iPos < ( cChar + 1 ); iPos++ )
 	{
@@ -29,14 +29,14 @@ uint32_t CCRC32 :: Reflect( uint32_t ulReflect, char cChar )
 	return ulValue;
 }
 
-uint32_t CCRC32 :: FullCRC( QString data )
+quint32 CCRC32 :: FullCRC( QString data )
 {
-	uint32_t ulCRC = 0xFFFFFFFF;
+	quint32 ulCRC = 0xFFFFFFFF;
 	PartialCRC( &ulCRC, (const unsigned char*)data.toStdString().c_str(), data.toStdString().size() );
 	return ulCRC ^ 0xFFFFFFFF;
 }
 
-void CCRC32 :: PartialCRC( uint32_t *ulInCRC, const unsigned char *sData, uint32_t ulLength )
+void CCRC32 :: PartialCRC( quint32 *ulInCRC, const unsigned char *sData, quint32 ulLength )
 {
 	while( ulLength-- )
 		*ulInCRC = ( *ulInCRC >> 8 ) ^ ulTable[( *ulInCRC & 0xFF ) ^ *sData++];

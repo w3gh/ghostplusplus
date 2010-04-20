@@ -68,11 +68,11 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 		// todotodo: check getExeInfo return value to ensure 1024 bytes was enough
 
 		char buf[1024];
-		uint32_t EXEVersion;
-		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (uint32_t *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
+		quint32 EXEVersion;
+		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (quint32 *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
 		m_EXEVersion = UTIL_CreateBYTEARRAY( EXEVersion, false );
-		uint32_t EXEVersionHash;
+		quint32 EXEVersionHash;
 		checkRevisionFlat( valueStringFormula.toStdString().c_str( ), FileWar3EXE.toStdString().c_str( ), FileStormDLL.toStdString().c_str( ), FileGameDLL.toStdString().c_str( ), extractMPQNumber( mpqFileName.toStdString().c_str( ) ), (unsigned long *)&EXEVersionHash );
 		m_EXEVersionHash = UTIL_CreateBYTEARRAY( EXEVersionHash, false );
 		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
@@ -138,7 +138,7 @@ bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
 	return true;
 }
 
-QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken )
+QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, quint32 clientToken, quint32 serverToken )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	QByteArray KeyInfo;
@@ -146,7 +146,7 @@ QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToke
 
 	if( Decoder.isKeyValid( ) )
 	{
-		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( (uint32_t)key.size( ), false ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( (quint32)key.size( ), false ) );
 		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getProduct( ), false ) );
 		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getVal1( ), false ) );
 		UTIL_AppendBYTEARRAY( KeyInfo, QByteArray( (char*)Zeros, 4 ) );

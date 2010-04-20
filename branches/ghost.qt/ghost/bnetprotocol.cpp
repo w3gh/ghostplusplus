@@ -606,7 +606,7 @@ QByteArray CBNETProtocol :: SEND_SID_CHECKAD( )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter )
+QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, quint32 hostCounter )
 {
 	// todotodo: sort out how GameType works, the documentation is horrendous
 
@@ -755,7 +755,7 @@ QByteArray CBNETProtocol :: SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByt
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
+QByteArray CBNETProtocol :: SEND_SID_NETGAMEPORT( quint16 serverPort )
 {
 	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );			// BNET header constant
@@ -769,7 +769,7 @@ QByteArray CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country )
+QByteArray CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, quint32 localeID, QString countryAbbrev, QString country )
 {
 	unsigned char ProtocolID[]		= {   0,   0,   0,   0 };
 	unsigned char PlatformID[]		= {  54,  56,  88,  73 };	// "IX86"
@@ -809,7 +809,7 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uin
 
 QByteArray CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, QString exeInfo, QString keyOwnerName )
 {
-	uint32_t NumKeys = 0;
+	quint32 NumKeys = 0;
 
 	if( TFT )
 		NumKeys = 2;
@@ -828,7 +828,7 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToke
 		UTIL_AppendBYTEARRAYFast( packet, exeVersion );		// EXE Version
 		UTIL_AppendBYTEARRAYFast( packet, exeVersionHash );	// EXE Version Hash
 		UTIL_AppendBYTEARRAY( packet, NumKeys, false );		// number of keys in this packet
-		UTIL_AppendBYTEARRAY( packet, (uint32_t)0, false );	// boolean Using Spawn (32 bit)
+		UTIL_AppendBYTEARRAY( packet, (quint32)0, false );	// boolean Using Spawn (32 bit)
 		UTIL_AppendBYTEARRAYFast( packet, keyInfoROC );		// ROC Key Info
 
 		if( TFT )
@@ -944,7 +944,7 @@ bool CBNETProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateBYTEARRAY( (quint16)content.size( ), false );
 		content[2] = LengthBytes[0];
 		content[3] = LengthBytes[1];
 		return true;
@@ -957,7 +957,7 @@ bool CBNETProtocol :: ValidateLength( QByteArray &content )
 {
 	// verify that bytes 3 and 4 (indices 2 and 3) of the content array describe the length
 
-	uint16_t Length;
+	quint16 Length;
 	QByteArray LengthBytes;
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
@@ -977,7 +977,7 @@ bool CBNETProtocol :: ValidateLength( QByteArray &content )
 // CIncomingGameHost
 //
 
-CIncomingGameHost :: CIncomingGameHost( QByteArray &nIP, uint16_t nPort, QString nGameName, QByteArray &nHostCounter )
+CIncomingGameHost :: CIncomingGameHost( QByteArray &nIP, quint16 nPort, QString nGameName, QByteArray &nHostCounter )
 {
 	m_IP = nIP;
 	m_Port = nPort;
@@ -1012,7 +1012,7 @@ QString CIncomingGameHost :: GetIPString( )
 // CIncomingChatEvent
 //
 
-CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, QString nUser, QString nMessage )
+CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, quint32 nPing, QString nUser, QString nMessage )
 {
 	m_ChatEvent = nChatEvent;
 	m_Ping = nPing;

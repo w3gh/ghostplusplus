@@ -71,7 +71,7 @@ public:
 // CGame
 //
 
-CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, nOwnerName, nCreatorName, nCreatorServer )
+CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, nOwnerName, nCreatorName, nCreatorServer )
 {
 	m_DBBanLast = NULL;
 	m_DBGame = new CDBGame( 0, QString( ), m_Map->GetMapPath( ), QString( ), QString( ), QString( ), 0 );
@@ -430,7 +430,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				if( m_GameLoaded )
 				{
 					QString VictimLower = Victim.toLower();
-					uint32_t Matches = 0;
+					quint32 Matches = 0;
 					CDBBan *LastMatch = NULL;
 
 					// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
@@ -465,7 +465,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				else
 				{
 					CGamePlayer *LastMatch = NULL;
-					uint32_t Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
+					quint32 Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
 
 					if( Matches == 0 )
 						SendAllChat( m_GHost->m_Language->UnableToBanNoMatchesFound( Victim ) );
@@ -492,7 +492,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					// extract the interval and the message
 					// e.g. "30 hello everyone" -> interval: "30", message: "hello everyone"
 
-					uint32_t Interval;
+					quint32 Interval;
 					QString Message;
 					QTextStream SS(&Payload);
 
@@ -550,7 +550,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				}
 				else
 				{
-					uint32_t AutoStartPlayers = UTIL_ToUInt32( Payload );
+					quint32 AutoStartPlayers = UTIL_ToUInt32( Payload );
 
 					if( AutoStartPlayers != 0 )
 					{
@@ -576,7 +576,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				if( !Payload.isEmpty( ) )
 				{
 					CGamePlayer *LastMatch = NULL;
-					uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+					quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 					if( Matches == 0 )
 						SendAllChat( m_GHost->m_Language->UnableToCheckPlayerNoMatchesFound( Payload ) );
@@ -646,7 +646,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				while( !SS.atEnd( ) )
 				{
-					uint32_t SID;
+					quint32 SID;
 					SS >> SID;
 
 					if( SS.status() != QTextStream::Ok )
@@ -675,8 +675,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// extract the slot and the skill
 				// e.g. "1 2" -> slot: "1", skill: "2"
 
-				uint32_t Slot;
-				uint32_t Skill = 1;
+				quint32 Slot;
+				quint32 Skill = 1;
 				QTextStream SS(&Payload);
 
 				SS >> Slot;
@@ -704,8 +704,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// extract the slot and the colour
 				// e.g. "1 2" -> slot: "1", colour: "2"
 
-				uint32_t Slot;
-				uint32_t Colour;
+				quint32 Slot;
+				quint32 Colour;
 				QTextStream SS(&Payload);
 
 				SS >> Slot;
@@ -745,8 +745,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// extract the slot and the handicap
 				// e.g. "1 50" -> slot: "1", handicap: "50"
 
-				uint32_t Slot;
-				uint32_t Handicap;
+				quint32 Slot;
+				quint32 Handicap;
 				QTextStream SS(&Payload);
 
 				SS >> Slot;
@@ -789,7 +789,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// extract the slot and the race
 				// e.g. "1 human" -> slot: "1", race: "human"
 
-				uint32_t Slot;
+				quint32 Slot;
 				QString Race;
 				QTextStream SS(&Payload);
 
@@ -857,8 +857,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// extract the slot and the team
 				// e.g. "1 2" -> slot: "1", team: "2"
 
-				uint32_t Slot;
-				uint32_t Team;
+				quint32 Slot;
+				quint32 Team;
 				QTextStream SS(&Payload);
 
 				SS >> Slot;
@@ -907,7 +907,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( ( Command == "download" || Command == "dl" ) && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
 				CGamePlayer *LastMatch = NULL;
-				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+				quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 				if( Matches == 0 )
 					SendAllChat( m_GHost->m_Language->UnableToStartDownloadNoMatchesFound( Payload ) );
@@ -1082,7 +1082,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( Command == "kick" && !Payload.isEmpty( ) )
 			{
 				CGamePlayer *LastMatch = NULL;
-				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+				quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 				if( Matches == 0 )
 					SendAllChat( m_GHost->m_Language->UnableToKickNoMatchesFound( Payload ) );
@@ -1165,7 +1165,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( Command == "mute" )
 			{
 				CGamePlayer *LastMatch = NULL;
-				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+				quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 				if( Matches == 0 )
 					SendAllChat( m_GHost->m_Language->UnableToMuteNoMatchesFound( Payload ) );
@@ -1201,7 +1201,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				while( !SS.atEnd( ) )
 				{
-					uint32_t SID;
+					quint32 SID;
 					SS >> SID;
 
 					if( SS.status() != QTextStream::Ok )
@@ -1253,8 +1253,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// kick players with ping higher than payload if payload isn't empty
 				// we only do this if the game hasn't started since we don't want to kick players from a game in progress
 
-				uint32_t Kicked = 0;
-				uint32_t KickPing = 0;
+				quint32 Kicked = 0;
+				quint32 KickPing = 0;
 
 				if( !m_GameLoading && !m_GameLoaded && !Payload.isEmpty( ) )
 					KickPing = UTIL_ToUInt32( Payload );
@@ -1414,7 +1414,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// e.g. "1.2.3.4 6112" -> ip: "1.2.3.4", port: "6112"
 
 				QString IP;
-				uint32_t Port = 6112;
+				quint32 Port = 6112;
 				QTextStream SS(&Payload);
 
 				SS >> IP;
@@ -1439,7 +1439,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					{
 						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 
-						uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+						quint32 MapGameType = MAPGAMETYPE_SAVEDGAME;
 						QByteArray MapWidth;
 						MapWidth.push_back( (char)0 );
 						MapWidth.push_back( (char)0 );
@@ -1454,7 +1454,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
-						uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
+						quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
 						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
 								QHostAddress(IP), Port);
 					}
@@ -1497,8 +1497,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "swap" && !Payload.isEmpty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				uint32_t SID1;
-				uint32_t SID2;
+				quint32 SID1;
+				quint32 SID2;
 				QTextStream SS(&Payload);
 
 				SS >> SID1;
@@ -1572,7 +1572,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( Command == "unmute" )
 			{
 				CGamePlayer *LastMatch = NULL;
-				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+				quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 				if( Matches == 0 )
 					SendAllChat( m_GHost->m_Language->UnableToMuteNoMatchesFound( Payload ) );
@@ -1729,7 +1729,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 		else
 		{
 			CGamePlayer *LastMatch = NULL;
-			uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+			quint32 Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
 			if( Matches == 0 )
 				SendChat( player, m_GHost->m_Language->UnableToVoteKickNoMatchesFound( Payload ) );
@@ -1747,7 +1747,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					player->SetKickVote( true );
 					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] started by player [" + User + "]" );
-					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
+					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (quint32)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
 					SendAllChat( m_GHost->m_Language->TypeYesToVote( QString( 1, m_GHost->m_CommandTrigger ) ) );
 				}
 			}
@@ -1763,8 +1763,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	if( Command == "yes" && !m_KickVotePlayer.isEmpty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
 	{
 		player->SetKickVote( true );
-		uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
-		uint32_t Votes = 0;
+		quint32 VotesNeeded = (quint32)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
+		quint32 Votes = 0;
 
 		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{

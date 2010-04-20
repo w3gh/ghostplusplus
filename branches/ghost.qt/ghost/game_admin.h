@@ -43,7 +43,7 @@ typedef pair<QString,CCallableBanCount *> PairedBanCount;
 // typedef pair<QString,CCallableBanAdd *> PairedBanAdd;
 typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
 
-typedef pair<QString,uint32_t> TempBan;
+typedef pair<QString,quint32> TempBan;
 
 class CAdminGame : public CBaseGame
 {
@@ -63,7 +63,7 @@ protected:
 	QVector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
 
 public:
-	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nPassword );
+	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nPassword );
 	virtual ~CAdminGame( );
 
 	virtual void SendAdminChat( QString message );

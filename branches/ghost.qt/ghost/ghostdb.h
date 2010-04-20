@@ -57,7 +57,7 @@ class CConfig;
 #include "includes.h"
 #include <QPair>
 
-typedef QPair<uint32_t,QString> VarP;
+typedef QPair<quint32,QString> VarP;
 
 class CGHostDB : public QObject
 {
@@ -87,32 +87,32 @@ public:
 
 	virtual bool Begin( );
 	virtual bool Commit( );
-	virtual uint32_t AdminCount( QString server );
+	virtual quint32 AdminCount( QString server );
 	virtual bool AdminCheck( QString server, QString user );
 	virtual bool AdminAdd( QString server, QString user );
 	virtual bool AdminRemove( QString server, QString user );
 	virtual QVector<QString> AdminList( QString server );
-	virtual uint32_t BanCount( QString server );
+	virtual quint32 BanCount( QString server );
 	virtual CDBBan *BanCheck( QString server, QString user, QString ip );
 	virtual bool BanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
 	virtual bool BanRemove( QString server, QString user );
 	virtual bool BanRemove( QString user );
 	virtual QVector<CDBBan *> BanList( QString server );
-	virtual uint32_t GameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver );
-	virtual uint32_t GamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour );
-	virtual uint32_t GamePlayerCount( QString name );
+	virtual quint32 GameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
+	virtual quint32 GamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
+	virtual quint32 GamePlayerCount( QString name );
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( QString name );
-	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual uint32_t DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
-	virtual uint32_t DotAPlayerCount( QString name );
+	virtual quint32 DotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec );
+	virtual quint32 DotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills );
+	virtual quint32 DotAPlayerCount( QString name );
 	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( QString name );
-	virtual QString FromCheck( uint32_t ip );
-	virtual bool FromAdd( uint32_t ip1, uint32_t ip2, QString country );
-	virtual bool DownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
-	virtual uint32_t W3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
-	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
-	virtual bool W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings );
+	virtual QString FromCheck( quint32 ip );
+	virtual bool FromAdd( quint32 ip1, quint32 ip2, QString country );
+	virtual bool DownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
+	virtual quint32 W3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
+	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
+	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
 
 	// threaded database functions
 
@@ -128,18 +128,18 @@ public:
 	virtual CCallableBanRemove *ThreadedBanRemove( QString server, QString user );
 	virtual CCallableBanRemove *ThreadedBanRemove( QString user );
 	virtual CCallableBanList *ThreadedBanList( QString server );
-	virtual CCallableGameAdd *ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver );
-	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour );
+	virtual CCallableGameAdd *ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
+	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( QString name );
-	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec );
+	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( QString name );
-	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
+	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( QString category, QString name, QString server );
-	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings );
+	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
 };
 
 //
@@ -170,8 +170,8 @@ class CBaseCallable
 protected:
 	QString m_Error;
 	volatile bool m_Ready;
-	uint32_t m_StartTicks;
-	uint32_t m_EndTicks;
+	quint32 m_StartTicks;
+	quint32 m_EndTicks;
 
 public:
 	CBaseCallable( ) : m_Error( ), m_Ready( false ), m_StartTicks( 0 ), m_EndTicks( 0 ) { }
@@ -185,22 +185,22 @@ public:
 	virtual QString GetError( )				{ return m_Error; }
 	virtual bool GetReady( )				{ return m_Ready; }
 	virtual void SetReady( bool nReady )	{ m_Ready = nReady; }
-	virtual uint32_t GetElapsed( )			{ return m_Ready ? m_EndTicks - m_StartTicks : 0; }
+	virtual quint32 GetElapsed( )			{ return m_Ready ? m_EndTicks - m_StartTicks : 0; }
 };
 
 class CCallableAdminCount : virtual public CBaseCallable
 {
 protected:
 	QString m_Server;
-	uint32_t m_Result;
+	quint32 m_Result;
 
 public:
 	CCallableAdminCount( QString nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
 	virtual ~CCallableAdminCount( );
 
 	virtual QString GetServer( )					{ return m_Server; }
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableAdminCheck : virtual public CBaseCallable
@@ -272,15 +272,15 @@ class CCallableBanCount : virtual public CBaseCallable
 {
 protected:
 	QString m_Server;
-	uint32_t m_Result;
+	quint32 m_Result;
 
 public:
 	CCallableBanCount( QString nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
 	virtual ~CCallableBanCount( );
 
 	virtual QString GetServer( )					{ return m_Server; }
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableBanCheck : virtual public CBaseCallable
@@ -365,42 +365,42 @@ protected:
 	QString m_Map;
 	QString m_GameName;
 	QString m_OwnerName;
-	uint32_t m_Duration;
-	uint32_t m_GameState;
+	quint32 m_Duration;
+	quint32 m_GameState;
 	QString m_CreatorName;
 	QString m_CreatorServer;
-	uint32_t m_Result;
+	quint32 m_Result;
 
 public:
-	CCallableGameAdd( QString nServer, QString nMap, QString nGameName, QString nOwnerName, uint32_t nDuration, uint32_t nGameState, QString nCreatorName, QString nCreatorServer ) : CBaseCallable( ), m_Server( nServer ), m_Map( nMap ), m_GameName( nGameName ), m_OwnerName( nOwnerName ), m_Duration( nDuration ), m_GameState( nGameState ), m_CreatorName( nCreatorName ), m_CreatorServer( nCreatorServer ), m_Result( 0 ) { }
+	CCallableGameAdd( QString nServer, QString nMap, QString nGameName, QString nOwnerName, quint32 nDuration, quint32 nGameState, QString nCreatorName, QString nCreatorServer ) : CBaseCallable( ), m_Server( nServer ), m_Map( nMap ), m_GameName( nGameName ), m_OwnerName( nOwnerName ), m_Duration( nDuration ), m_GameState( nGameState ), m_CreatorName( nCreatorName ), m_CreatorServer( nCreatorServer ), m_Result( 0 ) { }
 	virtual ~CCallableGameAdd( );
 
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableGamePlayerAdd : virtual public CBaseCallable
 {
 protected:
-	uint32_t m_GameID;
+	quint32 m_GameID;
 	QString m_Name;
 	QString m_IP;
-	uint32_t m_Spoofed;
+	quint32 m_Spoofed;
 	QString m_SpoofedRealm;
-	uint32_t m_Reserved;
-	uint32_t m_LoadingTime;
-	uint32_t m_Left;
+	quint32 m_Reserved;
+	quint32 m_LoadingTime;
+	quint32 m_Left;
 	QString m_LeftReason;
-	uint32_t m_Team;
-	uint32_t m_Colour;
-	uint32_t m_Result;
+	quint32 m_Team;
+	quint32 m_Colour;
+	quint32 m_Result;
 
 public:
-	CCallableGamePlayerAdd( uint32_t nGameID, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nReserved, uint32_t nLoadingTime, uint32_t nLeft, QString nLeftReason, uint32_t nTeam, uint32_t nColour ) : CBaseCallable( ), m_GameID( nGameID ), m_Name( nName ), m_IP( nIP ), m_Spoofed( nSpoofed ), m_SpoofedRealm( nSpoofedRealm ), m_Reserved( nReserved ), m_LoadingTime( nLoadingTime ), m_Left( nLeft ), m_LeftReason( nLeftReason ), m_Team( nTeam ), m_Colour( nColour ), m_Result( 0 ) { }
+	CCallableGamePlayerAdd( quint32 nGameID, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nReserved, quint32 nLoadingTime, quint32 nLeft, QString nLeftReason, quint32 nTeam, quint32 nColour ) : CBaseCallable( ), m_GameID( nGameID ), m_Name( nName ), m_IP( nIP ), m_Spoofed( nSpoofed ), m_SpoofedRealm( nSpoofedRealm ), m_Reserved( nReserved ), m_LoadingTime( nLoadingTime ), m_Left( nLeft ), m_LeftReason( nLeftReason ), m_Team( nTeam ), m_Colour( nColour ), m_Result( 0 ) { }
 	virtual ~CCallableGamePlayerAdd( );
 
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableGamePlayerSummaryCheck : virtual public CBaseCallable
@@ -421,32 +421,32 @@ public:
 class CCallableDotAGameAdd : virtual public CBaseCallable
 {
 protected:
-	uint32_t m_GameID;
-	uint32_t m_Winner;
-	uint32_t m_Min;
-	uint32_t m_Sec;
-	uint32_t m_Result;
+	quint32 m_GameID;
+	quint32 m_Winner;
+	quint32 m_Min;
+	quint32 m_Sec;
+	quint32 m_Result;
 
 public:
-	CCallableDotAGameAdd( uint32_t nGameID, uint32_t nWinner, uint32_t nMin, uint32_t nSec ) : CBaseCallable( ), m_GameID( nGameID ), m_Winner( nWinner ), m_Min( nMin ), m_Sec( nSec ), m_Result( 0 ) { }
+	CCallableDotAGameAdd( quint32 nGameID, quint32 nWinner, quint32 nMin, quint32 nSec ) : CBaseCallable( ), m_GameID( nGameID ), m_Winner( nWinner ), m_Min( nMin ), m_Sec( nSec ), m_Result( 0 ) { }
 	virtual ~CCallableDotAGameAdd( );
 
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableDotAPlayerAdd : virtual public CBaseCallable
 {
 protected:
-	uint32_t m_GameID;
-	uint32_t m_Colour;
-	uint32_t m_Kills;
-	uint32_t m_Deaths;
-	uint32_t m_CreepKills;
-	uint32_t m_CreepDenies;
-	uint32_t m_Assists;
-	uint32_t m_Gold;
-	uint32_t m_NeutralKills;
+	quint32 m_GameID;
+	quint32 m_Colour;
+	quint32 m_Kills;
+	quint32 m_Deaths;
+	quint32 m_CreepKills;
+	quint32 m_CreepDenies;
+	quint32 m_Assists;
+	quint32 m_Gold;
+	quint32 m_NeutralKills;
 	QString m_Item1;
 	QString m_Item2;
 	QString m_Item3;
@@ -454,18 +454,18 @@ protected:
 	QString m_Item5;
 	QString m_Item6;
 	QString m_Hero;
-	uint32_t m_NewColour;
-	uint32_t m_TowerKills;
-	uint32_t m_RaxKills;
-	uint32_t m_CourierKills;
-	uint32_t m_Result;
+	quint32 m_NewColour;
+	quint32 m_TowerKills;
+	quint32 m_RaxKills;
+	quint32 m_CourierKills;
+	quint32 m_Result;
 
 public:
-	CCallableDotAPlayerAdd( uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills ) : CBaseCallable( ), m_GameID( nGameID ), m_Colour( nColour ), m_Kills( nKills ), m_Deaths( nDeaths ), m_CreepKills( nCreepKills ), m_CreepDenies( nCreepDenies ), m_Assists( nAssists ), m_Gold( nGold ), m_NeutralKills( nNeutralKills ), m_Item1( nItem1 ), m_Item2( nItem2 ), m_Item3( nItem3 ), m_Item4( nItem4 ), m_Item5( nItem5 ), m_Item6( nItem6 ), m_Hero( nHero ), m_NewColour( nNewColour ), m_TowerKills( nTowerKills ), m_RaxKills( nRaxKills ), m_CourierKills( nCourierKills ), m_Result( 0 ) { }
+	CCallableDotAPlayerAdd( quint32 nGameID, quint32 nColour, quint32 nKills, quint32 nDeaths, quint32 nCreepKills, quint32 nCreepDenies, quint32 nAssists, quint32 nGold, quint32 nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, quint32 nNewColour, quint32 nTowerKills, quint32 nRaxKills, quint32 nCourierKills ) : CBaseCallable( ), m_GameID( nGameID ), m_Colour( nColour ), m_Kills( nKills ), m_Deaths( nDeaths ), m_CreepKills( nCreepKills ), m_CreepDenies( nCreepDenies ), m_Assists( nAssists ), m_Gold( nGold ), m_NeutralKills( nNeutralKills ), m_Item1( nItem1 ), m_Item2( nItem2 ), m_Item3( nItem3 ), m_Item4( nItem4 ), m_Item5( nItem5 ), m_Item6( nItem6 ), m_Hero( nHero ), m_NewColour( nNewColour ), m_TowerKills( nTowerKills ), m_RaxKills( nRaxKills ), m_CourierKills( nCourierKills ), m_Result( 0 ) { }
 	virtual ~CCallableDotAPlayerAdd( );
 
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableDotAPlayerSummaryCheck : virtual public CBaseCallable
@@ -487,16 +487,16 @@ class CCallableDownloadAdd : virtual public CBaseCallable
 {
 protected:
 	QString m_Map;
-	uint32_t m_MapSize;
+	quint32 m_MapSize;
 	QString m_Name;
 	QString m_IP;
-	uint32_t m_Spoofed;
+	quint32 m_Spoofed;
 	QString m_SpoofedRealm;
-	uint32_t m_DownloadTime;
+	quint32 m_DownloadTime;
 	bool m_Result;
 
 public:
-	CCallableDownloadAdd( QString nMap, uint32_t nMapSize, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nDownloadTime ) : CBaseCallable( ), m_Map( nMap ), m_MapSize( nMapSize ), m_Name( nName ), m_IP( nIP ), m_Spoofed( nSpoofed ), m_SpoofedRealm( nSpoofedRealm ), m_DownloadTime( nDownloadTime ), m_Result( false ) { }
+	CCallableDownloadAdd( QString nMap, quint32 nMapSize, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nDownloadTime ) : CBaseCallable( ), m_Map( nMap ), m_MapSize( nMapSize ), m_Name( nName ), m_IP( nIP ), m_Spoofed( nSpoofed ), m_SpoofedRealm( nSpoofedRealm ), m_DownloadTime( nDownloadTime ), m_Result( false ) { }
 	virtual ~CCallableDownloadAdd( );
 
 	virtual bool GetResult( )				{ return m_Result; }
@@ -524,26 +524,26 @@ class CCallableW3MMDPlayerAdd : virtual public CBaseCallable
 {
 protected:
 	QString m_Category;
-	uint32_t m_GameID;
-	uint32_t m_PID;
+	quint32 m_GameID;
+	quint32 m_PID;
 	QString m_Name;
 	QString m_Flag;
-	uint32_t m_Leaver;
-	uint32_t m_Practicing;
-	uint32_t m_Result;
+	quint32 m_Leaver;
+	quint32 m_Practicing;
+	quint32 m_Result;
 
 public:
-	CCallableW3MMDPlayerAdd( QString nCategory, uint32_t nGameID, uint32_t nPID, QString nName, QString nFlag, uint32_t nLeaver, uint32_t nPracticing ) : CBaseCallable( ), m_Category( nCategory ), m_GameID( nGameID ), m_PID( nPID ), m_Name( nName ), m_Flag( nFlag ), m_Leaver( nLeaver ), m_Practicing( nPracticing ), m_Result( 0 ) { }
+	CCallableW3MMDPlayerAdd( QString nCategory, quint32 nGameID, quint32 nPID, QString nName, QString nFlag, quint32 nLeaver, quint32 nPracticing ) : CBaseCallable( ), m_Category( nCategory ), m_GameID( nGameID ), m_PID( nPID ), m_Name( nName ), m_Flag( nFlag ), m_Leaver( nLeaver ), m_Practicing( nPracticing ), m_Result( 0 ) { }
 	virtual ~CCallableW3MMDPlayerAdd( );
 
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
 class CCallableW3MMDVarAdd : virtual public CBaseCallable
 {
 protected:
-	uint32_t m_GameID;
+	quint32 m_GameID;
 	QMap<VarP,int32_t> m_VarInts;
 	QMap<VarP,double> m_VarReals;
 	QMap<VarP,QString> m_VarStrings;
@@ -558,9 +558,9 @@ protected:
 	bool m_Result;
 
 public:
-	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,int32_t> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
-	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,double> nVarReals ) : CBaseCallable( ), m_GameID( nGameID ), m_VarReals( nVarReals ), m_ValueType( VALUETYPE_REAL ), m_Result( false ) { }
-	CCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,QString> nVarStrings ) : CBaseCallable( ), m_GameID( nGameID ), m_VarStrings( nVarStrings ), m_ValueType( VALUETYPE_STRING ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,int32_t> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,double> nVarReals ) : CBaseCallable( ), m_GameID( nGameID ), m_VarReals( nVarReals ), m_ValueType( VALUETYPE_REAL ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,QString> nVarStrings ) : CBaseCallable( ), m_GameID( nGameID ), m_VarStrings( nVarStrings ), m_ValueType( VALUETYPE_STRING ), m_Result( false ) { }
 	virtual ~CCallableW3MMDVarAdd( );
 
 	virtual bool GetResult( )				{ return m_Result; }
@@ -602,27 +602,27 @@ public:
 class CDBGame
 {
 private:
-	uint32_t m_ID;
+	quint32 m_ID;
 	QString m_Server;
 	QString m_Map;
 	QString m_DateTime;
 	QString m_GameName;
 	QString m_OwnerName;
-	uint32_t m_Duration;
+	quint32 m_Duration;
 
 public:
-	CDBGame( uint32_t nID, QString nServer, QString nMap, QString nDateTime, QString nGameName, QString nOwnerName, uint32_t nDuration );
+	CDBGame( quint32 nID, QString nServer, QString nMap, QString nDateTime, QString nGameName, QString nOwnerName, quint32 nDuration );
 	~CDBGame( );
 
-	uint32_t GetID( )		{ return m_ID; }
+	quint32 GetID( )		{ return m_ID; }
 	QString GetServer( )		{ return m_Server; }
 	QString GetMap( )		{ return m_Map; }
 	QString GetDateTime( )	{ return m_DateTime; }
 	QString GetGameName( )	{ return m_GameName; }
 	QString GetOwnerName( )	{ return m_OwnerName; }
-	uint32_t GetDuration( )	{ return m_Duration; }
+	quint32 GetDuration( )	{ return m_Duration; }
 
-	void SetDuration( uint32_t nDuration )	{ m_Duration = nDuration; }
+	void SetDuration( quint32 nDuration )	{ m_Duration = nDuration; }
 };
 
 //
@@ -632,38 +632,38 @@ public:
 class CDBGamePlayer
 {
 private:
-	uint32_t m_ID;
-	uint32_t m_GameID;
+	quint32 m_ID;
+	quint32 m_GameID;
 	QString m_Name;
 	QString m_IP;
-	uint32_t m_Spoofed;
+	quint32 m_Spoofed;
 	QString m_SpoofedRealm;
-	uint32_t m_Reserved;
-	uint32_t m_LoadingTime;
-	uint32_t m_Left;
+	quint32 m_Reserved;
+	quint32 m_LoadingTime;
+	quint32 m_Left;
 	QString m_LeftReason;
-	uint32_t m_Team;
-	uint32_t m_Colour;
+	quint32 m_Team;
+	quint32 m_Colour;
 
 public:
-	CDBGamePlayer( uint32_t nID, uint32_t nGameID, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nReserved, uint32_t nLoadingTime, uint32_t nLeft, QString nLeftReason, uint32_t nTeam, uint32_t nColour );
+	CDBGamePlayer( quint32 nID, quint32 nGameID, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nReserved, quint32 nLoadingTime, quint32 nLeft, QString nLeftReason, quint32 nTeam, quint32 nColour );
 	~CDBGamePlayer( );
 
-	uint32_t GetID( )			{ return m_ID; }
-	uint32_t GetGameID( )		{ return m_GameID; }
+	quint32 GetID( )			{ return m_ID; }
+	quint32 GetGameID( )		{ return m_GameID; }
 	QString GetName( )			{ return m_Name; }
 	QString GetIP( )				{ return m_IP; }
-	uint32_t GetSpoofed( )		{ return m_Spoofed; }
+	quint32 GetSpoofed( )		{ return m_Spoofed; }
 	QString GetSpoofedRealm( )	{ return m_SpoofedRealm; }
-	uint32_t GetReserved( )		{ return m_Reserved; }
-	uint32_t GetLoadingTime( )	{ return m_LoadingTime; }
-	uint32_t GetLeft( )			{ return m_Left; }
+	quint32 GetReserved( )		{ return m_Reserved; }
+	quint32 GetLoadingTime( )	{ return m_LoadingTime; }
+	quint32 GetLeft( )			{ return m_Left; }
 	QString GetLeftReason( )		{ return m_LeftReason; }
-	uint32_t GetTeam( )			{ return m_Team; }
-	uint32_t GetColour( )		{ return m_Colour; }
+	quint32 GetTeam( )			{ return m_Team; }
+	quint32 GetColour( )		{ return m_Colour; }
 
-	void SetLoadingTime( uint32_t nLoadingTime )	{ m_LoadingTime = nLoadingTime; }
-	void SetLeft( uint32_t nLeft )					{ m_Left = nLeft; }
+	void SetLoadingTime( quint32 nLoadingTime )	{ m_LoadingTime = nLoadingTime; }
+	void SetLeft( quint32 nLeft )					{ m_Left = nLeft; }
 	void SetLeftReason( QString nLeftReason )		{ m_LeftReason = nLeftReason; }
 };
 
@@ -678,35 +678,35 @@ private:
 	QString m_Name;
 	QString m_FirstGameDateTime;		// datetime of first game played
 	QString m_LastGameDateTime;		// datetime of last game played
-	uint32_t m_TotalGames;			// total number of games played
-	uint32_t m_MinLoadingTime;		// minimum loading time in milliseconds (this could be skewed because different maps have different load times)
-	uint32_t m_AvgLoadingTime;		// average loading time in milliseconds (this could be skewed because different maps have different load times)
-	uint32_t m_MaxLoadingTime;		// maximum loading time in milliseconds (this could be skewed because different maps have different load times)
-	uint32_t m_MinLeftPercent;		// minimum time at which the player left the game expressed as a percentage of the game duration (0-100)
-	uint32_t m_AvgLeftPercent;		// average time at which the player left the game expressed as a percentage of the game duration (0-100)
-	uint32_t m_MaxLeftPercent;		// maximum time at which the player left the game expressed as a percentage of the game duration (0-100)
-	uint32_t m_MinDuration;			// minimum game duration in seconds
-	uint32_t m_AvgDuration;			// average game duration in seconds
-	uint32_t m_MaxDuration;			// maximum game duration in seconds
+	quint32 m_TotalGames;			// total number of games played
+	quint32 m_MinLoadingTime;		// minimum loading time in milliseconds (this could be skewed because different maps have different load times)
+	quint32 m_AvgLoadingTime;		// average loading time in milliseconds (this could be skewed because different maps have different load times)
+	quint32 m_MaxLoadingTime;		// maximum loading time in milliseconds (this could be skewed because different maps have different load times)
+	quint32 m_MinLeftPercent;		// minimum time at which the player left the game expressed as a percentage of the game duration (0-100)
+	quint32 m_AvgLeftPercent;		// average time at which the player left the game expressed as a percentage of the game duration (0-100)
+	quint32 m_MaxLeftPercent;		// maximum time at which the player left the game expressed as a percentage of the game duration (0-100)
+	quint32 m_MinDuration;			// minimum game duration in seconds
+	quint32 m_AvgDuration;			// average game duration in seconds
+	quint32 m_MaxDuration;			// maximum game duration in seconds
 
 public:
-	CDBGamePlayerSummary( QString nServer, QString nName, QString nFirstGameDateTime, QString nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration );
+	CDBGamePlayerSummary( QString nServer, QString nName, QString nFirstGameDateTime, QString nLastGameDateTime, quint32 nTotalGames, quint32 nMinLoadingTime, quint32 nAvgLoadingTime, quint32 nMaxLoadingTime, quint32 nMinLeftPercent, quint32 nAvgLeftPercent, quint32 nMaxLeftPercent, quint32 nMinDuration, quint32 nAvgDuration, quint32 nMaxDuration );
 	~CDBGamePlayerSummary( );
 
 	QString GetServer( )					{ return m_Server; }
 	QString GetName( )					{ return m_Name; }
 	QString GetFirstGameDateTime( )		{ return m_FirstGameDateTime; }
 	QString GetLastGameDateTime( )		{ return m_LastGameDateTime; }
-	uint32_t GetTotalGames( )			{ return m_TotalGames; }
-	uint32_t GetMinLoadingTime( )		{ return m_MinLoadingTime; }
-	uint32_t GetAvgLoadingTime( )		{ return m_AvgLoadingTime; }
-	uint32_t GetMaxLoadingTime( )		{ return m_MaxLoadingTime; }
-	uint32_t GetMinLeftPercent( )		{ return m_MinLeftPercent; }
-	uint32_t GetAvgLeftPercent( )		{ return m_AvgLeftPercent; }
-	uint32_t GetMaxLeftPercent( )		{ return m_MaxLeftPercent; }
-	uint32_t GetMinDuration( )			{ return m_MinDuration; }
-	uint32_t GetAvgDuration( )			{ return m_AvgDuration; }
-	uint32_t GetMaxDuration( )			{ return m_MaxDuration; }
+	quint32 GetTotalGames( )			{ return m_TotalGames; }
+	quint32 GetMinLoadingTime( )		{ return m_MinLoadingTime; }
+	quint32 GetAvgLoadingTime( )		{ return m_AvgLoadingTime; }
+	quint32 GetMaxLoadingTime( )		{ return m_MaxLoadingTime; }
+	quint32 GetMinLeftPercent( )		{ return m_MinLeftPercent; }
+	quint32 GetAvgLeftPercent( )		{ return m_AvgLeftPercent; }
+	quint32 GetMaxLeftPercent( )		{ return m_MaxLeftPercent; }
+	quint32 GetMinDuration( )			{ return m_MinDuration; }
+	quint32 GetAvgDuration( )			{ return m_AvgDuration; }
+	quint32 GetMaxDuration( )			{ return m_MaxDuration; }
 };
 
 //
@@ -716,21 +716,21 @@ public:
 class CDBDotAGame
 {
 private:
-	uint32_t m_ID;
-	uint32_t m_GameID;
-	uint32_t m_Winner;
-	uint32_t m_Min;
-	uint32_t m_Sec;
+	quint32 m_ID;
+	quint32 m_GameID;
+	quint32 m_Winner;
+	quint32 m_Min;
+	quint32 m_Sec;
 
 public:
-	CDBDotAGame( uint32_t nID, uint32_t nGameID, uint32_t nWinner, uint32_t nMin, uint32_t nSec );
+	CDBDotAGame( quint32 nID, quint32 nGameID, quint32 nWinner, quint32 nMin, quint32 nSec );
 	~CDBDotAGame( );
 
-	uint32_t GetID( )		{ return m_ID; }
-	uint32_t GetGameID( )	{ return m_GameID; }
-	uint32_t GetWinner( )	{ return m_Winner; }
-	uint32_t GetMin( )		{ return m_Min; }
-	uint32_t GetSec( )		{ return m_Sec; }
+	quint32 GetID( )		{ return m_ID; }
+	quint32 GetGameID( )	{ return m_GameID; }
+	quint32 GetWinner( )	{ return m_Winner; }
+	quint32 GetMin( )		{ return m_Min; }
+	quint32 GetSec( )		{ return m_Sec; }
 };
 
 //
@@ -740,59 +740,59 @@ public:
 class CDBDotAPlayer
 {
 private:
-	uint32_t m_ID;
-	uint32_t m_GameID;
-	uint32_t m_Colour;
-	uint32_t m_Kills;
-	uint32_t m_Deaths;
-	uint32_t m_CreepKills;
-	uint32_t m_CreepDenies;
-	uint32_t m_Assists;
-	uint32_t m_Gold;
-	uint32_t m_NeutralKills;
+	quint32 m_ID;
+	quint32 m_GameID;
+	quint32 m_Colour;
+	quint32 m_Kills;
+	quint32 m_Deaths;
+	quint32 m_CreepKills;
+	quint32 m_CreepDenies;
+	quint32 m_Assists;
+	quint32 m_Gold;
+	quint32 m_NeutralKills;
 	QString m_Items[6];
 	QString m_Hero;
-	uint32_t m_NewColour;
-	uint32_t m_TowerKills;
-	uint32_t m_RaxKills;
-	uint32_t m_CourierKills;
+	quint32 m_NewColour;
+	quint32 m_TowerKills;
+	quint32 m_RaxKills;
+	quint32 m_CourierKills;
 
 public:
 	CDBDotAPlayer( );
-	CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills );
+	CDBDotAPlayer( quint32 nID, quint32 nGameID, quint32 nColour, quint32 nKills, quint32 nDeaths, quint32 nCreepKills, quint32 nCreepDenies, quint32 nAssists, quint32 nGold, quint32 nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, quint32 nNewColour, quint32 nTowerKills, quint32 nRaxKills, quint32 nCourierKills );
 	~CDBDotAPlayer( );
 
-	uint32_t GetID( )			{ return m_ID; }
-	uint32_t GetGameID( )		{ return m_GameID; }
-	uint32_t GetColour( )		{ return m_Colour; }
-	uint32_t GetKills( )		{ return m_Kills; }
-	uint32_t GetDeaths( )		{ return m_Deaths; }
-	uint32_t GetCreepKills( )	{ return m_CreepKills; }
-	uint32_t GetCreepDenies( )	{ return m_CreepDenies; }
-	uint32_t GetAssists( )		{ return m_Assists; }
-	uint32_t GetGold( )			{ return m_Gold; }
-	uint32_t GetNeutralKills( )	{ return m_NeutralKills; }
+	quint32 GetID( )			{ return m_ID; }
+	quint32 GetGameID( )		{ return m_GameID; }
+	quint32 GetColour( )		{ return m_Colour; }
+	quint32 GetKills( )		{ return m_Kills; }
+	quint32 GetDeaths( )		{ return m_Deaths; }
+	quint32 GetCreepKills( )	{ return m_CreepKills; }
+	quint32 GetCreepDenies( )	{ return m_CreepDenies; }
+	quint32 GetAssists( )		{ return m_Assists; }
+	quint32 GetGold( )			{ return m_Gold; }
+	quint32 GetNeutralKills( )	{ return m_NeutralKills; }
 	QString GetItem( unsigned int i );
 	QString GetHero( )			{ return m_Hero; }
-	uint32_t GetNewColour( )	{ return m_NewColour; }
-	uint32_t GetTowerKills( )	{ return m_TowerKills; }
-	uint32_t GetRaxKills( )		{ return m_RaxKills; }
-	uint32_t GetCourierKills( )	{ return m_CourierKills; }
+	quint32 GetNewColour( )	{ return m_NewColour; }
+	quint32 GetTowerKills( )	{ return m_TowerKills; }
+	quint32 GetRaxKills( )		{ return m_RaxKills; }
+	quint32 GetCourierKills( )	{ return m_CourierKills; }
 
-	void SetColour( uint32_t nColour )				{ m_Colour = nColour; }
-	void SetKills( uint32_t nKills )				{ m_Kills = nKills; }
-	void SetDeaths( uint32_t nDeaths )				{ m_Deaths = nDeaths; }
-	void SetCreepKills( uint32_t nCreepKills )		{ m_CreepKills = nCreepKills; }
-	void SetCreepDenies( uint32_t nCreepDenies )	{ m_CreepDenies = nCreepDenies; }
-	void SetAssists( uint32_t nAssists )			{ m_Assists = nAssists; }
-	void SetGold( uint32_t nGold )					{ m_Gold = nGold; }
-	void SetNeutralKills( uint32_t nNeutralKills )	{ m_NeutralKills = nNeutralKills; }
+	void SetColour( quint32 nColour )				{ m_Colour = nColour; }
+	void SetKills( quint32 nKills )				{ m_Kills = nKills; }
+	void SetDeaths( quint32 nDeaths )				{ m_Deaths = nDeaths; }
+	void SetCreepKills( quint32 nCreepKills )		{ m_CreepKills = nCreepKills; }
+	void SetCreepDenies( quint32 nCreepDenies )	{ m_CreepDenies = nCreepDenies; }
+	void SetAssists( quint32 nAssists )			{ m_Assists = nAssists; }
+	void SetGold( quint32 nGold )					{ m_Gold = nGold; }
+	void SetNeutralKills( quint32 nNeutralKills )	{ m_NeutralKills = nNeutralKills; }
 	void SetItem( unsigned int i, QString item );
 	void SetHero( QString nHero )					{ m_Hero = nHero; }
-	void SetNewColour( uint32_t nNewColour )		{ m_NewColour = nNewColour; }
-	void SetTowerKills( uint32_t nTowerKills )		{ m_TowerKills = nTowerKills; }
-	void SetRaxKills( uint32_t nRaxKills )			{ m_RaxKills = nRaxKills; }
-	void SetCourierKills( uint32_t nCourierKills )	{ m_CourierKills = nCourierKills; }
+	void SetNewColour( quint32 nNewColour )		{ m_NewColour = nNewColour; }
+	void SetTowerKills( quint32 nTowerKills )		{ m_TowerKills = nTowerKills; }
+	void SetRaxKills( quint32 nRaxKills )			{ m_RaxKills = nRaxKills; }
+	void SetCourierKills( quint32 nCourierKills )	{ m_CourierKills = nCourierKills; }
 };
 
 //
@@ -804,37 +804,37 @@ class CDBDotAPlayerSummary
 private:
 	QString m_Server;
 	QString m_Name;
-	uint32_t m_TotalGames;			// total number of dota games played
-	uint32_t m_TotalWins;			// total number of dota games won
-	uint32_t m_TotalLosses;			// total number of dota games lost
-	uint32_t m_TotalKills;			// total number of hero kills
-	uint32_t m_TotalDeaths;			// total number of deaths
-	uint32_t m_TotalCreepKills;		// total number of creep kills
-	uint32_t m_TotalCreepDenies;	// total number of creep denies
-	uint32_t m_TotalAssists;		// total number of assists
-	uint32_t m_TotalNeutralKills;	// total number of neutral kills
-	uint32_t m_TotalTowerKills;		// total number of tower kills
-	uint32_t m_TotalRaxKills;		// total number of rax kills
-	uint32_t m_TotalCourierKills;	// total number of courier kills
+	quint32 m_TotalGames;			// total number of dota games played
+	quint32 m_TotalWins;			// total number of dota games won
+	quint32 m_TotalLosses;			// total number of dota games lost
+	quint32 m_TotalKills;			// total number of hero kills
+	quint32 m_TotalDeaths;			// total number of deaths
+	quint32 m_TotalCreepKills;		// total number of creep kills
+	quint32 m_TotalCreepDenies;	// total number of creep denies
+	quint32 m_TotalAssists;		// total number of assists
+	quint32 m_TotalNeutralKills;	// total number of neutral kills
+	quint32 m_TotalTowerKills;		// total number of tower kills
+	quint32 m_TotalRaxKills;		// total number of rax kills
+	quint32 m_TotalCourierKills;	// total number of courier kills
 
 public:
-	CDBDotAPlayerSummary( QString nServer, QString nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills );
+	CDBDotAPlayerSummary( QString nServer, QString nName, quint32 nTotalGames, quint32 nTotalWins, quint32 nTotalLosses, quint32 nTotalKills, quint32 nTotalDeaths, quint32 nTotalCreepKills, quint32 nTotalCreepDenies, quint32 nTotalAssists, quint32 nTotalNeutralKills, quint32 nTotalTowerKills, quint32 nTotalRaxKills, quint32 nTotalCourierKills );
 	~CDBDotAPlayerSummary( );
 
 	QString GetServer( )					{ return m_Server; }
 	QString GetName( )					{ return m_Name; }
-	uint32_t GetTotalGames( )			{ return m_TotalGames; }
-	uint32_t GetTotalWins( )			{ return m_TotalWins; }
-	uint32_t GetTotalLosses( )			{ return m_TotalLosses; }
-	uint32_t GetTotalKills( )			{ return m_TotalKills; }
-	uint32_t GetTotalDeaths( )			{ return m_TotalDeaths; }
-	uint32_t GetTotalCreepKills( )		{ return m_TotalCreepKills; }
-	uint32_t GetTotalCreepDenies( )		{ return m_TotalCreepDenies; }
-	uint32_t GetTotalAssists( )			{ return m_TotalAssists; }
-	uint32_t GetTotalNeutralKills( )	{ return m_TotalNeutralKills; }
-	uint32_t GetTotalTowerKills( )		{ return m_TotalTowerKills; }
-	uint32_t GetTotalRaxKills( )		{ return m_TotalRaxKills; }
-	uint32_t GetTotalCourierKills( )	{ return m_TotalCourierKills; }
+	quint32 GetTotalGames( )			{ return m_TotalGames; }
+	quint32 GetTotalWins( )			{ return m_TotalWins; }
+	quint32 GetTotalLosses( )			{ return m_TotalLosses; }
+	quint32 GetTotalKills( )			{ return m_TotalKills; }
+	quint32 GetTotalDeaths( )			{ return m_TotalDeaths; }
+	quint32 GetTotalCreepKills( )		{ return m_TotalCreepKills; }
+	quint32 GetTotalCreepDenies( )		{ return m_TotalCreepDenies; }
+	quint32 GetTotalAssists( )			{ return m_TotalAssists; }
+	quint32 GetTotalNeutralKills( )	{ return m_TotalNeutralKills; }
+	quint32 GetTotalTowerKills( )		{ return m_TotalTowerKills; }
+	quint32 GetTotalRaxKills( )		{ return m_TotalRaxKills; }
+	quint32 GetTotalCourierKills( )	{ return m_TotalCourierKills; }
 
 	float GetAvgKills( )				{ return m_TotalGames > 0 ? (float)m_TotalKills / m_TotalGames : 0; }
 	float GetAvgDeaths( )				{ return m_TotalGames > 0 ? (float)m_TotalDeaths / m_TotalGames : 0; }

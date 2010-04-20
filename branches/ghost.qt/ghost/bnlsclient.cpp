@@ -28,7 +28,7 @@
 // CBNLSClient
 //
 
-CBNLSClient :: CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie )
+CBNLSClient :: CBNLSClient( QString nServer, quint16 nPort, quint32 nWardenCookie )
 {
 	m_Socket = new QTcpSocket( );
 
@@ -119,7 +119,7 @@ void CBNLSClient :: ExtractPackets( )
 {
 	while( m_Socket->bytesAvailable() >= 3 )
 	{
-		uint16_t Length = UTIL_QByteArrayToUInt16( m_Socket->peek(2), false );
+		quint16 Length = UTIL_QByteArrayToUInt16( m_Socket->peek(2), false );
 
 		if( Length < 3 )
 		{
@@ -156,7 +156,7 @@ void CBNLSClient :: ProcessPackets( )
 	}
 }
 
-void CBNLSClient :: QueueWardenSeed( uint32_t seed )
+void CBNLSClient :: QueueWardenSeed( quint32 seed )
 {
 	m_OutPackets.enqueue( m_Protocol->SEND_BNLS_WARDEN_SEED( m_WardenCookie, seed ) );
 }

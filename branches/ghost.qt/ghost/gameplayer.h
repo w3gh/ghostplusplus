@@ -118,26 +118,26 @@ private:
 	unsigned char m_PID;
 	QString m_Name;								// the player's name
 	QByteArray m_InternalIP;						// the player's internal IP address as reported by the player when connecting
-	QVector<uint32_t> m_Pings;					// store the last few (20) pings received so we can take an average
-	QQueue<uint32_t> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
+	QVector<quint32> m_Pings;					// store the last few (20) pings received so we can take an average
+	QQueue<quint32> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
 	QString m_LeftReason;						// the reason the player left the game
 	QString m_SpoofedRealm;						// the realm the player last spoof checked on
 	QString m_JoinedRealm;						// the realm the player joined on (probable, can be spoofed)
-	uint32_t m_TotalPacketsSent;
-	uint32_t m_TotalPacketsReceived;
-	uint32_t m_LeftCode;						// the code to be sent in W3GS_PLAYERLEAVE_OTHERS for why this player left the game
-	uint32_t m_LoginAttempts;					// the number of attempts to login (used with CAdminGame only)
-	uint32_t m_SyncCounter;						// the number of keepalive packets received from this player
-	uint32_t m_JoinTime;						// GetTime when the player joined the game (used to delay sending the /whois a few seconds to allow for some lag)
-	uint32_t m_LastMapPartSent;					// the last mappart sent to the player (for sending more than one part at a time)
-	uint32_t m_LastMapPartAcked;				// the last mappart acknowledged by the player
-	uint32_t m_StartedDownloadingTicks;			// GetTicks when the player started downloading the map
-	uint32_t m_FinishedDownloadingTime;			// GetTime when the player finished downloading the map
-	uint32_t m_FinishedLoadingTicks;			// GetTicks when the player finished loading the game
-	uint32_t m_StartedLaggingTicks;				// GetTicks when the player started lagging
-	uint32_t m_StatsSentTime;					// GetTime when we sent this player's stats to the chat (to prevent players from spamming !stats)
-	uint32_t m_StatsDotASentTime;				// GetTime when we sent this player's dota stats to the chat (to prevent players from spamming !statsdota)
-	uint32_t m_LastGProxyWaitNoticeSentTime;
+	quint32 m_TotalPacketsSent;
+	quint32 m_TotalPacketsReceived;
+	quint32 m_LeftCode;						// the code to be sent in W3GS_PLAYERLEAVE_OTHERS for why this player left the game
+	quint32 m_LoginAttempts;					// the number of attempts to login (used with CAdminGame only)
+	quint32 m_SyncCounter;						// the number of keepalive packets received from this player
+	quint32 m_JoinTime;						// GetTime when the player joined the game (used to delay sending the /whois a few seconds to allow for some lag)
+	quint32 m_LastMapPartSent;					// the last mappart sent to the player (for sending more than one part at a time)
+	quint32 m_LastMapPartAcked;				// the last mappart acknowledged by the player
+	quint32 m_StartedDownloadingTicks;			// GetTicks when the player started downloading the map
+	quint32 m_FinishedDownloadingTime;			// GetTime when the player finished downloading the map
+	quint32 m_FinishedLoadingTicks;			// GetTicks when the player finished loading the game
+	quint32 m_StartedLaggingTicks;				// GetTicks when the player started lagging
+	quint32 m_StatsSentTime;					// GetTime when we sent this player's stats to the chat (to prevent players from spamming !stats)
+	quint32 m_StatsDotASentTime;				// GetTime when we sent this player's dota stats to the chat (to prevent players from spamming !statsdota)
+	quint32 m_LastGProxyWaitNoticeSentTime;
 	QQueue<QByteArray> m_LoadInGameData;			// queued data to be sent when the player finishes loading when using "load in game"
 	double m_Score;								// the player's generic "score" for the matchmaking algorithm
 	bool m_LoggedIn;							// if the player has logged in or not (used with CAdminGame only)
@@ -157,8 +157,8 @@ private:
 	bool m_GProxy;								// if the player is using GProxy++
 	bool m_GProxyDisconnectNoticeSent;			// if a disconnection notice has been sent or not when using GProxy++
 	QQueue<QByteArray> m_GProxyBuffer;
-	uint32_t m_GProxyReconnectKey;
-	uint32_t m_LastGProxyAckTime;
+	quint32 m_GProxyReconnectKey;
+	quint32 m_LastGProxyAckTime;
 
 public:
 	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
@@ -170,23 +170,23 @@ public:
 	QByteArray GetInternalIP( )					{ return m_InternalIP; }
 	unsigned int GetNumPings( )					{ return m_Pings.size( ); }
 	unsigned int GetNumCheckSums( )				{ return m_CheckSums.size( ); }
-	QQueue<uint32_t> *GetCheckSums( )			{ return &m_CheckSums; }
+	QQueue<quint32> *GetCheckSums( )			{ return &m_CheckSums; }
 	QString GetLeftReason( )						{ return m_LeftReason; }
 	QString GetSpoofedRealm( )					{ return m_SpoofedRealm; }
 	QString GetJoinedRealm( )					{ return m_JoinedRealm; }
-	uint32_t GetLeftCode( )						{ return m_LeftCode; }
-	uint32_t GetLoginAttempts( )				{ return m_LoginAttempts; }
-	uint32_t GetSyncCounter( )					{ return m_SyncCounter; }
-	uint32_t GetJoinTime( )						{ return m_JoinTime; }
-	uint32_t GetLastMapPartSent( )				{ return m_LastMapPartSent; }
-	uint32_t GetLastMapPartAcked( )				{ return m_LastMapPartAcked; }
-	uint32_t GetStartedDownloadingTicks( )		{ return m_StartedDownloadingTicks; }
-	uint32_t GetFinishedDownloadingTime( )		{ return m_FinishedDownloadingTime; }
-	uint32_t GetFinishedLoadingTicks( )			{ return m_FinishedLoadingTicks; }
-	uint32_t GetStartedLaggingTicks( )			{ return m_StartedLaggingTicks; }
-	uint32_t GetStatsSentTime( )				{ return m_StatsSentTime; }
-	uint32_t GetStatsDotASentTime( )			{ return m_StatsDotASentTime; }
-	uint32_t GetLastGProxyWaitNoticeSentTime( )	{ return m_LastGProxyWaitNoticeSentTime; }
+	quint32 GetLeftCode( )						{ return m_LeftCode; }
+	quint32 GetLoginAttempts( )				{ return m_LoginAttempts; }
+	quint32 GetSyncCounter( )					{ return m_SyncCounter; }
+	quint32 GetJoinTime( )						{ return m_JoinTime; }
+	quint32 GetLastMapPartSent( )				{ return m_LastMapPartSent; }
+	quint32 GetLastMapPartAcked( )				{ return m_LastMapPartAcked; }
+	quint32 GetStartedDownloadingTicks( )		{ return m_StartedDownloadingTicks; }
+	quint32 GetFinishedDownloadingTime( )		{ return m_FinishedDownloadingTime; }
+	quint32 GetFinishedLoadingTicks( )			{ return m_FinishedLoadingTicks; }
+	quint32 GetStartedLaggingTicks( )			{ return m_StartedLaggingTicks; }
+	quint32 GetStatsSentTime( )				{ return m_StatsSentTime; }
+	quint32 GetStatsDotASentTime( )			{ return m_StatsDotASentTime; }
+	quint32 GetLastGProxyWaitNoticeSentTime( )	{ return m_LastGProxyWaitNoticeSentTime; }
 	QQueue<QByteArray> *GetLoadInGameData( )		{ return &m_LoadInGameData; }
 	double GetScore( )							{ return m_Score; }
 	bool GetLoggedIn( )							{ return m_LoggedIn; }
@@ -205,21 +205,21 @@ public:
 	bool GetLeftMessageSent( )					{ return m_LeftMessageSent; }
 	bool GetGProxy( )							{ return m_GProxy; }
 	bool GetGProxyDisconnectNoticeSent( )		{ return m_GProxyDisconnectNoticeSent; }
-	uint32_t GetGProxyReconnectKey( )			{ return m_GProxyReconnectKey; }
+	quint32 GetGProxyReconnectKey( )			{ return m_GProxyReconnectKey; }
 
 	void SetLeftReason( QString nLeftReason )										{ m_LeftReason = nLeftReason; }
 	void SetSpoofedRealm( QString nSpoofedRealm )									{ m_SpoofedRealm = nSpoofedRealm; }
-	void SetLeftCode( uint32_t nLeftCode )											{ m_LeftCode = nLeftCode; }
-	void SetLoginAttempts( uint32_t nLoginAttempts )								{ m_LoginAttempts = nLoginAttempts; }
-	void SetSyncCounter( uint32_t nSyncCounter )									{ m_SyncCounter = nSyncCounter; }
-	void SetLastMapPartSent( uint32_t nLastMapPartSent )							{ m_LastMapPartSent = nLastMapPartSent; }
-	void SetLastMapPartAcked( uint32_t nLastMapPartAcked )							{ m_LastMapPartAcked = nLastMapPartAcked; }
-	void SetStartedDownloadingTicks( uint32_t nStartedDownloadingTicks )			{ m_StartedDownloadingTicks = nStartedDownloadingTicks; }
-	void SetFinishedDownloadingTime( uint32_t nFinishedDownloadingTime )			{ m_FinishedDownloadingTime = nFinishedDownloadingTime; }
-	void SetStartedLaggingTicks( uint32_t nStartedLaggingTicks )					{ m_StartedLaggingTicks = nStartedLaggingTicks; }
-	void SetStatsSentTime( uint32_t nStatsSentTime )								{ m_StatsSentTime = nStatsSentTime; }
-	void SetStatsDotASentTime( uint32_t nStatsDotASentTime )						{ m_StatsDotASentTime = nStatsDotASentTime; }
-	void SetLastGProxyWaitNoticeSentTime( uint32_t nLastGProxyWaitNoticeSentTime )	{ m_LastGProxyWaitNoticeSentTime = nLastGProxyWaitNoticeSentTime; }
+	void SetLeftCode( quint32 nLeftCode )											{ m_LeftCode = nLeftCode; }
+	void SetLoginAttempts( quint32 nLoginAttempts )								{ m_LoginAttempts = nLoginAttempts; }
+	void SetSyncCounter( quint32 nSyncCounter )									{ m_SyncCounter = nSyncCounter; }
+	void SetLastMapPartSent( quint32 nLastMapPartSent )							{ m_LastMapPartSent = nLastMapPartSent; }
+	void SetLastMapPartAcked( quint32 nLastMapPartAcked )							{ m_LastMapPartAcked = nLastMapPartAcked; }
+	void SetStartedDownloadingTicks( quint32 nStartedDownloadingTicks )			{ m_StartedDownloadingTicks = nStartedDownloadingTicks; }
+	void SetFinishedDownloadingTime( quint32 nFinishedDownloadingTime )			{ m_FinishedDownloadingTime = nFinishedDownloadingTime; }
+	void SetStartedLaggingTicks( quint32 nStartedLaggingTicks )					{ m_StartedLaggingTicks = nStartedLaggingTicks; }
+	void SetStatsSentTime( quint32 nStatsSentTime )								{ m_StatsSentTime = nStatsSentTime; }
+	void SetStatsDotASentTime( quint32 nStatsDotASentTime )						{ m_StatsDotASentTime = nStatsDotASentTime; }
+	void SetLastGProxyWaitNoticeSentTime( quint32 nLastGProxyWaitNoticeSentTime )	{ m_LastGProxyWaitNoticeSentTime = nLastGProxyWaitNoticeSentTime; }
 	void SetScore( double nScore )													{ m_Score = nScore; }
 	void SetLoggedIn( bool nLoggedIn )												{ m_LoggedIn = nLoggedIn; }
 	void SetSpoofed( bool nSpoofed )												{ m_Spoofed = nSpoofed; }
@@ -236,7 +236,7 @@ public:
 	void SetGProxyDisconnectNoticeSent( bool nGProxyDisconnectNoticeSent )			{ m_GProxyDisconnectNoticeSent = nGProxyDisconnectNoticeSent; }
 
 	QString GetNameTerminated( );
-	uint32_t GetPing( bool LCPing );
+	quint32 GetPing( bool LCPing );
 
 	void AddLoadInGameData( QByteArray nLoadInGameData )							{ m_LoadInGameData.enqueue( nLoadInGameData ); }
 
@@ -248,7 +248,7 @@ public:
 	// other functions
 
 	virtual void Send( QByteArray data );
-	virtual void EventGProxyReconnect( QTcpSocket *NewSocket, uint32_t LastPacket );
+	virtual void EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPacket );
 };
 
 #endif

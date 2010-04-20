@@ -94,9 +94,9 @@ int CSQLITE3 :: Exec( QString query )
 	return sqlite3_exec( (sqlite3 *)m_DB, query.toUtf8().data( ), NULL, NULL, NULL );
 }
 
-uint32_t CSQLITE3 :: LastRowID( )
+quint32 CSQLITE3 :: LastRowID( )
 {
-	return (uint32_t)sqlite3_last_insert_rowid( (sqlite3 *)m_DB );
+	return (quint32)sqlite3_last_insert_rowid( (sqlite3 *)m_DB );
 }
 
 //
@@ -554,9 +554,9 @@ bool CGHostDBSQLite :: Commit( )
 	return m_DB->Exec( "COMMIT TRANSACTION" ) == SQLITE_OK;
 }
 
-uint32_t CGHostDBSQLite :: AdminCount( QString server )
+quint32 CGHostDBSQLite :: AdminCount( QString server )
 {
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT COUNT(*) FROM admins WHERE server=?", (void **)&Statement );
 
@@ -690,9 +690,9 @@ QVector<QString> CGHostDBSQLite :: AdminList( QString server )
 	return AdminList;
 }
 
-uint32_t CGHostDBSQLite :: BanCount( QString server )
+quint32 CGHostDBSQLite :: BanCount( QString server )
 {
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT COUNT(*) FROM bans WHERE server=?", (void **)&Statement );
 
@@ -869,9 +869,9 @@ QVector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 	return BanList;
 }
 
-uint32_t CGHostDBSQLite :: GameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+quint32 CGHostDBSQLite :: GameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "INSERT INTO games ( server, map, datetime, gamename, ownername, duration, gamestate, creatorname, creatorserver ) VALUES ( ?, ?, datetime('now'), ?, ?, ?, ?, ?, ? )", (void **)&Statement );
 
@@ -901,10 +901,10 @@ uint32_t CGHostDBSQLite :: GameAdd( QString server, QString map, QString gamenam
 	return RowID;
 }
 
-uint32_t CGHostDBSQLite :: GamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+quint32 CGHostDBSQLite :: GamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour )
 {
 	name = name.toLower();
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "INSERT INTO gameplayers ( gameid, name, ip, spoofed, reserved, loadingtime, left, leftreason, team, colour, spoofedrealm ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )", (void **)&Statement );
 
@@ -937,10 +937,10 @@ uint32_t CGHostDBSQLite :: GamePlayerAdd( uint32_t gameid, QString name, QString
 	return RowID;
 }
 
-uint32_t CGHostDBSQLite :: GamePlayerCount( QString name )
+quint32 CGHostDBSQLite :: GamePlayerCount( QString name )
 {
 	name = name.toLower();
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name=?", (void **)&Statement );
 
@@ -992,16 +992,16 @@ CDBGamePlayerSummary *CGHostDBSQLite :: GamePlayerSummaryCheck( QString name )
 				if( Last )
 					LastGameDateTime = Last;
 
-				uint32_t TotalGames = sqlite3_column_int( (sqlite3_stmt *)Statement, 2 );
-				uint32_t MinLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 3 );
-				uint32_t AvgLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 4 );
-				uint32_t MaxLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 5 );
-				uint32_t MinLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 6 );
-				uint32_t AvgLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 7 );
-				uint32_t MaxLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 8 );
-				uint32_t MinDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 9 );
-				uint32_t AvgDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 10 );
-				uint32_t MaxDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 11 );
+				quint32 TotalGames = sqlite3_column_int( (sqlite3_stmt *)Statement, 2 );
+				quint32 MinLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 3 );
+				quint32 AvgLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 4 );
+				quint32 MaxLoadingTime = sqlite3_column_int( (sqlite3_stmt *)Statement, 5 );
+				quint32 MinLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 6 );
+				quint32 AvgLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 7 );
+				quint32 MaxLeftPercent = sqlite3_column_int( (sqlite3_stmt *)Statement, 8 );
+				quint32 MinDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 9 );
+				quint32 AvgDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 10 );
+				quint32 MaxDuration = sqlite3_column_int( (sqlite3_stmt *)Statement, 11 );
 				GamePlayerSummary = new CDBGamePlayerSummary( QString( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
 			}
 			else
@@ -1018,9 +1018,9 @@ CDBGamePlayerSummary *CGHostDBSQLite :: GamePlayerSummaryCheck( QString name )
 	return GamePlayerSummary;
 }
 
-uint32_t CGHostDBSQLite :: DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+quint32 CGHostDBSQLite :: DotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "INSERT INTO dotagames ( gameid, winner, min, sec ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
 
@@ -1046,9 +1046,9 @@ uint32_t CGHostDBSQLite :: DotAGameAdd( uint32_t gameid, uint32_t winner, uint32
 	return RowID;
 }
 
-uint32_t CGHostDBSQLite :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+quint32 CGHostDBSQLite :: DotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "INSERT INTO dotaplayers ( gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )", (void **)&Statement );
 
@@ -1090,10 +1090,10 @@ uint32_t CGHostDBSQLite :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint
 	return RowID;
 }
 
-uint32_t CGHostDBSQLite :: DotAPlayerCount( QString name )
+quint32 CGHostDBSQLite :: DotAPlayerCount( QString name )
 {
 	name = name.toLower();
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT COUNT(dotaplayers.id) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE name=?", (void **)&Statement );
 
@@ -1134,18 +1134,18 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( QString name )
 		{
 			if( sqlite3_column_count( (sqlite3_stmt *)Statement ) == 10 )
 			{
-				uint32_t TotalGames = sqlite3_column_int( (sqlite3_stmt *)Statement, 0 );
-				uint32_t TotalWins = 0;
-				uint32_t TotalLosses = 0;
-				uint32_t TotalKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 1 );
-				uint32_t TotalDeaths = sqlite3_column_int( (sqlite3_stmt *)Statement, 2 );
-				uint32_t TotalCreepKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 3 );
-				uint32_t TotalCreepDenies = sqlite3_column_int( (sqlite3_stmt *)Statement, 4 );
-				uint32_t TotalAssists = sqlite3_column_int( (sqlite3_stmt *)Statement, 5 );
-				uint32_t TotalNeutralKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 6 );
-				uint32_t TotalTowerKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 7 );
-				uint32_t TotalRaxKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 8 );
-				uint32_t TotalCourierKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 9 );
+				quint32 TotalGames = sqlite3_column_int( (sqlite3_stmt *)Statement, 0 );
+				quint32 TotalWins = 0;
+				quint32 TotalLosses = 0;
+				quint32 TotalKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 1 );
+				quint32 TotalDeaths = sqlite3_column_int( (sqlite3_stmt *)Statement, 2 );
+				quint32 TotalCreepKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 3 );
+				quint32 TotalCreepDenies = sqlite3_column_int( (sqlite3_stmt *)Statement, 4 );
+				quint32 TotalAssists = sqlite3_column_int( (sqlite3_stmt *)Statement, 5 );
+				quint32 TotalNeutralKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 6 );
+				quint32 TotalTowerKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 7 );
+				quint32 TotalRaxKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 8 );
+				quint32 TotalCourierKills = sqlite3_column_int( (sqlite3_stmt *)Statement, 9 );
 
 				// calculate total wins
 
@@ -1205,7 +1205,7 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( QString name )
 	return DotAPlayerSummary;
 }
 
-QString CGHostDBSQLite :: FromCheck( uint32_t ip )
+QString CGHostDBSQLite :: FromCheck( quint32 ip )
 {
 	// a big thank you to tjado for help with the iptocountry feature
 
@@ -1241,7 +1241,7 @@ QString CGHostDBSQLite :: FromCheck( uint32_t ip )
 	return From;
 }
 
-bool CGHostDBSQLite :: FromAdd( uint32_t ip1, uint32_t ip2, QString country )
+bool CGHostDBSQLite :: FromAdd( quint32 ip1, quint32 ip2, QString country )
 {
 	// a big thank you to tjado for help with the iptocountry feature
 
@@ -1273,7 +1273,7 @@ bool CGHostDBSQLite :: FromAdd( uint32_t ip1, uint32_t ip2, QString country )
 	return Success;
 }
 
-bool CGHostDBSQLite :: DownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+bool CGHostDBSQLite :: DownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime )
 {
 	bool Success = false;
 	sqlite3_stmt *Statement;
@@ -1304,9 +1304,9 @@ bool CGHostDBSQLite :: DownloadAdd( QString map, uint32_t mapsize, QString name,
 	return Success;
 }
 
-uint32_t CGHostDBSQLite :: W3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+quint32 CGHostDBSQLite :: W3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "INSERT INTO w3mmdplayers ( category, gameid, pid, name, flag, leaver, practicing ) VALUES ( ?, ?, ?, ?, ?, ?, ? )", (void **)&Statement );
 
@@ -1335,7 +1335,7 @@ uint32_t CGHostDBSQLite :: W3MMDPlayerAdd( QString category, uint32_t gameid, ui
 	return RowID;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
+bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints )
 {
 	if( var_ints.isEmpty( ) )
 		return false;
@@ -1380,7 +1380,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints
 	return Success;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
+bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals )
 {
 	if( var_reals.isEmpty( ) )
 		return false;
@@ -1425,7 +1425,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals
 	return Success;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
+bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings )
 {
 	if( var_strings.isEmpty( ) )
 		return false;
@@ -1558,7 +1558,7 @@ CCallableBanList *CGHostDBSQLite :: ThreadedBanList( QString server )
 	return Callable;
 }
 
-CCallableGameAdd *CGHostDBSQLite :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+CCallableGameAdd *CGHostDBSQLite :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver )
 {
 	CCallableGameAdd *Callable = new CCallableGameAdd( server, map, gamename, ownername, duration, gamestate, creatorname, creatorserver );
 	Callable->SetResult( GameAdd( server, map, gamename, ownername, duration, gamestate, creatorname, creatorserver ) );
@@ -1566,7 +1566,7 @@ CCallableGameAdd *CGHostDBSQLite :: ThreadedGameAdd( QString server, QString map
 	return Callable;
 }
 
-CCallableGamePlayerAdd *CGHostDBSQLite :: ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+CCallableGamePlayerAdd *CGHostDBSQLite :: ThreadedGamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour )
 {
 	CCallableGamePlayerAdd *Callable = new CCallableGamePlayerAdd( gameid, name, ip, spoofed, spoofedrealm, reserved, loadingtime, left, leftreason, team, colour );
 	Callable->SetResult( GamePlayerAdd( gameid, name, ip, spoofed, spoofedrealm, reserved, loadingtime, left, leftreason, team, colour ) );
@@ -1582,7 +1582,7 @@ CCallableGamePlayerSummaryCheck *CGHostDBSQLite :: ThreadedGamePlayerSummaryChec
 	return Callable;
 }
 
-CCallableDotAGameAdd *CGHostDBSQLite :: ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+CCallableDotAGameAdd *CGHostDBSQLite :: ThreadedDotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec )
 {
 	CCallableDotAGameAdd *Callable = new CCallableDotAGameAdd( gameid, winner, min, sec );
 	Callable->SetResult( DotAGameAdd( gameid, winner, min, sec ) );
@@ -1590,7 +1590,7 @@ CCallableDotAGameAdd *CGHostDBSQLite :: ThreadedDotAGameAdd( uint32_t gameid, ui
 	return Callable;
 }
 
-CCallableDotAPlayerAdd *CGHostDBSQLite :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDBSQLite :: ThreadedDotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills )
 {
 	CCallableDotAPlayerAdd *Callable = new CCallableDotAPlayerAdd( gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills );
 	Callable->SetResult( DotAPlayerAdd( gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills ) );
@@ -1606,7 +1606,7 @@ CCallableDotAPlayerSummaryCheck *CGHostDBSQLite :: ThreadedDotAPlayerSummaryChec
 	return Callable;
 }
 
-CCallableDownloadAdd *CGHostDBSQLite :: ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+CCallableDownloadAdd *CGHostDBSQLite :: ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime )
 {
 	CCallableDownloadAdd *Callable = new CCallableDownloadAdd( map, mapsize, name, ip, spoofed, spoofedrealm, downloadtime );
 	Callable->SetResult( DownloadAdd( map, mapsize, name, ip, spoofed, spoofedrealm, downloadtime ) );
@@ -1614,7 +1614,7 @@ CCallableDownloadAdd *CGHostDBSQLite :: ThreadedDownloadAdd( QString map, uint32
 	return Callable;
 }
 
-CCallableW3MMDPlayerAdd *CGHostDBSQLite :: ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+CCallableW3MMDPlayerAdd *CGHostDBSQLite :: ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing )
 {
 	CCallableW3MMDPlayerAdd *Callable = new CCallableW3MMDPlayerAdd( category, gameid, pid, name, flag, leaver, practicing );
 	Callable->SetResult( W3MMDPlayerAdd( category, gameid, pid, name, flag, leaver, practicing ) );
@@ -1622,7 +1622,7 @@ CCallableW3MMDPlayerAdd *CGHostDBSQLite :: ThreadedW3MMDPlayerAdd( QString categ
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_ints );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_ints ) );
@@ -1630,7 +1630,7 @@ CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QM
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_reals );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_reals ) );
@@ -1638,7 +1638,7 @@ CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QM
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_strings );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_strings ) );

@@ -69,17 +69,17 @@ QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse )
 	return result;
 }
 
-uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start )
+quint16 UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start )
 {
 	if( (unsigned int)b.size( ) < start + 2 )
 		return 0;
 
 	QByteArray temp = b.mid(start, 2);
 
-	return (uint16_t)( reverse ? (temp[0] << 8 | temp[1]) : (temp[1] << 8 | temp[0]) );
+	return (quint16)( reverse ? (temp[0] << 8 | temp[1]) : (temp[1] << 8 | temp[0]) );
 }
 
-uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start )
+quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start )
 {
 	if( (unsigned int)b.size( ) < start + 4 )
 		return 0;
@@ -87,9 +87,9 @@ uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start
 	QByteArray temp = b.mid(start, 4);
 
 	if (reverse)
-		return (uint32_t)( temp[0] << 24 | temp[1] << 16 | temp[2] << 8 | temp[3] );
+		return (quint32)( temp[0] << 24 | temp[1] << 16 | temp[2] << 8 | temp[3] );
 
-	return (uint32_t)( temp[3] << 24 | temp[2] << 16 | temp[1] << 8 | temp[0] );
+	return (quint32)( temp[3] << 24 | temp[2] << 16 | temp[1] << 8 | temp[0] );
 }
 
 QString UTIL_QByteArrayToDecString( QByteArray b )
@@ -255,19 +255,19 @@ QString UTIL_ToString( double d, int digits )
 	return QString::number(d, 'g', digits);
 }
 
-QString UTIL_ToHexString( uint32_t i )
+QString UTIL_ToHexString( quint32 i )
 {
 	return QString::number(i);
 }
 
 // todotodo: these UTIL_ToXXX functions don't fail gracefully, they just return garbage (in the uint case usually just -1 casted to an unsigned type it looks like)
 
-uint16_t UTIL_ToUInt16( QString &s )
+quint16 UTIL_ToUInt16( QString &s )
 {
 	return s.toUShort();
 }
 
-uint32_t UTIL_ToUInt32( QString &s )
+quint32 UTIL_ToUInt32( QString &s )
 {
 	return s.toUInt();
 }
@@ -287,7 +287,7 @@ double UTIL_ToDouble( QString &s )
 	return s.toDouble();
 }
 
-QString UTIL_MSToString( uint32_t ms )
+QString UTIL_MSToString( quint32 ms )
 {
 	QString MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
 	QString SecString = UTIL_ToString( ( ms / 1000 ) % 60 );
@@ -306,7 +306,7 @@ bool UTIL_FileExists( QString file )
 	return QFile::exists(file);
 }
 
-QByteArray UTIL_FileRead( QString file, uint32_t start, uint32_t length )
+QByteArray UTIL_FileRead( QString file, quint32 start, quint32 length )
 {
 	QFile f(file);
 	f.open(QFile::ReadOnly);
@@ -505,11 +505,11 @@ QVector<QString> UTIL_Tokenize( QString s, char delim )
 	return Tokens;
 }
 
-uint32_t UTIL_Factorial( uint32_t x )
+quint32 UTIL_Factorial( quint32 x )
 {
-	uint32_t Factorial = 1;
+	quint32 Factorial = 1;
 
-	for( uint32_t i = 2; i <= x; i++ )
+	for( quint32 i = 2; i <= x; i++ )
 		Factorial *= i;
 
 	return Factorial;

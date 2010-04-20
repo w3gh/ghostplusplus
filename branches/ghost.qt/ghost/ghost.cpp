@@ -124,7 +124,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	for (int i = 0; i < info.addresses().size(); i++)
 	{
 		CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + info.addresses().at(i).toString() + "]" );
-		m_LocalAddresses.push_back( UTIL_CreateBYTEARRAY( (uint32_t)info.addresses().at(i).toIPv4Address() ) );
+		m_LocalAddresses.push_back( UTIL_CreateBYTEARRAY( (quint32)info.addresses().at(i).toIPv4Address(), false ) );
 	}
 
 	m_Language = NULL;
@@ -168,7 +168,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	// load the battle.net connections
 	// we're just loading the config data and creating the CBNET classes here, the connections are established later (in the Update function)
 
-	for( uint32_t i = 1; i < 10; i++ )
+	for( quint32 i = 1; i < 10; i++ )
 	{
 		QString Prefix;
 
@@ -184,7 +184,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 		QString CountryAbbrev = CFG->GetString( Prefix + "countryabbrev", "USA" );
 		QString Country = CFG->GetString( Prefix + "country", "United States" );
 		QString Locale = CFG->GetString( Prefix + "locale", "system" );
-		uint32_t LocaleID;
+		quint32 LocaleID;
 
 		if( Locale == "system" )
 		{
@@ -217,7 +217,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 		QByteArray EXEVersionHash = UTIL_ExtractNumbers( CFG->GetString( Prefix + "custom_exeversionhash", QString( ) ), 4 );
 		QString PasswordHashType = CFG->GetString( Prefix + "custom_passwordhashtype", QString( ) );
 		QString PVPGNRealmName = CFG->GetString( Prefix + "custom_pvpgnrealmname", "PvPGN Realm" );
-		uint32_t MaxMessageLength = CFG->GetInt( Prefix + "custom_maxmessagelength", 200 );
+		quint32 MaxMessageLength = CFG->GetInt( Prefix + "custom_maxmessagelength", 200 );
 
 		if( Server.isEmpty( ) )
 			break;
@@ -257,7 +257,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 #endif
 		}
 
-		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, LocaleID, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger.at(0).toAscii(), HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
+		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (quint16)BNLSPort, (quint32)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, LocaleID, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger.at(0).toAscii(), HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
 	}
 
 	if( m_BNETs.isEmpty( ) )
@@ -405,7 +405,7 @@ void CGHost::EventReconnectionSocketReadyRead()
 	{
 		// bytes 2 and 3 contain the length of the packet
 
-		uint16_t Length = UTIL_QByteArrayToUInt16( con->peek(4), false, 2 );
+		quint16 Length = UTIL_QByteArrayToUInt16( con->peek(4), false, 2 );
 
 		if( Length < 4 )
 		{
@@ -421,8 +421,8 @@ void CGHost::EventReconnectionSocketReadyRead()
 		if( Bytes.at(0) == CGPSProtocol :: GPS_RECONNECT && Length == 13 )
 		{
 			unsigned char PID = Bytes.at(4);
-			uint32_t ReconnectKey = UTIL_QByteArrayToUInt32( Bytes, false, 5 );
-			uint32_t LastPacket = UTIL_QByteArrayToUInt32( Bytes, false, 9 );
+			quint32 ReconnectKey = UTIL_QByteArrayToUInt32( Bytes, false, 5 );
+			quint32 LastPacket = UTIL_QByteArrayToUInt32( Bytes, false, 9 );
 
 			// look for a matching player in a running game
 
@@ -874,7 +874,7 @@ void CGHost :: ExtractScripts( )
 
 		if( SFileOpenFileEx( PatchMPQ, "Scripts\\common.j", 0, &SubFile ) )
 		{
-			uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+			quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 			if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 			{
@@ -901,7 +901,7 @@ void CGHost :: ExtractScripts( )
 
 		if( SFileOpenFileEx( PatchMPQ, "Scripts\\blizzard.j", 0, &SubFile ) )
 		{
-			uint32_t FileLength = SFileGetFileSize( SubFile, NULL );
+			quint32 FileLength = SFileGetFileSize( SubFile, NULL );
 
 			if( FileLength > 0 && FileLength != 0xFFFFFFFF )
 			{
@@ -959,7 +959,7 @@ void CGHost :: LoadIPToCountryData( )
 
 			// get length of file for the progress meter
 
-			uint32_t FileLength = f.size();
+			quint32 FileLength = f.size();
 
 			while( !in.atEnd( ) )
 			{

@@ -31,16 +31,16 @@ class CStatsDOTA : public CStats
 {
 private:
 	CDBDotAPlayer *m_Players[12];
-	uint32_t m_Winner;
-	uint32_t m_Min;
-	uint32_t m_Sec;
+	quint32 m_Winner;
+	quint32 m_Min;
+	quint32 m_Sec;
 
 public:
 	CStatsDOTA( CBaseGame *nGame );
 	virtual ~CStatsDOTA( );
 
 	virtual bool ProcessAction( CIncomingAction *Action );
-	virtual void Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID );
+	virtual void Save( CGHost *GHost, CGHostDB *DB, quint32 GameID );
 };
 
 #endif

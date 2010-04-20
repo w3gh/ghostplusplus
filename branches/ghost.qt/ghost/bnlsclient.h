@@ -53,21 +53,21 @@ private:
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	bool m_WasConnected;
 	QString m_Server;
-	uint16_t m_Port;
-	uint32_t m_LastNullTime;
-	uint32_t m_WardenCookie;						// the warden cookie
+	quint16 m_Port;
+	quint32 m_LastNullTime;
+	quint32 m_WardenCookie;						// the warden cookie
 	QQueue<QByteArray> m_OutPackets;					// queue of outgoing packets to be sent
-	uint32_t m_TotalWardenIn;
-	uint32_t m_TotalWardenOut;
+	quint32 m_TotalWardenIn;
+	quint32 m_TotalWardenOut;
 	int m_Retries;
 
 public:
-	CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie );
+	CBNLSClient( QString nServer, quint16 nPort, quint32 nWardenCookie );
 	~CBNLSClient( );
 
 	QByteArray GetWardenResponse( );
-	uint32_t GetTotalWardenIn( )		{ return m_TotalWardenIn; }
-	uint32_t GetTotalWardenOut( )		{ return m_TotalWardenOut; }
+	quint32 GetTotalWardenIn( )		{ return m_TotalWardenIn; }
+	quint32 GetTotalWardenOut( )		{ return m_TotalWardenOut; }
 
 	// processing functions
 
@@ -76,7 +76,7 @@ public:
 
 	// other functions
 
-	void QueueWardenSeed( uint32_t seed );
+	void QueueWardenSeed( quint32 seed );
 	void QueueWardenRaw( QByteArray wardenRaw );
 };
 

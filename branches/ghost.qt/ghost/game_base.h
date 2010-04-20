@@ -106,7 +106,7 @@ protected:
 	CReplay *m_Replay;								// replay
 	bool m_Exiting;									// set to true and this class will be deleted next update
 	bool m_Saving;									// if we're currently saving game data to the database
-	uint16_t m_HostPort;							// the port to host games on
+	quint16 m_HostPort;							// the port to host games on
 	unsigned char m_GameState;						// game state, public or private
 	unsigned char m_VirtualHostPID;					// virtual host's PID
 	unsigned char m_FakePlayerPID;					// the fake player's PID (if present)
@@ -121,25 +121,25 @@ protected:
 	QString m_StatString;							// the stat QString when the game started (used when saving replays)
 	QString m_KickVotePlayer;						// the player to be kicked with the currently running kick vote
 	QString m_HCLCommandString;						// the "HostBot Command Library" command QString, used to pass a limited amount of data to specially designed maps
-	uint32_t m_WaitTime;
-	uint32_t m_RandomSeed;							// the random seed sent to the Warcraft III clients
-	uint32_t m_HostCounter;							// a unique game number
-	uint32_t m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
-	uint32_t m_SyncLimit;							// the maximum number of packets a player can fall out of sync before starting the lag screen
-	uint32_t m_SyncCounter;							// the number of actions sent so far (for determining if anyone is lagging)
-	uint32_t m_GameTicks;							// ingame ticks
-	uint32_t m_CreationTime;						// GetTime when the game was created
-	uint32_t m_LastDownloadTicks;					// GetTicks when the last map download cycle was performed
-	uint32_t m_DownloadCounter;						// # of map bytes downloaded in the last second
-	uint32_t m_AutoStartPlayers;					// auto start the game when there are this many players or more
-	uint32_t m_CountDownCounter;					// the countdown is finished when this reaches zero
-	uint32_t m_StartedLoadingTicks;					// GetTicks when the game started loading
-	uint32_t m_StartPlayers;						// number of players when the game started
-	uint32_t m_LastActionSentTicks;					// GetTicks when the last action packet was sent
-	uint32_t m_LastActionLateBy;					// the number of ticks we were late sending the last action packet by
-	uint32_t m_StartedLaggingTime;					// GetTime when the last lag screen started
-	uint32_t m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
-	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
+	quint32 m_WaitTime;
+	quint32 m_RandomSeed;							// the random seed sent to the Warcraft III clients
+	quint32 m_HostCounter;							// a unique game number
+	quint32 m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
+	quint32 m_SyncLimit;							// the maximum number of packets a player can fall out of sync before starting the lag screen
+	quint32 m_SyncCounter;							// the number of actions sent so far (for determining if anyone is lagging)
+	quint32 m_GameTicks;							// ingame ticks
+	quint32 m_CreationTime;						// GetTime when the game was created
+	quint32 m_LastDownloadTicks;					// GetTicks when the last map download cycle was performed
+	quint32 m_DownloadCounter;						// # of map bytes downloaded in the last second
+	quint32 m_AutoStartPlayers;					// auto start the game when there are this many players or more
+	quint32 m_CountDownCounter;					// the countdown is finished when this reaches zero
+	quint32 m_StartedLoadingTicks;					// GetTicks when the game started loading
+	quint32 m_StartPlayers;						// number of players when the game started
+	quint32 m_LastActionSentTicks;					// GetTicks when the last action packet was sent
+	quint32 m_LastActionLateBy;					// the number of ticks we were late sending the last action packet by
+	quint32 m_StartedLaggingTime;					// GetTime when the last lag screen started
+	quint32 m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
+	quint32 m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode
 	double m_MaximumScore;							// the maximum allowed score for matchmaking mode
 	bool m_Locked;									// if the game owner is the only one allowed to run game commands or not
@@ -158,13 +158,13 @@ protected:
 	bool m_LocalAdminMessages;						// if local admin messages should be relayed or not
 
 public:
-	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
+	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CBaseGame( );
 
 	virtual QVector<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
 	virtual QVector<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
 	virtual CSaveGame *GetSaveGame( )				{ return m_SaveGame; }
-	virtual uint16_t GetHostPort( )					{ return m_HostPort; }
+	virtual quint16 GetHostPort( )					{ return m_HostPort; }
 	virtual unsigned char GetGameState( )			{ return m_GameState; }
 	virtual unsigned char GetGProxyEmptyActions( )	{ return m_GProxyEmptyActions; }
 	virtual QString GetGameName( )					{ return m_GameName; }
@@ -173,10 +173,10 @@ public:
 	virtual QString GetOwnerName( )					{ return m_OwnerName; }
 	virtual QString GetCreatorName( )				{ return m_CreatorName; }
 	virtual QString GetCreatorServer( )				{ return m_CreatorServer; }
-	virtual uint32_t GetHostCounter( )				{ return m_HostCounter; }
-	virtual uint32_t GetLastLagScreenTime( )		{ return m_LastLagScreenTime; }
-	virtual uint32_t GetStartedLaggingTime( )		{ return m_StartedLaggingTime; }
-	virtual uint32_t GetAutoStartPlayers( )			{ return m_AutoStartPlayers; }
+	virtual quint32 GetHostCounter( )				{ return m_HostCounter; }
+	virtual quint32 GetLastLagScreenTime( )		{ return m_LastLagScreenTime; }
+	virtual quint32 GetStartedLaggingTime( )		{ return m_StartedLaggingTime; }
+	virtual quint32 GetAutoStartPlayers( )			{ return m_AutoStartPlayers; }
 	virtual bool GetLocked( )						{ return m_Locked; }
 	virtual bool GetRefreshMessages( )				{ return m_RefreshMessages; }
 	virtual bool GetCountDownStarted( )				{ return m_CountDownStarted; }
@@ -188,19 +188,19 @@ public:
 	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
 	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
 	virtual void SetExiting( bool nExiting )							{ m_Exiting = nExiting; }
-	virtual void SetAutoStartPlayers( uint32_t nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
+	virtual void SetAutoStartPlayers( quint32 nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
 	virtual void SetMinimumScore( double nMinimumScore )				{ m_MinimumScore = nMinimumScore; }
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
 
-	virtual uint32_t GetNextTimedActionTicks( );
-	virtual uint32_t GetSlotsOccupied( );
-	virtual uint32_t GetSlotsOpen( );
-	virtual uint32_t GetNumPlayers( );
-	virtual uint32_t GetNumHumanPlayers( );
+	virtual quint32 GetNextTimedActionTicks( );
+	virtual quint32 GetSlotsOccupied( );
+	virtual quint32 GetSlotsOpen( );
+	virtual quint32 GetNumPlayers( );
+	virtual quint32 GetNumHumanPlayers( );
 	virtual QString GetDescription( );
 
-	virtual void SetAnnounce( uint32_t interval, QString message );
+	virtual void SetAnnounce( quint32 interval, QString message );
 
 	// generic functions to send packets to players
 
@@ -234,9 +234,9 @@ public:
 	virtual void EventPlayerDisconnectConnectionClosed( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
 	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score );
-	virtual void EventPlayerLeft( CGamePlayer *player, uint32_t reason );
+	virtual void EventPlayerLeft( CGamePlayer *player, quint32 reason );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
-	virtual void EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum );
+	virtual void EventPlayerKeepAlive( CGamePlayer *player, quint32 checkSum );
 	virtual void EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlayer *chatPlayer );
 	virtual bool EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload );
 	virtual void EventPlayerChangeTeam( CGamePlayer *player, unsigned char team );
@@ -245,7 +245,7 @@ public:
 	virtual void EventPlayerChangeHandicap( CGamePlayer *player, unsigned char handicap );
 	virtual void EventPlayerDropRequest( CGamePlayer *player );
 	virtual void EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *mapSize );
-	virtual void EventPlayerPongToHost( CGamePlayer *player, uint32_t pong );
+	virtual void EventPlayerPongToHost( CGamePlayer *player, quint32 pong );
 
 	// these events are called outside of any iterations
 
@@ -259,7 +259,7 @@ public:
 	virtual CGamePlayer *GetPlayerFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromSID( unsigned char SID );
 	virtual CGamePlayer *GetPlayerFromName( QString name, bool sensitive );
-	virtual uint32_t GetPlayerFromNamePartial( QString name, CGamePlayer **player );
+	virtual quint32 GetPlayerFromNamePartial( QString name, CGamePlayer **player );
 	virtual CGamePlayer *GetPlayerFromColour( unsigned char colour );
 	virtual unsigned char GetNewPID( );
 	virtual unsigned char GetNewColour( );

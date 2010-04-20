@@ -110,19 +110,19 @@ private:
 	unsigned char m_MapFilterType;
 	unsigned char m_MapFilterSize;
 	unsigned char m_MapFilterObs;
-	uint32_t m_MapOptions;
+	quint32 m_MapOptions;
 	QByteArray m_MapWidth;						// config value: map width (2 bytes)
 	QByteArray m_MapHeight;						// config value: map height (2 bytes)
 	QString m_MapType;							// config value: map type (for stats class)
 	QString m_MapMatchMakingCategory;			// config value: map matchmaking category (for matchmaking)
 	QString m_MapStatsW3MMDCategory;				// config value: map stats w3mmd category (for saving w3mmd stats)
 	QString m_MapDefaultHCL;						// config value: map default HCL to use (this should really be specified elsewhere and not part of the map config)
-	uint32_t m_MapDefaultPlayerScore;			// config value: map default player score (for matchmaking)
+	quint32 m_MapDefaultPlayerScore;			// config value: map default player score (for matchmaking)
 	QString m_MapLocalPath;						// config value: map local path
 	bool m_MapLoadInGame;
 	QString m_MapData;							// the map data itself, for sending the map to players
-	uint32_t m_MapNumPlayers;
-	uint32_t m_MapNumTeams;
+	quint32 m_MapNumPlayers;
+	quint32 m_MapNumTeams;
 	QVector<CGameSlot> m_Slots;
 
 public:
@@ -142,8 +142,8 @@ public:
 	unsigned char GetMapObservers( )		{ return m_MapObservers; }
 	unsigned char GetMapFlags( )			{ return m_MapFlags; }
 	QByteArray GetMapGameFlags( );
-	uint32_t GetMapGameType( );
-	uint32_t GetMapOptions( )				{ return m_MapOptions; }
+	quint32 GetMapGameType( );
+	quint32 GetMapOptions( )				{ return m_MapOptions; }
 	unsigned char GetMapLayoutStyle( );
 	QByteArray GetMapWidth( )				{ return m_MapWidth; }
 	QByteArray GetMapHeight( )				{ return m_MapHeight; }
@@ -151,17 +151,17 @@ public:
 	QString GetMapMatchMakingCategory( )		{ return m_MapMatchMakingCategory; }
 	QString GetMapStatsW3MMDCategory( )		{ return m_MapStatsW3MMDCategory; }
 	QString GetMapDefaultHCL( )				{ return m_MapDefaultHCL; }
-	uint32_t GetMapDefaultPlayerScore( )	{ return m_MapDefaultPlayerScore; }
+	quint32 GetMapDefaultPlayerScore( )	{ return m_MapDefaultPlayerScore; }
 	QString GetMapLocalPath( )				{ return m_MapLocalPath; }
 	bool GetMapLoadInGame( )				{ return m_MapLoadInGame; }
 	QString *GetMapData( )					{ return &m_MapData; }
-	uint32_t GetMapNumPlayers( )			{ return m_MapNumPlayers; }
-	uint32_t GetMapNumTeams( )				{ return m_MapNumTeams; }
+	quint32 GetMapNumPlayers( )			{ return m_MapNumPlayers; }
+	quint32 GetMapNumTeams( )				{ return m_MapNumTeams; }
 	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }
 
 	void Load( CConfig *CFG, QString nCFGFile );
 	void CheckValid( );
-	uint32_t XORRotateLeft( unsigned char *data, uint32_t length );
+	quint32 XORRotateLeft( unsigned char *data, quint32 length );
 };
 
 #endif

@@ -44,25 +44,25 @@ CReplay :: ~CReplay( )
 
 }
 
-void CReplay :: AddLeaveGame( uint32_t reason, unsigned char PID, uint32_t result )
+void CReplay :: AddLeaveGame( quint32 reason, unsigned char PID, quint32 result )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_LEAVEGAME );
 	UTIL_AppendBYTEARRAY( Block, reason, false );
 	Block.push_back( PID );
 	UTIL_AppendBYTEARRAY( Block, result, false );
-	UTIL_AppendBYTEARRAY( Block, (uint32_t)1, false );
+	UTIL_AppendBYTEARRAY( Block, (quint32)1, false );
 	m_CompiledBlocks += Block;
 }
 
-void CReplay :: AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, uint32_t result )
+void CReplay :: AddLeaveGameDuringLoading( quint32 reason, unsigned char PID, quint32 result )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_LEAVEGAME );
 	UTIL_AppendBYTEARRAY( Block, reason, false );
 	Block.push_back( PID );
 	UTIL_AppendBYTEARRAY( Block, result, false );
-	UTIL_AppendBYTEARRAY( Block, (uint32_t)1, false );
+	UTIL_AppendBYTEARRAY( Block, (quint32)1, false );
 	m_LoadingBlocks.enqueue( Block );
 }
 
@@ -70,31 +70,31 @@ void CReplay :: AddTimeSlot2( QQueue<CIncomingAction *> actions )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_TIMESLOT2 );
-	UTIL_AppendBYTEARRAY( Block, (uint16_t)0, false );
-	UTIL_AppendBYTEARRAY( Block, (uint16_t)0, false );
+	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
+	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
 
 	while( !actions.isEmpty( ) )
 	{
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		UTIL_AppendBYTEARRAY( Block, (uint16_t)Action->GetAction( )->size( ), false );
+		UTIL_AppendBYTEARRAY( Block, (quint16)Action->GetAction( )->size( ), false );
 		UTIL_AppendBYTEARRAYFast( Block, *Action->GetAction( ) );
 	}
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((uint16_t)( Block.size( ) - 3 ), false );
+	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((quint16)( Block.size( ) - 3 ), false );
 	Block[1] = LengthBytes[0];
 	Block[2] = LengthBytes[1];
 	m_CompiledBlocks += Block;
 }
 
-void CReplay :: AddTimeSlot( uint16_t timeIncrement, QQueue<CIncomingAction *> actions )
+void CReplay :: AddTimeSlot( quint16 timeIncrement, QQueue<CIncomingAction *> actions )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_TIMESLOT );
-	UTIL_AppendBYTEARRAY( Block, (uint16_t)0, false );
+	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
 	UTIL_AppendBYTEARRAY( Block, timeIncrement, false );
 
 	while( !actions.isEmpty( ) )
@@ -102,32 +102,32 @@ void CReplay :: AddTimeSlot( uint16_t timeIncrement, QQueue<CIncomingAction *> a
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		UTIL_AppendBYTEARRAY( Block, (uint16_t)Action->GetAction( )->size( ), false );
+		UTIL_AppendBYTEARRAY( Block, (quint16)Action->GetAction( )->size( ), false );
 		UTIL_AppendBYTEARRAYFast( Block, *Action->GetAction( ) );
 	}
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((uint16_t)( Block.size( ) - 3 ), false );
+	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((quint16)( Block.size( ) - 3 ), false );
 	Block[1] = LengthBytes[0];
 	Block[2] = LengthBytes[1];
 	m_CompiledBlocks += Block;
 	m_ReplayLength += timeIncrement;
 }
 
-void CReplay :: AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, QString message )
+void CReplay :: AddChatMessage( unsigned char PID, unsigned char flags, quint32 chatMode, QString message )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_CHATMESSAGE );
 	Block.push_back( PID );
-	UTIL_AppendBYTEARRAY( Block, (uint16_t)0, false );
+	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
 	Block.push_back( flags );
 	UTIL_AppendBYTEARRAY( Block, chatMode, false );
 	UTIL_AppendBYTEARRAYFast( Block, message );
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)( Block.size( ) - 4 ), false );
+	QByteArray LengthBytes = UTIL_CreateBYTEARRAY( (quint16)( Block.size( ) - 4 ), false );
 	Block[2] = LengthBytes[0];
 	Block[3] = LengthBytes[1];
 	m_CompiledBlocks += Block;
@@ -138,7 +138,7 @@ void CReplay :: AddLoadingBlock( QByteArray &loadingBlock )
 	m_LoadingBlocks.enqueue( loadingBlock );
 }
 
-void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3Version, uint16_t buildNumber )
+void CReplay :: BuildReplay( QString gameName, QString statString, quint32 war3Version, quint16 buildNumber )
 {
 	m_War3Version = war3Version;
 	m_BuildNumber = buildNumber;
@@ -146,7 +146,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 
 	CONSOLE_Print( "[REPLAY] building replay" );
 
-	uint32_t LanguageID = 0x0012F8B0;
+	quint32 LanguageID = 0x0012F8B0;
 
 	QByteArray Replay;
 	Replay.push_back( (char)16 );															// Unknown (4.0)
@@ -161,7 +161,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 	UTIL_AppendBYTEARRAYFast( Replay, gameName );									// GameName (4.2)
 	Replay.push_back( (char)0 );															// Null (4.0)
 	UTIL_AppendBYTEARRAYFast( Replay, statString );									// StatString (4.3)
-	UTIL_AppendBYTEARRAY( Replay, (uint32_t)m_Slots.size( ), false );				// PlayerCount (4.6)
+	UTIL_AppendBYTEARRAY( Replay, (quint32)m_Slots.size( ), false );				// PlayerCount (4.6)
 	UTIL_AppendBYTEARRAY( Replay, m_MapGameType, false );							// GameType (4.7)
 	UTIL_AppendBYTEARRAY( Replay, LanguageID, false );								// LanguageID (4.8)
 
@@ -176,14 +176,14 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 			UTIL_AppendBYTEARRAYFast( Replay, (*i).second );						// Player PlayerName (4.1)
 			Replay.push_back( 1 );													// Player AdditionalSize (4.1)
 			Replay.push_back( (char)0 );													// Player AdditionalData (4.1)
-			UTIL_AppendBYTEARRAY( Replay, (uint32_t)0, false );						// Unknown
+			UTIL_AppendBYTEARRAY( Replay, (quint32)0, false );						// Unknown
 		}
 	}
 
 	// GameStartRecord (4.10)
 
 	Replay.push_back( 25 );															// RecordID (4.10)
-	UTIL_AppendBYTEARRAY( Replay, (uint16_t)( 7 + m_Slots.size( ) * 9 ), false );	// Size (4.10)
+	UTIL_AppendBYTEARRAY( Replay, (quint16)( 7 + m_Slots.size( ) * 9 ), false );	// Size (4.10)
 	Replay.push_back( m_Slots.size( ) );											// NumSlots (4.10)
 
 	for( unsigned char i = 0; i < m_Slots.size( ); i++ )
@@ -196,9 +196,9 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 	// ReplayData (5.0)
 
 	Replay.push_back( REPLAY_FIRSTSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (uint32_t)1, false );
+	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
 	Replay.push_back( REPLAY_SECONDSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (uint32_t)1, false );
+	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
 
 	// leavers during loading need to be stored between the second and third start blocks
 
@@ -209,7 +209,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 	}
 
 	Replay.push_back( REPLAY_THIRDSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (uint32_t)1, false );
+	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
 
 	// done
 
@@ -236,7 +236,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 	m_StartSpotCount = 0;
 	m_LoadingBlocks = QQueue<QByteArray>( );
 	m_Blocks = QQueue<QByteArray>( );
-	m_CheckSums = QQueue<uint32_t>( );
+	m_CheckSums = QQueue<quint32>( );
 
 	if( m_Flags != 32768 )
 	{
@@ -248,7 +248,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 	istringstream ISS( m_Decompressed );
 
 	unsigned char Garbage1;
-	uint32_t Garbage4;
+	quint32 Garbage4;
 	QString GarbageString;
 	unsigned char GarbageData[65535];
 
@@ -371,7 +371,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 		}
 	}
 
-	uint16_t Size;
+	quint16 Size;
 	unsigned char NumSlots;
 	READB( ISS, &Size, 2 );					// Size (4.10)
 	READB( ISS, &NumSlots, 1 );				// NumSlots (4.10)
@@ -492,7 +492,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 		return;
 	}
 
-	uint32_t ActualReplayLength = 0;
+	quint32 ActualReplayLength = 0;
 
 	while( 1 )
 	{
@@ -513,7 +513,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 		}
 		else if( Garbage1 == CReplay :: REPLAY_TIMESLOT )
 		{
-			uint16_t BlockSize;
+			quint16 BlockSize;
 			READB( ISS, &BlockSize, 2 );
 			READB( ISS, GarbageData, BlockSize );
 
@@ -531,7 +531,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 		else if( Garbage1 == CReplay :: REPLAY_CHATMESSAGE )
 		{
 			unsigned char PID;
-			uint16_t BlockSize;
+			quint16 BlockSize;
 			READB( ISS, &PID, 1 );
 
 			if( PID > 15 )
@@ -564,7 +564,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 				return;
 			}
 
-			uint32_t CheckSum;
+			quint32 CheckSum;
 			READB( ISS, &CheckSum, 4 );
 			m_CheckSums.enqueue( CheckSum );
 		}

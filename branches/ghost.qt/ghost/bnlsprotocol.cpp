@@ -49,9 +49,9 @@ QByteArray CBNLSProtocol :: RECEIVE_BNLS_WARDEN( QByteArray data )
 	if( ValidateLength( data ) && data.size( ) >= 11 )
 	{
 		//unsigned char Usage = data[3];
-		//uint32_t Cookie = UTIL_QByteArrayToUInt32( data, false, 4 );
+		//quint32 Cookie = UTIL_QByteArrayToUInt32( data, false, 4 );
 		unsigned char Result = data[8];
-		//uint16_t Length = UTIL_QByteArrayToUInt16( data, false, 10 );
+		//quint16 Length = UTIL_QByteArrayToUInt16( data, false, 10 );
 
 		if( Result == 0x00 )
 			return data.mid(11);
@@ -76,7 +76,7 @@ QByteArray CBNLSProtocol :: SEND_BNLS_NULL( )
 	return packet;
 }
 
-QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t seed )
+QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( quint32 cookie, quint32 seed )
 {
 	unsigned char Client[] = {  80,  88,  51,  87 };	// "W3XP"
 
@@ -87,16 +87,16 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t see
 	packet.push_back( (char)0 );								// BNLS_WARDEN_SEED
 	UTIL_AppendBYTEARRAY( packet, cookie, false );		// cookie
 	UTIL_AppendBYTEARRAY( packet, Client, 4 );			// Client
-	UTIL_AppendBYTEARRAY( packet, (uint16_t)4, false );	// length of seed
+	UTIL_AppendBYTEARRAY( packet, (quint16)4, false );	// length of seed
 	UTIL_AppendBYTEARRAY( packet, seed, false );		// seed
 	packet.push_back( (char)0 );								// username is blank
-	UTIL_AppendBYTEARRAY( packet, (uint16_t)0, false );	// password length
+	UTIL_AppendBYTEARRAY( packet, (quint16)0, false );	// password length
 														// password
 	AssignLength( packet );
 	return packet;
 }
 
-QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray raw )
+QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( quint32 cookie, QByteArray raw )
 {
 	QByteArray packet;
 	packet.push_back( (char)0 );											// packet length will be assigned later
@@ -104,13 +104,13 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray ra
 	packet.push_back( BNLS_WARDEN );								// BNLS_WARDEN
 	packet.push_back( 1 );											// BNLS_WARDEN_RAW
 	UTIL_AppendBYTEARRAY( packet, cookie, false );					// cookie
-	UTIL_AppendBYTEARRAY( packet, (uint16_t)raw.size( ), false );	// raw length
+	UTIL_AppendBYTEARRAY( packet, (quint16)raw.size( ), false );	// raw length
 	UTIL_AppendBYTEARRAY( packet, raw );							// raw
 	AssignLength( packet );
 	return packet;
 }
 
-QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RUNMODULE( uint32_t /*cookie*/ )
+QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RUNMODULE( quint32 /*cookie*/ )
 {
 	return QByteArray( );
 }
@@ -127,7 +127,7 @@ bool CBNLSProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 2 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateBYTEARRAY( (quint16)content.size( ), false );
 		content[0] = LengthBytes[0];
 		content[1] = LengthBytes[1];
 		return true;
@@ -140,7 +140,7 @@ bool CBNLSProtocol :: ValidateLength( QByteArray &content )
 {
 	// verify that bytes 1 and 2 (indices 0 and 1) of the content array describe the length
 
-	uint16_t Length;
+	quint16 Length;
 	QByteArray LengthBytes;
 
 	if( content.size( ) >= 2 && content.size( ) <= 65535 )

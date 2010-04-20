@@ -36,7 +36,7 @@ private:
 	QString m_GameName;
 	unsigned char m_NumSlots;
 	QVector<CGameSlot> m_Slots;
-	uint32_t m_RandomSeed;
+	quint32 m_RandomSeed;
 	QByteArray m_MagicNumber;
 
 public:
@@ -49,7 +49,7 @@ public:
 	QString GetGameName( )				{ return m_GameName; }
 	unsigned char GetNumSlots( )		{ return m_NumSlots; }
 	QVector<CGameSlot> GetSlots( )		{ return m_Slots; }
-	uint32_t GetRandomSeed( )			{ return m_RandomSeed; }
+	quint32 GetRandomSeed( )			{ return m_RandomSeed; }
 	QByteArray GetMagicNumber( )			{ return m_MagicNumber; }
 
 	void SetFileName( QString nFileName )				{ m_FileName = nFileName; }
