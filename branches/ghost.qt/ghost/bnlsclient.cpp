@@ -31,7 +31,16 @@
 
 CBNLSClient :: CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie )
 {
-	m_Socket = new CTCPClient( );
+	m_Socket = new QTcpSocket( );
+
+	QObject::connect(m_Socket, SIGNAL(connected()), this, SLOT(socketConnected()));
+	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+	QObject::connect(m_Socket, SIGNAL(readyRead()), this, SLOT(socketDataReady()));
+	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
+	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(timeout_NULL()));
+
+	m_NULLTimer.setInterval(50);
+
 	m_Protocol = new CBNLSProtocol( );
 	m_WasConnected = false;
 	m_Server = nServer;
@@ -40,6 +49,59 @@ CBNLSClient :: CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCoo
 	m_WardenCookie = nWardenCookie;
 	m_TotalWardenIn = 0;
 	m_TotalWardenOut = 0;
+	m_Retries = 0;
+}
+
+void CBNLSClient::socketConnect()
+{
+	CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connecting to server [" + m_Server + "] on port " + UTIL_ToString( m_Port ) );
+	m_Socket->connectToHost( QHostAddress(m_Server), m_Port );
+	m_Retries++;
+}
+
+void CBNLSClient::socketConnected()
+{
+	CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connected" );
+	m_WasConnected = true;
+	m_NULLTimer.start();
+}
+
+void CBNLSClient::socketDisconnected()
+{
+	CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server" );
+	m_Socket->deleteLater();
+	m_Socket = new QTcpSocket();
+
+	if (m_Retries > 6)
+	{
+		CONSOLE_Print("[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] giving up after 5 failed retries." );
+		deleteLater();
+		return;
+	}
+
+	QTimer::singleShot(5000, this, SLOT(socketConnect()));
+
+}
+
+void CBNLSClient::timeout_NULL()
+{
+	m_Socket->write( m_Protocol->SEND_BNLS_NULL( ) );
+}
+
+void CBNLSClient::socketDataReady()
+{
+	ExtractPackets( );
+	ProcessPackets( );
+
+	while( !m_OutPackets.isEmpty( ) )
+		m_Socket->write( m_OutPackets.dequeue( ) );
+}
+
+void CBNLSClient::socketError()
+{
+	CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server due to socket error" );
+	m_Socket->deleteLater();
+	m_Socket = NULL;
 }
 
 CBNLSClient :: ~CBNLSClient( )
@@ -68,97 +130,25 @@ QByteArray CBNLSClient :: GetWardenResponse( )
 	return WardenResponse;
 }
 
-unsigned int CBNLSClient :: SetFD( void *fd, void *send_fd, int *nfds )
-{
-	if( !m_Socket->HasError( ) && m_Socket->GetConnected( ) )
-	{
-		m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-		return 1;
-	}
-
-	return 0;
-}
-
-bool CBNLSClient :: Update( void *fd, void *send_fd )
-{
-	if( m_Socket->HasError( ) )
-	{
-		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server due to socket error" );
-		return true;
-	}
-
-	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && m_WasConnected )
-	{
-		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server" );
-		return true;
-	}
-
-	if( m_Socket->GetConnected( ) )
-	{
-		m_Socket->DoRecv( (fd_set *)fd );
-		ExtractPackets( );
-		ProcessPackets( );
-
-		if( GetTime( ) - m_LastNullTime >= 50 )
-		{
-			m_Socket->PutBytes( m_Protocol->SEND_BNLS_NULL( ) );
-			m_LastNullTime = GetTime( );
-		}
-
-		while( !m_OutPackets.isEmpty( ) )
-		{
-			m_Socket->PutBytes( m_OutPackets.front( ) );
-			m_OutPackets.dequeue( );
-		}
-
-		m_Socket->DoSend( (fd_set *)send_fd );
-		return false;
-	}
-
-	if( m_Socket->GetConnecting( ) && m_Socket->CheckConnect( ) )
-	{
-		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connected" );
-		m_WasConnected = true;
-		m_LastNullTime = GetTime( );
-		return false;
-	}
-
-	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && !m_WasConnected )
-	{
-		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connecting to server [" + m_Server + "] on port " + UTIL_ToString( m_Port ) );
-		m_Socket->Connect( QString( ), m_Server, m_Port );
-		return false;
-	}
-
-	return false;
-}
-
 void CBNLSClient :: ExtractPackets( )
 {
-	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = RecvBuffer->toUtf8();
-
-	while( Bytes.size( ) >= 3 )
+	while( m_Socket->bytesAvailable() >= 3 )
 	{
-		uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false );
+		uint16_t Length = UTIL_QByteArrayToUInt16( m_Socket->peek(2), false );
 
-		if( Length >= 3 )
-		{
-			if( Bytes.size( ) >= Length )
-			{
-				m_Packets.enqueue( new CCommandPacket( 0, Bytes[2], Bytes.left(Length) ) );
-				*RecvBuffer = RecvBuffer->mid( Length );
-				Bytes.remove(0, Length);
-			}
-			else
-				return;
-		}
-		else
+		if( Length < 3 )
 		{
 			CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] error - received invalid packet from BNLS server (bad length), disconnecting" );
-			m_Socket->Disconnect( );
+			m_Socket->abort();
+			m_Socket->deleteLater();
 			return;
 		}
+
+		if( m_Socket->bytesAvailable() < Length )
+			return;
+
+		QByteArray Bytes = m_Socket->read(Length);
+		m_Packets.enqueue( new CCommandPacket( 0, Bytes.at(2), Bytes ) );
 	}
 }
 

@@ -28,22 +28,34 @@ class CGame;
 class CIncomingJoinPlayer;
 
 #include "includes.h"
-
+class CBaseGame;
 //
 // CPotentialPlayer
 //
 
+#include <QTimer>
+#include <QTcpSocket>
+
 class CPotentialPlayer
+	: public QObject
 {
+	Q_OBJECT
+
+public slots:
+	void EventDataReady();
+	virtual void EventConnectionError(QAbstractSocket::SocketError);
+	virtual void EventConnectionClosed();
+
 public:
 	CGameProtocol *m_Protocol;
 	CBaseGame *m_Game;
+	QTimer m_TimeoutTimer, m_SendGProxyMessageTimer;
 
 protected:
 	// note: we permit m_Socket to be NULL in this class to allow for the virtual host player which doesn't really exist
 	// it also allows us to convert CPotentialPlayers to CGamePlayers without the CPotentialPlayer's destructor closing the socket
 
-	CTCPSocket *m_Socket;
+	QTcpSocket *m_Socket;
 	QQueue<CCommandPacket *> m_Packets;
 	bool m_DeleteMe;
 	bool m_Error;
@@ -51,10 +63,10 @@ protected:
 	CIncomingJoinPlayer *m_IncomingJoinPlayer;
 
 public:
-	CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket );
+	CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket );
 	virtual ~CPotentialPlayer( );
 
-	virtual CTCPSocket *GetSocket( )				{ return m_Socket; }
+	virtual QTcpSocket *GetSocket( )				{ return m_Socket; }
 	virtual QByteArray GetExternalIP( );
 	virtual QString GetExternalIPString( );
 	virtual QQueue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
@@ -63,12 +75,11 @@ public:
 	virtual QString GetErrorString( )				{ return m_ErrorString; }
 	virtual CIncomingJoinPlayer *GetJoinPlayer( )	{ return m_IncomingJoinPlayer; }
 
-	virtual void SetSocket( CTCPSocket *nSocket )	{ m_Socket = nSocket; }
+	virtual void SetSocket( QTcpSocket *nSocket )	{ m_Socket = nSocket; }
 	virtual void SetDeleteMe( bool nDeleteMe )		{ m_DeleteMe = nDeleteMe; }
 
 	// processing functions
 
-	virtual bool Update( void *fd );
 	virtual void ExtractPackets( );
 	virtual void ProcessPackets( );
 
@@ -77,12 +88,33 @@ public:
 	virtual void Send( QByteArray data );
 };
 
+
 //
 // CGamePlayer
 //
-
 class CGamePlayer : public CPotentialPlayer
 {
+	Q_OBJECT
+
+public slots:
+	virtual void EventConnectionError(QAbstractSocket::SocketError);
+	virtual void EventConnectionClosed();
+	void EventConnectionTimeout();
+	void EventWhoisTimeout();
+	void EventACKTimeout();
+	void EventPingTimeout();
+	void EventSendGProxyMessage();
+	void EventSpoofCheckTimeout();
+
+signals:
+	void finishedLoading();
+	void stoppedLagging();
+
+private:
+	QTimer m_ACKTimer;
+	QTimer m_PingTimer;
+	void init();
+
 private:
 	unsigned char m_PID;
 	QString m_Name;								// the player's name
@@ -130,7 +162,7 @@ private:
 	uint32_t m_LastGProxyAckTime;
 
 public:
-	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
+	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
 	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
 	virtual ~CGamePlayer( );
 
@@ -211,14 +243,13 @@ public:
 
 	// processing functions
 
-	virtual bool Update( void *fd );
 	virtual void ExtractPackets( );
 	virtual void ProcessPackets( );
 
 	// other functions
 
 	virtual void Send( QByteArray data );
-	virtual void EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPacket );
+	virtual void EventGProxyReconnect( QTcpSocket *NewSocket, uint32_t LastPacket );
 };
 
 #endif

@@ -146,7 +146,7 @@ CGame :: ~CGame( )
 	}
 }
 
-bool CGame :: Update( void *fd, void *send_fd )
+void CGame::EventCallableUpdateTimeout()
 {
 	// update callables
 
@@ -293,12 +293,13 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	return CBaseGame :: Update( fd, send_fd );
+	return CBaseGame::EventCallableUpdateTimeout();
 }
 
-void CGame :: EventPlayerDeleted( CGamePlayer *player )
+void CGame :: EventPlayerDeleted()
 {
-	CBaseGame :: EventPlayerDeleted( player );
+	CGamePlayer *player = (CGamePlayer*)QObject::sender();
+	CBaseGame :: EventPlayerDeleted();
 
 	// record everything we need to know about the player for storing in the database later
 	// since we haven't stored the game yet (it's not over yet!) we can't link the gameplayer to the game
@@ -338,11 +339,11 @@ void CGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
 
 	// give the stats class a chance to process the action
 
-	if( m_Stats && m_Stats->ProcessAction( action ) && m_GameOverTime == 0 )
+	if( m_Stats && m_Stats->ProcessAction( action ) && !m_GameOverTimer.isActive() )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (stats class reported game over)" );
 		SendEndMessage( );
-		m_GameOverTime = GetTime( );
+		m_GameOverTimer.start();
 	}
 }
 
@@ -1340,7 +1341,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				}
 
 				m_CreationTime = GetTime( );
-				m_LastRefreshTime = GetTime( );
 			}
 
 			//
@@ -1372,7 +1372,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				}
 
 				m_CreationTime = GetTime( );
-				m_LastRefreshTime = GetTime( );
 			}
 
 			//
@@ -1447,7 +1446,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						QByteArray MapHeight;
 						MapHeight.push_back( (char)0 );
 						MapHeight.push_back( (char)0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ),
+								QHostAddress(IP), Port);
 					}
 					else
 					{
@@ -1455,7 +1455,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 						uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
+								QHostAddress(IP), Port);
 					}
 				}
 			}
@@ -1612,7 +1613,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
 				m_KickVotePlayer.clear( );
-				m_StartedKickVoteTime = 0;
+				m_VotekickTimer.stop();
 			}
 
 			//
@@ -1739,7 +1740,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				else
 				{
 					m_KickVotePlayer = LastMatch->GetName( );
-					m_StartedKickVoteTime = GetTime( );
+					m_VotekickTimer.start();
 
 					for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 						(*i)->SetKickVote( false );
@@ -1795,7 +1796,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				SendAllChat( m_GHost->m_Language->ErrorVoteKickingPlayer( m_KickVotePlayer ) );
 
 			m_KickVotePlayer.clear( );
-			m_StartedKickVoteTime = 0;
+			m_VotekickTimer.stop();
 		}
 		else
 			SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );

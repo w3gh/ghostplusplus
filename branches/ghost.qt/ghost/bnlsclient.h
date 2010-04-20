@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,15 +24,28 @@
 //
 // CBNLSClient
 //
+#include "includes.h"
+#include <QTcpSocket>
+#include <QTimer>
 
-class CTCPClient;
 class CBNLSProtocol;
 class CCommandPacket;
 
-class CBNLSClient
+class CBNLSClient : public QObject
 {
+	Q_OBJECT
+
+public slots:
+	void socketConnected();
+	void socketDisconnected();
+	void socketDataReady();
+	void socketConnect();
+	void socketError();
+	void timeout_NULL();
+
 private:
-	CTCPClient *m_Socket;							// the connection to the BNLS server
+	QTimer m_NULLTimer;
+	QTcpSocket *m_Socket;							// the connection to the BNLS server
 	CBNLSProtocol *m_Protocol;						// battle.net protocol
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	bool m_WasConnected;
@@ -44,6 +57,7 @@ private:
 	QQueue<QByteArray> m_WardenResponses;				// the warden responses to be sent to battle.net
 	uint32_t m_TotalWardenIn;
 	uint32_t m_TotalWardenOut;
+	int m_Retries;
 
 public:
 	CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCookie );
@@ -55,8 +69,6 @@ public:
 
 	// processing functions
 
-	unsigned int SetFD( void *fd, void *send_fd, int *nfds );
-	bool Update( void *fd, void *send_fd );
 	void ExtractPackets( );
 	void ProcessPackets( );
 

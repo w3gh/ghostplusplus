@@ -198,9 +198,6 @@ unsigned int CBNET :: SetFD( void *fd, void *send_fd, int *nfds )
 	{
 		m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
 		NumFDs++;
-
-		if( m_BNLSClient )
-			NumFDs += m_BNLSClient->SetFD( fd, send_fd, nfds );
 	}
 
 	return NumFDs;
@@ -487,19 +484,10 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 		if( m_BNLSClient )
 		{
-			if( m_BNLSClient->Update( fd, send_fd ) )
-			{
-				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] deleting BNLS client" );
-				delete m_BNLSClient;
-				m_BNLSClient = NULL;
-			}
-			else
-			{
-				QByteArray WardenResponse = m_BNLSClient->GetWardenResponse( );
+			QByteArray WardenResponse = m_BNLSClient->GetWardenResponse( );
 
-				if( !WardenResponse.isEmpty( ) )
-					m_Socket->PutBytes( m_Protocol->SEND_SID_WARDEN( WardenResponse ) );
-			}
+			if( !WardenResponse.isEmpty( ) )
+				m_Socket->PutBytes( m_Protocol->SEND_SID_WARDEN( WardenResponse ) );
 		}
 
 		// check if at least one packet is waiting to be sent and if we've waited long enough to prevent flooding

@@ -39,9 +39,6 @@
 #include <QRegExp>
 #include <QDir>
 
-#include <boost/filesystem.hpp>
-
-using namespace boost :: filesystem;
 
 //
 // CAdminGame
@@ -79,7 +76,7 @@ CAdminGame :: ~CAdminGame( )
 		m_GHost->m_Callables.push_back( i->second );
 }
 
-bool CAdminGame :: Update( void *fd, void *send_fd )
+void CAdminGame::EventCallableUpdateTimeout()
 {
 	//
 	// update callables
@@ -265,10 +262,7 @@ bool CAdminGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	// reset the last reserved seen timer since the admin game should never be considered abandoned
-
-	m_LastReservedSeen = GetTime( );
-	return CBaseGame :: Update( fd, send_fd );
+	CBaseGame::EventCallableUpdateTimeout();
 }
 
 void CAdminGame :: SendAdminChat( QString message )
@@ -308,7 +302,7 @@ void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoin
 			{
 				// tempbanned, goodbye
 
-				potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_WRONGPASSWORD ) );
+				potential->GetSocket( )->write( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_WRONGPASSWORD ) );
 				potential->SetDeleteMe( true );
 				CONSOLE_Print( "[ADMINGAME] player [" + joinPlayer->GetName( ) + "] at ip [" + (*i).first + "] is trying to join the game but is tempbanned" );
 				return;

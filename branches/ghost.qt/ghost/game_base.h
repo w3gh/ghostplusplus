@@ -40,14 +40,52 @@ class CIncomingAction;
 class CIncomingChatPlayer;
 class CIncomingMapSize;
 class CCallableScoreCheck;
+class CGHost;
 
-class CBaseGame
+#include <QTcpServer>
+#include <QTimer>
+
+class CBaseGame : public QObject
 {
+	Q_OBJECT
+
 public:
 	CGHost *m_GHost;
 
+public slots:
+	void EventNewConnection();
+	void EventBroadcastTimeout();
+	void EventRefreshTimeout();
+	void EventRefreshError();
+	void EventMapDataTimeout();
+	void EventCountdownTimeout();
+	void EventAutostartTimeout();
+	void EventGameOverTimeout();
+	void EventVotekickTimeout();
+	virtual void EventCallableUpdateTimeout();
+	void EventResetDownloadCounter();
+	void EventAnnounceTimeout();
+	void EventLobbyTimeout();
+	void EventPlayerStoppedLagging();
+	void CheckPlayersStartedLaggging();
+	void EventLoadInGameTimeout();
+	void EventResetLagscreenTimeout();
+	void EventDropLaggerTimeout();
+	void EventPlayerLaggedOut(CGamePlayer *player);
+	void EventSendActions();
+	virtual void SendAllSlotInfo();
+	virtual void EventPlayerLoaded();
+	virtual void EventPlayerDeleted();
+
 protected:
-	CTCPServer *m_Socket;							// listening socket
+	QTimer m_BroadcastTimer, m_RefreshTimer, m_MapDataTimer, m_CountdownTimer, m_AutostartTimer, m_GameOverTimer, m_VotekickTimer,
+		m_SlotInfoTimer, m_DownloadCounterTimer, m_CallableUpdateTimer, m_AnnounceTimer, m_LobbyTimeoutTimer,
+		m_DropLaggerTimer, m_LoadInGameTimer, m_ResetLagscreenTimer, m_SendActionTimer;
+
+	void CheckGameLoaded();
+
+protected:
+	QTcpServer *m_Socket;							// listening socket
 	CGameProtocol *m_Protocol;						// game protocol
 	QVector<CGameSlot> m_Slots;						// vector of slots
 	QVector<CPotentialPlayer *> m_Potentials;		// vector of potential players (connections that haven't sent a W3GS_REQJOIN packet yet)
@@ -79,6 +117,7 @@ protected:
 	QString m_StatString;							// the stat QString when the game started (used when saving replays)
 	QString m_KickVotePlayer;						// the player to be kicked with the currently running kick vote
 	QString m_HCLCommandString;						// the "HostBot Command Library" command QString, used to pass a limited amount of data to specially designed maps
+	uint32_t m_WaitTime;
 	uint32_t m_RandomSeed;							// the random seed sent to the Warcraft III clients
 	uint32_t m_HostCounter;							// a unique game number
 	uint32_t m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
@@ -86,31 +125,19 @@ protected:
 	uint32_t m_SyncCounter;							// the number of actions sent so far (for determining if anyone is lagging)
 	uint32_t m_GameTicks;							// ingame ticks
 	uint32_t m_CreationTime;						// GetTime when the game was created
-	uint32_t m_LastPingTime;						// GetTime when the last ping was sent
-	uint32_t m_LastRefreshTime;						// GetTime when the last game refresh was sent
 	uint32_t m_LastDownloadTicks;					// GetTicks when the last map download cycle was performed
 	uint32_t m_DownloadCounter;						// # of map bytes downloaded in the last second
-	uint32_t m_LastDownloadCounterResetTicks;		// GetTicks when the download counter was last reset
-	uint32_t m_LastAnnounceTime;					// GetTime when the last announce message was sent
-	uint32_t m_AnnounceInterval;					// how many seconds to wait between sending the m_AnnounceMessage
-	uint32_t m_LastAutoStartTime;					// the last time we tried to auto start the game
 	uint32_t m_AutoStartPlayers;					// auto start the game when there are this many players or more
-	uint32_t m_LastCountDownTicks;					// GetTicks when the last countdown message was sent
 	uint32_t m_CountDownCounter;					// the countdown is finished when this reaches zero
 	uint32_t m_StartedLoadingTicks;					// GetTicks when the game started loading
 	uint32_t m_StartPlayers;						// number of players when the game started
-	uint32_t m_LastLagScreenResetTime;				// GetTime when the "lag" screen was last reset
 	uint32_t m_LastActionSentTicks;					// GetTicks when the last action packet was sent
 	uint32_t m_LastActionLateBy;					// the number of ticks we were late sending the last action packet by
 	uint32_t m_StartedLaggingTime;					// GetTime when the last lag screen started
 	uint32_t m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
-	uint32_t m_LastReservedSeen;					// GetTime when the last reserved player was seen in the lobby
-	uint32_t m_StartedKickVoteTime;					// GetTime when the kick vote was started
-	uint32_t m_GameOverTime;						// GetTime when the game was over
 	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode
 	double m_MaximumScore;							// the maximum allowed score for matchmaking mode
-	bool m_SlotInfoChanged;							// if the slot info has changed and hasn't been sent to the players yet (optimization)
 	bool m_Locked;									// if the game owner is the only one allowed to run game commands or not
 	bool m_RefreshMessages;							// if we should display "game refreshed..." messages or not
 	bool m_RefreshError;							// if there was an error refreshing the game
@@ -144,6 +171,8 @@ public:
 	virtual QString GetCreatorServer( )				{ return m_CreatorServer; }
 	virtual uint32_t GetHostCounter( )				{ return m_HostCounter; }
 	virtual uint32_t GetLastLagScreenTime( )		{ return m_LastLagScreenTime; }
+	virtual uint32_t GetStartedLaggingTime( )		{ return m_StartedLaggingTime; }
+	virtual uint32_t GetAutoStartPlayers( )			{ return m_AutoStartPlayers; }
 	virtual bool GetLocked( )						{ return m_Locked; }
 	virtual bool GetRefreshMessages( )				{ return m_RefreshMessages; }
 	virtual bool GetCountDownStarted( )				{ return m_CountDownStarted; }
@@ -151,13 +180,13 @@ public:
 	virtual bool GetGameLoaded( )					{ return m_GameLoaded; }
 	virtual bool GetLagging( )						{ return m_Lagging; }
 
+
 	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
 	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
 	virtual void SetExiting( bool nExiting )							{ m_Exiting = nExiting; }
 	virtual void SetAutoStartPlayers( uint32_t nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
 	virtual void SetMinimumScore( double nMinimumScore )				{ m_MinimumScore = nMinimumScore; }
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
-	virtual void SetRefreshError( bool nRefreshError )					{ m_RefreshError = nRefreshError; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
 
 	virtual uint32_t GetNextTimedActionTicks( );
@@ -171,9 +200,7 @@ public:
 
 	// processing functions
 
-	virtual unsigned int SetFD( void *fd, void *send_fd, int *nfds );
 	virtual bool Update( void *fd, void *send_fd );
-	virtual void UpdatePost( void *send_fd );
 
 	// generic functions to send packets to players
 
@@ -191,7 +218,6 @@ public:
 	virtual void SendAllChat( unsigned char fromPID, QString message );
 	virtual void SendAllChat( QString message );
 	virtual void SendLocalAdminChat( QString message );
-	virtual void SendAllSlotInfo( );
 	virtual void SendVirtualHostPlayerInfo( CGamePlayer *player );
 	virtual void SendFakePlayerInfo( CGamePlayer *player );
 	virtual void SendAllActions( );
@@ -202,7 +228,6 @@ public:
 	// note: these are only called while iterating through the m_Potentials or m_Players vectors
 	// therefore you can't modify those vectors and must use the player's m_DeleteMe member to flag for deletion
 
-	virtual void EventPlayerDeleted( CGamePlayer *player );
 	virtual void EventPlayerDisconnectTimedOut( CGamePlayer *player );
 	virtual void EventPlayerDisconnectPlayerError( CGamePlayer *player );
 	virtual void EventPlayerDisconnectSocketError( CGamePlayer *player );
@@ -210,7 +235,6 @@ public:
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
 	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score );
 	virtual void EventPlayerLeft( CGamePlayer *player, uint32_t reason );
-	virtual void EventPlayerLoaded( CGamePlayer *player );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual void EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum );
 	virtual void EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlayer *chatPlayer );

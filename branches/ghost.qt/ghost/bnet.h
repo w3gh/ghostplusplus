@@ -58,7 +58,6 @@ class CBNET
 {
 public:
 	CGHost *m_GHost;
-
 private:
 	CTCPClient *m_Socket;							// the connection to battle.net
 	CBNETProtocol *m_Protocol;						// battle.net protocol
