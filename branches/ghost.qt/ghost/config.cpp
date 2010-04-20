@@ -65,7 +65,8 @@ void CConfig :: Read( QString file )
 
 			QStringList parts = Line.split('=');
 
-			m_CFG[parts.at(0).trimmed()] = parts.at(1).trimmed();
+			if (parts.size() == 2)
+				m_CFG[parts.at(0).trimmed()] = parts.at(1).trimmed();
 		}
 
 		f.close( );
