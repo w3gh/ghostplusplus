@@ -504,8 +504,8 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 
 		while( !actions.isEmpty( ) )
 		{
-			CIncomingAction *Action = actions.front( );
-			actions.dequeue( );
+			CIncomingAction *Action = actions.dequeue( );
+
 			subpacket.push_back( Action->GetPID( ) );
 			UTIL_AppendBYTEARRAY( subpacket, (quint16)Action->GetAction( )->size( ), false );
 			UTIL_AppendBYTEARRAYFast( subpacket, *Action->GetAction( ) );
@@ -515,6 +515,7 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 
 		QByteArray crc32 = UTIL_CreateBYTEARRAY( m_GHost->m_CRC->FullCRC( subpacket ), false );
 		crc32.resize( 2 );
+		DEBUG_Print("Calculating CRC for " + subpacket.toHex() + ":  " + crc32.toHex());
 
 		// finish subpacket
 
@@ -823,7 +824,7 @@ QByteArray CGameProtocol :: SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, QString *mapData )
+QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, QByteArray *mapData )
 {
 	unsigned char Unknown[] = { 1, 0, 0, 0 };
 
@@ -854,8 +855,7 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 
 		// map data
 
-		QByteArray Data = mapData->mid(start, End - start).toUtf8();
-		UTIL_AppendBYTEARRAYFast( packet, Data );
+		packet.append( mapData->mid(start, End - start) );
 		AssignLength( packet );
 	}
 	else

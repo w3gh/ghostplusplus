@@ -142,7 +142,7 @@ public:
 	QByteArray SEND_W3GS_DECREATEGAME( );
 	QByteArray SEND_W3GS_MAPCHECK( QString mapPath, QByteArray mapSize, QByteArray mapInfo, QByteArray mapCRC, QByteArray mapSHA1 );
 	QByteArray SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID );
-	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, QString *mapData );
+	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, QByteArray *mapData );
 	QByteArray SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *> actions );
 
 	// other functions

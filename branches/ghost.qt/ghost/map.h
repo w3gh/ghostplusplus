@@ -6,7 +6,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -120,7 +120,7 @@ private:
 	quint32 m_MapDefaultPlayerScore;			// config value: map default player score (for matchmaking)
 	QString m_MapLocalPath;						// config value: map local path
 	bool m_MapLoadInGame;
-	QString m_MapData;							// the map data itself, for sending the map to players
+	QByteArray m_MapData;							// the map data itself, for sending the map to players
 	quint32 m_MapNumPlayers;
 	quint32 m_MapNumTeams;
 	QVector<CGameSlot> m_Slots;
@@ -154,7 +154,7 @@ public:
 	quint32 GetMapDefaultPlayerScore( )	{ return m_MapDefaultPlayerScore; }
 	QString GetMapLocalPath( )				{ return m_MapLocalPath; }
 	bool GetMapLoadInGame( )				{ return m_MapLoadInGame; }
-	QString *GetMapData( )					{ return &m_MapData; }
+	QByteArray *GetMapData( )					{ return &m_MapData; }
 	quint32 GetMapNumPlayers( )			{ return m_MapNumPlayers; }
 	quint32 GetMapNumTeams( )				{ return m_MapNumTeams; }
 	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }

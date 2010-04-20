@@ -69,17 +69,22 @@ QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse )
 	return result;
 }
 
-quint16 UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start )
+quint16 UTIL_QByteArrayToUInt16( const QByteArray& b, bool reverse, unsigned int start )
 {
 	if( (unsigned int)b.size( ) < start + 2 )
 		return 0;
 
 	QByteArray temp = b.mid(start, 2);
 
-	return (quint16)( reverse ? (temp[0] << 8 | temp[1]) : (temp[1] << 8 | temp[0]) );
+	if (reverse)
+		return (quint32)( (unsigned char)temp.at(0) <<  8 |
+						  (unsigned char)temp.at(1) <<  0  );
+
+	return (quint32)( (unsigned char)temp.at(1) <<  8 |
+					  (unsigned char)temp.at(0) <<  0  );
 }
 
-quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start )
+quint32 UTIL_QByteArrayToUInt32( const QByteArray& b, bool reverse, unsigned int start )
 {
 	if( (unsigned int)b.size( ) < start + 4 )
 		return 0;
@@ -87,9 +92,15 @@ quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start 
 	QByteArray temp = b.mid(start, 4);
 
 	if (reverse)
-		return (quint32)( temp[0] << 24 | temp[1] << 16 | temp[2] << 8 | temp[3] );
+		return (quint32)( (unsigned char)temp.at(0) << 24 |
+						  (unsigned char)temp.at(1) << 16 |
+						  (unsigned char)temp.at(2) <<  8 |
+						  (unsigned char)temp.at(3) <<  0  );
 
-	return (quint32)( temp[3] << 24 | temp[2] << 16 | temp[1] << 8 | temp[0] );
+	return (quint32)( (unsigned char)temp.at(3) << 24 |
+					  (unsigned char)temp.at(2) << 16 |
+					  (unsigned char)temp.at(1) <<  8 |
+					  (unsigned char)temp.at(0) <<  0  );
 }
 
 QString UTIL_QByteArrayToDecString( QByteArray b )
@@ -97,10 +108,10 @@ QString UTIL_QByteArrayToDecString( QByteArray b )
 	if( b.isEmpty( ) )
 		return QString( );
 
-	QString result = QString::number( b[0] );
+	QString result = QString::number( (unsigned char)b[0] );
 
 	for( QByteArray :: iterator i = b.begin( ) + 1; i != b.end( ); i++ )
-		result += " " + QString::number( *i );
+		result += " " + QString::number( (unsigned char)*i );
 
 	return result;
 }
