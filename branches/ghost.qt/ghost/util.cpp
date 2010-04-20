@@ -165,6 +165,9 @@ unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse )
 	// consider the byte array to contain a 2 character ASCII encoded hex value at b[start] and b[start + 1] e.g. "FF"
 	// extract it as a single decoded byte
 
+	if (reverse)
+		return (unsigned char)(b.mid(start + 1, 1) + b.mid(start, 1)).toUShort(NULL, 16);
+
 	return (unsigned char)b.mid(start, 2).toUShort(NULL, 16);
 }
 
