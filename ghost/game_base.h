@@ -184,7 +184,6 @@ public:
 	virtual bool GetGameLoaded( )					{ return m_GameLoaded; }
 	virtual bool GetLagging( )						{ return m_Lagging; }
 
-
 	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
 	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
 	virtual void SetExiting( bool nExiting )							{ m_Exiting = nExiting; }
