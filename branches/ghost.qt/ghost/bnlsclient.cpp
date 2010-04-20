@@ -39,7 +39,7 @@ CBNLSClient :: CBNLSClient( QString nServer, uint16_t nPort, uint32_t nWardenCoo
 	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
 	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(timeout_NULL()));
 
-	m_NULLTimer.setInterval(50);
+	m_NULLTimer.setInterval(50000);
 
 	m_Protocol = new CBNLSProtocol( );
 	m_WasConnected = false;
@@ -116,20 +116,6 @@ CBNLSClient :: ~CBNLSClient( )
 	}
 }
 
-QByteArray CBNLSClient :: GetWardenResponse( )
-{
-	QByteArray WardenResponse;
-
-	if( !m_WardenResponses.isEmpty( ) )
-	{
-		WardenResponse = m_WardenResponses.front( );
-		m_WardenResponses.dequeue( );
-		m_TotalWardenOut++;
-	}
-
-	return WardenResponse;
-}
-
 void CBNLSClient :: ExtractPackets( )
 {
 	while( m_Socket->bytesAvailable() >= 3 )
@@ -164,7 +150,7 @@ void CBNLSClient :: ProcessPackets( )
 			QByteArray WardenResponse = m_Protocol->RECEIVE_BNLS_WARDEN( Packet->GetData( ) );
 
 			if( !WardenResponse.isEmpty( ) )
-				m_WardenResponses.enqueue( WardenResponse );
+				emit newWardenResponse(WardenResponse);
 		}
 
 		delete Packet;

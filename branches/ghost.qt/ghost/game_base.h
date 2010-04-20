@@ -198,10 +198,6 @@ public:
 
 	virtual void SetAnnounce( uint32_t interval, QString message );
 
-	// processing functions
-
-	virtual bool Update( void *fd, void *send_fd );
-
 	// generic functions to send packets to players
 
 	virtual void Send( CGamePlayer *player, QByteArray data );

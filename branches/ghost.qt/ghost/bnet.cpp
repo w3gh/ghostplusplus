@@ -46,11 +46,31 @@
 //
 
 CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, uint32_t nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
+	: QObject(NULL)
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
-
+	m_Retries = 0;
 	m_GHost = nGHost;
-	m_Socket = new CTCPClient( );
+	m_Socket = new QTcpSocket( );
+
+	QObject::connect(m_Socket, SIGNAL(connected()), this, SLOT(socketConnected()));
+	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+	QObject::connect(m_Socket, SIGNAL(readyRead()), this, SLOT(socketDataReady()));
+	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
+
+	m_CallableUpdateTimer.setInterval(200);
+	m_CallableUpdateTimer.start();
+	m_AdminListUpdateTimer.setInterval(60000);
+	m_AdminListUpdateTimer.start();
+	m_BanListRefreshTimer.setInterval(3600000);
+	m_BanListRefreshTimer.start();
+	m_NULLTimer.setInterval(60000);
+	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(timeout_NULL()));
+
+	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
+	QObject::connect(&m_AdminListUpdateTimer, SIGNAL(timeout()), this, SLOT(EventUpdateAdminList()));
+	QObject::connect(&m_BanListRefreshTimer, SIGNAL(timeout()), this, SLOT(EventRefreshBanList()));
+
 	m_Protocol = new CBNETProtocol( );
 	m_BNLSClient = NULL;
 	m_BNCSUtil = new CBNCSUtilInterface( nUserName, nUserPassword );
@@ -117,13 +137,11 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_HostCounterID = nHostCounterID;
 	m_LastDisconnectedTime = 0;
 	m_LastConnectionAttemptTime = 0;
-	m_LastNullTime = 0;
 	m_LastOutPacketTicks = 0;
 	m_LastOutPacketSize = 0;
 	m_LastAdminRefreshTime = GetTime( );
 	m_LastBanRefreshTime = GetTime( );
 	m_FirstConnect = true;
-	m_WaitingToConnect = true;
 	m_LoggedIn = false;
 	m_InChat = false;
 	m_HoldFriends = nHoldFriends;
@@ -185,26 +203,172 @@ CBNET :: ~CBNET( )
 		delete *i;
 }
 
+void CBNET::socketConnect()
+{
+	// attempt to connect to battle.net
+
+	m_FirstConnect = false;
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
+	m_GHost->EventBNETConnecting( this );
+
+	if( m_ServerIP.isEmpty( ) )
+		m_Socket->connectToHost( m_Server, 6112 );
+
+	else
+	{
+		// use cached server IP address since resolving takes time and is blocking
+
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using cached server IP address " + m_ServerIP );
+		m_Socket->connectToHost( m_ServerIP, 6112 );
+	}
+
+	if (m_Socket->waitForConnected(15000))
+	{
+		m_ServerIP = m_Socket->peerAddress().toString();
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] resolved and cached server IP address " + m_ServerIP );
+	}
+
+	else
+	{
+		// the connection attempt timed out (15 seconds)
+
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connect timed out" );
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+		m_GHost->EventBNETConnectTimedOut( this );
+		m_Socket->abort();
+		m_Socket->reset();
+		m_Socket->deleteLater();
+		m_Socket = NULL;
+		m_LastDisconnectedTime = GetTime( );
+		QTimer::singleShot(90000, this, SLOT(socketConnect()));
+		m_NULLTimer.stop();
+	}
+
+	m_LastConnectionAttemptTime = GetTime( );
+	m_Retries++;
+}
+
+void CBNET::timeout_NULL()
+{
+	m_Socket->write( m_Protocol->SEND_SID_NULL( ) );
+}
+
+void CBNET::socketConnected()
+{
+	// the connection attempt completed
+
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connected" );
+	m_GHost->EventBNETConnected( this );
+	m_Socket->write( m_Protocol->SEND_PROTOCOL_INITIALIZE_SELECTOR( ) );
+	m_Socket->write( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_GHost->m_TFT, m_LocaleID, m_CountryAbbrev, m_Country ) );
+	m_NULLTimer.start();
+
+	while( !m_OutPackets.isEmpty( ) )
+		m_OutPackets.dequeue( );
+}
+
+void CBNET::socketDisconnected()
+{
+	// the socket was disconnected
+
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net" );
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+	m_GHost->EventBNETDisconnected( this );
+	delete m_BNLSClient;
+	m_BNLSClient = NULL;
+	m_BNCSUtil->Reset( m_UserName, m_UserPassword );
+	m_Socket->abort();
+	m_Socket->deleteLater();
+	m_Socket = NULL;
+	m_LastDisconnectedTime = GetTime( );
+	m_LoggedIn = false;
+	m_InChat = false;
+	m_NULLTimer.stop();
+
+	if (m_Retries > 6)
+	{
+		CONSOLE_Print("[BNET: " + m_ServerAlias + "] giving up after 5 failed retries, waiting for 10 minutes to reconnect" );
+		QTimer::singleShot(600000, this, SLOT(socketConnect()));
+		m_Retries = 0;
+		return;
+	}
+
+	QTimer::singleShot(90000, this, SLOT(socketConnect()));
+
+}
+
+void CBNET::sendWardenResponse(const QByteArray & response)
+{
+	if (m_Socket->state() != QAbstractSocket::ConnectedState)
+		return;
+
+	m_Socket->write( m_Protocol->SEND_SID_WARDEN( response ) );
+}
+
+void CBNET::socketDataReady()
+{
+	// the socket is connected and everything appears to be working properly
+
+	ExtractPackets( );
+	ProcessPackets( );
+
+	// check if at least one packet is waiting to be sent and if we've waited long enough to prevent flooding
+	// this formula has changed many times but currently we wait 1 second if the last packet was "small", 3.5 seconds if it was "medium", and 4 seconds if it was "big"
+
+	uint32_t WaitTicks = 0;
+
+	if( m_LastOutPacketSize < 10 )
+		WaitTicks = 1000;
+	else if( m_LastOutPacketSize < 100 )
+		WaitTicks = 3500;
+	else
+		WaitTicks = 4000;
+
+	if( !m_OutPackets.isEmpty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
+	{
+		if( m_OutPackets.size( ) > 7 )
+			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
+
+		m_Socket->write( m_OutPackets.front( ) );
+		m_LastOutPacketSize = m_OutPackets.front( ).size( );
+		m_OutPackets.dequeue( );
+		m_LastOutPacketTicks = GetTicks( );
+	}
+}
+
+void CBNET::socketError()
+{
+	// the socket has an error
+
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net due to socket error: " + m_Socket->errorString() );
+
+	if( m_Socket->error() == QAbstractSocket::RemoteHostClosedError && GetTime( ) - m_LastConnectionAttemptTime <= 15 )
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - you are probably temporarily IP banned from battle.net" );
+
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+	m_GHost->EventBNETDisconnected( this );
+	delete m_BNLSClient;
+	m_BNLSClient = NULL;
+	m_BNCSUtil->Reset( m_UserName, m_UserPassword );
+	m_Socket->abort();
+	m_Socket->deleteLater();
+	m_Socket = NULL;
+	m_LastDisconnectedTime = GetTime( );
+	m_LoggedIn = false;
+	m_InChat = false;
+	m_NULLTimer.stop();
+
+	QTimer::singleShot(90000, this, SLOT(socketConnect()));
+}
+
 QByteArray CBNET :: GetUniqueName( )
 {
 	return m_Protocol->GetUniqueName( );
 }
 
-unsigned int CBNET :: SetFD( void *fd, void *send_fd, int *nfds )
+void CBNET::EventCallableUpdateTimeout()
 {
-	unsigned int NumFDs = 0;
 
-	if( !m_Socket->HasError( ) && m_Socket->GetConnected( ) )
-	{
-		m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-		NumFDs++;
-	}
-
-	return NumFDs;
-}
-
-bool CBNET :: Update( void *fd, void *send_fd )
-{
 	//
 	// update callables
 	//
@@ -394,11 +558,6 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	// refresh the admin list every 5 minutes
-
-	if( !m_CallableAdminList && GetTime( ) - m_LastAdminRefreshTime >= 300 )
-		m_CallableAdminList = m_GHost->m_DB->ThreadedAdminList( m_Server );
-
 	if( m_CallableAdminList && m_CallableAdminList->GetReady( ) )
 	{
 		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed admin list (" + UTIL_ToString( m_Admins.size( ) ) + " -> " + UTIL_ToString( m_CallableAdminList->GetResult( ).size( ) ) + " admins)" );
@@ -408,11 +567,6 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		m_CallableAdminList = NULL;
 		m_LastAdminRefreshTime = GetTime( );
 	}
-
-	// refresh the ban list every 60 minutes
-
-	if( !m_CallableBanList && GetTime( ) - m_LastBanRefreshTime >= 3600 )
-		m_CallableBanList = m_GHost->m_DB->ThreadedBanList( m_Server );
 
 	if( m_CallableBanList && m_CallableBanList->GetReady( ) )
 	{
@@ -427,219 +581,56 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		m_CallableBanList = NULL;
 		m_LastBanRefreshTime = GetTime( );
 	}
+}
 
-	// we return at the end of each if statement so we don't have to deal with errors related to the order of the if statements
-	// that means it might take a few ms longer to complete a task involving multiple steps (in this case, reconnecting) due to blocking or sleeping
-	// but it's not a big deal at all, maybe 100ms in the worst possible case (based on a 50ms blocking time)
+void CBNET::EventUpdateAdminList()
+{
+	// refresh the admin list every 5 minutes
 
-	if( m_Socket->HasError( ) )
-	{
-		// the socket has an error
+	if( !m_CallableAdminList )
+		m_CallableAdminList = m_GHost->m_DB->ThreadedAdminList( m_Server );
+}
 
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net due to socket error" );
+void CBNET::EventRefreshBanList()
+{
+	// refresh the ban list every 60 minutes
 
-		if( m_Socket->GetError( ) == ECONNRESET && GetTime( ) - m_LastConnectionAttemptTime <= 15 )
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - you are probably temporarily IP banned from battle.net" );
-
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
-		m_GHost->EventBNETDisconnected( this );
-		delete m_BNLSClient;
-		m_BNLSClient = NULL;
-		m_BNCSUtil->Reset( m_UserName, m_UserPassword );
-		m_Socket->Reset( );
-		m_LastDisconnectedTime = GetTime( );
-		m_LoggedIn = false;
-		m_InChat = false;
-		m_WaitingToConnect = true;
-		return m_Exiting;
-	}
-
-	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && !m_WaitingToConnect )
-	{
-		// the socket was disconnected
-
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net" );
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
-		m_GHost->EventBNETDisconnected( this );
-		delete m_BNLSClient;
-		m_BNLSClient = NULL;
-		m_BNCSUtil->Reset( m_UserName, m_UserPassword );
-		m_Socket->Reset( );
-		m_LastDisconnectedTime = GetTime( );
-		m_LoggedIn = false;
-		m_InChat = false;
-		m_WaitingToConnect = true;
-		return m_Exiting;
-	}
-
-	if( m_Socket->GetConnected( ) )
-	{
-		// the socket is connected and everything appears to be working properly
-
-		m_Socket->DoRecv( (fd_set *)fd );
-		ExtractPackets( );
-		ProcessPackets( );
-
-		// update the BNLS client
-
-		if( m_BNLSClient )
-		{
-			QByteArray WardenResponse = m_BNLSClient->GetWardenResponse( );
-
-			if( !WardenResponse.isEmpty( ) )
-				m_Socket->PutBytes( m_Protocol->SEND_SID_WARDEN( WardenResponse ) );
-		}
-
-		// check if at least one packet is waiting to be sent and if we've waited long enough to prevent flooding
-		// this formula has changed many times but currently we wait 1 second if the last packet was "small", 3.5 seconds if it was "medium", and 4 seconds if it was "big"
-
-		uint32_t WaitTicks = 0;
-
-		if( m_LastOutPacketSize < 10 )
-			WaitTicks = 1000;
-		else if( m_LastOutPacketSize < 100 )
-			WaitTicks = 3500;
-		else
-			WaitTicks = 4000;
-
-		if( !m_OutPackets.isEmpty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
-		{
-			if( m_OutPackets.size( ) > 7 )
-				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
-
-			m_Socket->PutBytes( m_OutPackets.front( ) );
-			m_LastOutPacketSize = m_OutPackets.front( ).size( );
-			m_OutPackets.dequeue( );
-			m_LastOutPacketTicks = GetTicks( );
-		}
-
-		// send a null packet every 60 seconds to detect disconnects
-
-		if( GetTime( ) - m_LastNullTime >= 60 && GetTicks( ) - m_LastOutPacketTicks >= 60000 )
-		{
-			m_Socket->PutBytes( m_Protocol->SEND_SID_NULL( ) );
-			m_LastNullTime = GetTime( );
-		}
-
-		m_Socket->DoSend( (fd_set *)send_fd );
-		return m_Exiting;
-	}
-
-	if( m_Socket->GetConnecting( ) )
-	{
-		// we are currently attempting to connect to battle.net
-
-		if( m_Socket->CheckConnect( ) )
-		{
-			// the connection attempt completed
-
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connected" );
-			m_GHost->EventBNETConnected( this );
-			m_Socket->PutBytes( m_Protocol->SEND_PROTOCOL_INITIALIZE_SELECTOR( ) );
-			m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_GHost->m_TFT, m_LocaleID, m_CountryAbbrev, m_Country ) );
-			m_Socket->DoSend( (fd_set *)send_fd );
-			m_LastNullTime = GetTime( );
-			m_LastOutPacketTicks = GetTicks( );
-
-			while( !m_OutPackets.isEmpty( ) )
-				m_OutPackets.dequeue( );
-
-			return m_Exiting;
-		}
-		else if( GetTime( ) - m_LastConnectionAttemptTime >= 15 )
-		{
-			// the connection attempt timed out (15 seconds)
-
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connect timed out" );
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
-			m_GHost->EventBNETConnectTimedOut( this );
-			m_Socket->Reset( );
-			m_LastDisconnectedTime = GetTime( );
-			m_WaitingToConnect = true;
-			return m_Exiting;
-		}
-	}
-
-	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && ( m_FirstConnect || GetTime( ) - m_LastDisconnectedTime >= 90 ) )
-	{
-		// attempt to connect to battle.net
-
-		m_FirstConnect = false;
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
-		m_GHost->EventBNETConnecting( this );
-
-		if( !m_GHost->m_BindAddress.isEmpty( ) )
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to bind to address [" + m_GHost->m_BindAddress + "]" );
-
-		if( m_ServerIP.isEmpty( ) )
-		{
-			m_Socket->Connect( m_GHost->m_BindAddress, m_Server, 6112 );
-
-			if( !m_Socket->HasError( ) )
-			{
-				m_ServerIP = m_Socket->GetIPString( );
-				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] resolved and cached server IP address " + m_ServerIP );
-			}
-		}
-		else
-		{
-			// use cached server IP address since resolving takes time and is blocking
-
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using cached server IP address " + m_ServerIP );
-			m_Socket->Connect( m_GHost->m_BindAddress, m_ServerIP, 6112 );
-		}
-
-		m_WaitingToConnect = false;
-		m_LastConnectionAttemptTime = GetTime( );
-		return m_Exiting;
-	}
-
-	return m_Exiting;
+	if( !m_CallableBanList )
+		m_CallableBanList = m_GHost->m_DB->ThreadedBanList( m_Server );
 }
 
 void CBNET :: ExtractPackets( )
 {
-	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
-
-	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = RecvBuffer->toUtf8();
-
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
-	while( Bytes.size( ) >= 4 )
+	while( m_Socket->bytesAvailable() >= 4 )
 	{
 		// byte 0 is always 255
+		QByteArray header = m_Socket->peek(4);
 
-		if( Bytes[0] == BNET_HEADER_CONSTANT )
-		{
-			// bytes 2 and 3 contain the length of the packet
-
-			uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
-
-			if( Length >= 4 )
-			{
-				if( Bytes.size( ) >= Length )
-				{
-					m_Packets.enqueue( new CCommandPacket( BNET_HEADER_CONSTANT, Bytes[1], Bytes.left(Length) ) );
-					*RecvBuffer = RecvBuffer->mid( Length );
-					Bytes.remove(0, Length);
-				}
-				else
-					return;
-			}
-			else
-			{
-				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad length), disconnecting" );
-				m_Socket->Disconnect( );
-				return;
-			}
-		}
-		else
+		if( header.at(0) != BNET_HEADER_CONSTANT )
 		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad header constant), disconnecting" );
-			m_Socket->Disconnect( );
+			m_Socket->abort();
 			return;
 		}
+
+		// bytes 2 and 3 contain the length of the packet
+
+		uint16_t Length = UTIL_QByteArrayToUInt16( header, false, 2 );
+
+		if( Length < 4 )
+		{
+			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad length), disconnecting" );
+			m_Socket->abort();
+			return;
+		}
+
+		if( m_Socket->bytesAvailable() < Length )
+			return;
+
+		QByteArray Bytes = m_Socket->read(Length);
+		m_Packets.enqueue( new CCommandPacket( BNET_HEADER_CONSTANT, Bytes.at(1), Bytes ) );
 	}
 }
 
@@ -686,7 +677,7 @@ void CBNET :: ProcessPackets( )
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joining channel [" + m_FirstChannel + "]" );
 					m_InChat = true;
-					m_Socket->PutBytes( m_Protocol->SEND_SID_JOINCHANNEL( m_FirstChannel ) );
+					m_Socket->write( m_Protocol->SEND_SID_JOINCHANNEL( m_FirstChannel ) );
 				}
 
 				break;
@@ -720,7 +711,7 @@ void CBNET :: ProcessPackets( )
 				break;
 
 			case CBNETProtocol :: SID_PING:
-				m_Socket->PutBytes( m_Protocol->SEND_SID_PING( m_Protocol->RECEIVE_SID_PING( Packet->GetData( ) ) ) );
+				m_Socket->write( m_Protocol->SEND_SID_PING( m_Protocol->RECEIVE_SID_PING( Packet->GetData( ) ) ) );
 				break;
 
 			case CBNETProtocol :: SID_AUTH_INFO:
@@ -748,7 +739,7 @@ void CBNET :: ProcessPackets( )
 						else
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: Reign of Chaos" );
 
-						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_CHECK( m_GHost->m_TFT, m_Protocol->GetClientToken( ), m_BNCSUtil->GetEXEVersion( ), m_BNCSUtil->GetEXEVersionHash( ), m_BNCSUtil->GetKeyInfoROC( ), m_BNCSUtil->GetKeyInfoTFT( ), m_BNCSUtil->GetEXEInfo( ), "GHost" ) );
+						m_Socket->write( m_Protocol->SEND_SID_AUTH_CHECK( m_GHost->m_TFT, m_Protocol->GetClientToken( ), m_BNCSUtil->GetEXEVersion( ), m_BNCSUtil->GetEXEVersionHash( ), m_BNCSUtil->GetKeyInfoROC( ), m_BNCSUtil->GetKeyInfoTFT( ), m_BNCSUtil->GetEXEInfo( ), "GHost" ) );
 
 						// the Warden seed is the first 4 bytes of the ROC key hash
 						// initialize the Warden handler
@@ -759,12 +750,14 @@ void CBNET :: ProcessPackets( )
 							delete m_BNLSClient;
 							m_BNLSClient = new CBNLSClient( m_BNLSServer, m_BNLSPort, m_BNLSWardenCookie );
 							m_BNLSClient->QueueWardenSeed( UTIL_QByteArrayToUInt32( m_BNCSUtil->GetKeyInfoROC( ), false, 16 ) );
+
+							QObject::connect(m_BNLSClient, SIGNAL(newWardenResponse(QByteArray)), this, SLOT(sendWardenResponse(QByteArray)));
 						}
 					}
 					else
 					{
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - bncsutil key hash failed (check your Warcraft 3 path and cd keys), disconnecting" );
-						m_Socket->Disconnect( );
+						m_Socket->abort();
 						delete Packet;
 						return;
 					}
@@ -779,7 +772,7 @@ void CBNET :: ProcessPackets( )
 
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] cd keys accepted" );
 					m_BNCSUtil->HELP_SID_AUTH_ACCOUNTLOGON( );
-					m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGON( m_BNCSUtil->GetClientKey( ), m_UserName ) );
+					m_Socket->write( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGON( m_BNCSUtil->GetClientKey( ), m_UserName ) );
 				}
 				else
 				{
@@ -804,7 +797,7 @@ void CBNET :: ProcessPackets( )
 						break;
 					}
 
-					m_Socket->Disconnect( );
+					m_Socket->abort();
 					delete Packet;
 					return;
 				}
@@ -822,7 +815,7 @@ void CBNET :: ProcessPackets( )
 
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using pvpgn logon type (for pvpgn servers only)" );
 						m_BNCSUtil->HELP_PvPGNPasswordHash( m_UserPassword );
-						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetPvPGNPasswordHash( ) ) );
+						m_Socket->write( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetPvPGNPasswordHash( ) ) );
 					}
 					else
 					{
@@ -830,13 +823,13 @@ void CBNET :: ProcessPackets( )
 
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using battle.net logon type (for official battle.net servers only)" );
 						m_BNCSUtil->HELP_SID_AUTH_ACCOUNTLOGONPROOF( m_Protocol->GetSalt( ), m_Protocol->GetServerPublicKey( ) );
-						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetM1( ) ) );
+						m_Socket->write( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetM1( ) ) );
 					}
 				}
 				else
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - invalid username, disconnecting" );
-					m_Socket->Disconnect( );
+					m_Socket->abort( );
 					delete Packet;
 					return;
 				}
@@ -851,10 +844,10 @@ void CBNET :: ProcessPackets( )
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon successful" );
 					m_LoggedIn = true;
 					m_GHost->EventBNETLoggedIn( this );
-					m_Socket->PutBytes( m_Protocol->SEND_SID_NETGAMEPORT( m_GHost->m_HostPort ) );
-					m_Socket->PutBytes( m_Protocol->SEND_SID_ENTERCHAT( ) );
-					m_Socket->PutBytes( m_Protocol->SEND_SID_FRIENDSLIST( ) );
-					m_Socket->PutBytes( m_Protocol->SEND_SID_CLANMEMBERLIST( ) );
+					m_Socket->write( m_Protocol->SEND_SID_NETGAMEPORT( m_GHost->m_HostPort ) );
+					m_Socket->write( m_Protocol->SEND_SID_ENTERCHAT( ) );
+					m_Socket->write( m_Protocol->SEND_SID_FRIENDSLIST( ) );
+					m_Socket->write( m_Protocol->SEND_SID_CLANMEMBERLIST( ) );
 				}
 				else
 				{
@@ -870,7 +863,7 @@ void CBNET :: ProcessPackets( )
 					else if( m_PasswordHashType != "pvpgn" && ( Server != "useast.battle.net" && Server != "uswest.battle.net" && Server != "asia.battle.net" && Server != "europe.battle.net" ) )
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] it looks like you're trying to connect to a pvpgn server using a battle.net logon type, check your config file's \"battle.net custom data\" section" );
 
-					m_Socket->Disconnect( );
+					m_Socket->abort( );
 					delete Packet;
 					return;
 				}
@@ -2184,19 +2177,19 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 void CBNET :: SendJoinChannel( QString channel )
 {
 	if( m_LoggedIn && m_InChat )
-		m_Socket->PutBytes( m_Protocol->SEND_SID_JOINCHANNEL( channel ) );
+		m_Socket->write( m_Protocol->SEND_SID_JOINCHANNEL( channel ) );
 }
 
 void CBNET :: SendGetFriendsList( )
 {
 	if( m_LoggedIn )
-		m_Socket->PutBytes( m_Protocol->SEND_SID_FRIENDSLIST( ) );
+		m_Socket->write( m_Protocol->SEND_SID_FRIENDSLIST( ) );
 }
 
 void CBNET :: SendGetClanList( )
 {
 	if( m_LoggedIn )
-		m_Socket->PutBytes( m_Protocol->SEND_SID_CLANMEMBERLIST( ) );
+		m_Socket->write( m_Protocol->SEND_SID_CLANMEMBERLIST( ) );
 }
 
 void CBNET :: QueueEnterChat( )

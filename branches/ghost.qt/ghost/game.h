@@ -25,6 +25,8 @@
 // CGame
 //
 
+#include "includes.h"
+
 class CDBBan;
 class CDBGame;
 class CDBGamePlayer;
@@ -39,6 +41,9 @@ typedef pair<QString,CCallableBanCheck *> PairedBanCheck;
 typedef pair<QString,CCallableBanAdd *> PairedBanAdd;
 typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
+
+#include <QObject>
+#include "game_base.h"
 
 class CGame : public CBaseGame
 {
@@ -64,7 +69,6 @@ public:
 	CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CGame( );
 
-	virtual bool Update( void *fd, void *send_fd );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual bool EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload );
 	virtual void EventGameStarted( );

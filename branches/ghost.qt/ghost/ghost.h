@@ -45,6 +45,8 @@ class CMap;
 class CSaveGame;
 class CConfig;
 
+#include <QTimer>
+
 class CGHost : public QObject
 {
 		Q_OBJECT
@@ -52,9 +54,10 @@ class CGHost : public QObject
 public slots:
 	void EventIncomingReconnection();
 	void EventReconnectionSocketReadyRead();
-	void UpdateEvent();
+	void EventCallableUpdateTimeout();
 
 public:
+	QTimer m_CallableUpdateTimer;
 	QUdpSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
 	QTcpServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
 	CGPSProtocol *m_GPSProtocol;
