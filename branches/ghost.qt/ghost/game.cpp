@@ -22,7 +22,6 @@
 #include "util.h"
 #include "config.h"
 #include "language.h"
-#include "socket.h"
 #include "ghostdb.h"
 #include "bnet.h"
 #include "map.h"
@@ -414,8 +413,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				QString Victim;
 				QString Reason;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Victim;
 
 				if( !SS.atEnd( ) )
@@ -494,8 +493,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					uint32_t Interval;
 					QString Message;
-					QTextStream SS;
-					SS << Payload;
+					QTextStream SS(&Payload);
+
 					SS >> Interval;
 
 					if( SS.status() != QTextStream::Ok || Interval == 0 )
@@ -641,8 +640,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 
 				while( !SS.atEnd( ) )
 				{
@@ -677,8 +676,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Skill = 1;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Slot;
 
 				if( SS.status() != QTextStream::Ok )
@@ -706,8 +705,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Colour;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Slot;
 
 				if( SS.status() != QTextStream::Ok )
@@ -747,8 +746,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Handicap;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Slot;
 
 				if( SS.status() != QTextStream::Ok )
@@ -791,8 +790,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				QString Race;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Slot;
 
 				if( SS.status() != QTextStream::Ok )
@@ -859,8 +858,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				uint32_t Slot;
 				uint32_t Team;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> Slot;
 
 				if( SS.status() != QTextStream::Ok )
@@ -1054,8 +1053,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 
 				while( !SS.atEnd( ) )
 				{
@@ -1196,8 +1195,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 
 				while( !SS.atEnd( ) )
 				{
@@ -1415,8 +1414,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				QString IP;
 				uint32_t Port = 6112;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> IP;
 
 				if( !SS.atEnd( ) )
@@ -1499,8 +1498,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				uint32_t SID1;
 				uint32_t SID2;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> SID1;
 
 				if( SS.status() != QTextStream::Ok )

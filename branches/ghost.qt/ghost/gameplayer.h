@@ -21,7 +21,6 @@
 #ifndef GAMEPLAYER_H
 #define GAMEPLAYER_H
 
-class CTCPSocket;
 class CCommandPacket;
 class CGameProtocol;
 class CGame;

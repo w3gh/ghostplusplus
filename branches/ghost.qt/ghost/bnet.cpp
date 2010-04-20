@@ -22,7 +22,6 @@
 #include "util.h"
 #include "config.h"
 #include "language.h"
-#include "socket.h"
 #include "commandpacket.h"
 #include "ghostdb.h"
 #include "bncsutilinterface.h"
@@ -1012,8 +1011,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					QString Victim;
 					QString Reason;
-					QTextStream SS;
-					SS << Payload;
+					QTextStream SS(&Payload);
 					SS >> Victim;
 
 					if( !SS.atEnd( ) )
@@ -1049,8 +1047,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						uint32_t Interval;
 						QString Message;
-						QTextStream SS;
-						SS << Payload;
+						QTextStream SS(&Payload);
 						SS >> Interval;
 
 						if( SS.status() != QTextStream::Ok || Interval == 0 )
@@ -1103,8 +1100,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							uint32_t MaximumGames;
 							uint32_t AutoStartPlayers;
 							QString GameName;
-							QTextStream SS;
-							SS << Payload;
+							QTextStream SS(&Payload);
 							SS >> MaximumGames;
 
 							if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
@@ -1179,8 +1175,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							double MinimumScore;
 							double MaximumScore;
 							QString GameName;
-							QTextStream SS;
-							SS << Payload;
+							QTextStream SS(&Payload);
 							SS >> MaximumGames;
 
 							if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
@@ -1309,8 +1304,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
-						QTextStream SS;
-						SS << Payload;
+						QTextStream SS(&Payload);
 
 						while( !SS.atEnd( ) )
 						{
@@ -1582,8 +1576,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
-					QTextStream SS;
-					SS << Payload;
+					QTextStream SS(&Payload);
 
 					while( !SS.atEnd( ) )
 					{
@@ -1771,8 +1764,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
-						QTextStream SS;
-						SS << Payload;
+						QTextStream SS(&Payload);
 
 						while( !SS.atEnd( ) )
 						{
@@ -1895,8 +1887,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						uint32_t GameNumber;
 						QString Message;
-						QTextStream SS;
-						SS << Payload;
+						QTextStream SS(&Payload);
+
 						SS >> GameNumber;
 
 						if( SS.status() != QTextStream::Ok )
@@ -1987,8 +1979,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						uint32_t SID1;
 						uint32_t SID2;
-						QTextStream SS;
-						SS << Payload;
+						QTextStream SS(&Payload);
+
 						SS >> SID1;
 
 						if( SS.status() != QTextStream::Ok )
@@ -2403,9 +2395,9 @@ bool CBNET :: IsRootAdmin( QString name )
 	// note: this function gets called frequently so it would be better to parse the root admins just once and store them in a list somewhere
 	// however, it's hardly worth optimizing at this point since the code's already written
 
-	QTextStream SS;
+	QTextStream SS(&m_RootAdmin);
+
 	QString s;
-	SS << m_RootAdmin;
 
 	while( !SS.atEnd( ) )
 	{

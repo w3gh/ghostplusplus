@@ -21,7 +21,6 @@
 #include "ghost.h"
 #include "util.h"
 #include "language.h"
-#include "socket.h"
 #include "commandpacket.h"
 #include "bnet.h"
 #include "map.h"

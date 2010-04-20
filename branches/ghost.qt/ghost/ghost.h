@@ -29,9 +29,6 @@
 // CGHost
 //
 
-class CUDPSocket;
-class CTCPServer;
-class CTCPSocket;
 class CGPSProtocol;
 class CCRC32;
 class CSHA1;

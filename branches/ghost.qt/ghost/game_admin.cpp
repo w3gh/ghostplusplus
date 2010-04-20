@@ -22,7 +22,6 @@
 #include "util.h"
 #include "config.h"
 #include "language.h"
-#include "socket.h"
 #include "ghostdb.h"
 #include "bnet.h"
 #include "map.h"
@@ -344,8 +343,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			QTextStream SS;
-			SS << Payload;
+			QTextStream SS(&Payload);
+
 			SS >> Name;
 
 			if( SS.atEnd( ) )
@@ -415,8 +414,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				uint32_t MaximumGames;
 				uint32_t AutoStartPlayers;
 				QString GameName;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> MaximumGames;
 
 				if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
@@ -486,8 +485,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				double MinimumScore;
 				double MaximumScore;
 				QString GameName;
-				QTextStream SS;
-				SS << Payload;
+				QTextStream SS(&Payload);
+
 				SS >> MaximumGames;
 
 				if( SS.status() != QTextStream::Ok || MaximumGames == 0 )
@@ -553,8 +552,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			QTextStream SS;
-			SS << Payload;
+			QTextStream SS(&Payload);
+
 			SS >> Name;
 
 			if( SS.atEnd( ) )
@@ -608,8 +607,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			QTextStream SS;
-			SS << Payload;
+			QTextStream SS(&Payload);
+
 			SS >> Name;
 
 			if( SS.atEnd( ) )
@@ -694,8 +693,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			QString Name;
 			QString Server;
-			QTextStream SS;
-			SS << Payload;
+			QTextStream SS(&Payload);
+
 			SS >> Name;
 
 			if( SS.atEnd( ) )
@@ -1128,8 +1127,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 			uint32_t GameNumber;
 			QString Message;
-			QTextStream SS;
-			SS << Payload;
+			QTextStream SS(&Payload);
+
 			SS >> GameNumber;
 
 			if( SS.status() != QTextStream::Ok )

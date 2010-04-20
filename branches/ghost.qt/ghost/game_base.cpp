@@ -22,7 +22,6 @@
 #include "util.h"
 #include "config.h"
 #include "language.h"
-#include "socket.h"
 #include "ghostdb.h"
 #include "bnet.h"
 #include "map.h"

@@ -174,8 +174,7 @@ QByteArray UTIL_ExtractNumbers( QString s, unsigned int count )
 
 	QByteArray result;
 	unsigned int c;
-	QTextStream SS;
-	SS << s;
+	QTextStream SS(&s);
 
 	for( unsigned int i = 0; i < count; i++ )
 	{
@@ -198,8 +197,8 @@ QByteArray UTIL_ExtractHexNumbers( QString s )
 
 	QByteArray result;
 	unsigned int c;
-	QTextStream SS;
-	SS << s;
+	QTextStream SS(&s);
+
 
 	while( !SS.atEnd() )
 	{
@@ -215,131 +214,74 @@ QByteArray UTIL_ExtractHexNumbers( QString s )
 
 QString UTIL_ToString( unsigned long i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( unsigned short i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( unsigned int i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( long i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( short i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( int i )
 {
-	QString result;
-	QTextStream SS;
-	SS << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 QString UTIL_ToString( float f, int digits )
 {
-	QString result;
-	QTextStream SS;
-	SS.setRealNumberPrecision( digits );
-	SS << QTextStream::FixedNotation << f;
-	SS >> result;
-	return result;
+	return QString::number(f, 'g', digits);
 }
 
 QString UTIL_ToString( double d, int digits )
 {
-	QString result;
-	QTextStream SS;
-	SS << fixed << qSetRealNumberPrecision( digits ) << d;
-	SS >> result;
-	return result;
+	return QString::number(d, 'g', digits);
 }
 
 QString UTIL_ToHexString( uint32_t i )
 {
-	QString result;
-	QTextStream SS;
-	SS << hex << i;
-	SS >> result;
-	return result;
+	return QString::number(i);
 }
 
 // todotodo: these UTIL_ToXXX functions don't fail gracefully, they just return garbage (in the uint case usually just -1 casted to an unsigned type it looks like)
 
 uint16_t UTIL_ToUInt16( QString &s )
 {
-	uint16_t result;
-	QTextStream SS;
-	SS << s;
-	SS >> result;
-	return result;
+	return s.toUShort();
 }
 
 uint32_t UTIL_ToUInt32( QString &s )
 {
-	uint32_t result;
-	QTextStream SS;
-	SS << s;
-	SS >> result;
-	return result;
+	return s.toUInt();
 }
 
 int16_t UTIL_ToInt16( QString &s )
 {
-	int16_t result;
-	QTextStream SS;
-	SS << s;
-	SS >> result;
-	return result;
+	return s.toShort();
 }
 
 int32_t UTIL_ToInt32( QString &s )
 {
-	int32_t result;
-	QTextStream SS;
-	SS << s;
-	SS >> result;
-	return result;
+	return s.toInt();
 }
 
 double UTIL_ToDouble( QString &s )
 {
-	double result;
-	QTextStream SS;
-	SS << s;
-	SS >> result;
-	return result;
+	s.toDouble();
 }
 
 QString UTIL_MSToString( uint32_t ms )
