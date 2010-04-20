@@ -535,6 +535,8 @@ void CBaseGame::EventBroadcastTimeout()
 	// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
 	uint32_t FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
+	QString target = m_GHost->m_UDPSocket->property("target").toString();
+	QHostAddress hostAddr = target == "" ? QHostAddress::LocalHost : QHostAddress(m_GHost->m_UDPSocket->property("target").toString());
 
 	if( m_SaveGame )
 	{
@@ -564,7 +566,7 @@ void CBaseGame::EventBroadcastTimeout()
 						12,
 						m_HostPort,
 						FixedHostCounter ),
-			QHostAddress(m_GHost->m_UDPSocket->property("target").toString()),
+			hostAddr,
 			6112);
 	}
 	else
@@ -574,7 +576,7 @@ void CBaseGame::EventBroadcastTimeout()
 
 		uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
 		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
-				 QHostAddress(m_GHost->m_UDPSocket->property("target").toString()),
+				 hostAddr,
 				 6112 );
 	}
 }
