@@ -32,6 +32,10 @@ class CCallableBanCount;
 // class CCallableBanAdd;
 class CCallableBanRemove;
 
+#include "includes.h"
+#include "game_base.h"
+#include <QTimer>
+
 typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
 typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
 typedef pair<QString,CCallableAdminRemove *> PairedAdminRemove;
@@ -43,6 +47,12 @@ typedef pair<QString,uint32_t> TempBan;
 
 class CAdminGame : public CBaseGame
 {
+	Q_OBJECT
+
+public slots:
+	void EventCallableReady();
+	void EventCallableUpdateTimeout();
+
 protected:
 	QString m_Password;
 	QVector<TempBan> m_TempBans;
@@ -57,7 +67,6 @@ public:
 	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nPassword );
 	virtual ~CAdminGame( );
 
-	virtual bool Update( void *fd, void *send_fd );
 	virtual void SendAdminChat( QString message );
 	virtual void SendWelcomeMessage( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );

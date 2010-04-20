@@ -23,6 +23,7 @@
 
 #include "includes.h"
 #include <QTcpServer>
+#include <QUdpSocket>
 
 //
 // CGHost
@@ -47,10 +48,15 @@ class CConfig;
 class CGHost : public QObject
 {
 		Q_OBJECT
+
+public slots:
+	void EventIncomingReconnection();
+	void EventReconnectionSocketReadyRead();
+	void UpdateEvent();
+
 public:
-	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
-	CTCPServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
-	QVector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
+	QUdpSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
+	QTcpServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
 	CGPSProtocol *m_GPSProtocol;
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's

@@ -50,7 +50,69 @@
 CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer )
 {
 	m_GHost = nGHost;
-	m_Socket = new CTCPServer( );
+	m_Socket = new QTcpServer(this);
+	QObject::connect(m_Socket, SIGNAL(newConnection()), this, SLOT(EventNewConnection()));
+
+	m_BroadcastTimer.start(3000);
+	QObject::connect(&m_BroadcastTimer, SIGNAL(timeout()), this, SLOT(EventBroadcastTimeout()));
+
+	m_RefreshTimer.start(3000);
+	QObject::connect(&m_RefreshTimer, SIGNAL(timeout()), this, SLOT(EventRefreshTimeout()));
+
+	m_MapDataTimer.start(100);
+	QObject::connect(&m_MapDataTimer, SIGNAL(timeout()), this, SLOT(EventMapDataTimeout()));
+
+	m_CountdownTimer.setInterval(500);
+	QObject::connect(&m_CountdownTimer, SIGNAL(timeout()), this, SLOT(EventCountdownTimeout()));
+
+	m_AutostartTimer.start(10000);
+	QObject::connect(&m_AutostartTimer, SIGNAL(timeout()), this, SLOT(EventAutostartTimeout()));
+
+	m_GameOverTimer.setInterval(60000);
+	QObject::connect(&m_GameOverTimer, SIGNAL(timeout()), this, SLOT(EventGameOverTimeout()));
+
+	m_VotekickTimer.setInterval(60000);
+	QObject::connect(&m_VotekickTimer, SIGNAL(timeout()), this, SLOT(EventVotekickTimeout()));
+
+	m_SlotInfoTimer.setInterval(500);
+	QObject::connect(&m_SlotInfoTimer, SIGNAL(timeout()), this, SLOT(SendAllSlotInfo()));
+
+	m_CallableUpdateTimer.setInterval(200);
+	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
+
+	m_DownloadCounterTimer.start(1000);
+	QObject::connect(&m_DownloadCounterTimer, SIGNAL(timeout()), this, SLOT(EventResetDownloadCounter()));
+
+	QObject::connect(&m_AnnounceTimer, SIGNAL(timeout()), this, SLOT(EventAnnounceTimeout()));
+
+	m_DropLaggerTimer.setInterval(60000);
+	m_DropLaggerTimer.setSingleShot(true);
+	QObject::connect(&m_DropLaggerTimer, SIGNAL(timeout()), this, SLOT(EventDropLaggerTimeout()));
+
+	m_ResetLagscreenTimer.setInterval(60000);
+	QObject::connect(&m_ResetLagscreenTimer, SIGNAL(timeout()), this, SLOT(EventResetLagscreenTimeout()));
+
+	m_LoadInGameTimer.setInterval(30000);
+	QObject::connect(&m_LoadInGameTimer, SIGNAL(timeout()), this, SLOT(EventLoadInGameTimeout()));
+
+	m_LobbyTimeoutTimer.setInterval(m_GHost->m_LobbyTimeLimit * 60000);
+	m_LobbyTimeoutTimer.setSingleShot(true);
+	QObject::connect(&m_LobbyTimeoutTimer, SIGNAL(timeout()), this, SLOT(EventLobbyTimeout()));
+
+	m_Latency = m_GHost->m_Latency;
+	m_SendActionTimer.setInterval(m_Latency);
+	QObject::connect(&m_SendActionTimer, SIGNAL(timeout()), this, SLOT(EventSendActions()));
+
+
+
+
+
+
+
+
+
+
+
 	m_Protocol = new CGameProtocol( m_GHost );
 	m_Map = new CMap( *nMap );
 	m_SaveGame = nSaveGame;
@@ -92,36 +154,23 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_HCLCommandString = m_Map->GetMapDefaultHCL( );
 	m_RandomSeed = GetTicks( );
 	m_HostCounter = m_GHost->m_HostCounter++;
-	m_Latency = m_GHost->m_Latency;
 	m_SyncLimit = m_GHost->m_SyncLimit;
 	m_SyncCounter = 0;
 	m_GameTicks = 0;
 	m_CreationTime = GetTime( );
-	m_LastPingTime = GetTime( );
-	m_LastRefreshTime = GetTime( );
 	m_LastDownloadTicks = GetTime( );
 	m_DownloadCounter = 0;
-	m_LastDownloadCounterResetTicks = GetTicks( );
-	m_LastAnnounceTime = 0;
-	m_AnnounceInterval = 0;
-	m_LastAutoStartTime = GetTime( );
 	m_AutoStartPlayers = 0;
-	m_LastCountDownTicks = 0;
 	m_CountDownCounter = 0;
 	m_StartedLoadingTicks = 0;
 	m_StartPlayers = 0;
-	m_LastLagScreenResetTime = 0;
 	m_LastActionSentTicks = 0;
 	m_LastActionLateBy = 0;
 	m_StartedLaggingTime = 0;
 	m_LastLagScreenTime = 0;
-	m_LastReservedSeen = GetTime( );
-	m_StartedKickVoteTime = 0;
-	m_GameOverTime = 0;
 	m_LastPlayerLeaveTicks = 0;
 	m_MinimumScore = 0.0;
 	m_MaximumScore = 0.0;
-	m_SlotInfoChanged = false;
 	m_Locked = false;
 	m_RefreshMessages = m_GHost->m_RefreshMessages;
 	m_RefreshError = false;
@@ -205,8 +254,8 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	else
 		CONSOLE_Print( "[GAME: " + m_GameName + "] attempting to bind to all available addresses" );
 
-	if( m_Socket->Listen( m_GHost->m_BindAddress, m_HostPort ) )
-		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on port " + UTIL_ToString( m_HostPort ) );
+	if( m_Socket->listen( QHostAddress(m_GHost->m_BindAddress), m_HostPort ) )
+		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on port " + UTIL_ToString( m_Socket->serverPort() ) );
 	else
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on port " + UTIL_ToString( m_HostPort ) );
@@ -340,166 +389,216 @@ QString CBaseGame :: GetDescription( )
 
 void CBaseGame :: SetAnnounce( uint32_t interval, QString message )
 {
-	m_AnnounceInterval = interval;
+	m_AnnounceTimer.start(1000 * interval);
 	m_AnnounceMessage = message;
-	m_LastAnnounceTime = GetTime( );
 }
 
-unsigned int CBaseGame :: SetFD( void *fd, void *send_fd, int *nfds )
+void CBaseGame::CheckGameLoaded()
 {
-	unsigned int NumFDs = 0;
+	bool FinishedLoading = true;
 
-	if( m_Socket )
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-		NumFDs++;
+		FinishedLoading = (*i)->GetFinishedLoading( );
+
+		if( !FinishedLoading )
+			break;
 	}
 
-	for( QVector<CPotentialPlayer *> :: iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
+	if( FinishedLoading )
 	{
-		if( (*i)->GetSocket( ) )
-		{
-			(*i)->GetSocket( )->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-			NumFDs++;
-		}
+		m_LastActionSentTicks = GetTicks( );
+		m_GameLoading = false;
+		m_GameLoaded = true;
+		EventGameLoaded( );
+		return;
+	}
+}
+
+void CBaseGame::EventLoadInGameTimeout()
+{
+	// reset the "lag" screen (the load-in-game screen) every 30 seconds
+
+	bool UsingGProxy = false;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetGProxy( ) )
+			UsingGProxy = true;
 	}
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( (*i)->GetSocket( ) )
+		if( (*i)->GetFinishedLoading( ) )
 		{
-			(*i)->GetSocket( )->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-			NumFDs++;
+			// stop the lag screen
+
+			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+			{
+				if( !(*j)->GetFinishedLoading( ) )
+					Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j, true ) );
+			}
+
+			// send an empty update
+			// this resets the lag screen timer but creates a rather annoying problem
+			// in order to prevent a desync we must make sure every player receives the exact same "desyncable game data" (updates and player leaves) in the exact same order
+			// unfortunately we cannot send updates to players who are still loading the map, so we buffer the updates to those players (see the else clause a few lines down for the code)
+			// in addition to this we must ensure any player leave messages are sent in the exact same position relative to these updates so those must be buffered too
+
+			if( UsingGProxy && !(*i)->GetGProxy( ) )
+			{
+				// we must send empty actions to non-GProxy++ players
+				// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
+				// empty actions are used to extend the time a player can use when reconnecting
+
+				for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
+					Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
+			}
+
+			Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
+
+			// start the lag screen
+
+			Send( *i, m_Protocol->SEND_W3GS_START_LAG( m_Players, true ) );
+		}
+		else
+		{
+			// buffer the empty update since the player is still loading the map
+
+			if( UsingGProxy && !(*i)->GetGProxy( ) )
+			{
+				// we must send empty actions to non-GProxy++ players
+				// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
+				// empty actions are used to extend the time a player can use when reconnecting
+
+				for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
+					(*i)->AddLoadInGameData( m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
+			}
+
+			(*i)->AddLoadInGameData( m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
 		}
 	}
 
-	return NumFDs;
+	// add actions to replay
+
+	if( m_Replay )
+	{
+		if( UsingGProxy )
+		{
+			for( unsigned char i = 0; i < m_GProxyEmptyActions; i++ )
+				m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
+		}
+
+		m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
+	}
+
+	// Warcraft III doesn't seem to respond to empty actions
+
+	/* if( UsingGProxy )
+		m_SyncCounter += m_GProxyEmptyActions;
+
+	m_SyncCounter++; */
 }
 
-bool CBaseGame :: Update( void *fd, void *send_fd )
+void CBaseGame::EventSendActions()
 {
-	// update callables
-
-	for( QVector<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); )
+	if (m_Lagging)
 	{
-		if( (*i)->GetReady( ) )
-		{
-			double Score = (*i)->GetResult( );
-
-			for( QVector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
-			{
-				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
-					EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score );
-			}
-
-			m_GHost->m_DB->RecoverCallable( *i );
-			delete *i;
-			i = m_ScoreChecks.erase( i );
-		}
-		else
-			i++;
+		m_SendActionTimer.stop();
+		return;
 	}
 
-	// update players
+	// send actions every m_Latency milliseconds
+	// actions are at the heart of every Warcraft 3 game but luckily we don't need to know their contents to relay them
+	// we queue player actions in EventPlayerAction then just resend them in batches to all players here
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); )
+	SendAllActions( );
+}
+
+void CBaseGame::EventBroadcastTimeout()
+{
+	// we broadcast the game to the local network every 3 seconds so we hijack this timer for our nefarious purposes
+	// however we only want to broadcast if the countdown hasn't started
+	// see the !sendlan code later in this file for some more information about how this works
+	// todotodo: should we send a game cancel message somewhere? we'll need to implement a host counter for it to work
+
+	if (m_GameLoading || m_GameLoaded)
 	{
-		if( (*i)->Update( fd ) )
-		{
-			EventPlayerDeleted( *i );
-			delete *i;
-			i = m_Players.erase( i );
-		}
-		else
-			i++;
+		m_BroadcastTimer.stop();
+		return;
 	}
 
-	for( QVector<CPotentialPlayer *> :: iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); )
+	// construct a fixed host counter which will be used to identify players from this "realm" (i.e. LAN)
+	// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
+	// the rest of the fixed host counter will contain the 28 least significant bits of the actual host counter
+	// since we're destroying 4 bits of information here the actual host counter should not be greater than 2^28 which is a reasonable assumption
+	// when a player joins a game we can obtain the ID from the received host counter
+	// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
+
+	uint32_t FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
+
+	if( m_SaveGame )
 	{
-		if( (*i)->Update( fd ) )
-		{
-			// flush the socket (e.g. in case a rejection message is queued)
+		// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 
-			if( (*i)->GetSocket( ) )
-				(*i)->GetSocket( )->DoSend( (fd_set *)send_fd );
+		uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+		QByteArray MapWidth;
+		MapWidth.push_back( (char)0 );
+		MapWidth.push_back( (char)0 );
+		QByteArray MapHeight;
+		MapHeight.push_back( (char)0 );
+		MapHeight.push_back( (char)0 );
+		m_GHost->m_UDPSocket->writeDatagram(
+			m_Protocol->SEND_W3GS_GAMEINFO(
+						m_GHost->m_TFT,
+						m_GHost->m_LANWar3Version,
+						UTIL_CreateQByteArray( MapGameType, false ),
+						m_Map->GetMapGameFlags( ),
+						MapWidth,
+						MapHeight,
+						m_GameName,
+						"Varlock",
+						GetTime( ) - m_CreationTime,
+						"Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ),
+						m_SaveGame->GetMagicNumber( ),
+						12,
+						12,
+						m_HostPort,
+						FixedHostCounter ),
+			QHostAddress(m_GHost->m_UDPSocket->property("target").toString()),
+			6112);
+	}
+	else
+	{
+		// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
+		// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
-			delete *i;
-			i = m_Potentials.erase( i );
-		}
-		else
-			i++;
+		uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
+		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
+				 QHostAddress(m_GHost->m_UDPSocket->property("target").toString()),
+				 6112 );
+	}
+}
+
+void CBaseGame::EventRefreshError()
+{
+	if (m_GameLoading || m_GameLoaded)
+	{
+		m_RefreshTimer.stop();
+		return;
 	}
 
-	// create the virtual host player
-
-	if( !m_GameLoading && !m_GameLoaded && GetNumPlayers( ) < 12 )
-		CreateVirtualHost( );
-
-	// unlock the game
-
-	if( m_Locked && !GetPlayerFromName( m_OwnerName, false ) )
-	{
-		SendAllChat( m_GHost->m_Language->GameUnlocked( ) );
-		m_Locked = false;
-	}
-
-	// ping every 5 seconds
-	// changed this to ping during game loading as well to hopefully fix some problems with people disconnecting during loading
-	// changed this to ping during the game as well
-
-	if( GetTime( ) - m_LastPingTime >= 5 )
-	{
-		// note: we must send pings to players who are downloading the map because Warcraft III disconnects from the lobby if it doesn't receive a ping every ~90 seconds
-		// so if the player takes longer than 90 seconds to download the map they would be disconnected unless we keep sending pings
-		// todotodo: ignore pings received from players who have recently finished downloading the map
-
-		SendAll( m_Protocol->SEND_W3GS_PING_FROM_HOST( ) );
-
-		// we also broadcast the game to the local network every 5 seconds so we hijack this timer for our nefarious purposes
-		// however we only want to broadcast if the countdown hasn't started
-		// see the !sendlan code later in this file for some more information about how this works
-		// todotodo: should we send a game cancel message somewhere? we'll need to implement a host counter for it to work
-
-		if( !m_CountDownStarted )
-		{
-			// construct a fixed host counter which will be used to identify players from this "realm" (i.e. LAN)
-			// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
-			// the rest of the fixed host counter will contain the 28 least significant bits of the actual host counter
-			// since we're destroying 4 bits of information here the actual host counter should not be greater than 2^28 which is a reasonable assumption
-			// when a player joins a game we can obtain the ID from the received host counter
-			// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
-
-			uint32_t FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
-
-			if( m_SaveGame )
-			{
-				// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
-
-				uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
-				QByteArray MapWidth;
-				MapWidth.push_back( (char)0 );
-				MapWidth.push_back( (char)0 );
-				QByteArray MapHeight;
-				MapHeight.push_back( (char)0 );
-				MapHeight.push_back( (char)0 );
-				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, FixedHostCounter ) );
-			}
-			else
-			{
-				// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
-				// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
-
-				uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
-				m_GHost->m_UDPSocket->Broadcast( 6112, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ) );
-			}
-		}
-
-		m_LastPingTime = GetTime( );
-	}
+	if (m_CountDownStarted)
+		return;
 
 	// auto rehost if there was a refresh error in autohosted games
+	m_RefreshError = true;
 
-	if( m_RefreshError && !m_CountDownStarted && m_GameState == GAME_PUBLIC && !m_GHost->m_AutoHostGameName.isEmpty( ) && m_GHost->m_AutoHostMaximumGames != 0 && m_GHost->m_AutoHostAutoStartPlayers != 0 && m_AutoStartPlayers != 0 )
+	if(m_GameState == GAME_PUBLIC &&
+	   !m_GHost->m_AutoHostGameName.isEmpty( ) &&
+	   m_GHost->m_AutoHostMaximumGames != 0 &&
+	   m_GHost->m_AutoHostAutoStartPlayers != 0 &&
+	   m_AutoStartPlayers != 0 )
 	{
 		// there's a slim chance that this isn't actually an autohosted game since there is no explicit autohost flag
 		// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
@@ -521,12 +620,19 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		}
 
 		m_CreationTime = GetTime( );
-		m_LastRefreshTime = GetTime( );
+	}
+}
+
+void CBaseGame::EventRefreshTimeout()
+{
+	if (m_GameLoading || m_GameLoaded)
+	{
+		m_RefreshTimer.stop();
+		return;
 	}
 
 	// refresh every 3 seconds
-
-	if( !m_RefreshError && !m_CountDownStarted && m_GameState == GAME_PUBLIC && GetSlotsOpen( ) > 0 && GetTime( ) - m_LastRefreshTime >= 3 )
+	if( !m_RefreshError && m_GameState == GAME_PUBLIC && GetSlotsOpen( ) > 0)
 	{
 		// send a game refresh packet to each battle.net connection
 
@@ -547,530 +653,189 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 		if( m_RefreshMessages && Refreshed )
 			SendAllChat( m_GHost->m_Language->GameRefreshed( ) );
-
-		m_LastRefreshTime = GetTime( );
 	}
+}
 
-	// send more map data
-
-	if( !m_GameLoading && !m_GameLoaded && GetTicks( ) - m_LastDownloadCounterResetTicks >= 1000 )
+void CBaseGame::EventResetDownloadCounter()
+{
+	// 1 Hz
+	if (m_GameLoading || m_GameLoaded )
 	{
-		// hackhack: another timer hijack is in progress here
-		// since the download counter is reset once per second it's a great place to update the slot info if necessary
-
-		if( m_SlotInfoChanged )
-			SendAllSlotInfo( );
-
-		m_DownloadCounter = 0;
-		m_LastDownloadCounterResetTicks = GetTicks( );
+		m_DownloadCounterTimer.stop();
+		return;
 	}
 
-	if( !m_GameLoading && !m_GameLoaded && GetTicks( ) - m_LastDownloadTicks >= 100 )
-	{
-		uint32_t Downloaders = 0;
+	m_DownloadCounter = 0;
+}
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		{
-			if( (*i)->GetDownloadStarted( ) && !(*i)->GetDownloadFinished( ) )
-			{
-				Downloaders++;
-
-				if( m_GHost->m_MaxDownloaders > 0 && Downloaders > m_GHost->m_MaxDownloaders )
-					break;
-
-				// send up to 100 pieces of the map at once so that the download goes faster
-				// if we wait for each MAPPART packet to be acknowledged by the client it'll take a long time to download
-				// this is because we would have to wait the round trip time (the ping time) between sending every 1442 bytes of map data
-				// doing it this way allows us to send at least 140 KB in each round trip interval which is much more reasonable
-				// the theoretical throughput is [140 KB * 1000 / ping] in KB/sec so someone with 100 ping (round trip ping, not LC ping) could download at 1400 KB/sec
-				// note: this creates a queue of map data which clogs up the connection when the client is on a slower connection (e.g. dialup)
-				// in this case any changes to the lobby are delayed by the amount of time it takes to send the queued data (i.e. 140 KB, which could be 30 seconds or more)
-				// for example, players joining and leaving, slot changes, chat messages would all appear to happen much later for the low bandwidth player
-				// note: the throughput is also limited by the number of times this code is executed each second
-				// e.g. if we send the maximum amount (140 KB) 10 times per second the theoretical throughput is 1400 KB/sec
-				// therefore the maximum throughput is 1400 KB/sec regardless of ping and this value slowly diminishes as the player's ping increases
-				// in addition to this, the throughput is limited by the configuration value bot_maxdownloadspeed
-				// in summary: the actual throughput is MIN( 140 * 1000 / ping, 1400, bot_maxdownloadspeed ) in KB/sec assuming only one player is downloading the map
-
-				uint32_t MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
-
-				while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 100 && (*i)->GetLastMapPartSent( ) < MapSize )
-				{
-					if( (*i)->GetLastMapPartSent( ) == 0 )
-					{
-						// overwrite the "started download ticks" since this is the first time we've sent any map data to the player
-						// prior to this we've only determined if the player needs to download the map but it's possible we could have delayed sending any data due to download limits
-
-						(*i)->SetStartedDownloadingTicks( GetTicks( ) );
-					}
-
-					// limit the download speed if we're sending too much data
-					// the download counter is the # of map bytes downloaded in the last second (it's reset once per second)
-
-					if( m_GHost->m_MaxDownloadSpeed > 0 && m_DownloadCounter > m_GHost->m_MaxDownloadSpeed * 1024 )
-						break;
-
-					Send( *i, m_Protocol->SEND_W3GS_MAPPART( GetHostPID( ), (*i)->GetPID( ), (*i)->GetLastMapPartSent( ), m_Map->GetMapData( ) ) );
-					(*i)->SetLastMapPartSent( (*i)->GetLastMapPartSent( ) + 1442 );
-					m_DownloadCounter += 1442;
-				}
-			}
-		}
-
-		m_LastDownloadTicks = GetTicks( );
-	}
-
+void CBaseGame::EventAnnounceTimeout()
+{
 	// announce every m_AnnounceInterval seconds
 
-	if( !m_AnnounceMessage.isEmpty( ) && !m_CountDownStarted && GetTime( ) - m_LastAnnounceTime >= m_AnnounceInterval )
+	if( m_AnnounceMessage.isEmpty( ) )
 	{
-		SendAllChat( m_AnnounceMessage );
-		m_LastAnnounceTime = GetTime( );
+		m_AnnounceTimer.stop();
+		return;
 	}
 
-	// kick players who don't spoof check within 20 seconds when spoof checks are required and the game is autohosted
+	if (m_CountDownStarted)
+		return;
 
-	if( !m_CountDownStarted && m_GHost->m_RequireSpoofChecks && m_GameState == GAME_PUBLIC && !m_GHost->m_AutoHostGameName.isEmpty( ) && m_GHost->m_AutoHostMaximumGames != 0 && m_GHost->m_AutoHostAutoStartPlayers != 0 && m_AutoStartPlayers != 0 )
+	SendAllChat( m_AnnounceMessage );
+}
+
+void CBaseGame::EventMapDataTimeout()
+{
+	if (m_GameLoading || m_GameLoaded )
 	{
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		m_MapDataTimer.stop();
+		return;
+	}
+
+	uint32_t Downloaders = 0;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetDownloadStarted( ) && !(*i)->GetDownloadFinished( ) )
 		{
-			if( !(*i)->GetSpoofed( ) && GetTime( ) - (*i)->GetJoinTime( ) >= 20 )
+			Downloaders++;
+
+			if( m_GHost->m_MaxDownloaders > 0 && Downloaders > m_GHost->m_MaxDownloaders )
+				break;
+
+			// send up to 100 pieces of the map at once so that the download goes faster
+			// if we wait for each MAPPART packet to be acknowledged by the client it'll take a long time to download
+			// this is because we would have to wait the round trip time (the ping time) between sending every 1442 bytes of map data
+			// doing it this way allows us to send at least 140 KB in each round trip interval which is much more reasonable
+			// the theoretical throughput is [140 KB * 1000 / ping] in KB/sec so someone with 100 ping (round trip ping, not LC ping) could download at 1400 KB/sec
+			// note: this creates a queue of map data which clogs up the connection when the client is on a slower connection (e.g. dialup)
+			// in this case any changes to the lobby are delayed by the amount of time it takes to send the queued data (i.e. 140 KB, which could be 30 seconds or more)
+			// for example, players joining and leaving, slot changes, chat messages would all appear to happen much later for the low bandwidth player
+			// note: the throughput is also limited by the number of times this code is executed each second
+			// e.g. if we send the maximum amount (140 KB) 10 times per second the theoretical throughput is 1400 KB/sec
+			// therefore the maximum throughput is 1400 KB/sec regardless of ping and this value slowly diminishes as the player's ping increases
+			// in addition to this, the throughput is limited by the configuration value bot_maxdownloadspeed
+			// in summary: the actual throughput is MIN( 140 * 1000 / ping, 1400, bot_maxdownloadspeed ) in KB/sec assuming only one player is downloading the map
+
+			uint32_t MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
+
+			while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 100 && (*i)->GetLastMapPartSent( ) < MapSize )
 			{
-				(*i)->SetDeleteMe( true );
-				(*i)->SetLeftReason( m_GHost->m_Language->WasKickedForNotSpoofChecking( ) );
-				(*i)->SetLeftCode( PLAYERLEAVE_LOBBY );
-				OpenSlot( GetSIDFromPID( (*i)->GetPID( ) ), false );
+				if( (*i)->GetLastMapPartSent( ) == 0 )
+				{
+					// overwrite the "started download ticks" since this is the first time we've sent any map data to the player
+					// prior to this we've only determined if the player needs to download the map but it's possible we could have delayed sending any data due to download limits
+
+					(*i)->SetStartedDownloadingTicks( GetTicks( ) );
+				}
+
+				// limit the download speed if we're sending too much data
+				// the download counter is the # of map bytes downloaded in the last second (it's reset once per second)
+
+				if( m_GHost->m_MaxDownloadSpeed > 0 && m_DownloadCounter > m_GHost->m_MaxDownloadSpeed * 1024 )
+					break;
+
+				Send( *i, m_Protocol->SEND_W3GS_MAPPART( GetHostPID( ), (*i)->GetPID( ), (*i)->GetLastMapPartSent( ), m_Map->GetMapData( ) ) );
+				(*i)->SetLastMapPartSent( (*i)->GetLastMapPartSent( ) + 1442 );
+				m_DownloadCounter += 1442;
 			}
 		}
+	}
+}
+
+void CBaseGame::EventCountdownTimeout()
+{
+	if( m_CountDownCounter > 0 )
+	{
+		// we use a countdown counter rather than a "finish countdown time" here because it might alternately round up or down the count
+		// this sometimes resulted in a countdown of e.g. "6 5 3 2 1" during my testing which looks pretty dumb
+		// doing it this way ensures it's always "5 4 3 2 1" but each interval might not be *exactly* the same length
+
+		SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+		m_CountDownCounter--;
+	}
+	else if( !m_GameLoading && !m_GameLoaded )
+		EventGameStarted( );
+}
+
+void CBaseGame::EventAutostartTimeout()
+{
+	if (m_GameLoading || m_GameLoaded)
+	{
+		m_AutostartTimer.stop();
+		return;
 	}
 
 	// try to auto start every 10 seconds
 
-	if( !m_CountDownStarted && m_AutoStartPlayers != 0 && GetTime( ) - m_LastAutoStartTime >= 10 )
-	{
-		StartCountDownAuto( m_GHost->m_RequireSpoofChecks );
-		m_LastAutoStartTime = GetTime( );
-	}
+	if( m_CountDownStarted || m_AutoStartPlayers == 0 )
+		return;
 
-	// countdown every 500 ms
-
-	if( m_CountDownStarted && GetTicks( ) - m_LastCountDownTicks >= 500 )
-	{
-		if( m_CountDownCounter > 0 )
-		{
-			// we use a countdown counter rather than a "finish countdown time" here because it might alternately round up or down the count
-			// this sometimes resulted in a countdown of e.g. "6 5 3 2 1" during my testing which looks pretty dumb
-			// doing it this way ensures it's always "5 4 3 2 1" but each interval might not be *exactly* the same length
-
-			SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
-			m_CountDownCounter--;
-		}
-		else if( !m_GameLoading && !m_GameLoaded )
-			EventGameStarted( );
-
-		m_LastCountDownTicks = GetTicks( );
-	}
-
-	// check if the lobby is "abandoned" and needs to be closed since it will never start
-
-	if( !m_GameLoading && !m_GameLoaded && m_AutoStartPlayers == 0 && m_GHost->m_LobbyTimeLimit > 0 )
-	{
-		// check if there's a player with reserved status in the game
-
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		{
-			if( (*i)->GetReserved( ) )
-				m_LastReservedSeen = GetTime( );
-		}
-
-		// check if we've hit the time limit
-
-		if( GetTime( ) - m_LastReservedSeen >= m_GHost->m_LobbyTimeLimit * 60 )
-		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (lobby time limit hit)" );
-			return true;
-		}
-	}
-
-	// check if the game is loaded
-
-	if( m_GameLoading )
-	{
-		bool FinishedLoading = true;
-
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		{
-			FinishedLoading = (*i)->GetFinishedLoading( );
-
-			if( !FinishedLoading )
-				break;
-		}
-
-		if( FinishedLoading )
-		{
-			m_LastActionSentTicks = GetTicks( );
-			m_GameLoading = false;
-			m_GameLoaded = true;
-			EventGameLoaded( );
-		}
-		else
-		{
-			// reset the "lag" screen (the load-in-game screen) every 30 seconds
-
-			if( m_LoadInGame && GetTime( ) - m_LastLagScreenResetTime >= 30 )
-			{
-				bool UsingGProxy = false;
-
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-				{
-					if( (*i)->GetGProxy( ) )
-						UsingGProxy = true;
-				}
-
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-				{
-					if( (*i)->GetFinishedLoading( ) )
-					{
-						// stop the lag screen
-
-						for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-						{
-							if( !(*j)->GetFinishedLoading( ) )
-								Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j, true ) );
-						}
-
-						// send an empty update
-						// this resets the lag screen timer but creates a rather annoying problem
-						// in order to prevent a desync we must make sure every player receives the exact same "desyncable game data" (updates and player leaves) in the exact same order
-						// unfortunately we cannot send updates to players who are still loading the map, so we buffer the updates to those players (see the else clause a few lines down for the code)
-						// in addition to this we must ensure any player leave messages are sent in the exact same position relative to these updates so those must be buffered too
-
-						if( UsingGProxy && !(*i)->GetGProxy( ) )
-						{
-							// we must send empty actions to non-GProxy++ players
-							// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
-							// empty actions are used to extend the time a player can use when reconnecting
-
-							for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
-								Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-						}
-
-						Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-
-						// start the lag screen
-
-						Send( *i, m_Protocol->SEND_W3GS_START_LAG( m_Players, true ) );
-					}
-					else
-					{
-						// buffer the empty update since the player is still loading the map
-
-						if( UsingGProxy && !(*i)->GetGProxy( ) )
-						{
-							// we must send empty actions to non-GProxy++ players
-							// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
-							// empty actions are used to extend the time a player can use when reconnecting
-
-							for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
-								(*i)->AddLoadInGameData( m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-						}
-
-						(*i)->AddLoadInGameData( m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-					}
-				}
-
-				// add actions to replay
-
-				if( m_Replay )
-				{
-					if( UsingGProxy )
-					{
-						for( unsigned char i = 0; i < m_GProxyEmptyActions; i++ )
-							m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
-					}
-
-					m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
-				}
-
-				// Warcraft III doesn't seem to respond to empty actions
-
-				/* if( UsingGProxy )
-					m_SyncCounter += m_GProxyEmptyActions;
-
-				m_SyncCounter++; */
-				m_LastLagScreenResetTime = GetTime( );
-			}
-		}
-	}
-
-	// keep track of the largest sync counter (the number of keepalive packets received by each player)
-	// if anyone falls behind by more than m_SyncLimit keepalives we start the lag screen
-
-	if( m_GameLoaded )
-	{
-		// check if anyone has started lagging
-		// we consider a player to have started lagging if they're more than m_SyncLimit keepalives behind
-
-		if( !m_Lagging )
-		{
-			QString LaggingString;
-
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( m_SyncCounter - (*i)->GetSyncCounter( ) > m_SyncLimit )
-				{
-					(*i)->SetLagging( true );
-					(*i)->SetStartedLaggingTicks( GetTicks( ) );
-					m_Lagging = true;
-					m_StartedLaggingTime = GetTime( );
-
-					if( LaggingString.isEmpty( ) )
-						LaggingString = (*i)->GetName( );
-					else
-						LaggingString += ", " + (*i)->GetName( );
-				}
-			}
-
-			if( m_Lagging )
-			{
-				// start the lag screen
-
-				CONSOLE_Print( "[GAME: " + m_GameName + "] started lagging on [" + LaggingString + "]" );
-				SendAll( m_Protocol->SEND_W3GS_START_LAG( m_Players ) );
-
-				// reset everyone's drop vote
-
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-					(*i)->SetDropVote( false );
-
-				m_LastLagScreenResetTime = GetTime( );
-			}
-		}
-
-		if( m_Lagging )
-		{
-			bool UsingGProxy = false;
-
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( (*i)->GetGProxy( ) )
-					UsingGProxy = true;
-			}
-
-			uint32_t WaitTime = 60;
-
-			if( UsingGProxy )
-				WaitTime = ( m_GProxyEmptyActions + 1 ) * 60;
-
-			if( GetTime( ) - m_StartedLaggingTime >= WaitTime )
-				StopLaggers( m_GHost->m_Language->WasAutomaticallyDroppedAfterSeconds( UTIL_ToString( WaitTime ) ) );
-
-			// we cannot allow the lag screen to stay up for more than ~65 seconds because Warcraft III disconnects if it doesn't receive an action packet at least this often
-			// one (easy) solution is to simply drop all the laggers if they lag for more than 60 seconds
-			// another solution is to reset the lag screen the same way we reset it when using load-in-game
-			// this is required in order to give GProxy++ clients more time to reconnect
-
-			if( GetTime( ) - m_LastLagScreenResetTime >= 60 )
-			{
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-				{
-					// stop the lag screen
-
-					for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-					{
-						if( (*j)->GetLagging( ) )
-							Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j ) );
-					}
-
-					// send an empty update
-					// this resets the lag screen timer
-
-					if( UsingGProxy && !(*i)->GetGProxy( ) )
-					{
-						// we must send additional empty actions to non-GProxy++ players
-						// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
-						// empty actions are used to extend the time a player can use when reconnecting
-
-						for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
-							Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-					}
-
-					Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
-
-					// start the lag screen
-
-					Send( *i, m_Protocol->SEND_W3GS_START_LAG( m_Players ) );
-				}
-
-				// add actions to replay
-
-				if( m_Replay )
-				{
-					if( UsingGProxy )
-					{
-						for( unsigned char i = 0; i < m_GProxyEmptyActions; i++ )
-							m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
-					}
-
-					m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
-				}
-
-				// Warcraft III doesn't seem to respond to empty actions
-
-				/* if( UsingGProxy )
-					m_SyncCounter += m_GProxyEmptyActions;
-
-				m_SyncCounter++; */
-				m_LastLagScreenResetTime = GetTime( );
-			}
-
-			// check if anyone has stopped lagging normally
-			// we consider a player to have stopped lagging if they're less than half m_SyncLimit keepalives behind
-
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( (*i)->GetLagging( ) && m_SyncCounter - (*i)->GetSyncCounter( ) < m_SyncLimit / 2 )
-				{
-					// stop the lag screen for this player
-
-					CONSOLE_Print( "[GAME: " + m_GameName + "] stopped lagging on [" + (*i)->GetName( ) + "]" );
-					SendAll( m_Protocol->SEND_W3GS_STOP_LAG( *i ) );
-					(*i)->SetLagging( false );
-					(*i)->SetStartedLaggingTicks( 0 );
-				}
-			}
-
-			// check if everyone has stopped lagging
-
-			bool Lagging = false;
-
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( (*i)->GetLagging( ) )
-					Lagging = true;
-			}
-
-			m_Lagging = Lagging;
-
-			// reset m_LastActionSentTicks because we want the game to stop running while the lag screen is up
-
-			m_LastActionSentTicks = GetTicks( );
-
-			// keep track of the last lag screen time so we can avoid timing out players
-
-			m_LastLagScreenTime = GetTime( );
-		}
-	}
-
-	// send actions every m_Latency milliseconds
-	// actions are at the heart of every Warcraft 3 game but luckily we don't need to know their contents to relay them
-	// we queue player actions in EventPlayerAction then just resend them in batches to all players here
-
-	if( m_GameLoaded && !m_Lagging && GetTicks( ) - m_LastActionSentTicks >= m_Latency - m_LastActionLateBy )
-		SendAllActions( );
-
-	// expire the votekick
-
-	if( !m_KickVotePlayer.isEmpty( ) && GetTime( ) - m_StartedKickVoteTime >= 60 )
-	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] expired" );
-		SendAllChat( m_GHost->m_Language->VoteKickExpired( m_KickVotePlayer ) );
-		m_KickVotePlayer.clear( );
-		m_StartedKickVoteTime = 0;
-	}
-
-	// start the gameover timer if there's only one player left
-
-	if( m_Players.size( ) == 1 && m_FakePlayerPID == 255 && m_GameOverTime == 0 && ( m_GameLoading || m_GameLoaded ) )
-	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (one player left)" );
-		m_GameOverTime = GetTime( );
-	}
-
-	// finish the gameover timer
-
-	if( m_GameOverTime != 0 && GetTime( ) - m_GameOverTime >= 60 )
-	{
-		bool AlreadyStopped = true;
-
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		{
-			if( !(*i)->GetDeleteMe( ) )
-			{
-				AlreadyStopped = false;
-				break;
-			}
-		}
-
-		if( !AlreadyStopped )
-		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
-			StopPlayers( "was disconnected (gameover timer finished)" );
-		}
-	}
-
-	// end the game if there aren't any players left
-
-	if( m_Players.isEmpty( ) && ( m_GameLoading || m_GameLoaded ) )
-	{
-		if( !m_Saving )
-		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (no players left)" );
-			SaveGameData( );
-			m_Saving = true;
-		}
-		else if( IsGameDataSaved( ) )
-			return true;
-	}
-
-	// accept new connections
-
-	if( m_Socket )
-	{
-		CTCPSocket *NewSocket = m_Socket->Accept( (fd_set *)fd );
-
-		if( NewSocket )
-		{
-			// check the IP blacklist
-
-			if( m_IPBlackList.find( NewSocket->GetIPString( ) ) == m_IPBlackList.end( ) )
-			{
-				if( m_GHost->m_TCPNoDelay )
-					NewSocket->SetNoDelay( true );
-
-				m_Potentials.push_back( new CPotentialPlayer( m_Protocol, this, NewSocket ) );
-			}
-			else
-			{
-				CONSOLE_Print( "[GAME: " + m_GameName + "] rejected connection from [" + NewSocket->GetIPString( ) + "] due to blacklist" );
-				delete NewSocket;
-			}
-		}
-
-		if( m_Socket->HasError( ) )
-			return true;
-	}
-
-	return m_Exiting;
+	StartCountDownAuto( m_GHost->m_RequireSpoofChecks );
 }
 
-void CBaseGame :: UpdatePost( void *send_fd )
+void CBaseGame::EventGameOverTimeout()
 {
-	// we need to manually call DoSend on each player now because CGamePlayer :: Update doesn't do it
-	// this is in case player 2 generates a packet for player 1 during the update but it doesn't get sent because player 1 already finished updating
-	// in reality since we're queueing actions it might not make a big difference but oh well
+	bool AlreadyStopped = true;
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		if( (*i)->GetSocket( ) )
-			(*i)->GetSocket( )->DoSend( (fd_set *)send_fd );
+		if( !(*i)->GetDeleteMe( ) )
+		{
+			AlreadyStopped = false;
+			break;
+		}
 	}
 
-	for( QVector<CPotentialPlayer *> :: iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
+	if( !AlreadyStopped )
 	{
-		if( (*i)->GetSocket( ) )
-			(*i)->GetSocket( )->DoSend( (fd_set *)send_fd );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
+		StopPlayers( "was disconnected (gameover timer finished)" );
 	}
+}
+
+void CBaseGame::EventVotekickTimeout()
+{
+	// expire the votekick
+
+	if( m_KickVotePlayer.isEmpty( )  )
+		return;
+
+	CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] expired" );
+	SendAllChat( m_GHost->m_Language->VoteKickExpired( m_KickVotePlayer ) );
+	m_KickVotePlayer.clear( );
+}
+
+void CBaseGame::EventLobbyTimeout()
+{
+	if( m_GameLoading || m_GameLoaded || m_AutoStartPlayers != 0)
+		return;
+
+	// check if we've hit the time limit
+
+	CONSOLE_Print( "[GAME: " + m_GameName + "] is over (lobby time limit hit)" );
+	deleteLater();
+}
+
+void CBaseGame::EventNewConnection()
+{
+	QTcpSocket *NewSocket = m_Socket->nextPendingConnection();
+
+	if( !NewSocket )
+		return;
+
+	// check the IP blacklist
+	if( m_IPBlackList.find( NewSocket->localAddress().toString() ) != m_IPBlackList.end( ) )
+	{
+		CONSOLE_Print( "[GAME: " + m_GameName + "] rejected connection from [" + NewSocket->localAddress().toString() + "] due to blacklist" );
+		NewSocket->deleteLater();
+		return;
+	}
+
+	if( m_GHost->m_TCPNoDelay )
+		NewSocket->setSocketOption(QAbstractSocket::LowDelayOption, true);
+
+	new CPotentialPlayer( m_Protocol, this, NewSocket );
 }
 
 void CBaseGame :: Send( CGamePlayer *player, QByteArray data )
@@ -1204,10 +969,7 @@ void CBaseGame :: SendLocalAdminChat( QString message )
 void CBaseGame :: SendAllSlotInfo( )
 {
 	if( !m_GameLoading && !m_GameLoaded )
-	{
 		SendAll( m_Protocol->SEND_W3GS_SLOTINFO( m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
-		m_SlotInfoChanged = false;
-	}
 }
 
 void CBaseGame :: SendVirtualHostPlayerInfo( CGamePlayer *player )
@@ -1276,6 +1038,7 @@ void CBaseGame :: SendAllActions( )
 		m_SyncCounter += m_GProxyEmptyActions; */
 
 	m_SyncCounter++;
+	CheckPlayersStartedLaggging();
 
 	// we aren't allowed to send more than 1460 bytes in a single packet but it's possible we might have more than that many bytes waiting in the queue
 
@@ -1407,9 +1170,236 @@ void CBaseGame :: SendEndMessage( )
 	}
 }
 
-void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
+void CBaseGame::CheckPlayersStartedLaggging()
 {
+	// check if anyone has started lagging
+	// we consider a player to have started lagging if they're more than m_SyncLimit keepalives behind
+
+	if( m_Lagging )
+		return;
+
+
+	bool UsingGProxy = false;
+
+	m_WaitTime = 60;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetGProxy( ) )
+		{
+			if( UsingGProxy )
+				m_WaitTime = ( m_GProxyEmptyActions + 1 ) * 60;
+
+			break;
+		}
+	}
+
+	QString LaggingString;
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( m_SyncCounter - (*i)->GetSyncCounter( ) > m_SyncLimit )
+		{
+			(*i)->SetLagging( true );
+			(*i)->SetStartedLaggingTicks( GetTicks( ) );
+			m_Lagging = true;
+			m_StartedLaggingTime = GetTime( );
+
+			m_DropLaggerTimer.start(m_WaitTime*1000);
+
+			if( LaggingString.isEmpty( ) )
+				LaggingString = (*i)->GetName( );
+			else
+				LaggingString += ", " + (*i)->GetName( );
+		}
+	}
+
+	if( m_Lagging )
+	{
+		// start the lag screen
+
+		CONSOLE_Print( "[GAME: " + m_GameName + "] started lagging on [" + LaggingString + "]" );
+		SendAll( m_Protocol->SEND_W3GS_START_LAG( m_Players ) );
+
+		// reset everyone's drop vote
+
+		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			(*i)->SetDropVote( false );
+
+		m_ResetLagscreenTimer.start();
+	}
+}
+
+void CBaseGame::EventDropLaggerTimeout()
+{
+	StopLaggers( m_GHost->m_Language->WasAutomaticallyDroppedAfterSeconds( UTIL_ToString(m_WaitTime) ) );
+}
+
+void CBaseGame::EventResetLagscreenTimeout()
+{
+	if (!m_Lagging)
+	{
+		m_ResetLagscreenTimer.stop();
+		return;
+	}
+
+	bool UsingGProxy = false;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetGProxy( ) )
+			UsingGProxy = true;
+	}
+
+	// we cannot allow the lag screen to stay up for more than ~65 seconds because Warcraft III disconnects if it doesn't receive an action packet at least this often
+	// one (easy) solution is to simply drop all the laggers if they lag for more than 60 seconds
+	// another solution is to reset the lag screen the same way we reset it when using load-in-game
+	// this is required in order to give GProxy++ clients more time to reconnect
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		// stop the lag screen
+
+		for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+		{
+			if( (*j)->GetLagging( ) )
+				Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j ) );
+		}
+
+		// send an empty update
+		// this resets the lag screen timer
+
+		if( UsingGProxy && !(*i)->GetGProxy( ) )
+		{
+			// we must send additional empty actions to non-GProxy++ players
+			// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
+			// empty actions are used to extend the time a player can use when reconnecting
+
+			for( unsigned char j = 0; j < m_GProxyEmptyActions; j++ )
+				Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
+		}
+
+		Send( *i, m_Protocol->SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>( ), 0 ) );
+
+		// start the lag screen
+
+		Send( *i, m_Protocol->SEND_W3GS_START_LAG( m_Players ) );
+	}
+
+	// add actions to replay
+
+	if( m_Replay )
+	{
+		if( UsingGProxy )
+		{
+			for( unsigned char i = 0; i < m_GProxyEmptyActions; i++ )
+				m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
+		}
+
+		m_Replay->AddTimeSlot( 0, QQueue<CIncomingAction *>( ) );
+	}
+
+	// Warcraft III doesn't seem to respond to empty actions
+
+	/* if( UsingGProxy )
+		m_SyncCounter += m_GProxyEmptyActions;
+
+	m_SyncCounter++; */
+}
+
+void CBaseGame::EventPlayerStoppedLagging()
+{
+	if( !m_Lagging )
+		return;
+
+	// check if anyone has stopped lagging normally
+	// we consider a player to have stopped lagging if they're less than half m_SyncLimit keepalives behind
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetLagging( ) && m_SyncCounter - (*i)->GetSyncCounter( ) < m_SyncLimit / 2 )
+		{
+			// stop the lag screen for this player
+
+			CONSOLE_Print( "[GAME: " + m_GameName + "] stopped lagging on [" + (*i)->GetName( ) + "]" );
+			SendAll( m_Protocol->SEND_W3GS_STOP_LAG( *i ) );
+			(*i)->SetLagging( false );
+			(*i)->SetStartedLaggingTicks( 0 );
+		}
+	}
+
+	// check if everyone has stopped lagging
+
+	bool Lagging = false;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( (*i)->GetLagging( ) )
+			Lagging = true;
+	}
+
+	m_Lagging = Lagging;
+
+	if (!m_Lagging)
+	{
+		m_DropLaggerTimer.stop();
+		m_SendActionTimer.start();
+	}
+
+	// reset m_LastActionSentTicks because we want the game to stop running while the lag screen is up
+
+	m_LastActionSentTicks = GetTicks( );
+
+	// keep track of the last lag screen time so we can avoid timing out players
+
+	m_LastLagScreenTime = GetTime( );
+}
+
+void CBaseGame :: EventPlayerDeleted()
+{
+	CGamePlayer *player = (CGamePlayer*)QObject::sender();
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
+
+	m_Players.remove(m_Players.indexOf(player));
+
+	// create the virtual host player if there is room
+	if( !m_GameLoading && !m_GameLoaded && GetNumPlayers( ) < 12 )
+		CreateVirtualHost( );
+
+	bool res = false;
+	// check if there's another player with reserved status in the game
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		if( (*i)->GetReserved( ) )
+			res = true;
+
+	if (res)
+		m_LobbyTimeoutTimer.start();
+
+	// unlock the game if the owner leaves
+	if( m_Locked && player->GetName() == m_OwnerName )
+	{
+		SendAllChat( m_GHost->m_Language->GameUnlocked( ) );
+		m_Locked = false;
+	}
+
+	// start the gameover timer if there's only one player left
+	if( ( m_GameLoading || m_GameLoaded ) && m_Players.size( ) == 1 && m_FakePlayerPID == 255 && !m_GameOverTimer.isActive() )
+	{
+		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (one player left)" );
+		m_GameOverTimer.start();
+	}
+
+	// end the game if there aren't any players left
+	if( m_Players.isEmpty( ) && m_GameLoading || m_GameLoaded )
+	{
+		if( !m_Saving )
+		{
+			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (no players left)" );
+			SaveGameData( );
+			m_Saving = true;
+		}
+		else if( IsGameDataSaved( ) )
+			deleteLater();
+	}
 
 	// remove any queued spoofcheck messages for this player
 
@@ -1516,7 +1506,7 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 		SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
 
 	m_KickVotePlayer.clear( );
-	m_StartedKickVoteTime = 0;
+	m_VotekickTimer.stop();
 }
 
 void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
@@ -1529,33 +1519,25 @@ void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
 			player->SetGProxyDisconnectNoticeSent( true );
 		}
 
-		if( GetTime( ) - player->GetLastGProxyWaitNoticeSentTime( ) >= 20 )
-		{
-			uint32_t TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60 - ( GetTime( ) - m_StartedLaggingTime );
-
-			if( TimeRemaining > ( (uint32_t)m_GProxyEmptyActions + 1 ) * 60 )
-				TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60;
-
-			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
-			player->SetLastGProxyWaitNoticeSentTime( GetTime( ) );
-		}
-
+		player->m_SendGProxyMessageTimer.start();
 		return;
 	}
 
-	// not only do we not do any timeouts if the game is lagging, we allow for an additional grace period of 10 seconds
+	// not only do we not do any timeouts if the game is lagging, we allow for an additional grace period of 5 seconds
 	// this is because Warcraft 3 stops sending packets during the lag screen
 	// so when the lag screen finishes we would immediately disconnect everyone if we didn't give them some extra time
 
-	if( GetTime( ) - m_LastLagScreenTime >= 10 )
-	{
-		player->SetDeleteMe( true );
-		player->SetLeftReason( m_GHost->m_Language->HasLostConnectionTimedOut( ) );
-		player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
+	QTimer::singleShot(5000, this, SLOT(EventPlayerLaggedOut(player)));
+}
 
-		if( !m_GameLoading && !m_GameLoaded )
-			OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
-	}
+void CBaseGame::EventPlayerLaggedOut(CGamePlayer *player)
+{
+	player->SetDeleteMe( true );
+	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionTimedOut( ) );
+	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
+
+	if( !m_GameLoading && !m_GameLoaded )
+		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 }
 
 void CBaseGame :: EventPlayerDisconnectPlayerError( CGamePlayer *player )
@@ -1577,7 +1559,7 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 	{
 		if( !player->GetGProxyDisconnectNoticeSent( ) )
 		{
-			SendAllChat( player->GetName( ) + " " + m_GHost->m_Language->HasLostConnectionSocketErrorGProxy( player->GetSocket( )->GetErrorString( ) ) + "." );
+			SendAllChat( player->GetName( ) + " " + m_GHost->m_Language->HasLostConnectionSocketErrorGProxy( player->GetSocket( )->errorString() ) + "." );
 			player->SetGProxyDisconnectNoticeSent( true );
 		}
 
@@ -1596,7 +1578,7 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 	}
 
 	player->SetDeleteMe( true );
-	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionSocketError( player->GetSocket( )->GetErrorString( ) ) );
+	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionSocketError( player->GetSocket( )->errorString( ) ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
 	if( !m_GameLoading && !m_GameLoaded )
@@ -1716,7 +1698,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 						// this causes them to be kicked back to the chat channel on battle.net
 
 						QVector<CGameSlot> Slots = m_Map->GetSlots( );
-						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, potential->GetSocket( )->GetPort( ), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateQByteArray((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 						potential->SetDeleteMe( true );
 						return;
 					}
@@ -1744,7 +1726,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 					// this causes them to be kicked back to the chat channel on battle.net
 
 					QVector<CGameSlot> Slots = m_Map->GetSlots( );
-					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, potential->GetSocket( )->GetPort( ), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateQByteArray((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 					potential->SetDeleteMe( true );
 					return;
 				}
@@ -1779,6 +1761,10 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	}
 
 	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || ( m_GHost->m_ReserveAdmins && AnyAdminCheck ) || IsOwner( joinPlayer->GetName( ) );
+
+	// stop some timers
+	if (Reserved)
+		m_LobbyTimeoutTimer.stop();
 
 	// try to find a slot
 
@@ -1987,7 +1973,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), Player->GetSocket( )->GetPort( ), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateQByteArray((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2147,6 +2133,12 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			break;
 		}
 	}
+
+	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || ( m_GHost->m_ReserveAdmins && AnyAdminCheck ) || IsOwner( joinPlayer->GetName( ) );
+
+	// stop some timers
+	if (Reserved)
+		m_LobbyTimeoutTimer.stop();
 
 	if( SID == 255 )
 	{
@@ -2360,7 +2352,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), Player->GetSocket( )->GetPort( ), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateQByteArray((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2524,8 +2516,9 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 }
 
-void CBaseGame :: EventPlayerLoaded( CGamePlayer *player )
+void CBaseGame :: EventPlayerLoaded()
 {
+	CGamePlayer *player = (CGamePlayer*)QObject::sender();
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] finished loading in " + UTIL_ToString( (float)( player->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) + " seconds" );
 
 	if( m_LoadInGame )
@@ -2575,6 +2568,8 @@ void CBaseGame :: EventPlayerLoaded( CGamePlayer *player )
 	}
 	else
 		SendAll( m_Protocol->SEND_W3GS_GAMELOADED_OTHERS( player->GetPID( ) ) );
+
+	CheckGameLoaded();
 }
 
 void CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
@@ -3101,8 +3096,34 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 			// if we send a new slot update for every percentage change in their download status it adds up to a lot of data
 			// instead, we mark the slot info as "out of date" and update it only once in awhile (once per second when this comment was made)
 
-			m_SlotInfoChanged = true;
+			if (!m_SlotInfoTimer.isActive())
+				m_SlotInfoTimer.start();
 		}
+	}
+}
+
+void CBaseGame::EventCallableUpdateTimeout()
+{
+	// update callables
+
+	for( QVector<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); )
+	{
+		if( (*i)->GetReady( ) )
+		{
+			double Score = (*i)->GetResult( );
+
+			for( QVector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
+			{
+				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
+					EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score );
+			}
+
+			m_GHost->m_DB->RecoverCallable( *i );
+			delete *i;
+			i = m_ScoreChecks.erase( i );
+		}
+		else
+			i++;
 	}
 }
 
@@ -3204,11 +3225,11 @@ void CBaseGame :: EventGameStarted( )
 	// this is because we only permit slot info updates to be flagged when it's just a change in download status, all others are sent immediately
 	// it might not be necessary but let's clean up the mess anyway
 
-	if( m_SlotInfoChanged )
+	//if( m_SlotInfoChanged )
 		SendAllSlotInfo( );
 
 	m_StartedLoadingTicks = GetTicks( );
-	m_LastLagScreenResetTime = GetTime( );
+	m_LoadInGameTimer.start();
 	m_GameLoading = true;
 
 	// since we use a fake countdown to deal with leavers during countdown the COUNTDOWN_START and COUNTDOWN_END packets are sent in quick succession
@@ -4298,6 +4319,7 @@ void CBaseGame :: StartCountDown( bool force )
 		if( force )
 		{
 			m_CountDownStarted = true;
+			m_CountdownTimer.start();
 			m_CountDownCounter = 5;
 		}
 		else
@@ -4379,6 +4401,7 @@ void CBaseGame :: StartCountDown( bool force )
 			{
 				m_CountDownStarted = true;
 				m_CountDownCounter = 5;
+				m_CountdownTimer.start();
 			}
 		}
 	}
@@ -4470,6 +4493,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 		if( StillDownloading.isEmpty( ) && NotSpoofChecked.isEmpty( ) && NotPinged.isEmpty( ) )
 		{
 			m_CountDownStarted = true;
+			m_CountdownTimer.start();
 			m_CountDownCounter = 10;
 		}
 	}

@@ -34,14 +34,22 @@
 // CPotentialPlayer
 //
 
-CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket )
+#include <QAbstractSocket>
+
+CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket )
+	: QObject(NULL)
 {
 	m_Protocol = nProtocol;
 	m_Game = nGame;
 	m_Socket = nSocket;
+
 	m_DeleteMe = false;
 	m_Error = false;
 	m_IncomingJoinPlayer = NULL;
+
+	QObject::connect(nSocket, SIGNAL(readyRead()), this, SLOT(EventDataReady()));
+	QObject::connect(nSocket, SIGNAL(disconnected()), this, SLOT(EventConnectionClosed()));
+	QObject::connect(nSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
 }
 
 CPotentialPlayer :: ~CPotentialPlayer( )
@@ -58,40 +66,104 @@ CPotentialPlayer :: ~CPotentialPlayer( )
 	delete m_IncomingJoinPlayer;
 }
 
-QByteArray CPotentialPlayer :: GetExternalIP( )
+void CPotentialPlayer::EventDataReady()
 {
-	unsigned char Zeros[] = { 0, 0, 0, 0 };
+	m_TimeoutTimer.start();
+
+	ExtractPackets( );
+	ProcessPackets( );
+}
+
+void CPotentialPlayer::EventConnectionError(QAbstractSocket::SocketError /*error*/)
+{
+	this->deleteLater();
+}
+
+void CPotentialPlayer::EventConnectionClosed()
+{
+	this->deleteLater();
+}
+
+void CGamePlayer::EventPingTimeout()
+{
+	Send(m_Protocol->SEND_W3GS_PING_FROM_HOST( ) );
+}
+
+void CGamePlayer::EventACKTimeout()
+{
+	// GProxy++ acks
 
 	if( m_Socket )
-		return m_Socket->GetIP( );
+		m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_ACK( m_TotalPacketsReceived ) );
+}
 
+void CGamePlayer::EventWhoisTimeout()
+{
+	// wait 4 seconds after joining before sending the /whois or /w
+	// if we send the /whois too early battle.net may not have caught up with where the player is and return erroneous results
+
+	if( m_WhoisShouldBeSent && !m_Spoofed && !m_WhoisSent && !m_JoinedRealm.isEmpty( ) )
+	{
+		// todotodo: we could get kicked from battle.net for sending a command with invalid characters, do some basic checking
+
+		for( QVector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
+		{
+			if( (*i)->GetServer( ) == m_JoinedRealm )
+			{
+				if( m_Game->GetGameState( ) == GAME_PUBLIC )
+				{
+					if( (*i)->GetPasswordHashType( ) == "pvpgn" )
+						(*i)->QueueChatCommand( "/whereis " + m_Name );
+					else
+						(*i)->QueueChatCommand( "/whois " + m_Name );
+				}
+				else if( m_Game->GetGameState( ) == GAME_PRIVATE )
+					(*i)->QueueChatCommand( m_Game->m_GHost->m_Language->SpoofCheckByReplying( ), m_Name, true );
+			}
+		}
+
+		m_WhoisSent = true;
+	}
+
+}
+
+void CGamePlayer::EventConnectionError(QAbstractSocket::SocketError /*error*/)
+{
+	m_Game->EventPlayerDisconnectSocketError( this );
+	this->deleteLater();
+}
+
+void CGamePlayer::EventConnectionTimeout()
+{
+	// check for socket timeouts
+	// if we don't receive anything from a player for 30 seconds we can assume they've dropped
+	// this works because in the lobby we send pings every 5 seconds and expect a response to each one
+	// and in the game the Warcraft 3 client sends keepalives frequently (at least once per second it looks like)
+	m_Game->EventPlayerDisconnectTimedOut( this );
+	this->deleteLater();
+}
+
+void CGamePlayer::EventConnectionClosed()
+{
+	m_Game->EventPlayerDisconnectConnectionClosed( this );
+	this->deleteLater();
+}
+
+QByteArray CPotentialPlayer :: GetExternalIP( )
+{
+	if( m_Socket )
+		return UTIL_CreateQByteArray(m_Socket->localAddress().toIPv4Address());
+
+	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	return QByteArray( (char*)Zeros, 4 );
 }
 
 QString CPotentialPlayer :: GetExternalIPString( )
 {
 	if( m_Socket )
-		return m_Socket->GetIPString( );
+		return m_Socket->localAddress().toString();
 
 	return QString( );
-}
-
-bool CPotentialPlayer :: Update( void *fd )
-{
-	if( m_DeleteMe )
-		return true;
-
-	if( !m_Socket )
-		return false;
-
-	m_Socket->DoRecv( (fd_set *)fd );
-	ExtractPackets( );
-	ProcessPackets( );
-
-	// don't call DoSend here because some other players may not have updated yet and may generate a packet for this player
-	// also m_Socket may have been set to NULL during ProcessPackets but we're banking on the fact that m_DeleteMe has been set to true as well so it'll short circuit before dereferencing
-
-	return m_DeleteMe || m_Error || m_Socket->HasError( ) || !m_Socket->GetConnected( );
 }
 
 void CPotentialPlayer :: ExtractPackets( )
@@ -100,44 +172,40 @@ void CPotentialPlayer :: ExtractPackets( )
 		return;
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
-
-	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = RecvBuffer->toUtf8();
-
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
-	while( Bytes.size( ) >= 4 )
+	while( m_Socket->bytesAvailable() >= 4 )
 	{
-		if( Bytes[0] == W3GS_HEADER_CONSTANT || Bytes[0] == GPS_HEADER_CONSTANT )
-		{
-			// bytes 2 and 3 contain the length of the packet
-
-			uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
-
-			if( Length >= 4 )
-			{
-				if( Bytes.size( ) >= Length )
-				{
-					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], Bytes.mid(0, Length) ) );
-					*RecvBuffer = RecvBuffer->mid( Length );
-					Bytes = Bytes.mid(Length);
-				}
-				else
-					return;
-			}
-			else
-			{
-				m_Error = true;
-				m_ErrorString = "received invalid packet from player (bad length)";
-				return;
-			}
-		}
-		else
+		char header = m_Socket->peek(1).at(0);
+		if (header != W3GS_HEADER_CONSTANT && header != GPS_HEADER_CONSTANT )
 		{
 			m_Error = true;
 			m_ErrorString = "received invalid packet from player (bad header constant)";
+			m_Socket->abort();
+			m_Socket->deleteLater();
+			m_Socket = NULL;
 			return;
 		}
+
+		// bytes 2 and 3 contain the length of the packet
+
+		uint16_t Length = UTIL_QByteArrayToUInt16( m_Socket->peek(4), false, 2 );
+
+		if( Length < 4 )
+		{
+			m_Error = true;
+			m_ErrorString = "received invalid packet from player (bad length)";
+			m_Socket->abort();
+			m_Socket->deleteLater();
+			m_Socket = NULL;
+			return;
+		}
+
+		if( m_Socket->bytesAvailable() < Length )
+			return;
+
+		QByteArray Bytes = m_Socket->read(Length);
+		m_Packets.enqueue( new CCommandPacket( header, Bytes.at(1), Bytes ) );
 	}
 }
 
@@ -182,14 +250,15 @@ void CPotentialPlayer :: ProcessPackets( )
 void CPotentialPlayer :: Send( QByteArray data )
 {
 	if( m_Socket )
-		m_Socket->PutBytes( data );
+		m_Socket->write(data);
 }
 
 //
 // CGamePlayer
 //
-
-CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
+#include <QTimer>
+CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved )
+	: CPotentialPlayer( nProtocol, nGame, nSocket )
 {
 	m_PID = nPID;
 	m_Name = nName;
@@ -231,7 +300,8 @@ CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSock
 	m_LastGProxyAckTime = 0;
 }
 
-CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
+CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved )
+	: CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
 {
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
@@ -281,11 +351,63 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QSt
 	m_GProxyDisconnectNoticeSent = false;
 	m_GProxyReconnectKey = GetTicks( );
 	m_LastGProxyAckTime = 0;
+	init();
+}
+
+void CGamePlayer::EventSpoofCheckTimeout()
+{
+	// kick players who don't spoof check within 20 seconds when spoof checks are required and the game is autohosted
+
+	if (GetSpoofed())
+		return;
+
+	if (m_Game->GetCountDownStarted() || !m_Game->m_GHost->m_RequireSpoofChecks ||
+		m_Game->GetGameState() != GAME_PUBLIC || !m_Game->m_GHost->m_AutoHostGameName.isEmpty() ||
+		m_Game->m_GHost->m_AutoHostMaximumGames == 0 || m_Game->m_GHost->m_AutoHostAutoStartPlayers == 0 ||
+		m_Game->GetAutoStartPlayers() == 0)
+		return;
+
+	deleteLater();
+	SetLeftReason( m_Game->m_GHost->m_Language->WasKickedForNotSpoofChecking( ) );
+	SetLeftCode( PLAYERLEAVE_LOBBY );
+	m_Game->OpenSlot( m_Game->GetSIDFromPID( GetPID( ) ), false );
+}
+
+void CGamePlayer::init()
+{
+	QObject::connect(&m_TimeoutTimer, SIGNAL(timeout()), this, SLOT(EventConnectionTimeout()));
+	QObject::connect(&m_ACKTimer, SIGNAL(timeout()), this, SLOT(EventACKTimeout()));
+	QObject::connect(&m_PingTimer, SIGNAL(timeout()), this, SLOT(EventPingTimeout()));
+	QTimer::singleShot(4000, this, SLOT(EventWhoisTimeout()));
+
+	QObject::connect(this, SIGNAL(finishedLoading()), m_Game, SLOT(EventPlayerLoaded()));
+	QObject::connect(this, SIGNAL(destroyed()), m_Game, SLOT(EventPlayerDeleted()));
+	m_SendGProxyMessageTimer.setInterval(20000);
+	QObject::connect(&m_SendGProxyMessageTimer, SIGNAL(timeout()), this, SLOT(EventSendGProxyMessage()));
+
+	QTimer::singleShot(20000, this, SLOT(EventSpoofCheckTimeout()));
+
+	if (m_GProxy)
+		m_ACKTimer.start(10000);
+
+	m_PingTimer.start(5000);
+	m_TimeoutTimer.start(30000);
+	m_TimeoutTimer.setSingleShot(true);
 }
 
 CGamePlayer :: ~CGamePlayer( )
 {
+}
 
+void CGamePlayer::EventSendGProxyMessage()
+{
+	uint32_t TimeRemaining = ( m_Game->GetGProxyEmptyActions() + 1 ) * 60 - ( GetTime( ) - m_Game->GetStartedLaggingTime() );
+
+	if( TimeRemaining > ( (uint32_t)m_Game->GetGProxyEmptyActions() + 1 ) * 60 )
+		TimeRemaining = ( m_Game->GetGProxyEmptyActions() + 1 ) * 60;
+
+	m_Game->SendAllChat( GetPID( ), m_Game->m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
+	SetLastGProxyWaitNoticeSentTime( GetTime( ) );
 }
 
 QString CGamePlayer :: GetNameTerminated( )
@@ -323,128 +445,51 @@ uint32_t CGamePlayer :: GetPing( bool LCPing )
 		return AvgPing;
 }
 
-bool CGamePlayer :: Update( void *fd )
-{
-	// wait 4 seconds after joining before sending the /whois or /w
-	// if we send the /whois too early battle.net may not have caught up with where the player is and return erroneous results
-
-	if( m_WhoisShouldBeSent && !m_Spoofed && !m_WhoisSent && !m_JoinedRealm.isEmpty( ) && GetTime( ) - m_JoinTime >= 4 )
-	{
-		// todotodo: we could get kicked from battle.net for sending a command with invalid characters, do some basic checking
-
-		for( QVector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
-		{
-			if( (*i)->GetServer( ) == m_JoinedRealm )
-			{
-				if( m_Game->GetGameState( ) == GAME_PUBLIC )
-				{
-					if( (*i)->GetPasswordHashType( ) == "pvpgn" )
-						(*i)->QueueChatCommand( "/whereis " + m_Name );
-					else
-						(*i)->QueueChatCommand( "/whois " + m_Name );
-				}
-				else if( m_Game->GetGameState( ) == GAME_PRIVATE )
-					(*i)->QueueChatCommand( m_Game->m_GHost->m_Language->SpoofCheckByReplying( ), m_Name, true );
-			}
-		}
-
-		m_WhoisSent = true;
-	}
-
-	// check for socket timeouts
-	// if we don't receive anything from a player for 30 seconds we can assume they've dropped
-	// this works because in the lobby we send pings every 5 seconds and expect a response to each one
-	// and in the game the Warcraft 3 client sends keepalives frequently (at least once per second it looks like)
-
-	if( m_Socket && GetTime( ) - m_Socket->GetLastRecv( ) >= 30 )
-		m_Game->EventPlayerDisconnectTimedOut( this );
-
-	// GProxy++ acks
-
-	if( m_GProxy && GetTime( ) - m_LastGProxyAckTime >= 10 )
-	{
-		if( m_Socket )
-			m_Socket->PutBytes( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_ACK( m_TotalPacketsReceived ) );
-
-		m_LastGProxyAckTime = GetTime( );
-	}
-
-	// base class update
-
-	CPotentialPlayer :: Update( fd );
-	bool Deleting;
-
-	if( m_GProxy && m_Game->GetGameLoaded( ) )
-		Deleting = m_DeleteMe || m_Error;
-	else
-		Deleting = m_DeleteMe || m_Error || m_Socket->HasError( ) || !m_Socket->GetConnected( );
-
-	// try to find out why we're requesting deletion
-	// in cases other than the ones covered here m_LeftReason should have been set when m_DeleteMe was set
-
-	if( m_Error )
-		m_Game->EventPlayerDisconnectPlayerError( this );
-
-	if( m_Socket )
-	{
-		if( m_Socket->HasError( ) )
-			m_Game->EventPlayerDisconnectSocketError( this );
-
-		if( !m_Socket->GetConnected( ) )
-			m_Game->EventPlayerDisconnectConnectionClosed( this );
-	}
-
-	return Deleting;
-}
-
 void CGamePlayer :: ExtractPackets( )
 {
 	if( !m_Socket )
 		return;
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
-
-	QString *RecvBuffer = m_Socket->GetBytes( );
-	QByteArray Bytes = RecvBuffer->toUtf8();
-
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
-	while( Bytes.size( ) >= 4 )
+	while( m_Socket->bytesAvailable() >= 4 )
 	{
-		if( Bytes[0] == W3GS_HEADER_CONSTANT || Bytes[0] == GPS_HEADER_CONSTANT )
-		{
-			// bytes 2 and 3 contain the length of the packet
-
-			uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
-
-			if( Length >= 4 )
-			{
-				if( Bytes.size( ) >= Length )
-				{
-					m_Packets.enqueue( new CCommandPacket( Bytes[0], Bytes[1], Bytes.mid(0, Length) ) );
-
-					if( Bytes[0] == W3GS_HEADER_CONSTANT )
-						m_TotalPacketsReceived++;
-
-					*RecvBuffer = RecvBuffer->mid( Length );
-					Bytes.remove(0, Length);
-				}
-				else
-					return;
-			}
-			else
-			{
-				m_Error = true;
-				m_ErrorString = "received invalid packet from player (bad length)";
-				return;
-			}
-		}
-		else
+		char header = m_Socket->peek(1).at(0);
+		if (header != W3GS_HEADER_CONSTANT && header != GPS_HEADER_CONSTANT )
 		{
 			m_Error = true;
 			m_ErrorString = "received invalid packet from player (bad header constant)";
+			m_Game->EventPlayerDisconnectPlayerError( this );
+			m_Socket->abort();
+			m_Socket->deleteLater();
+			m_Socket = NULL;
+			this->deleteLater();
 			return;
 		}
+
+		// bytes 2 and 3 contain the length of the packet
+
+		uint16_t Length = UTIL_QByteArrayToUInt16( m_Socket->peek(4), false, 2 );
+
+		if( Length < 4 )
+		{
+			m_Error = true;
+			m_ErrorString = "received invalid packet from player (bad length)";
+			m_Socket->abort();
+			m_Socket->deleteLater();
+			m_Socket = NULL;
+			return;
+		}
+
+		if( m_Socket->bytesAvailable() < Length )
+			return;
+
+		QByteArray Bytes = m_Socket->read(Length);
+		m_Packets.enqueue( new CCommandPacket( header, Bytes.at(1), Bytes ) );
+
+		if( header == W3GS_HEADER_CONSTANT )
+			m_TotalPacketsReceived++;
 	}
 }
 
@@ -482,7 +527,7 @@ void CGamePlayer :: ProcessPackets( )
 					{
 						m_FinishedLoading = true;
 						m_FinishedLoadingTicks = GetTicks( );
-						m_Game->EventPlayerLoaded( this );
+						emit finishedLoading();
 					}
 					else
 					{
@@ -578,7 +623,7 @@ void CGamePlayer :: ProcessPackets( )
 				if( m_Game->m_GHost->m_Reconnect )
 				{
 					m_GProxy = true;
-					m_Socket->PutBytes( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_INIT( m_Game->m_GHost->m_ReconnectPort, m_PID, m_GProxyReconnectKey, m_Game->GetGProxyEmptyActions( ) ) );
+					m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_INIT( m_Game->m_GHost->m_ReconnectPort, m_PID, m_GProxyReconnectKey, m_Game->GetGProxyEmptyActions( ) ) );
 					CONSOLE_Print( "[GAME: " + m_Game->GetGameName( ) + "] player [" + m_Name + "] is using GProxy++" );
 				}
 				else
@@ -631,11 +676,11 @@ void CGamePlayer :: Send( QByteArray data )
 	CPotentialPlayer :: Send( data );
 }
 
-void CGamePlayer :: EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPacket )
+void CGamePlayer :: EventGProxyReconnect( QTcpSocket *NewSocket, uint32_t LastPacket )
 {
 	delete m_Socket;
 	m_Socket = NewSocket;
-	m_Socket->PutBytes( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_RECONNECT( m_TotalPacketsReceived ) );
+	m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_RECONNECT( m_TotalPacketsReceived ) );
 
 	uint32_t PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
 
@@ -659,7 +704,7 @@ void CGamePlayer :: EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPa
 
 	while( !m_GProxyBuffer.isEmpty( ) )
 	{
-		m_Socket->PutBytes( m_GProxyBuffer.front( ) );
+		m_Socket->write( m_GProxyBuffer.front( ) );
 		TempBuffer.enqueue( m_GProxyBuffer.front( ) );
 		m_GProxyBuffer.dequeue( );
 	}

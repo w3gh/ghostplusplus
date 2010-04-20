@@ -60,9 +60,9 @@
 CGHost :: CGHost( CConfig *CFG, QString configFile )
 	: m_ConfigFile(configFile)
 {
-	m_UDPSocket = new CUDPSocket( );
-	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", QString( ) ) );
-	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
+	m_UDPSocket = new QUdpSocket(this);
+	m_UDPSocket->setProperty("target", CFG->GetString( "udp_broadcasttarget", QString( ) ) );
+	m_UDPSocket->setProperty("dontroute", CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
 	m_ReconnectSocket = NULL;
 	m_GPSProtocol = new CGPSProtocol( );
 	m_CRC = new CCRC32( );
@@ -70,6 +70,9 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_SHA = new CSHA1( );
 	m_CurrentGame = NULL;
 	QString DBType = CFG->GetString( "db_type", "sqlite3" );
+
+	// create connections
+
 	CONSOLE_Print( "[GHOST] opening primary database" );
 
 	if( DBType == "mysql" )
@@ -359,12 +362,6 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 CGHost :: ~CGHost( )
 {
-	delete m_UDPSocket;
-	delete m_ReconnectSocket;
-
-	for( QVector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
-		delete *i;
-
 	delete m_GPSProtocol;
 	delete m_CRC;
 	delete m_SHA;
@@ -393,6 +390,91 @@ CGHost :: ~CGHost( )
 	delete m_AdminMap;
 	delete m_AutoHostMap;
 	delete m_SaveGame;
+}
+
+void CGHost::EventIncomingReconnection()
+{
+	QTcpSocket *con = m_ReconnectSocket->nextPendingConnection();
+	if (con == NULL)
+		return;
+
+	QObject::connect(con, SIGNAL(readyRead()), this, SLOT(EventReconnectionSocketReadyRead()));
+}
+
+void CGHost::EventReconnectionSocketReadyRead()
+{
+	QTcpSocket* con = (QTcpSocket*)QObject::sender();
+
+	// a packet is at least 4 bytes
+	if (con->bytesAvailable() < 4)
+		return;
+
+	if( con->peek(1).at(0) == GPS_HEADER_CONSTANT )
+	{
+		// bytes 2 and 3 contain the length of the packet
+
+		uint16_t Length = UTIL_QByteArrayToUInt16( con->peek(4), false, 2 );
+
+		if( Length < 4 )
+		{
+			con->write( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
+			con->deleteLater();
+			return;
+		}
+
+		if( con->bytesAvailable() < Length )
+			return;
+
+		QByteArray Bytes = con->read(Length);
+		if( Bytes.at(0) == CGPSProtocol :: GPS_RECONNECT && Length == 13 )
+		{
+			unsigned char PID = Bytes.at(4);
+			uint32_t ReconnectKey = UTIL_QByteArrayToUInt32( Bytes, false, 5 );
+			uint32_t LastPacket = UTIL_QByteArrayToUInt32( Bytes, false, 9 );
+
+			// look for a matching player in a running game
+
+			CGamePlayer *Match = NULL;
+
+			for( QVector<CBaseGame *> :: iterator j = m_Games.begin( ); j != m_Games.end( ); j++ )
+			{
+				if( (*j)->GetGameLoaded( ) )
+				{
+					CGamePlayer *Player = (*j)->GetPlayerFromPID( PID );
+
+					if( Player && Player->GetGProxy( ) && Player->GetGProxyReconnectKey( ) == ReconnectKey )
+					{
+						Match = Player;
+						break;
+					}
+				}
+			}
+
+			if( Match )
+			{
+				// reconnect successful!
+				Match->EventGProxyReconnect( con, LastPacket );
+				return;
+			}
+			else
+			{
+				con->write( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_NOTFOUND ) );
+				con->deleteLater();
+				return;
+			}
+		}
+		else
+		{
+			con->write( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
+			con->deleteLater();
+			return;
+		}
+	}
+}
+
+void CGHost::UpdateEvent()
+{
+	Update(50000);
 }
 
 bool CGHost :: Update( long usecBlock )
@@ -485,9 +567,10 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if( !m_ReconnectSocket )
 		{
-			m_ReconnectSocket = new CTCPServer( );
+			m_ReconnectSocket = new QTcpServer( this );
+			QObject::connect(m_ReconnectSocket, SIGNAL(newConnection()), this, SLOT(EventIncomingReconnection()));
 
-			if( m_ReconnectSocket->Listen( m_BindAddress, m_ReconnectPort ) )
+			if( m_ReconnectSocket->listen( QHostAddress(m_BindAddress), m_ReconnectPort ) )
 				CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
 			else
 			{
@@ -497,9 +580,9 @@ bool CGHost :: Update( long usecBlock )
 				m_Reconnect = false;
 			}
 		}
-		else if( m_ReconnectSocket->HasError( ) )
+		else if( !m_ReconnectSocket->isListening() )
 		{
-			CONSOLE_Print( "[GHOST] GProxy++ reconnect listener error (" + m_ReconnectSocket->GetErrorString( ) + ")" );
+			CONSOLE_Print( "[GHOST] GProxy++ reconnect listener error (" + m_ReconnectSocket->errorString() + ")" );
 			delete m_ReconnectSocket;
 			m_ReconnectSocket = NULL;
 			m_Reconnect = false;
@@ -520,35 +603,6 @@ bool CGHost :: Update( long usecBlock )
 
 	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		NumFDs += (*i)->SetFD( &fd, &send_fd, &nfds );
-
-	// 2. the current game's server and player sockets
-
-	if( m_CurrentGame )
-		NumFDs += m_CurrentGame->SetFD( &fd, &send_fd, &nfds );
-
-	// 3. the admin game's server and player sockets
-
-	if( m_AdminGame )
-		NumFDs += m_AdminGame->SetFD( &fd, &send_fd, &nfds );
-
-	// 4. all running games' player sockets
-
-	for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
-		NumFDs += (*i)->SetFD( &fd, &send_fd, &nfds );
-
-	// 5. the GProxy++ reconnect socket(s)
-
-	if( m_Reconnect && m_ReconnectSocket )
-	{
-		m_ReconnectSocket->SetFD( &fd, &send_fd, &nfds );
-		NumFDs++;
-	}
-
-	for( QVector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
-	{
-		(*i)->SetFD( &fd, &send_fd, &nfds );
-		NumFDs++;
-	}
 
 	// before we call select we need to determine how long to block for
 	// previously we just blocked for a maximum of the passed usecBlock microseconds
@@ -612,8 +666,6 @@ bool CGHost :: Update( long usecBlock )
 				(*i)->QueueEnterChat( );
 			}
 		}
-		else if( m_CurrentGame )
-			m_CurrentGame->UpdatePost( &send_fd );
 	}
 
 	// update admin game
@@ -627,8 +679,6 @@ bool CGHost :: Update( long usecBlock )
 			m_AdminGame = NULL;
 			AdminExit = true;
 		}
-		else if( m_AdminGame )
-			m_AdminGame->UpdatePost( &send_fd );
 	}
 
 	// update running games
@@ -642,11 +692,6 @@ bool CGHost :: Update( long usecBlock )
 			delete *i;
 			i = m_Games.erase( i );
 		}
-		else
-		{
-			(*i)->UpdatePost( &send_fd );
-			i++;
-		}
 	}
 
 	// update battle.net connections
@@ -657,117 +702,6 @@ bool CGHost :: Update( long usecBlock )
 			BNETExit = true;
 	}
 
-	// update GProxy++ reliable reconnect sockets
-
-	if( m_Reconnect && m_ReconnectSocket )
-	{
-		CTCPSocket *NewSocket = m_ReconnectSocket->Accept( &fd );
-
-		if( NewSocket )
-			m_ReconnectSockets.push_back( NewSocket );
-	}
-
-	for( QVector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); )
-	{
-		if( (*i)->HasError( ) || !(*i)->GetConnected( ) || GetTime( ) - (*i)->GetLastRecv( ) >= 10 )
-		{
-			delete *i;
-			i = m_ReconnectSockets.erase( i );
-			continue;
-		}
-
-		(*i)->DoRecv( &fd );
-		QString *RecvBuffer = (*i)->GetBytes( );
-		QByteArray Bytes = RecvBuffer->toUtf8();
-
-		// a packet is at least 4 bytes
-
-		if( Bytes.size( ) >= 4 )
-		{
-			if( Bytes[0] == GPS_HEADER_CONSTANT )
-			{
-				// bytes 2 and 3 contain the length of the packet
-
-				uint16_t Length = UTIL_QByteArrayToUInt16( Bytes, false, 2 );
-
-				if( Length >= 4 )
-				{
-					if( Bytes.size( ) >= Length )
-					{
-						if( Bytes[1] == CGPSProtocol :: GPS_RECONNECT && Length == 13 )
-						{
-							unsigned char PID = Bytes[4];
-							uint32_t ReconnectKey = UTIL_QByteArrayToUInt32( Bytes, false, 5 );
-							uint32_t LastPacket = UTIL_QByteArrayToUInt32( Bytes, false, 9 );
-
-							// look for a matching player in a running game
-
-							CGamePlayer *Match = NULL;
-
-							for( QVector<CBaseGame *> :: iterator j = m_Games.begin( ); j != m_Games.end( ); j++ )
-							{
-								if( (*j)->GetGameLoaded( ) )
-								{
-									CGamePlayer *Player = (*j)->GetPlayerFromPID( PID );
-
-									if( Player && Player->GetGProxy( ) && Player->GetGProxyReconnectKey( ) == ReconnectKey )
-									{
-										Match = Player;
-										break;
-									}
-								}
-							}
-
-							if( Match )
-							{
-								// reconnect successful!
-
-								*RecvBuffer = RecvBuffer->mid( Length );
-								Match->EventGProxyReconnect( *i, LastPacket );
-								i = m_ReconnectSockets.erase( i );
-								continue;
-							}
-							else
-							{
-								(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_NOTFOUND ) );
-								(*i)->DoSend( &send_fd );
-								delete *i;
-								i = m_ReconnectSockets.erase( i );
-								continue;
-							}
-						}
-						else
-						{
-							(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
-							(*i)->DoSend( &send_fd );
-							delete *i;
-							i = m_ReconnectSockets.erase( i );
-							continue;
-						}
-					}
-				}
-				else
-				{
-					(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
-					(*i)->DoSend( &send_fd );
-					delete *i;
-					i = m_ReconnectSockets.erase( i );
-					continue;
-				}
-			}
-			else
-			{
-				(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
-				(*i)->DoSend( &send_fd );
-				delete *i;
-				i = m_ReconnectSockets.erase( i );
-				continue;
-			}
-		}
-
-		(*i)->DoSend( &send_fd );
-		i++;
-	}
 
 	// autohost
 
@@ -912,7 +846,7 @@ void CGHost :: EventBNETGameRefreshFailed( CBNET *bnet )
 		if( m_CurrentGame->GetNumHumanPlayers( ) == 0 )
 			m_CurrentGame->SetExiting( true );
 
-		m_CurrentGame->SetRefreshError( true );
+		m_CurrentGame->EventRefreshError();
 	}
 }
 
