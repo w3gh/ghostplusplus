@@ -25,7 +25,8 @@
 // CStatsW3MMD
 //
 
-typedef pair<uint32_t,QString> VarP;
+#include <QPair>
+typedef QPair<uint32_t,QString> VarP;
 
 class CStatsW3MMD : public CStats
 {

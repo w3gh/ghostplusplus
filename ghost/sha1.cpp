@@ -153,7 +153,7 @@ void CSHA1::Final()
 }
 
 // Get the final hash as a pre-formatted QString
-void CSHA1::ReportHash(char *szReport, unsigned char uReportType)
+void CSHA1::ReportHash(char */*szReport*/, unsigned char /*uReportType*/)
 {
 	/*
 

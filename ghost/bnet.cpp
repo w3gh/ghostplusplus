@@ -607,7 +607,7 @@ void CBNET :: ExtractPackets( )
 		// byte 0 is always 255
 		QByteArray header = m_Socket->peek(4);
 
-		if( header.at(0) != BNET_HEADER_CONSTANT )
+		if( (unsigned char)header.at(0) != BNET_HEADER_CONSTANT )
 		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad header constant), disconnecting" );
 			m_Socket->abort();
@@ -1087,7 +1087,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							m_GHost->m_AutoHostServer.clear( );
 							m_GHost->m_AutoHostMaximumGames = 0;
 							m_GHost->m_AutoHostAutoStartPlayers = 0;
-							m_GHost->m_LastAutoHostTime = GetTime( );
 							m_GHost->m_AutoHostMatchMaking = false;
 							m_GHost->m_AutoHostMinimumScore = 0.0;
 							m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -1131,7 +1130,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 										m_GHost->m_AutoHostServer = m_Server;
 										m_GHost->m_AutoHostMaximumGames = MaximumGames;
 										m_GHost->m_AutoHostAutoStartPlayers = AutoStartPlayers;
-										m_GHost->m_LastAutoHostTime = GetTime( );
 										m_GHost->m_AutoHostMatchMaking = false;
 										m_GHost->m_AutoHostMinimumScore = 0.0;
 										m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -1160,7 +1158,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							m_GHost->m_AutoHostServer.clear( );
 							m_GHost->m_AutoHostMaximumGames = 0;
 							m_GHost->m_AutoHostAutoStartPlayers = 0;
-							m_GHost->m_LastAutoHostTime = GetTime( );
 							m_GHost->m_AutoHostMatchMaking = false;
 							m_GHost->m_AutoHostMinimumScore = 0.0;
 							m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -1218,7 +1215,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 												m_GHost->m_AutoHostServer = m_Server;
 												m_GHost->m_AutoHostMaximumGames = MaximumGames;
 												m_GHost->m_AutoHostAutoStartPlayers = AutoStartPlayers;
-												m_GHost->m_LastAutoHostTime = GetTime( );
 												m_GHost->m_AutoHostMatchMaking = true;
 												m_GHost->m_AutoHostMinimumScore = MinimumScore;
 												m_GHost->m_AutoHostMaximumScore = MaximumScore;
@@ -1450,7 +1446,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// todotodo: what if a game ends just as you're typing this command and the numbering changes?
 
-					uint32_t GameNumber = UTIL_ToUInt32( Payload ) - 1;
+					int GameNumber = UTIL_ToUInt32( Payload ) - 1;
 
 					if( GameNumber < m_GHost->m_Games.size( ) )
 					{
@@ -1548,7 +1544,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 				if( Command == "getgame" && !Payload.isEmpty( ) )
 				{
-					uint32_t GameNumber = UTIL_ToUInt32( Payload ) - 1;
+					int GameNumber = UTIL_ToUInt32( Payload ) - 1;
 
 					if( GameNumber < m_GHost->m_Games.size( ) )
 						QueueChatCommand( m_GHost->m_Language->GameNumberIs( Payload, m_GHost->m_Games[GameNumber]->GetDescription( ) ), User, Whisper );
@@ -1885,7 +1881,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						// extract the game number and the message
 						// e.g. "3 hello everyone" -> game number: "3", message: "hello everyone"
 
-						uint32_t GameNumber;
+						int GameNumber;
 						QString Message;
 						QTextStream SS(&Payload);
 
@@ -2326,7 +2322,7 @@ void CBNET :: UnqueuePackets( unsigned char type )
 		QByteArray Packet = m_OutPackets.front( );
 		m_OutPackets.dequeue( );
 
-		if( Packet.size( ) >= 2 && Packet[1] == type )
+		if( Packet.size( ) >= 2 && Packet.at(1) == type )
 			Unqueued++;
 		else
 			Packets.enqueue( Packet );

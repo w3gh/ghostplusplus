@@ -135,7 +135,7 @@ bool CPacked :: Pack( bool TFT, QString inFileName, QString outFileName )
 		return false;
 }
 
-void CPacked :: Decompress( bool allBlocks )
+void CPacked :: Decompress( bool /*allBlocks*/ )
 {
 	/*CONSOLE_Print( "[PACKED] decompressing data" );
 

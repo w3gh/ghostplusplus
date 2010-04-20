@@ -31,38 +31,23 @@
 
 // STL
 
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
-#include <queue>
-#include <set>
 
 #include <QMap>
 #include <QQueue>
 #include <QString>
 #include <QByteArray>
+#include <QPair>
+#include <QVector>
 
 using namespace std;
 
-typedef pair<unsigned char,QString> PIDPlayer;
+typedef QPair<unsigned char,QString> PIDPlayer;
 
 // time
 
 uint32_t GetTime( );		// seconds
 uint32_t GetTicks( );		// milliseconds
-
-#ifdef WIN32
- #define MILLISLEEP( x ) Sleep( x )
-#else
- #define MILLISLEEP( x ) usleep( ( x ) * 1000 )
-#endif
-
-// network
-
-#undef FD_SETSIZE
-#define FD_SETSIZE 512
 
 // output
 

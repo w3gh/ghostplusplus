@@ -37,6 +37,7 @@
 
 #include <cmath>
 #include <QString>
+#include <QtAlgorithms>
 #include <time.h>
 
 #include <QTextStream>
@@ -1261,7 +1262,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				// copy the m_Players vector so we can sort by descending ping so it's easier to find players with high pings
 
 				QVector<CGamePlayer *> SortedPlayers = m_Players;
-				sort( SortedPlayers.begin( ), SortedPlayers.end( ), CGamePlayerSortDescByPing( ) );
+				qSort(SortedPlayers);
 				QString Pings;
 
 				for( QVector<CGamePlayer *> :: iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )

@@ -68,26 +68,26 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 	// parsing the actions would be more correct but would be a lot more difficult to write for relatively little gain
 	// so we take the easy route (which isn't always guaranteed to work) and search the data for the sequence "6b 64 72 2e 78 00" and hope it identifies an action
 
-	while( ActionData->size( ) >= i + 6 )
+	while( (unsigned int)ActionData->size( ) >= i + 6 )
 	{
-		if( (*ActionData)[i] == 0x6b && (*ActionData)[i + 1] == 0x64 && (*ActionData)[i + 2] == 0x72 && (*ActionData)[i + 3] == 0x2e && (*ActionData)[i + 4] == 0x78 && (*ActionData)[i + 5] == 0x00 )
+		if( (*ActionData).at(i) == 0x6b && (*ActionData).at(i + 1) == 0x64 && (*ActionData).at(i + 2) == 0x72 && (*ActionData).at(i + 3) == 0x2e && (*ActionData).at(i + 4) == 0x78 && (*ActionData).at(i + 5) == 0x00 )
 		{
 			// we think we've found an action with real time replay data (but we can't be 100% sure)
 			// next we parse out two null terminated strings and a 4 byte integer
 
-			if( ActionData->size( ) >= i + 7 )
+			if( (unsigned int)ActionData->size( ) >= i + 7 )
 			{
 				// the first null terminated QString should either be the strings "Data" or "Global" or a player id in ASCII representation, e.g. "1" or "2"
 
 				Data = UTIL_ExtractCString( *ActionData, i + 6 );
 
-				if( ActionData->size( ) >= i + 8 + Data.size( ) )
+				if( (unsigned int)ActionData->size( ) >= i + 8 + Data.size( ) )
 				{
 					// the second null terminated QString should be the key
 
 					Key = UTIL_ExtractCString( *ActionData, i + 7 + Data.size( ) );
 
-					if( ActionData->size( ) >= i + 12 + Data.size( ) + Key.size( ) )
+					if( (unsigned int)ActionData->size( ) >= i + 12 + Data.size( ) + Key.size( ) )
 					{
 						// the 4 byte integer should be the value
 

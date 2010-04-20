@@ -25,6 +25,7 @@
 // CGHostDB
 //
 
+
 class CBaseCallable;
 class CCallableAdminCount;
 class CCallableAdminCheck;
@@ -51,14 +52,26 @@ class CDBGame;
 class CDBGamePlayer;
 class CDBGamePlayerSummary;
 class CDBDotAPlayerSummary;
+class CConfig;
 
-typedef pair<uint32_t,QString> VarP;
+#include "includes.h"
+#include <QPair>
 
-class CGHostDB
+typedef QPair<uint32_t,QString> VarP;
+
+class CGHostDB : public QObject
 {
-protected:
+	Q_OBJECT
+
+signals:
+	void error(const QString& message);
+
+private:
 	bool m_HasError;
 	QString m_Error;
+
+protected:
+	void SetError(const QString& error);
 
 public:
 	CGHostDB( CConfig *CFG );

@@ -71,7 +71,7 @@ QByteArray UTIL_CreateQByteArray( uint32_t i, bool reverse )
 
 uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start )
 {
-	if( b.size( ) < start + 2 )
+	if( (unsigned int)b.size( ) < start + 2 )
 		return 0;
 
 	QByteArray temp = b.mid(start, 2);
@@ -81,7 +81,7 @@ uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start
 
 uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start )
 {
-	if( b.size( ) < start + 4 )
+	if( (unsigned int)b.size( ) < start + 4 )
 		return 0;
 
 	QByteArray temp = b.mid(start, 4);
@@ -281,7 +281,7 @@ int32_t UTIL_ToInt32( QString &s )
 
 double UTIL_ToDouble( QString &s )
 {
-	s.toDouble();
+	return s.toDouble();
 }
 
 QString UTIL_MSToString( uint32_t ms )
@@ -374,7 +374,7 @@ QByteArray UTIL_EncodeStatString( QByteArray &data )
 	unsigned char Mask = 1;
 	QByteArray Result;
 
-	for( unsigned int i = 0; i < data.size( ); i++ )
+	for( int i = 0; i < data.size( ); i++ )
 	{
 		if( ( data[i] % 2 ) == 0 )
 			Result.push_back( data[i] + 1 );
@@ -409,7 +409,7 @@ QByteArray UTIL_DecodeStatString( QByteArray &data )
 	unsigned char Mask;
 	QByteArray Result;
 
-	for( unsigned int i = 0; i < data.size( ); i++ )
+	for( int i = 0; i < data.size( ); i++ )
 	{
 		if( ( i % 8 ) == 0 )
 			Mask = data[i];
@@ -433,23 +433,23 @@ bool UTIL_IsLanIP( QByteArray ip )
 	// thanks to LuCasn for this function
 
 	// 127.0.0.1
-	if( ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[3] == 1 )
+	if( ip.at(0) == 127 && ip.at(1) == 0 && ip.at(2) == 0 && ip.at(3) == 1 )
 		return true;
 
 	// 10.x.x.x
-	if( ip[0] == 10 )
+	if( ip.at(0) == 10 )
 		return true;
 
 	// 172.16.0.0-172.31.255.255
-	if( ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31 )
+	if( (unsigned char)ip.at(0) == 172 && ip.at(1) >= 16 && ip.at(1) <= 31 )
 		return true;
 
 	// 192.168.x.x
-	if( ip[0] == 192 && ip[1] == 168 )
+	if( (unsigned char)ip.at(0) == 192 && (unsigned char)ip.at(1) == 168 )
 		return true;
 
 	// RFC 3330 and RFC 3927 automatic address range
-	if( ip[0] == 169 && ip[1] == 254 )
+	if( (unsigned char)ip.at(0) == 169 && (unsigned char)ip.at(1) == 254 )
 		return true;
 
 	return false;

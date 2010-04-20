@@ -44,10 +44,14 @@ class CGHost;
 
 #include <QTcpServer>
 #include <QTimer>
+#include <QSet>
 
 class CBaseGame : public QObject
 {
 	Q_OBJECT
+
+signals:
+	void gameStarted();
 
 public:
 	CGHost *m_GHost;
@@ -93,8 +97,8 @@ protected:
 	QVector<CCallableScoreCheck *> m_ScoreChecks;
 	QQueue<CIncomingAction *> m_Actions;				// queue of actions to be sent
 	QVector<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
-	set<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
-	set<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
+	QSet<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
+	QSet<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
 	QVector<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
 	QVector<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
 	CMap *m_Map;									// map data

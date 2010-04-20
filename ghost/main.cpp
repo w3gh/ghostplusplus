@@ -50,7 +50,7 @@ void SignalCatcher( int s )
 	CONSOLE_Print( "[!!!] caught signal " + UTIL_ToString( s ) + ", exiting nicely" );
 
 	if( gGHost )
-		gGHost->m_ExitingNice = true;
+		gGHost->EventExitNice();
 	else
 		exit( 1 );
 }
@@ -87,7 +87,7 @@ void DEBUG_Print( QByteArray b )
 {
 	cout << "{ ";
 
-	for( unsigned int i = 0; i < b.size( ); i++ )
+	for( int i = 0; i < b.size( ); i++ )
 		cout << hex << (int)b[i] << " ";
 
 	cout << "}" << endl;
@@ -160,17 +160,6 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef WIN32
-	// initialize winsock
-
-	CONSOLE_Print( "[GHOST] starting winsock" );
-	WSADATA wsadata;
-
-	if( WSAStartup( MAKEWORD( 2, 2 ), &wsadata ) != 0 )
-	{
-		CONSOLE_Print( "[GHOST] error starting winsock" );
-		return 1;
-	}
-
 	// increase process priority
 
 	CONSOLE_Print( "[GHOST] setting process priority to \"above normal\"" );
@@ -181,24 +170,7 @@ int main( int argc, char **argv )
 
 	gGHost = new CGHost( &CFG, gCFGFile );
 
-	int ret = a.exec();
+	QObject::connect(gGHost, SIGNAL(destroyed()), &a, SLOT(quit()));
 
-	// shutdown ghost
-
-	CONSOLE_Print( "[GHOST] shutting down" );
-	delete gGHost;
-	gGHost = NULL;
-
-#ifdef WIN32
-	// shutdown winsock
-
-	CONSOLE_Print( "[GHOST] shutting down winsock" );
-	WSACleanup( );
-
-	// shutdown timer
-
-	timeEndPeriod( TimerResolution );
-#endif
-
-	return ret;
+	return a.exec();
 }

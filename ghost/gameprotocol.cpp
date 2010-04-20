@@ -172,7 +172,7 @@ CIncomingChatPlayer *CGameProtocol :: RECEIVE_W3GS_CHAT_TO_HOST( QByteArray data
 		unsigned int i = 5;
 		unsigned char Total = data[4];
 
-		if( Total > 0 && data.size( ) >= i + Total )
+		if( Total > 0 && (unsigned int)data.size( ) >= i + Total )
 		{
 			QByteArray ToPIDs = data.mid(i, Total );
 			i += Total;
@@ -180,21 +180,21 @@ CIncomingChatPlayer *CGameProtocol :: RECEIVE_W3GS_CHAT_TO_HOST( QByteArray data
 			unsigned char Flag = data[i + 1];
 			i += 2;
 
-			if( Flag == 16 && data.size( ) >= i + 1 )
+			if( Flag == 16 && (unsigned int)data.size( ) >= i + 1 )
 			{
 				// chat message
 
 				QByteArray Message = UTIL_ExtractCString( data, i );
 				return new CIncomingChatPlayer( FromPID, ToPIDs, Flag, QString::fromUtf8(Message) );
 			}
-			else if( ( Flag >= 17 && Flag <= 20 ) && data.size( ) >= i + 1 )
+			else if( ( Flag >= 17 && Flag <= 20 ) && (unsigned int)data.size( ) >= i + 1 )
 			{
 				// team/colour/race/handicap change request
 
 				unsigned char Byte = data[i];
 				return new CIncomingChatPlayer( FromPID, ToPIDs, Flag, Byte );
 			}
-			else if( Flag == 32 && data.size( ) >= i + 5 )
+			else if( Flag == 32 && (unsigned int)data.size( ) >= i + 5 )
 			{
 				// chat message with extra flags
 
@@ -237,7 +237,7 @@ bool CGameProtocol :: RECEIVE_W3GS_SEARCHGAME( QByteArray data, unsigned char wa
 	return false;
 }
 
-CIncomingMapSize *CGameProtocol :: RECEIVE_W3GS_MAPSIZE( QByteArray data, QByteArray mapSize )
+CIncomingMapSize *CGameProtocol :: RECEIVE_W3GS_MAPSIZE( QByteArray data, QByteArray /*mapSize*/ )
 {
 	// DEBUG_Print( "RECEIVED W3GS_MAPSIZE" );
 	// DEBUG_Print( data );
@@ -824,7 +824,7 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 
 	QByteArray packet;
 
-	if( start < mapData->size( ) )
+	if( start < (unsigned int)mapData->size( ) )
 	{
 		packet.push_back( W3GS_HEADER_CONSTANT );				// W3GS header constant
 		packet.push_back( W3GS_MAPPART );						// W3GS_MAPPART
@@ -839,7 +839,7 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 
 		uint32_t End = start + 1442;
 
-		if( End > mapData->size( ) )
+		if( End > (unsigned int)mapData->size( ) )
 			End = mapData->size( );
 
 		// calculate crc
@@ -949,7 +949,7 @@ QByteArray CGameProtocol :: EncodeSlotInfo( QVector<CGameSlot> &lslots, uint32_t
 	QByteArray SlotInfo;
 	SlotInfo.push_back( (unsigned char)lslots.size( ) );		// number of slots
 
-	for( unsigned int i = 0; i < lslots.size( ); i++ )
+	for( int i = 0; i < lslots.size( ); i++ )
 		UTIL_AppendQByteArray( SlotInfo, lslots[i].GetQByteArray( ) );
 
 	UTIL_AppendQByteArray( SlotInfo, randomSeed, false );	// random seed

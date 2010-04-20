@@ -116,8 +116,7 @@ CGHostDBSQLite :: CGHostDBSQLite( CConfig *CFG ) : CGHostDB( CFG )
 		// this is okay here because we're in the constructor so we're not dropping any games or players
 
 		CONSOLE_Print( QString( "[SQLITE3] error opening database [" + m_File + "] - " ) + m_DB->GetError( ) );
-		m_HasError = true;
-		m_Error = "error opening database";
+		SetError("error opening database");
 		return;
 	}
 
