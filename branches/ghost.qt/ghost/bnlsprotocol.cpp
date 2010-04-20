@@ -85,12 +85,12 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t see
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( BNLS_WARDEN );					// BNLS_WARDEN
 	packet.push_back( (char)0 );								// BNLS_WARDEN_SEED
-	UTIL_AppendQByteArray( packet, cookie, false );		// cookie
-	UTIL_AppendQByteArray( packet, Client, 4 );			// Client
-	UTIL_AppendQByteArray( packet, (uint16_t)4, false );	// length of seed
-	UTIL_AppendQByteArray( packet, seed, false );		// seed
+	UTIL_AppendBYTEARRAY( packet, cookie, false );		// cookie
+	UTIL_AppendBYTEARRAY( packet, Client, 4 );			// Client
+	UTIL_AppendBYTEARRAY( packet, (uint16_t)4, false );	// length of seed
+	UTIL_AppendBYTEARRAY( packet, seed, false );		// seed
 	packet.push_back( (char)0 );								// username is blank
-	UTIL_AppendQByteArray( packet, (uint16_t)0, false );	// password length
+	UTIL_AppendBYTEARRAY( packet, (uint16_t)0, false );	// password length
 														// password
 	AssignLength( packet );
 	return packet;
@@ -103,9 +103,9 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray ra
 	packet.push_back( (char)0 );											// packet length will be assigned later
 	packet.push_back( BNLS_WARDEN );								// BNLS_WARDEN
 	packet.push_back( 1 );											// BNLS_WARDEN_RAW
-	UTIL_AppendQByteArray( packet, cookie, false );					// cookie
-	UTIL_AppendQByteArray( packet, (uint16_t)raw.size( ), false );	// raw length
-	UTIL_AppendQByteArray( packet, raw );							// raw
+	UTIL_AppendBYTEARRAY( packet, cookie, false );					// cookie
+	UTIL_AppendBYTEARRAY( packet, (uint16_t)raw.size( ), false );	// raw length
+	UTIL_AppendBYTEARRAY( packet, raw );							// raw
 	AssignLength( packet );
 	return packet;
 }
@@ -127,7 +127,7 @@ bool CBNLSProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 2 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateQByteArray( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)content.size( ), false );
 		content[0] = LengthBytes[0];
 		content[1] = LengthBytes[1];
 		return true;

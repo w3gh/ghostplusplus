@@ -302,7 +302,7 @@ QByteArray CGameProtocol :: SEND_W3GS_PING_FROM_HOST( )
 	packet.push_back( W3GS_PING_FROM_HOST );				// W3GS_PING_FROM_HOST
 	packet.push_back( (char)0 );									// packet length will be assigned later
 	packet.push_back( (char)0 );									// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, GetTicks( ), false );		// ping value
+	UTIL_AppendBYTEARRAY( packet, GetTicks( ), false );		// ping value
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_PING_FROM_HOST" );
 	// DEBUG_Print( packet );
@@ -322,19 +322,21 @@ QByteArray CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArra
 		packet.push_back( W3GS_SLOTINFOJOIN );										// W3GS_SLOTINFOJOIN
 		packet.push_back( (char)0 );														// packet length will be assigned later
 		packet.push_back( (char)0 );														// packet length will be assigned later
-		UTIL_AppendQByteArray( packet, (uint16_t)SlotInfo.size( ), false );			// SlotInfo length
-		UTIL_AppendQByteArrayFast( packet, SlotInfo );								// SlotInfo
+		UTIL_AppendBYTEARRAY( packet, (uint16_t)SlotInfo.size( ), false );			// SlotInfo length
+		UTIL_AppendBYTEARRAYFast( packet, SlotInfo );								// SlotInfo
 		packet.push_back( PID );													// PID
 		packet.push_back( 2 );														// AF_INET
 		packet.push_back( (char)0 );														// AF_INET continued...
-		UTIL_AppendQByteArray( packet, port );										// port
-		UTIL_AppendQByteArrayFast( packet, externalIP );								// external IP
-		UTIL_AppendQByteArray( packet, Zeros, 4 );									// ???
-		UTIL_AppendQByteArray( packet, Zeros, 4 );									// ???
+		UTIL_AppendBYTEARRAY( packet, port );										// port
+		UTIL_AppendBYTEARRAYFast( packet, externalIP );								// external IP
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );									// ???
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );									// ???
 		AssignLength( packet );
 	}
 	else
-		CONSOLE_Print( "[GAMEPROTO] invalid parameters passed to SEND_W3GS_SLOTINFOJOIN" );
+		CONSOLE_Print( "[GAMEPROTO] invalid parameters passed to SEND_W3GS_SLOTINFOJOIN (" +
+					   QString::number(port.size()) + ": " + port.toHex() + ", " +
+					   QString::number(externalIP.size()) + ": " + externalIP.toHex() + ")");
 
 	// DEBUG_Print( "SENT W3GS_SLOTINFOJOIN" );
 	// DEBUG_Print( packet );
@@ -348,7 +350,7 @@ QByteArray CGameProtocol :: SEND_W3GS_REJECTJOIN( uint32_t reason )
 	packet.push_back( W3GS_REJECTJOIN );					// W3GS_REJECTJOIN
 	packet.push_back( (char)0 );									// packet length will be assigned later
 	packet.push_back( (char)0 );									// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, reason, false );			// reason
+	UTIL_AppendBYTEARRAY( packet, reason, false );			// reason
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_REJECTJOIN" );
 	// DEBUG_Print( packet );
@@ -368,25 +370,25 @@ QByteArray CGameProtocol :: SEND_W3GS_PLAYERINFO( unsigned char PID, QString nam
 		packet.push_back( W3GS_PLAYERINFO );								// W3GS_PLAYERINFO
 		packet.push_back( (char)0 );												// packet length will be assigned later
 		packet.push_back( (char)0 );												// packet length will be assigned later
-		UTIL_AppendQByteArray( packet, PlayerJoinCounter, 4 );				// player join counter
+		UTIL_AppendBYTEARRAY( packet, PlayerJoinCounter, 4 );				// player join counter
 		packet.push_back( PID );											// PID
-		UTIL_AppendQByteArrayFast( packet, name );							// player name
+		UTIL_AppendBYTEARRAYFast( packet, name );							// player name
 		packet.push_back( 1 );												// ???
 		packet.push_back( (char)0 );												// ???
 		packet.push_back( 2 );												// AF_INET
 		packet.push_back( (char)0 );												// AF_INET continued...
 		packet.push_back( (char)0 );												// port
 		packet.push_back( (char)0 );												// port continued...
-		UTIL_AppendQByteArrayFast( packet, externalIP );						// external IP
-		UTIL_AppendQByteArray( packet, Zeros, 4 );							// ???
-		UTIL_AppendQByteArray( packet, Zeros, 4 );							// ???
+		UTIL_AppendBYTEARRAYFast( packet, externalIP );						// external IP
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );							// ???
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );							// ???
 		packet.push_back( 2 );												// AF_INET
 		packet.push_back( (char)0 );												// AF_INET continued...
 		packet.push_back( (char)0 );												// port
 		packet.push_back( (char)0 );												// port continued...
-		UTIL_AppendQByteArrayFast( packet, internalIP );						// internal IP
-		UTIL_AppendQByteArray( packet, Zeros, 4 );							// ???
-		UTIL_AppendQByteArray( packet, Zeros, 4 );							// ???
+		UTIL_AppendBYTEARRAYFast( packet, internalIP );						// internal IP
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );							// ???
+		UTIL_AppendBYTEARRAY( packet, Zeros, 4 );							// ???
 		AssignLength( packet );
 	}
 	else
@@ -408,7 +410,7 @@ QByteArray CGameProtocol :: SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, uin
 		packet.push_back( (char)0 );								// packet length will be assigned later
 		packet.push_back( (char)0 );								// packet length will be assigned later
 		packet.push_back( PID );							// PID
-		UTIL_AppendQByteArray( packet, leftCode, false );	// left code (see PLAYERLEAVE_ constants in gameprotocol.h)
+		UTIL_AppendBYTEARRAY( packet, leftCode, false );	// left code (see PLAYERLEAVE_ constants in gameprotocol.h)
 		AssignLength( packet );
 	}
 	else
@@ -448,8 +450,8 @@ QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( QVector<CGameSlot> &lslots, uint
 	packet.push_back( W3GS_SLOTINFO );											// W3GS_SLOTINFO
 	packet.push_back( (char)0 );														// packet length will be assigned later
 	packet.push_back( (char)0 );														// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, (uint16_t)SlotInfo.size( ), false );			// SlotInfo length
-	UTIL_AppendQByteArrayFast( packet, SlotInfo );								// SlotInfo
+	UTIL_AppendBYTEARRAY( packet, (uint16_t)SlotInfo.size( ), false );			// SlotInfo length
+	UTIL_AppendBYTEARRAYFast( packet, SlotInfo );								// SlotInfo
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_SLOTINFO" );
 	// DEBUG_Print( packet );
@@ -489,7 +491,7 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 	packet.push_back( W3GS_INCOMING_ACTION );				// W3GS_INCOMING_ACTION
 	packet.push_back( (char)0 );									// packet length will be assigned later
 	packet.push_back( (char)0 );									// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, sendInterval, false );	// send interval
+	UTIL_AppendBYTEARRAY( packet, sendInterval, false );	// send interval
 
 	// create subpacket
 
@@ -502,19 +504,19 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 			CIncomingAction *Action = actions.front( );
 			actions.dequeue( );
 			subpacket.push_back( Action->GetPID( ) );
-			UTIL_AppendQByteArray( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
-			UTIL_AppendQByteArrayFast( subpacket, *Action->GetAction( ) );
+			UTIL_AppendBYTEARRAY( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
+			UTIL_AppendBYTEARRAYFast( subpacket, *Action->GetAction( ) );
 		}
 
 		// calculate crc (we only care about the first 2 bytes though)
 
-		QByteArray crc32 = UTIL_CreateQByteArray( m_GHost->m_CRC->FullCRC( subpacket ), false );
+		QByteArray crc32 = UTIL_CreateBYTEARRAY( m_GHost->m_CRC->FullCRC( subpacket ), false );
 		crc32.resize( 2 );
 
 		// finish subpacket
 
-		UTIL_AppendQByteArrayFast( packet, crc32 );			// crc
-		UTIL_AppendQByteArrayFast( packet, subpacket );		// subpacket
+		UTIL_AppendBYTEARRAYFast( packet, crc32 );			// crc
+		UTIL_AppendBYTEARRAYFast( packet, subpacket );		// subpacket
 	}
 
 	AssignLength( packet );
@@ -534,11 +536,11 @@ QByteArray CGameProtocol :: SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QBy
 		packet.push_back( (char)0 );							// packet length will be assigned later
 		packet.push_back( (char)0 );							// packet length will be assigned later
 		packet.push_back( toPIDs.size( ) );				// number of receivers
-		UTIL_AppendQByteArrayFast( packet, toPIDs );		// receivers
+		UTIL_AppendBYTEARRAYFast( packet, toPIDs );		// receivers
 		packet.push_back( fromPID );					// sender
 		packet.push_back( flag );						// flag
-		UTIL_AppendQByteArrayFast( packet, flagExtra );	// extra flag
-		UTIL_AppendQByteArrayFast( packet, message );	// message
+		UTIL_AppendBYTEARRAYFast( packet, flagExtra );	// extra flag
+		UTIL_AppendBYTEARRAYFast( packet, message );	// message
 		AssignLength( packet );
 	}
 	else
@@ -584,7 +586,7 @@ QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QVector<CGamePlayer *> players,
 				if( !(*i)->GetFinishedLoading( ) )
 				{
 					packet.push_back( (*i)->GetPID( ) );
-					UTIL_AppendQByteArray( packet, (uint32_t)0, false );
+					UTIL_AppendBYTEARRAY( packet, (uint32_t)0, false );
 				}
 			}
 			else
@@ -592,7 +594,7 @@ QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QVector<CGamePlayer *> players,
 				if( (*i)->GetLagging( ) )
 				{
 					packet.push_back( (*i)->GetPID( ) );
-					UTIL_AppendQByteArray( packet, GetTicks( ) - (*i)->GetStartedLaggingTicks( ), false );
+					UTIL_AppendBYTEARRAY( packet, GetTicks( ) - (*i)->GetStartedLaggingTicks( ), false );
 				}
 			}
 		}
@@ -617,9 +619,9 @@ QByteArray CGameProtocol :: SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadIn
 	packet.push_back( player->GetPID( ) );
 
 	if( loadInGame )
-		UTIL_AppendQByteArray( packet, (uint32_t)0, false );
+		UTIL_AppendBYTEARRAY( packet, (uint32_t)0, false );
 	else
-		UTIL_AppendQByteArray( packet, GetTicks( ) - player->GetStartedLaggingTicks( ), false );
+		UTIL_AppendBYTEARRAY( packet, GetTicks( ) - player->GetStartedLaggingTicks( ), false );
 
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_STOP_LAG" );
@@ -641,12 +643,12 @@ QByteArray CGameProtocol :: SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Ve
 	packet.push_back( (char)0 );									// packet length will be assigned later
 
 	if( TFT )
-		UTIL_AppendQByteArray( packet, ProductID_TFT, 4 );	// Product ID (TFT)
+		UTIL_AppendBYTEARRAY( packet, ProductID_TFT, 4 );	// Product ID (TFT)
 	else
-		UTIL_AppendQByteArray( packet, ProductID_ROC, 4 );	// Product ID (ROC)
+		UTIL_AppendBYTEARRAY( packet, ProductID_ROC, 4 );	// Product ID (ROC)
 
-	UTIL_AppendQByteArray( packet, Version, 4 );				// Version
-	UTIL_AppendQByteArray( packet, Unknown, 4 );				// ???
+	UTIL_AppendBYTEARRAY( packet, Version, 4 );				// Version
+	UTIL_AppendBYTEARRAY( packet, Unknown, 4 );				// ???
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_SEARCHGAME" );
 	// DEBUG_Print( packet );
@@ -668,13 +670,13 @@ QByteArray CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Vers
 		// make the stat QString
 
 		QByteArray StatString;
-		UTIL_AppendQByteArrayFast( StatString, mapFlags );
+		UTIL_AppendBYTEARRAYFast( StatString, mapFlags );
 		StatString.push_back( (char)0 );
-		UTIL_AppendQByteArrayFast( StatString, mapWidth );
-		UTIL_AppendQByteArrayFast( StatString, mapHeight );
-		UTIL_AppendQByteArrayFast( StatString, mapCRC );
-		UTIL_AppendQByteArrayFast( StatString, mapPath );
-		UTIL_AppendQByteArrayFast( StatString, hostName );
+		UTIL_AppendBYTEARRAYFast( StatString, mapWidth );
+		UTIL_AppendBYTEARRAYFast( StatString, mapHeight );
+		UTIL_AppendBYTEARRAYFast( StatString, mapCRC );
+		UTIL_AppendBYTEARRAYFast( StatString, mapPath );
+		UTIL_AppendBYTEARRAYFast( StatString, hostName );
 		StatString.push_back( (char)0 );
 		StatString = UTIL_EncodeStatString( StatString );
 
@@ -686,23 +688,23 @@ QByteArray CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Vers
 		packet.push_back( (char)0 );											// packet length will be assigned later
 
 		if( TFT )
-			UTIL_AppendQByteArray( packet, ProductID_TFT, 4 );			// Product ID (TFT)
+			UTIL_AppendBYTEARRAY( packet, ProductID_TFT, 4 );			// Product ID (TFT)
 		else
-			UTIL_AppendQByteArray( packet, ProductID_ROC, 4 );			// Product ID (ROC)
+			UTIL_AppendBYTEARRAY( packet, ProductID_ROC, 4 );			// Product ID (ROC)
 
-		UTIL_AppendQByteArray( packet, Version, 4 );						// Version
-		UTIL_AppendQByteArray( packet, hostCounter, false );				// Host Counter
-		UTIL_AppendQByteArray( packet, Unknown1, 4 );					// ??? (this varies wildly even between two identical games created one after another)
-		UTIL_AppendQByteArrayFast( packet, gameName );					// Game Name
+		UTIL_AppendBYTEARRAY( packet, Version, 4 );						// Version
+		UTIL_AppendBYTEARRAY( packet, hostCounter, false );				// Host Counter
+		UTIL_AppendBYTEARRAY( packet, Unknown1, 4 );					// ??? (this varies wildly even between two identical games created one after another)
+		UTIL_AppendBYTEARRAYFast( packet, gameName );					// Game Name
 		packet.push_back( (char)0 );											// ??? (maybe game password)
-		UTIL_AppendQByteArrayFast( packet, StatString );					// Stat String
+		UTIL_AppendBYTEARRAYFast( packet, StatString );					// Stat String
 		packet.push_back( (char)0 );											// Stat String null terminator (the stat QString is encoded to remove all even numbers i.e. zeros)
-		UTIL_AppendQByteArray( packet, slotsTotal, false );				// Slots Total
-		UTIL_AppendQByteArrayFast( packet, mapGameType );				// Game Type
-		UTIL_AppendQByteArray( packet, Unknown2, 4 );					// ???
-		UTIL_AppendQByteArray( packet, slotsOpen, false );				// Slots Open
-		UTIL_AppendQByteArray( packet, upTime, false );					// time since creation
-		UTIL_AppendQByteArray( packet, port, false );					// port
+		UTIL_AppendBYTEARRAY( packet, slotsTotal, false );				// Slots Total
+		UTIL_AppendBYTEARRAYFast( packet, mapGameType );				// Game Type
+		UTIL_AppendBYTEARRAY( packet, Unknown2, 4 );					// ???
+		UTIL_AppendBYTEARRAY( packet, slotsOpen, false );				// Slots Open
+		UTIL_AppendBYTEARRAY( packet, upTime, false );					// time since creation
+		UTIL_AppendBYTEARRAY( packet, port, false );					// port
 		AssignLength( packet );
 	}
 	else
@@ -727,12 +729,12 @@ QByteArray CGameProtocol :: SEND_W3GS_CREATEGAME( bool TFT, unsigned char war3Ve
 	packet.push_back( (char)0 );									// packet length will be assigned later
 
 	if( TFT )
-		UTIL_AppendQByteArray( packet, ProductID_TFT, 4 );	// Product ID (TFT)
+		UTIL_AppendBYTEARRAY( packet, ProductID_TFT, 4 );	// Product ID (TFT)
 	else
-		UTIL_AppendQByteArray( packet, ProductID_ROC, 4 );	// Product ID (ROC)
+		UTIL_AppendBYTEARRAY( packet, ProductID_ROC, 4 );	// Product ID (ROC)
 
-	UTIL_AppendQByteArray( packet, Version, 4 );				// Version
-	UTIL_AppendQByteArray( packet, HostCounter, 4 );			// Host Counter
+	UTIL_AppendBYTEARRAY( packet, Version, 4 );				// Version
+	UTIL_AppendBYTEARRAY( packet, HostCounter, 4 );			// Host Counter
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_CREATEGAME" );
 	// DEBUG_Print( packet );
@@ -748,9 +750,9 @@ QByteArray CGameProtocol :: SEND_W3GS_REFRESHGAME( uint32_t players, uint32_t pl
 	packet.push_back( W3GS_REFRESHGAME );				// W3GS_REFRESHGAME
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, HostCounter, 4 );		// Host Counter
-	UTIL_AppendQByteArray( packet, players, false );		// Players
-	UTIL_AppendQByteArray( packet, playerSlots, false );	// Player Slots
+	UTIL_AppendBYTEARRAY( packet, HostCounter, 4 );		// Host Counter
+	UTIL_AppendBYTEARRAY( packet, players, false );		// Players
+	UTIL_AppendBYTEARRAY( packet, playerSlots, false );	// Player Slots
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_REFRESHGAME" );
 	// DEBUG_Print( packet );
@@ -766,7 +768,7 @@ QByteArray CGameProtocol :: SEND_W3GS_DECREATEGAME( )
 	packet.push_back( W3GS_DECREATEGAME );				// W3GS_DECREATEGAME
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, HostCounter, 4 );		// Host Counter
+	UTIL_AppendBYTEARRAY( packet, HostCounter, 4 );		// Host Counter
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_DECREATEGAME" );
 	// DEBUG_Print( packet );
@@ -785,12 +787,12 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPCHECK( QString mapPath, QByteArray mapS
 		packet.push_back( W3GS_MAPCHECK );				// W3GS_MAPCHECK
 		packet.push_back( (char)0 );							// packet length will be assigned later
 		packet.push_back( (char)0 );							// packet length will be assigned later
-		UTIL_AppendQByteArray( packet, Unknown, 4 );		// ???
-		UTIL_AppendQByteArrayFast( packet, mapPath );	// map path
-		UTIL_AppendQByteArrayFast( packet, mapSize );	// map size
-		UTIL_AppendQByteArrayFast( packet, mapInfo );	// map info
-		UTIL_AppendQByteArrayFast( packet, mapCRC );		// map crc
-		UTIL_AppendQByteArrayFast( packet, mapSHA1 );	// map sha1
+		UTIL_AppendBYTEARRAY( packet, Unknown, 4 );		// ???
+		UTIL_AppendBYTEARRAYFast( packet, mapPath );	// map path
+		UTIL_AppendBYTEARRAYFast( packet, mapSize );	// map size
+		UTIL_AppendBYTEARRAYFast( packet, mapInfo );	// map info
+		UTIL_AppendBYTEARRAYFast( packet, mapCRC );		// map crc
+		UTIL_AppendBYTEARRAYFast( packet, mapSHA1 );	// map sha1
 		AssignLength( packet );
 	}
 	else
@@ -810,7 +812,7 @@ QByteArray CGameProtocol :: SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID )
 	packet.push_back( W3GS_STARTDOWNLOAD );					// W3GS_STARTDOWNLOAD
 	packet.push_back( (char)0 );									// packet length will be assigned later
 	packet.push_back( (char)0 );									// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, Unknown, 4 );				// ???
+	UTIL_AppendBYTEARRAY( packet, Unknown, 4 );				// ???
 	packet.push_back( fromPID );							// from PID
 	AssignLength( packet );
 	// DEBUG_Print( "SENT W3GS_STARTDOWNLOAD" );
@@ -832,8 +834,8 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 		packet.push_back( (char)0 );									// packet length will be assigned later
 		packet.push_back( toPID );								// to PID
 		packet.push_back( fromPID );							// from PID
-		UTIL_AppendQByteArray( packet, Unknown, 4 );				// ???
-		UTIL_AppendQByteArray( packet, start, false );			// start position
+		UTIL_AppendBYTEARRAY( packet, Unknown, 4 );				// ???
+		UTIL_AppendBYTEARRAY( packet, start, false );			// start position
 
 		// calculate end position (don't send more than 1442 map bytes in one packet)
 
@@ -844,13 +846,13 @@ QByteArray CGameProtocol :: SEND_W3GS_MAPPART( unsigned char fromPID, unsigned c
 
 		// calculate crc
 
-		QByteArray crc32 = UTIL_CreateQByteArray( m_GHost->m_CRC->FullCRC( mapData->mid(start, End - start) ), false );
-		UTIL_AppendQByteArrayFast( packet, crc32 );
+		QByteArray crc32 = UTIL_CreateBYTEARRAY( m_GHost->m_CRC->FullCRC( mapData->mid(start, End - start) ), false );
+		UTIL_AppendBYTEARRAYFast( packet, crc32 );
 
 		// map data
 
 		QByteArray Data = mapData->mid(start, End - start).toUtf8();
-		UTIL_AppendQByteArrayFast( packet, Data );
+		UTIL_AppendBYTEARRAYFast( packet, Data );
 		AssignLength( packet );
 	}
 	else
@@ -882,19 +884,19 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *
 			CIncomingAction *Action = actions.front( );
 			actions.dequeue( );
 			subpacket.push_back( Action->GetPID( ) );
-			UTIL_AppendQByteArray( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
-			UTIL_AppendQByteArrayFast( subpacket, *Action->GetAction( ) );
+			UTIL_AppendBYTEARRAY( subpacket, (uint16_t)Action->GetAction( )->size( ), false );
+			UTIL_AppendBYTEARRAYFast( subpacket, *Action->GetAction( ) );
 		}
 
 		// calculate crc (we only care about the first 2 bytes though)
 
-		QByteArray crc32 = UTIL_CreateQByteArray( m_GHost->m_CRC->FullCRC(subpacket), false );
+		QByteArray crc32 = UTIL_CreateBYTEARRAY( m_GHost->m_CRC->FullCRC(subpacket), false );
 		crc32.resize( 2 );
 
 		// finish subpacket
 
-		UTIL_AppendQByteArrayFast( packet, crc32 );			// crc
-		UTIL_AppendQByteArrayFast( packet, subpacket );		// subpacket
+		UTIL_AppendBYTEARRAYFast( packet, crc32 );			// crc
+		UTIL_AppendBYTEARRAYFast( packet, subpacket );		// subpacket
 	}
 
 	AssignLength( packet );
@@ -915,7 +917,7 @@ bool CGameProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateQByteArray( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)content.size( ), false );
 		content[2] = LengthBytes[0];
 		content[3] = LengthBytes[1];
 		return true;
@@ -950,9 +952,9 @@ QByteArray CGameProtocol :: EncodeSlotInfo( QVector<CGameSlot> &lslots, uint32_t
 	SlotInfo.push_back( (unsigned char)lslots.size( ) );		// number of slots
 
 	for( int i = 0; i < lslots.size( ); i++ )
-		UTIL_AppendQByteArray( SlotInfo, lslots[i].GetQByteArray( ) );
+		UTIL_AppendBYTEARRAY( SlotInfo, lslots[i].GetQByteArray( ) );
 
-	UTIL_AppendQByteArray( SlotInfo, randomSeed, false );	// random seed
+	UTIL_AppendBYTEARRAY( SlotInfo, randomSeed, false );	// random seed
 	SlotInfo.push_back( layoutStyle );						// LayoutStyle (0 = melee, 1 = custom forces, 3 = custom forces + fixed player settings)
 	SlotInfo.push_back( playerSlots );						// number of player slots (non observer)
 	return SlotInfo;

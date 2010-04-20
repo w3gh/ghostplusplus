@@ -325,12 +325,12 @@ void CPacked :: Compress( bool TFT )
 	uint32_t HeaderCompressedSize = HeaderSize + CompressedSize + CompressedBlocks.size( ) * 8;
 	uint32_t HeaderVersion = 1;
 	QByteArray Header;
-	UTIL_AppendQByteArray( Header, "Warcraft III recorded game\x01A" );
-	UTIL_AppendQByteArray( Header, HeaderSize, false );
-	UTIL_AppendQByteArray( Header, HeaderCompressedSize, false );
-	UTIL_AppendQByteArray( Header, HeaderVersion, false );
-	UTIL_AppendQByteArray( Header, (uint32_t)m_Decompressed.size( ), false );
-	UTIL_AppendQByteArray( Header, (uint32_t)CompressedBlocks.size( ), false );
+	UTIL_AppendBYTEARRAY( Header, "Warcraft III recorded game\x01A" );
+	UTIL_AppendBYTEARRAY( Header, HeaderSize, false );
+	UTIL_AppendBYTEARRAY( Header, HeaderCompressedSize, false );
+	UTIL_AppendBYTEARRAY( Header, HeaderVersion, false );
+	UTIL_AppendBYTEARRAY( Header, (uint32_t)m_Decompressed.size( ), false );
+	UTIL_AppendBYTEARRAY( Header, (uint32_t)CompressedBlocks.size( ), false );
 
 	if( TFT )
 	{
@@ -347,16 +347,16 @@ void CPacked :: Compress( bool TFT )
 		Header.push_back( 'W' );
 	}
 
-	UTIL_AppendQByteArray( Header, m_War3Version, false );
-	UTIL_AppendQByteArray( Header, m_BuildNumber, false );
-	UTIL_AppendQByteArray( Header, m_Flags, false );
-	UTIL_AppendQByteArray( Header, m_ReplayLength, false );
+	UTIL_AppendBYTEARRAY( Header, m_War3Version, false );
+	UTIL_AppendBYTEARRAY( Header, m_BuildNumber, false );
+	UTIL_AppendBYTEARRAY( Header, m_Flags, false );
+	UTIL_AppendBYTEARRAY( Header, m_ReplayLength, false );
 
 	// append zero header CRC
 	// the header CRC is calculated over the entire header with itself set to zero
 	// we'll overwrite the zero header CRC after we calculate it
 
-	UTIL_AppendQByteArray( Header, (uint32_t)0, false );
+	UTIL_AppendBYTEARRAY( Header, (uint32_t)0, false );
 
 	// calculate header CRC
 
@@ -366,7 +366,7 @@ void CPacked :: Compress( bool TFT )
 	// overwrite the (currently zero) header CRC with the calculated CRC
 
 	Header.remove(Header.size() - 4, 4);
-	UTIL_AppendQByteArray( Header, CRC, false );
+	UTIL_AppendBYTEARRAY( Header, CRC, false );
 
 	// append header
 
@@ -377,12 +377,12 @@ void CPacked :: Compress( bool TFT )
 	for( QVector<string> :: const_iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
 	{
 		QByteArray BlockHeader;
-		UTIL_AppendQByteArray( BlockHeader, (uint16_t)(*i).size( ), false );
-		UTIL_AppendQByteArray( BlockHeader, (uint16_t)8192, false );
+		UTIL_AppendBYTEARRAY( BlockHeader, (uint16_t)(*i).size( ), false );
+		UTIL_AppendBYTEARRAY( BlockHeader, (uint16_t)8192, false );
 
 		// append zero block header CRC
 
-		UTIL_AppendQByteArray( BlockHeader, (uint32_t)0, false );
+		UTIL_AppendBYTEARRAY( BlockHeader, (uint32_t)0, false );
 
 		// calculate block header CRC
 
@@ -395,7 +395,7 @@ void CPacked :: Compress( bool TFT )
 		// overwrite the block header CRC with the calculated CRC
 
 		BlockHeader.remove( BlockHeader.size() - 4, 4 );
-		UTIL_AppendQByteArray( BlockHeader, BlockCRC, false );
+		UTIL_AppendBYTEARRAY( BlockHeader, BlockCRC, false );
 
 		// append block header and data
 

@@ -71,10 +71,10 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 		uint32_t EXEVersion;
 		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (uint32_t *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
-		m_EXEVersion = UTIL_CreateQByteArray( EXEVersion, false );
+		m_EXEVersion = UTIL_CreateBYTEARRAY( EXEVersion, false );
 		uint32_t EXEVersionHash;
 		checkRevisionFlat( valueStringFormula.toStdString().c_str( ), FileWar3EXE.toStdString().c_str( ), FileStormDLL.toStdString().c_str( ), FileGameDLL.toStdString().c_str( ), extractMPQNumber( mpqFileName.toStdString().c_str( ) ), (unsigned long *)&EXEVersionHash );
-		m_EXEVersionHash = UTIL_CreateQByteArray( EXEVersionHash, false );
+		m_EXEVersionHash = UTIL_CreateBYTEARRAY( EXEVersionHash, false );
 		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
 
 		if( TFT )
@@ -146,14 +146,14 @@ QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, uint32_t clientToke
 
 	if( Decoder.isKeyValid( ) )
 	{
-		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( (uint32_t)key.size( ), false ) );
-		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getProduct( ), false ) );
-		UTIL_AppendQByteArray( KeyInfo, UTIL_CreateQByteArray( Decoder.getVal1( ), false ) );
-		UTIL_AppendQByteArray( KeyInfo, QByteArray( (char*)Zeros, 4 ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( (uint32_t)key.size( ), false ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getProduct( ), false ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getVal1( ), false ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, QByteArray( (char*)Zeros, 4 ) );
 		size_t Length = Decoder.calculateHash( clientToken, serverToken );
 		char *buf = new char[Length];
 		Length = Decoder.getHash( buf );
-		UTIL_AppendQByteArray( KeyInfo, QByteArray( buf, Length ) );
+		UTIL_AppendBYTEARRAY( KeyInfo, QByteArray( buf, Length ) );
 		delete [] buf;
 	}
 
