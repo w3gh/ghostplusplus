@@ -61,7 +61,7 @@ void CONSOLE_Print( QString message )
 
 	// logging
 
-	if (!gLogFile.fileName().isEmpty())
+	/*if (!gLogFile.fileName().isEmpty())
 	{
 		if( gLogMethod == 1 )
 		{
@@ -75,7 +75,7 @@ void CONSOLE_Print( QString message )
 		}
 		else if( gLogMethod == 2 && gLogFile.isWritable() )
 			gLogStream << "[" << QTime::currentTime().toString() << "] " << message << endl;
-	}
+	}*/
 }
 
 void DEBUG_Print( QString message )

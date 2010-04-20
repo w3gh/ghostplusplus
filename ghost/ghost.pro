@@ -5,7 +5,7 @@ QT += network \
 	sql
 QT -= gui
 TARGET = ghost
-CONFIG += console
+CONFIG += console debug
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += util.cpp \

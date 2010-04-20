@@ -1088,7 +1088,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					SendAllChat( m_GHost->m_Language->UnableToKickNoMatchesFound( Payload ) );
 				else if( Matches == 1 )
 				{
-					LastMatch->SetDeleteMe( true );
+					LastMatch->deleteLater();
 					LastMatch->SetLeftReason( m_GHost->m_Language->WasKickedByPlayer( User ) );
 
 					if( !m_GameLoading && !m_GameLoaded )
@@ -1276,7 +1276,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 						if( !m_GameLoading && !m_GameLoaded && !(*i)->GetReserved( ) && KickPing > 0 && (*i)->GetPing( m_GHost->m_LCPings ) > KickPing )
 						{
-							(*i)->SetDeleteMe( true );
+							(*i)->deleteLater();
 							(*i)->SetLeftReason( "was kicked for excessive ping " + UTIL_ToString( (*i)->GetPing( m_GHost->m_LCPings ) ) + " > " + UTIL_ToString( KickPing ) );
 							(*i)->SetLeftCode( PLAYERLEAVE_LOBBY );
 							OpenSlot( GetSIDFromPID( (*i)->GetPID( ) ), false );
@@ -1778,7 +1778,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Victim )
 			{
-				Victim->SetDeleteMe( true );
+				Victim->deleteLater();
 				Victim->SetLeftReason( m_GHost->m_Language->WasKickedByVote( ) );
 
 				if( !m_GameLoading && !m_GameLoaded )
