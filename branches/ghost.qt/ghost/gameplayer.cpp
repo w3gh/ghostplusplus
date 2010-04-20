@@ -459,7 +459,6 @@ void CGamePlayer :: ExtractPackets( )
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
-	DEBUG_Print("Receiving as normal player with socket " + QString::number((int)m_Socket));
 	while( m_Socket->bytesAvailable() >= 4 )
 	{
 		unsigned char header = m_Socket->peek(1).at(0);
@@ -673,8 +672,6 @@ void CGamePlayer :: Send( QByteArray data )
 	// must start counting packet total from beginning of connection
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
 	// this prevents us from buffering packets for non-GProxy++ clients
-
-	DEBUG_Print("CGamePlayer::Send(" + data.toHex() + ");");
 
 	m_TotalPacketsSent++;
 

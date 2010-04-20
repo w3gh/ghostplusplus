@@ -74,6 +74,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 	QObject::connect(&m_VotekickTimer, SIGNAL(timeout()), this, SLOT(EventVotekickTimeout()));
 
 	m_SlotInfoTimer.setInterval(500);
+	m_SlotInfoTimer.setSingleShot(true);
 	QObject::connect(&m_SlotInfoTimer, SIGNAL(timeout()), this, SLOT(SendAllSlotInfo()));
 
 	m_CallableUpdateTimer.setInterval(200);
@@ -1977,14 +1978,11 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-DEBUG_Print("sent SEND_W3GS_SLOTINFOJOIN");
 	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
-DEBUG_Print("sent SendVirtualHostPlayerInfo");
 	SendVirtualHostPlayerInfo( Player );
-DEBUG_Print("sent SendFakePlayerInfo");
 	SendFakePlayerInfo( Player );
 
 	QByteArray BlankIP;
@@ -2018,19 +2016,15 @@ DEBUG_Print("sent SendFakePlayerInfo");
 
 	// send a map check packet to the new player
 
-DEBUG_Print("sent SEND_W3GS_MAPCHECK");
 	Player->Send( m_Protocol->SEND_W3GS_MAPCHECK( m_Map->GetMapPath( ), m_Map->GetMapSize( ), m_Map->GetMapInfo( ), m_Map->GetMapCRC( ), m_Map->GetMapSHA1( ) ) );
 
 	// send slot info to everyone, so the new player gets this info twice but everyone else still needs to know the new slot layout
 
-DEBUG_Print("sent SendAllSlotInfo");
 	SendAllSlotInfo( );
 
 	// send a welcome message
 
-DEBUG_Print("sent SendWelcomeMessage");
 	SendWelcomeMessage( Player );
-DEBUG_Print("sent done");
 
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
