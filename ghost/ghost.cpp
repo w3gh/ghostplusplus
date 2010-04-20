@@ -850,7 +850,7 @@ void CGHost :: ExtractScripts( )
 	QString PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
 	HANDLE PatchMPQ;
 
-	if( SFileOpenArchive( (char*)PatchMPQFileName.data( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
+	if( SFileOpenArchive( PatchMPQFileName.toUtf8().data( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
 	{
 		CONSOLE_Print( "[GHOST] loading MPQ file [" + PatchMPQFileName + "]" );
 		HANDLE SubFile;
