@@ -1127,6 +1127,8 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 	else
 		m_CurrentGame = new CGame( this, map, NULL, m_HostPort, gameState, gameName, ownerName, creatorName, creatorServer );
 
+	QObject::connect(m_CurrentGame, SIGNAL(startedLoading()), this, SLOT(EventGameStarted()));
+
 	// todotodo: check if listening failed and report the error to the user
 
 	if( m_SaveGame )
