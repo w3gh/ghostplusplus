@@ -33,7 +33,7 @@ CSQLITE3 :: CSQLITE3( QString filename )
 {
 	m_Ready = true;
 
-	if( sqlite3_open_v2( (char*)filename.data(), (sqlite3 **)&m_DB, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL ) != SQLITE_OK )
+	if( sqlite3_open_v2( filename.toUtf8().data(), (sqlite3 **)&m_DB, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL ) != SQLITE_OK )
 		m_Ready = false;
 }
 
@@ -49,7 +49,7 @@ QString CSQLITE3 :: GetError( )
 
 int CSQLITE3 :: Prepare( QString query, void **Statement )
 {
-	return sqlite3_prepare_v2( (sqlite3 *)m_DB, (char*)query.data( ), -1, (sqlite3_stmt **)Statement, NULL );
+	return sqlite3_prepare_v2( (sqlite3 *)m_DB, query.toUtf8().data( ), -1, (sqlite3_stmt **)Statement, NULL );
 }
 
 int CSQLITE3 :: Step( void *Statement )
@@ -91,7 +91,7 @@ int CSQLITE3 :: ClearBindings( void *Statement )
 
 int CSQLITE3 :: Exec( QString query )
 {
-	return sqlite3_exec( (sqlite3 *)m_DB, (char*)query.data( ), NULL, NULL, NULL );
+	return sqlite3_exec( (sqlite3 *)m_DB, query.toUtf8().data( ), NULL, NULL, NULL );
 }
 
 uint32_t CSQLITE3 :: LastRowID( )
@@ -215,7 +215,7 @@ CGHostDBSQLite :: CGHostDBSQLite( CConfig *CFG ) : CGHostDB( CFG )
 
 			if( Statement )
 			{
-				sqlite3_bind_text( Statement, 1, (char*)SchemaNumber.data( ), -1, SQLITE_TRANSIENT );
+				sqlite3_bind_text( Statement, 1, SchemaNumber.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 				int RC = m_DB->Step( Statement );
 
 				if( RC == SQLITE_ERROR )
@@ -563,7 +563,7 @@ uint32_t CGHostDBSQLite :: AdminCount( QString server )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -588,8 +588,8 @@ bool CGHostDBSQLite :: AdminCheck( QString server, QString user )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		// we're just checking to see if the query returned a row, we don't need to check the row data itself
@@ -616,8 +616,8 @@ bool CGHostDBSQLite :: AdminAdd( QString server, QString user )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_DONE )
@@ -642,8 +642,8 @@ bool CGHostDBSQLite :: AdminRemove( QString server, QString user )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_DONE )
@@ -667,7 +667,7 @@ QVector<QString> CGHostDBSQLite :: AdminList( QString server )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		while( RC == SQLITE_ROW )
@@ -699,7 +699,7 @@ uint32_t CGHostDBSQLite :: BanCount( QString server )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -728,11 +728,11 @@ CDBBan *CGHostDBSQLite :: BanCheck( QString server, QString user, QString ip )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		if( !ip.isEmpty( ) )
-			sqlite3_bind_text( Statement, 3, (char*)ip.data( ), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_text( Statement, 3, ip.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( Statement );
 
@@ -765,12 +765,12 @@ bool CGHostDBSQLite :: BanAdd( QString server, QString user, QString ip, QString
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 3, (char*)ip.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 4, (char*)gamename.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 5, (char*)admin.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 6, (char*)reason.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 3, ip.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 4, gamename.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 5, admin.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 6, reason.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( Statement );
 
@@ -796,8 +796,8 @@ bool CGHostDBSQLite :: BanRemove( QString server, QString user )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_DONE )
@@ -822,7 +822,7 @@ bool CGHostDBSQLite :: BanRemove( QString user )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)user.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, user.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_DONE )
@@ -846,7 +846,7 @@ QVector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		while( RC == SQLITE_ROW )
@@ -878,14 +878,14 @@ uint32_t CGHostDBSQLite :: GameAdd( QString server, QString map, QString gamenam
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)server.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 2, (char*)map.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 3, (char*)gamename.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 4, (char*)ownername.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, server.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, map.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 3, gamename.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 4, ownername.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 5, duration );
 		sqlite3_bind_int( Statement, 6, gamestate );
-		sqlite3_bind_text( Statement, 7, (char*)creatorname.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 8, (char*)creatorserver.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 7, creatorname.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 8, creatorserver.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( Statement );
 
@@ -912,16 +912,16 @@ uint32_t CGHostDBSQLite :: GamePlayerAdd( uint32_t gameid, QString name, QString
 	if( Statement )
 	{
 		sqlite3_bind_int( Statement, 1, gameid );
-		sqlite3_bind_text( Statement, 2, (char*)name.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 3, (char*)ip.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 2, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 3, ip.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 4, spoofed );
 		sqlite3_bind_int( Statement, 5, reserved );
 		sqlite3_bind_int( Statement, 6, loadingtime );
 		sqlite3_bind_int( Statement, 7, left );
-		sqlite3_bind_text( Statement, 8, (char*)leftreason.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 8, leftreason.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 9, team );
 		sqlite3_bind_int( Statement, 10, colour );
-		sqlite3_bind_text( Statement, 11, (char*)spoofedrealm.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 11, spoofedrealm.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( Statement );
 
@@ -947,7 +947,7 @@ uint32_t CGHostDBSQLite :: GamePlayerCount( QString name )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -975,7 +975,7 @@ CDBGamePlayerSummary *CGHostDBSQLite :: GamePlayerSummaryCheck( QString name )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -1064,13 +1064,13 @@ uint32_t CGHostDBSQLite :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint
 		sqlite3_bind_int( Statement, 7, assists );
 		sqlite3_bind_int( Statement, 8, gold );
 		sqlite3_bind_int( Statement, 9, neutralkills );
-		sqlite3_bind_text( Statement, 10, (char*)item1.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 11, (char*)item2.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 12, (char*)item3.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 13, (char*)item4.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 14, (char*)item5.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 15, (char*)item6.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 16, (char*)hero.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 10, item1.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 11, item2.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 12, item3.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 13, item4.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 14, item5.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 15, item6.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 16, hero.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 17, newcolour );
 		sqlite3_bind_int( Statement, 18, towerkills );
 		sqlite3_bind_int( Statement, 19, raxkills );
@@ -1100,7 +1100,7 @@ uint32_t CGHostDBSQLite :: DotAPlayerCount( QString name )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -1128,7 +1128,7 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( QString name )
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		int RC = m_DB->Step( Statement );
 
 		if( RC == SQLITE_ROW )
@@ -1155,7 +1155,7 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( QString name )
 
 				if( Statement2 )
 				{
-					sqlite3_bind_text( Statement2, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+					sqlite3_bind_text( Statement2, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 					int RC2 = m_DB->Step( Statement2 );
 
 					if( RC2 == SQLITE_ROW )
@@ -1175,7 +1175,7 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( QString name )
 
 				if( Statement3 )
 				{
-					sqlite3_bind_text( Statement3, 1, (char*)name.data( ), -1, SQLITE_TRANSIENT );
+					sqlite3_bind_text( Statement3, 1, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 					int RC3 = m_DB->Step( Statement3 );
 
 					if( RC3 == SQLITE_ROW )
@@ -1257,7 +1257,7 @@ bool CGHostDBSQLite :: FromAdd( uint32_t ip1, uint32_t ip2, QString country )
 
 		sqlite3_bind_int64( (sqlite3_stmt *)FromAddStmt, 1, ip1 );
 		sqlite3_bind_int64( (sqlite3_stmt *)FromAddStmt, 2, ip2 );
-		sqlite3_bind_text( (sqlite3_stmt *)FromAddStmt, 3, (char*)country.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( (sqlite3_stmt *)FromAddStmt, 3, country.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 
 		int RC = m_DB->Step( FromAddStmt );
 
@@ -1282,12 +1282,12 @@ bool CGHostDBSQLite :: DownloadAdd( QString map, uint32_t mapsize, QString name,
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)map.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, map.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 2, mapsize );
-		sqlite3_bind_text( Statement, 3, (char*)name.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 4, (char*)ip.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 3, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 4, ip.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 5, spoofed );
-		sqlite3_bind_text( Statement, 6, (char*)spoofedrealm.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 6, spoofedrealm.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 7, downloadtime );
 
 		int RC = m_DB->Step( Statement );
@@ -1313,11 +1313,11 @@ uint32_t CGHostDBSQLite :: W3MMDPlayerAdd( QString category, uint32_t gameid, ui
 
 	if( Statement )
 	{
-		sqlite3_bind_text( Statement, 1, (char*)category.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 1, category.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 2, gameid );
 		sqlite3_bind_int( Statement, 3, pid );
-		sqlite3_bind_text( Statement, 4, (char*)name.data( ), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( Statement, 5, (char*)flag.data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 4, name.toUtf8().data( ), -1, SQLITE_TRANSIENT );
+		sqlite3_bind_text( Statement, 5, flag.toUtf8().data( ), -1, SQLITE_TRANSIENT );
 		sqlite3_bind_int( Statement, 6, leaver );
 		sqlite3_bind_int( Statement, 7, practicing );
 
