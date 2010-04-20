@@ -171,11 +171,11 @@ private:
 	QString m_Database;
 	QString m_User;
 	QString m_Password;
-	uint16_t m_Port;
-	uint32_t m_BotID;
+	quint16 m_Port;
+	quint32 m_BotID;
 	QQueue<void *> m_IdleConnections;
-	uint32_t m_NumConnections;
-	uint32_t m_OutstandingCallables;
+	quint32 m_NumConnections;
+	quint32 m_OutstandingCallables;
 
 public:
 	CGHostDBMySQL( CConfig *CFG );
@@ -199,18 +199,18 @@ public:
 	virtual CCallableBanRemove *ThreadedBanRemove( QString server, QString user );
 	virtual CCallableBanRemove *ThreadedBanRemove( QString user );
 	virtual CCallableBanList *ThreadedBanList( QString server );
-	virtual CCallableGameAdd *ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver );
-	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour );
+	virtual CCallableGameAdd *ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
+	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( QString name );
-	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
+	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec );
+	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( QString name );
-	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
+	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( QString category, QString name, QString server );
-	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,string> var_strings );
+	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,string> var_strings );
 
 	// other database functions
 
@@ -221,29 +221,29 @@ public:
 // global helper functions
 //
 
-uint32_t MySQLAdminCount( void *conn, QString *error, uint32_t botid, QString server );
-bool MySQLAdminCheck( void *conn, QString *error, uint32_t botid, QString server, QString user );
-bool MySQLAdminAdd( void *conn, QString *error, uint32_t botid, QString server, QString user );
-bool MySQLAdminRemove( void *conn, QString *error, uint32_t botid, QString server, QString user );
-QVector<string> MySQLAdminList( void *conn, QString *error, uint32_t botid, QString server );
-uint32_t MySQLBanCount( void *conn, QString *error, uint32_t botid, QString server );
-CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip );
-bool MySQLBanAdd( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
-bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString server, QString user );
-bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString user );
-QVector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QString server );
-uint32_t MySQLGameAdd( void *conn, QString *error, uint32_t botid, QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver );
-uint32_t MySQLGamePlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour );
-CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name );
-uint32_t MySQLDotAGameAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-uint32_t MySQLDotAPlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
-CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name );
-bool MySQLDownloadAdd( void *conn, QString *error, uint32_t botid, QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime );
-double MySQLScoreCheck( void *conn, QString *error, uint32_t botid, QString category, QString name, QString server );
-uint32_t MySQLW3MMDPlayerAdd( void *conn, QString *error, uint32_t botid, QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing );
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,int32_t> var_ints );
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,double> var_reals );
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,string> var_strings );
+quint32 MySQLAdminCount( void *conn, QString *error, quint32 botid, QString server );
+bool MySQLAdminCheck( void *conn, QString *error, quint32 botid, QString server, QString user );
+bool MySQLAdminAdd( void *conn, QString *error, quint32 botid, QString server, QString user );
+bool MySQLAdminRemove( void *conn, QString *error, quint32 botid, QString server, QString user );
+QVector<string> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server );
+quint32 MySQLBanCount( void *conn, QString *error, quint32 botid, QString server );
+CDBBan *MySQLBanCheck( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip );
+bool MySQLBanAdd( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
+bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString server, QString user );
+bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString user );
+QVector<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server );
+quint32 MySQLGameAdd( void *conn, QString *error, quint32 botid, QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
+quint32 MySQLGamePlayerAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
+CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, quint32 botid, QString name );
+quint32 MySQLDotAGameAdd( void *conn, QString *error, quint32 botid, quint32 gameid, quint32 winner, quint32 min, quint32 sec );
+quint32 MySQLDotAPlayerAdd( void *conn, QString *error, quint32 botid, quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills );
+CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, quint32 botid, QString name );
+bool MySQLDownloadAdd( void *conn, QString *error, quint32 botid, QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
+double MySQLScoreCheck( void *conn, QString *error, quint32 botid, QString category, QString name, QString server );
+quint32 MySQLW3MMDPlayerAdd( void *conn, QString *error, quint32 botid, QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,int32_t> var_ints );
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,double> var_reals );
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,string> var_strings );
 
 //
 // MySQL Callables
@@ -257,11 +257,11 @@ protected:
 	QString m_SQLDatabase;
 	QString m_SQLUser;
 	QString m_SQLPassword;
-	uint16_t m_SQLPort;
-	uint32_t m_SQLBotID;
+	quint16 m_SQLPort;
+	quint32 m_SQLBotID;
 
 public:
-	CMySQLCallable( void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), m_Connection( nConnection ), m_SQLBotID( nSQLBotID ), m_SQLServer( nSQLServer ), m_SQLDatabase( nSQLDatabase ), m_SQLUser( nSQLUser ), m_SQLPassword( nSQLPassword ), m_SQLPort( nSQLPort ) { }
+	CMySQLCallable( void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), m_Connection( nConnection ), m_SQLBotID( nSQLBotID ), m_SQLServer( nSQLServer ), m_SQLDatabase( nSQLDatabase ), m_SQLUser( nSQLUser ), m_SQLPassword( nSQLPassword ), m_SQLPort( nSQLPort ) { }
 	virtual ~CMySQLCallable( ) { }
 
 	virtual void *GetConnection( )	{ return m_Connection; }
@@ -273,7 +273,7 @@ public:
 class CMySQLCallableAdminCount : public CCallableAdminCount, public CMySQLCallable
 {
 public:
-	CMySQLCallableAdminCount( QString nServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableAdminCount( QString nServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableAdminCount( ) { }
 
 	virtual void operator( )( );
@@ -284,7 +284,7 @@ public:
 class CMySQLCallableAdminCheck : public CCallableAdminCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableAdminCheck( QString nServer, QString nUser, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCheck( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableAdminCheck( QString nServer, QString nUser, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableAdminCheck( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableAdminCheck( ) { }
 
 	virtual void operator( )( );
@@ -295,7 +295,7 @@ public:
 class CMySQLCallableAdminAdd : public CCallableAdminAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableAdminAdd( QString nServer, QString nUser, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminAdd( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableAdminAdd( QString nServer, QString nUser, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableAdminAdd( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableAdminAdd( ) { }
 
 	virtual void operator( )( );
@@ -306,7 +306,7 @@ public:
 class CMySQLCallableAdminRemove : public CCallableAdminRemove, public CMySQLCallable
 {
 public:
-	CMySQLCallableAdminRemove( QString nServer, QString nUser, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminRemove( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableAdminRemove( QString nServer, QString nUser, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableAdminRemove( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableAdminRemove( ) { }
 
 	virtual void operator( )( );
@@ -317,7 +317,7 @@ public:
 class CMySQLCallableAdminList : public CCallableAdminList, public CMySQLCallable
 {
 public:
-	CMySQLCallableAdminList( QString nServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminList( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableAdminList( QString nServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableAdminList( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableAdminList( ) { }
 
 	virtual void operator( )( );
@@ -328,7 +328,7 @@ public:
 class CMySQLCallableBanCount : public CCallableBanCount, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanCount( QString nServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanCount( QString nServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableBanCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanCount( ) { }
 
 	virtual void operator( )( );
@@ -339,7 +339,7 @@ public:
 class CMySQLCallableBanCheck : public CCallableBanCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanCheck( QString nServer, QString nUser, QString nIP, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanCheck( nServer, nUser, nIP ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanCheck( QString nServer, QString nUser, QString nIP, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableBanCheck( nServer, nUser, nIP ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanCheck( ) { }
 
 	virtual void operator( )( );
@@ -350,7 +350,7 @@ public:
 class CMySQLCallableBanAdd : public CCallableBanAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanAdd( QString nServer, QString nUser, QString nIP, QString nGameName, QString nAdmin, QString nReason, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanAdd( nServer, nUser, nIP, nGameName, nAdmin, nReason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanAdd( QString nServer, QString nUser, QString nIP, QString nGameName, QString nAdmin, QString nReason, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableBanAdd( nServer, nUser, nIP, nGameName, nAdmin, nReason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanAdd( ) { }
 
 	virtual void operator( )( );
@@ -361,7 +361,7 @@ public:
 class CMySQLCallableBanRemove : public CCallableBanRemove, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanRemove( QString nServer, QString nUser, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanRemove( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanRemove( QString nServer, QString nUser, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableBanRemove( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanRemove( ) { }
 
 	virtual void operator( )( );
@@ -372,7 +372,7 @@ public:
 class CMySQLCallableBanList : public CCallableBanList, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanList( QString nServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanList( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanList( QString nServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableBanList( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanList( ) { }
 
 	virtual void operator( )( );
@@ -383,7 +383,7 @@ public:
 class CMySQLCallableGameAdd : public CCallableGameAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableGameAdd( QString nServer, QString nMap, QString nGameName, QString nOwnerName, uint32_t nDuration, uint32_t nGameState, QString nCreatorName, QString nCreatorServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableGameAdd( nServer, nMap, nGameName, nOwnerName, nDuration, nGameState, nCreatorName, nCreatorServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableGameAdd( QString nServer, QString nMap, QString nGameName, QString nOwnerName, quint32 nDuration, quint32 nGameState, QString nCreatorName, QString nCreatorServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableGameAdd( nServer, nMap, nGameName, nOwnerName, nDuration, nGameState, nCreatorName, nCreatorServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableGameAdd( ) { }
 
 	virtual void operator( )( );
@@ -394,7 +394,7 @@ public:
 class CMySQLCallableGamePlayerAdd : public CCallableGamePlayerAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableGamePlayerAdd( uint32_t nGameID, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nReserved, uint32_t nLoadingTime, uint32_t nLeft, QString nLeftReason, uint32_t nTeam, uint32_t nColour, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableGamePlayerAdd( nGameID, nName, nIP, nSpoofed, nSpoofedRealm, nReserved, nLoadingTime, nLeft, nLeftReason, nTeam, nColour ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableGamePlayerAdd( quint32 nGameID, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nReserved, quint32 nLoadingTime, quint32 nLeft, QString nLeftReason, quint32 nTeam, quint32 nColour, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableGamePlayerAdd( nGameID, nName, nIP, nSpoofed, nSpoofedRealm, nReserved, nLoadingTime, nLeft, nLeftReason, nTeam, nColour ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableGamePlayerAdd( ) { }
 
 	virtual void operator( )( );
@@ -405,7 +405,7 @@ public:
 class CMySQLCallableGamePlayerSummaryCheck : public CCallableGamePlayerSummaryCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableGamePlayerSummaryCheck( QString nName, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableGamePlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableGamePlayerSummaryCheck( QString nName, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableGamePlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableGamePlayerSummaryCheck( ) { }
 
 	virtual void operator( )( );
@@ -416,7 +416,7 @@ public:
 class CMySQLCallableDotAGameAdd : public CCallableDotAGameAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableDotAGameAdd( uint32_t nGameID, uint32_t nWinner, uint32_t nMin, uint32_t nSec, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAGameAdd( nGameID, nWinner, nMin, nSec ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableDotAGameAdd( quint32 nGameID, quint32 nWinner, quint32 nMin, quint32 nSec, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableDotAGameAdd( nGameID, nWinner, nMin, nSec ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDotAGameAdd( ) { }
 
 	virtual void operator( )( );
@@ -427,7 +427,7 @@ public:
 class CMySQLCallableDotAPlayerAdd : public CCallableDotAPlayerAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableDotAPlayerAdd( uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerAdd( nGameID, nColour, nKills, nDeaths, nCreepKills, nCreepDenies, nAssists, nGold, nNeutralKills, nItem1, nItem2, nItem3, nItem4, nItem5, nItem6, nHero, nNewColour, nTowerKills, nRaxKills, nCourierKills ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableDotAPlayerAdd( quint32 nGameID, quint32 nColour, quint32 nKills, quint32 nDeaths, quint32 nCreepKills, quint32 nCreepDenies, quint32 nAssists, quint32 nGold, quint32 nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, quint32 nNewColour, quint32 nTowerKills, quint32 nRaxKills, quint32 nCourierKills, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerAdd( nGameID, nColour, nKills, nDeaths, nCreepKills, nCreepDenies, nAssists, nGold, nNeutralKills, nItem1, nItem2, nItem3, nItem4, nItem5, nItem6, nHero, nNewColour, nTowerKills, nRaxKills, nCourierKills ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDotAPlayerAdd( ) { }
 
 	virtual void operator( )( );
@@ -438,7 +438,7 @@ public:
 class CMySQLCallableDotAPlayerSummaryCheck : public CCallableDotAPlayerSummaryCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableDotAPlayerSummaryCheck( QString nName, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableDotAPlayerSummaryCheck( QString nName, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDotAPlayerSummaryCheck( ) { }
 
 	virtual void operator( )( );
@@ -449,7 +449,7 @@ public:
 class CMySQLCallableDownloadAdd : public CCallableDownloadAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableDownloadAdd( QString nMap, uint32_t nMapSize, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nDownloadTime, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDownloadAdd( nMap, nMapSize, nName, nIP, nSpoofed, nSpoofedRealm, nDownloadTime ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableDownloadAdd( QString nMap, quint32 nMapSize, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nDownloadTime, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableDownloadAdd( nMap, nMapSize, nName, nIP, nSpoofed, nSpoofedRealm, nDownloadTime ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDownloadAdd( ) { }
 
 	virtual void operator( )( );
@@ -460,7 +460,7 @@ public:
 class CMySQLCallableScoreCheck : public CCallableScoreCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableScoreCheck( QString nCategory, QString nName, QString nServer, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableScoreCheck( nCategory, nName, nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableScoreCheck( QString nCategory, QString nName, QString nServer, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableScoreCheck( nCategory, nName, nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableScoreCheck( ) { }
 
 	virtual void operator( )( );
@@ -471,7 +471,7 @@ public:
 class CMySQLCallableW3MMDPlayerAdd : public CCallableW3MMDPlayerAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableW3MMDPlayerAdd( QString nCategory, uint32_t nGameID, uint32_t nPID, QString nName, QString nFlag, uint32_t nLeaver, uint32_t nPracticing, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDPlayerAdd( nCategory, nGameID, nPID, nName, nFlag, nLeaver, nPracticing ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDPlayerAdd( QString nCategory, quint32 nGameID, quint32 nPID, QString nName, QString nFlag, quint32 nLeaver, quint32 nPracticing, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableW3MMDPlayerAdd( nCategory, nGameID, nPID, nName, nFlag, nLeaver, nPracticing ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableW3MMDPlayerAdd( ) { }
 
 	virtual void operator( )( );
@@ -482,9 +482,9 @@ public:
 class CMySQLCallableW3MMDVarAdd : public CCallableW3MMDVarAdd, public CMySQLCallable
 {
 public:
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,int32_t> nVarInts, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarInts ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,double> nVarReals, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarReals ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	CMySQLCallableW3MMDVarAdd( uint32_t nGameID, QMap<VarP,string> nVarStrings, void *nConnection, uint32_t nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarStrings ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,int32_t> nVarInts, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarInts ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,double> nVarReals, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarReals ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,string> nVarStrings, void *nConnection, quint32 nSQLBotID, QString nSQLServer, QString nSQLDatabase, QString nSQLUser, QString nSQLPassword, quint16 nSQLPort ) : CBaseCallable( ), CCallableW3MMDVarAdd( nGameID, nVarStrings ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableW3MMDVarAdd( ) { }
 
 	virtual void operator( )( );

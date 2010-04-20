@@ -21,14 +21,6 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
-// standard integer sizes for 64 bit compatibility
-
-#ifdef WIN32
- #include "ms_stdint.h"
-#else
- #include <stdint.h>
-#endif
-
 // STL
 
 #include <iostream>
@@ -46,8 +38,8 @@ typedef QPair<unsigned char,QString> PIDPlayer;
 
 // time
 
-uint32_t GetTime( );		// seconds
-uint32_t GetTicks( );		// milliseconds
+quint32 GetTime( );		// seconds
+quint32 GetTicks( );		// milliseconds
 
 // output
 

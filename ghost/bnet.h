@@ -112,13 +112,13 @@ private:
 	QString m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
 	QString m_ServerAlias;							// battle.net server alias (short name, e.g. "USEast")
 	QString m_BNLSServer;							// BNLS server to connect to (for warden handling)
-	uint16_t m_BNLSPort;							// BNLS port
-	uint32_t m_BNLSWardenCookie;					// BNLS warden cookie
+	quint16 m_BNLSPort;							// BNLS port
+	quint32 m_BNLSWardenCookie;					// BNLS warden cookie
 	QString m_CDKeyROC;								// ROC CD key
 	QString m_CDKeyTFT;								// TFT CD key
 	QString m_CountryAbbrev;							// country abbreviation
 	QString m_Country;								// country
-	uint32_t m_LocaleID;							// see: http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
+	quint32 m_LocaleID;							// see: http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
 	QString m_UserName;								// battle.net username
 	QString m_UserPassword;							// battle.net password
 	QString m_FirstChannel;							// the first chat channel to join upon entering chat (note: we hijack this to store the last channel when entering a game)
@@ -131,14 +131,14 @@ private:
 	QString m_PasswordHashType;						// password hash type for PvPGN users
 	QString m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
 	int m_MaxMessageLength;					// maximum message length for PvPGN users
-	uint32_t m_HostCounterID;						// the host counter ID to identify players from this realm
-	uint32_t m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
-	uint32_t m_LastConnectionAttemptTime;			// GetTime when we last attempted to connect to battle.net
-	uint32_t m_LastNullTime;						// GetTime when the last null packet was sent for detecting disconnects
-	uint32_t m_LastOutPacketTicks;					// GetTicks when the last packet was sent for the m_OutPackets queue
-	uint32_t m_LastOutPacketSize;
-	uint32_t m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
-	uint32_t m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
+	quint32 m_HostCounterID;						// the host counter ID to identify players from this realm
+	quint32 m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
+	quint32 m_LastConnectionAttemptTime;			// GetTime when we last attempted to connect to battle.net
+	quint32 m_LastNullTime;						// GetTime when the last null packet was sent for detecting disconnects
+	quint32 m_LastOutPacketTicks;					// GetTicks when the last packet was sent for the m_OutPackets queue
+	quint32 m_LastOutPacketSize;
+	quint32 m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
+	quint32 m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
 	bool m_FirstConnect;							// if we haven't tried to connect to battle.net yet
 	bool m_LoggedIn;								// if we've logged into battle.net or not
 	bool m_InChat;									// if we've entered chat or not (but we're not necessarily in a chat channel yet)
@@ -147,7 +147,7 @@ private:
 	bool m_PublicCommands;							// whether to allow public commands or not
 
 public:
-	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, uint32_t nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
+	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );
 	virtual ~CBNET( );
 
 	bool GetExiting( )					{ return m_Exiting; }
@@ -165,13 +165,13 @@ public:
 	QByteArray GetEXEVersionHash( )		{ return m_EXEVersionHash; }
 	QString GetPasswordHashType( )		{ return m_PasswordHashType; }
 	QString GetPVPGNRealmName( )			{ return m_PVPGNRealmName; }
-	uint32_t GetHostCounterID( )		{ return m_HostCounterID; }
+	quint32 GetHostCounterID( )		{ return m_HostCounterID; }
 	bool GetLoggedIn( )					{ return m_LoggedIn; }
 	bool GetInChat( )					{ return m_InChat; }
 	bool GetHoldFriends( )				{ return m_HoldFriends; }
 	bool GetHoldClan( )					{ return m_HoldClan; }
 	bool GetPublicCommands( )			{ return m_PublicCommands; }
-	uint32_t GetOutPacketsQueued( )		{ return m_OutPackets.size( ); }
+	quint32 GetOutPacketsQueued( )		{ return m_OutPackets.size( ); }
 	QByteArray GetUniqueName( );
 
 	// processing functions
@@ -188,8 +188,8 @@ public:
 	void QueueEnterChat( );
 	void QueueChatCommand( QString chatCommand );
 	void QueueChatCommand( QString chatCommand, QString user, bool whisper );
-	void QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
-	void QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter );
+	void QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 hostCounter );
+	void QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter );
 	void QueueGameUncreate( );
 
 	void UnqueuePackets( unsigned char type );

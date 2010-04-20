@@ -290,7 +290,7 @@ CCallableBanList *CGHostDBMySQL :: ThreadedBanList( QString server )
 	return Callable;
 }
 
-CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -303,7 +303,7 @@ CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( QString server, QString map,
 	return Callable;
 }
 
-CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -329,7 +329,7 @@ CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck
 	return Callable;
 }
 
-CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( quint32 gameid, quint32 winner, quint32 min, quint32 sec )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -342,7 +342,7 @@ CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( uint32_t gameid, uin
 	return Callable;
 }
 
-CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -368,7 +368,7 @@ CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck
 	return Callable;
 }
 
-CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -394,7 +394,7 @@ CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( QString category, QStr
 	return Callable;
 }
 
-CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -407,7 +407,7 @@ CCallableW3MMDPlayerAdd *CGHostDBMySQL :: ThreadedW3MMDPlayerAdd( QString catego
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -420,7 +420,7 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMa
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -433,7 +433,7 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMa
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings )
 {
 	void *Connection = GetIdleConnection( );
 
@@ -499,10 +499,10 @@ QVector<QString> MySQLFetchRow( MYSQL_RES *res )
 // global helper functions
 //
 
-uint32_t MySQLAdminCount( void *conn, QString *error, uint32_t botid, QString server )
+quint32 MySQLAdminCount( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	QString Query = "SELECT COUNT(*) FROM admins WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -529,7 +529,7 @@ uint32_t MySQLAdminCount( void *conn, QString *error, uint32_t botid, QString se
 	return Count;
 }
 
-bool MySQLAdminCheck( void *conn, QString *error, uint32_t botid, QString server, QString user )
+bool MySQLAdminCheck( void *conn, QString *error, quint32 botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -559,7 +559,7 @@ bool MySQLAdminCheck( void *conn, QString *error, uint32_t botid, QString server
 	return IsAdmin;
 }
 
-bool MySQLAdminAdd( void *conn, QString *error, uint32_t botid, QString server, QString user )
+bool MySQLAdminAdd( void *conn, QString *error, quint32 botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -575,7 +575,7 @@ bool MySQLAdminAdd( void *conn, QString *error, uint32_t botid, QString server, 
 	return Success;
 }
 
-bool MySQLAdminRemove( void *conn, QString *error, uint32_t botid, QString server, QString user )
+bool MySQLAdminRemove( void *conn, QString *error, quint32 botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -591,7 +591,7 @@ bool MySQLAdminRemove( void *conn, QString *error, uint32_t botid, QString serve
 	return Success;
 }
 
-QVector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QString server )
+QVector<QString> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
 	QVector<QString> AdminList;
@@ -622,10 +622,10 @@ QVector<QString> MySQLAdminList( void *conn, QString *error, uint32_t botid, QSt
 	return AdminList;
 }
 
-uint32_t MySQLBanCount( void *conn, QString *error, uint32_t botid, QString server )
+quint32 MySQLBanCount( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	uint32_t Count = 0;
+	quint32 Count = 0;
 	QString Query = "SELECT COUNT(*) FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -652,7 +652,7 @@ uint32_t MySQLBanCount( void *conn, QString *error, uint32_t botid, QString serv
 	return Count;
 }
 
-CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip )
+CDBBan *MySQLBanCheck( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -690,7 +690,7 @@ CDBBan *MySQLBanCheck( void *conn, QString *error, uint32_t botid, QString serve
 	return Ban;
 }
 
-bool MySQLBanAdd( void *conn, QString *error, uint32_t botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
+bool MySQLBanAdd( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -710,7 +710,7 @@ bool MySQLBanAdd( void *conn, QString *error, uint32_t botid, QString server, QS
 	return Success;
 }
 
-bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString server, QString user )
+bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString server, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscServer = MySQLEscapeString( conn, server );
@@ -726,7 +726,7 @@ bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString server,
 	return Success;
 }
 
-bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString user )
+bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString user )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	QString EscUser = MySQLEscapeString( conn, user );
@@ -741,7 +741,7 @@ bool MySQLBanRemove( void *conn, QString *error, uint32_t botid, QString user )
 	return Success;
 }
 
-QVector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QString server )
+QVector<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
 	QVector<CDBBan *> BanList;
@@ -772,9 +772,9 @@ QVector<CDBBan *> MySQLBanList( void *conn, QString *error, uint32_t botid, QStr
 	return BanList;
 }
 
-uint32_t MySQLGameAdd( void *conn, QString *error, uint32_t botid, QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+quint32 MySQLGameAdd( void *conn, QString *error, quint32 botid, QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	QString EscServer = MySQLEscapeString( conn, server );
 	QString EscMap = MySQLEscapeString( conn, map );
 	QString EscGameName = MySQLEscapeString( conn, gamename );
@@ -791,10 +791,10 @@ uint32_t MySQLGameAdd( void *conn, QString *error, uint32_t botid, QString serve
 	return RowID;
 }
 
-uint32_t MySQLGamePlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+quint32 MySQLGamePlayerAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	QString EscName = MySQLEscapeString( conn, name );
 	QString EscIP = MySQLEscapeString( conn, ip );
 	QString EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
@@ -809,7 +809,7 @@ uint32_t MySQLGamePlayerAdd( void *conn, QString *error, uint32_t botid, uint32_
 	return RowID;
 }
 
-CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name )
+CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, quint32 botid, QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	QString EscName = MySQLEscapeString( conn, name );
@@ -830,16 +830,16 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, u
 			{
 				QString FirstGameDateTime = Row[0];
 				QString LastGameDateTime = Row[1];
-				uint32_t TotalGames = UTIL_ToUInt32( Row[2] );
-				uint32_t MinLoadingTime = UTIL_ToUInt32( Row[3] );
-				uint32_t AvgLoadingTime = UTIL_ToUInt32( Row[4] );
-				uint32_t MaxLoadingTime = UTIL_ToUInt32( Row[5] );
-				uint32_t MinLeftPercent = UTIL_ToUInt32( Row[6] );
-				uint32_t AvgLeftPercent = UTIL_ToUInt32( Row[7] );
-				uint32_t MaxLeftPercent = UTIL_ToUInt32( Row[8] );
-				uint32_t MinDuration = UTIL_ToUInt32( Row[9] );
-				uint32_t AvgDuration = UTIL_ToUInt32( Row[10] );
-				uint32_t MaxDuration = UTIL_ToUInt32( Row[11] );
+				quint32 TotalGames = UTIL_ToUInt32( Row[2] );
+				quint32 MinLoadingTime = UTIL_ToUInt32( Row[3] );
+				quint32 AvgLoadingTime = UTIL_ToUInt32( Row[4] );
+				quint32 MaxLoadingTime = UTIL_ToUInt32( Row[5] );
+				quint32 MinLeftPercent = UTIL_ToUInt32( Row[6] );
+				quint32 AvgLeftPercent = UTIL_ToUInt32( Row[7] );
+				quint32 MaxLeftPercent = UTIL_ToUInt32( Row[8] );
+				quint32 MinDuration = UTIL_ToUInt32( Row[9] );
+				quint32 AvgDuration = UTIL_ToUInt32( Row[10] );
+				quint32 MaxDuration = UTIL_ToUInt32( Row[11] );
 				GamePlayerSummary = new CDBGamePlayerSummary( QString( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
 			}
 			else
@@ -854,9 +854,9 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, u
 	return GamePlayerSummary;
 }
 
-uint32_t MySQLDotAGameAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+quint32 MySQLDotAGameAdd( void *conn, QString *error, quint32 botid, quint32 gameid, quint32 winner, quint32 min, quint32 sec )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	QString Query = "INSERT INTO dotagames ( botid, gameid, winner, min, sec ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", " + UTIL_ToString( winner ) + ", " + UTIL_ToString( min ) + ", " + UTIL_ToString( sec ) + " )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -867,9 +867,9 @@ uint32_t MySQLDotAGameAdd( void *conn, QString *error, uint32_t botid, uint32_t 
 	return RowID;
 }
 
-uint32_t MySQLDotAPlayerAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+quint32 MySQLDotAPlayerAdd( void *conn, QString *error, quint32 botid, quint32 gameid, quint32 colour, quint32 kills, quint32 deaths, quint32 creepkills, quint32 creepdenies, quint32 assists, quint32 gold, quint32 neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, quint32 newcolour, quint32 towerkills, quint32 raxkills, quint32 courierkills )
 {
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	QString EscItem1 = MySQLEscapeString( conn, item1 );
 	QString EscItem2 = MySQLEscapeString( conn, item2 );
 	QString EscItem3 = MySQLEscapeString( conn, item3 );
@@ -887,7 +887,7 @@ uint32_t MySQLDotAPlayerAdd( void *conn, QString *error, uint32_t botid, uint32_
 	return RowID;
 }
 
-CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, uint32_t botid, QString name )
+CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, quint32 botid, QString name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	QString EscName = MySQLEscapeString( conn, name );
@@ -906,21 +906,21 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, u
 
 			if( Row.size( ) == 10 )
 			{
-				uint32_t TotalGames = UTIL_ToUInt32( Row[0] );
+				quint32 TotalGames = UTIL_ToUInt32( Row[0] );
 
 				if( TotalGames > 0 )
 				{
-					uint32_t TotalWins = 0;
-					uint32_t TotalLosses = 0;
-					uint32_t TotalKills = UTIL_ToUInt32( Row[1] );
-					uint32_t TotalDeaths = UTIL_ToUInt32( Row[2] );
-					uint32_t TotalCreepKills = UTIL_ToUInt32( Row[3] );
-					uint32_t TotalCreepDenies = UTIL_ToUInt32( Row[4] );
-					uint32_t TotalAssists = UTIL_ToUInt32( Row[5] );
-					uint32_t TotalNeutralKills = UTIL_ToUInt32( Row[6] );
-					uint32_t TotalTowerKills = UTIL_ToUInt32( Row[7] );
-					uint32_t TotalRaxKills = UTIL_ToUInt32( Row[8] );
-					uint32_t TotalCourierKills = UTIL_ToUInt32( Row[9] );
+					quint32 TotalWins = 0;
+					quint32 TotalLosses = 0;
+					quint32 TotalKills = UTIL_ToUInt32( Row[1] );
+					quint32 TotalDeaths = UTIL_ToUInt32( Row[2] );
+					quint32 TotalCreepKills = UTIL_ToUInt32( Row[3] );
+					quint32 TotalCreepDenies = UTIL_ToUInt32( Row[4] );
+					quint32 TotalAssists = UTIL_ToUInt32( Row[5] );
+					quint32 TotalNeutralKills = UTIL_ToUInt32( Row[6] );
+					quint32 TotalTowerKills = UTIL_ToUInt32( Row[7] );
+					quint32 TotalRaxKills = UTIL_ToUInt32( Row[8] );
+					quint32 TotalCourierKills = UTIL_ToUInt32( Row[9] );
 
 					// calculate total wins
 
@@ -989,7 +989,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, u
 	return DotAPlayerSummary;
 }
 
-bool MySQLDownloadAdd( void *conn, QString *error, uint32_t botid, QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+bool MySQLDownloadAdd( void *conn, QString *error, quint32 botid, QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime )
 {
 	bool Success = false;
 	QString EscMap = MySQLEscapeString( conn, map );
@@ -1006,7 +1006,7 @@ bool MySQLDownloadAdd( void *conn, QString *error, uint32_t botid, QString map, 
 	return Success;
 }
 
-double MySQLScoreCheck( void *conn, QString *error, uint32_t botid, QString category, QString name, QString server )
+double MySQLScoreCheck( void *conn, QString *error, quint32 botid, QString category, QString name, QString server )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	QString EscCategory = MySQLEscapeString( conn, category );
@@ -1039,10 +1039,10 @@ double MySQLScoreCheck( void *conn, QString *error, uint32_t botid, QString cate
 	return Score;
 }
 
-uint32_t MySQLW3MMDPlayerAdd( void *conn, QString *error, uint32_t botid, QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+quint32 MySQLW3MMDPlayerAdd( void *conn, QString *error, quint32 botid, QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	uint32_t RowID = 0;
+	quint32 RowID = 0;
 	QString EscCategory = MySQLEscapeString( conn, category );
 	QString EscName = MySQLEscapeString( conn, name );
 	QString EscFlag = MySQLEscapeString( conn, flag );
@@ -1056,7 +1056,7 @@ uint32_t MySQLW3MMDPlayerAdd( void *conn, QString *error, uint32_t botid, QStrin
 	return RowID;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,int32_t> var_ints )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,int32_t> var_ints )
 {
 	if( var_ints.isEmpty( ) )
 		return false;
@@ -1082,7 +1082,7 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t game
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,double> var_reals )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,double> var_reals )
 {
 	if( var_reals.isEmpty( ) )
 		return false;
@@ -1108,7 +1108,7 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t game
 	return Success;
 }
 
-bool MySQLW3MMDVarAdd( void *conn, QString *error, uint32_t botid, uint32_t gameid, QMap<VarP,QString> var_strings )
+bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QMap<VarP,QString> var_strings )
 {
 	if( var_strings.isEmpty( ) )
 		return false;

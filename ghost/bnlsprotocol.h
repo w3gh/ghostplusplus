@@ -70,9 +70,9 @@ public:
 	// send functions
 
 	QByteArray SEND_BNLS_NULL( );
-	QByteArray SEND_BNLS_WARDEN_SEED( uint32_t cookie, uint32_t seed );
-	QByteArray SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray raw );
-	QByteArray SEND_BNLS_WARDEN_RUNMODULE( uint32_t cookie );
+	QByteArray SEND_BNLS_WARDEN_SEED( quint32 cookie, quint32 seed );
+	QByteArray SEND_BNLS_WARDEN_RAW( quint32 cookie, QByteArray raw );
+	QByteArray SEND_BNLS_WARDEN_RUNMODULE( quint32 cookie );
 
 	// other functions
 

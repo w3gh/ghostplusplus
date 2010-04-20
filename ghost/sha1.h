@@ -24,12 +24,7 @@
 #include <string.h> // Needed for strcat and strcpy
 
 // standard integer sizes for 64 bit compatibility
-
-#ifdef WIN32
- #include "ms_stdint.h"
-#else
- #include <stdint.h>
-#endif
+#include <QObject>
 
 #define MAX_FILE_READ_BUFFER 8000
 
@@ -58,7 +53,7 @@ public:
 
 	typedef union {
 		unsigned char c[64];
-		uint32_t l[16];
+		quint32 l[16];
 	} SHA1_WORKSPACE_BLOCK;
 
 	// Two different formats for ReportHash(...)
@@ -68,8 +63,8 @@ public:
 	CSHA1();
 	virtual ~CSHA1();
 
-	uint32_t m_state[5];
-	uint32_t m_count[2];
+	quint32 m_state[5];
+	quint32 m_count[2];
 	unsigned char m_buffer[64];
 	unsigned char m_digest[20];
 
@@ -85,7 +80,7 @@ public:
 
 private:
 	// Private SHA-1 transformation
-	void Transform(uint32_t state[5], unsigned char buffer[64]);
+	void Transform(quint32 state[5], unsigned char buffer[64]);
 };
 
 #endif // ___SHA1_H___

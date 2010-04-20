@@ -7,12 +7,12 @@ class CCRC32
 {
 public:
 	void Initialize( );
-	uint32_t FullCRC( QString data );
-	void PartialCRC( uint32_t *ulInCRC, const unsigned char *sData, uint32_t ulLength );
+	quint32 FullCRC( QString data );
+	void PartialCRC( quint32 *ulInCRC, const unsigned char *sData, quint32 ulLength );
 
 private:
-	uint32_t Reflect( uint32_t ulReflect, char cChar );
-	uint32_t ulTable[256];
+	quint32 Reflect( quint32 ulReflect, char cChar );
+	quint32 ulTable[256];
 };
 
 #endif

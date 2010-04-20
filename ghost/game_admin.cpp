@@ -43,7 +43,7 @@
 // CAdminGame
 //
 
-CAdminGame :: CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nPassword ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, QString( ), QString( ), QString( ) )
+CAdminGame :: CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nPassword ) : CBaseGame( nGHost, nMap, nSaveGame, nHostPort, nGameState, nGameName, QString( ), QString( ), QString( ) )
 {
 	m_VirtualHostName = "|cFFC04040Admin";
 	m_MuteLobby = true;
@@ -89,7 +89,7 @@ void CAdminGame::EventCallableUpdateTimeout()
 
 			if( Player )
 			{
-				uint32_t Count = i->second->GetResult( );
+				quint32 Count = i->second->GetResult( );
 
 				if( Count == 0 )
 					SendChat( Player, m_GHost->m_Language->ThereAreNoAdmins( i->second->GetServer( ) ) );
@@ -177,7 +177,7 @@ void CAdminGame::EventCallableUpdateTimeout()
 
 			if( Player )
 			{
-				uint32_t Count = i->second->GetResult( );
+				quint32 Count = i->second->GetResult( );
 
 				if( Count == 0 )
 					SendChat( Player, m_GHost->m_Language->ThereAreNoBannedUsers( i->second->GetServer( ) ) );
@@ -287,7 +287,7 @@ void CAdminGame :: SendWelcomeMessage( CGamePlayer *player )
 
 void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer )
 {
-	uint32_t Time = GetTime( );
+	quint32 Time = GetTime( );
 
 	for( QVector<TempBan> :: iterator i = m_TempBans.begin( ); i != m_TempBans.end( ); )
 	{
@@ -410,8 +410,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				// extract the maximum games, auto start players, and the game name
 				// e.g. "5 10 BattleShips Pro" -> maximum games: "5", auto start players: "10", game name: "BattleShips Pro"
 
-				uint32_t MaximumGames;
-				uint32_t AutoStartPlayers;
+				quint32 MaximumGames;
+				quint32 AutoStartPlayers;
 				QString GameName;
 				QTextStream SS(&Payload);
 
@@ -477,8 +477,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				// extract the maximum games, auto start players, and the game name
 				// e.g. "5 10 800 1200 BattleShips Pro" -> maximum games: "5", auto start players: "10", minimum score: "800", maximum score: "1200", game name: "BattleShips Pro"
 
-				uint32_t MaximumGames;
-				uint32_t AutoStartPlayers;
+				quint32 MaximumGames;
+				quint32 AutoStartPlayers;
 				double MinimumScore;
 				double MaximumScore;
 				QString GameName;
@@ -757,7 +757,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 		if( Command == "downloads" && !Payload.isEmpty( ) )
 		{
-			uint32_t Downloads = UTIL_ToUInt32( Payload );
+			quint32 Downloads = UTIL_ToUInt32( Payload );
 
 			if( Downloads == 0 )
 			{
@@ -910,7 +910,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 					else
 					{
 						QStringList files = MapCFGPath.entryList(QStringList("*" + Pattern + "*"), QDir::Files, QDir::Name);
-						uint32_t Matches = files.size();
+						quint32 Matches = files.size();
 
 						if( Matches == 0 )
 							SendChat( player, m_GHost->m_Language->NoMapConfigsFound( ) );
@@ -997,7 +997,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 					else
 					{
 						QStringList files = MapPath.entryList(QStringList("*"+Pattern+"*"), QDir::Files, QDir::Name);
-						uint32_t Matches = files.size();
+						quint32 Matches = files.size();
 
 						if( Matches == 0 )
 							SendChat( player, m_GHost->m_Language->NoMapsFound( ) );
@@ -1226,7 +1226,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		}
 		else
 		{
-			uint32_t LoginAttempts = player->GetLoginAttempts( ) + 1;
+			quint32 LoginAttempts = player->GetLoginAttempts( ) + 1;
 			player->SetLoginAttempts( LoginAttempts );
 			CONSOLE_Print( "[ADMINGAME] user [" + User + "] login attempt failed" );
 			SendChat( player, m_GHost->m_Language->AdminInvalidPassword( UTIL_ToString( LoginAttempts ) ) );

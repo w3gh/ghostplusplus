@@ -46,7 +46,7 @@
 // CBaseGame
 //
 
-CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer )
+CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer )
 {
 	m_GHost = nGHost;
 	m_Socket = new QTcpServer(this);
@@ -308,7 +308,7 @@ CBaseGame :: ~CBaseGame( )
 	}
 }
 
-uint32_t CBaseGame :: GetNextTimedActionTicks( )
+quint32 CBaseGame :: GetNextTimedActionTicks( )
 {
 	// return the number of ticks (ms) until the next "timed action", which for our purposes is the next game update
 	// the main GHost++ loop will make sure the next loop update happens at or before this value
@@ -318,7 +318,7 @@ uint32_t CBaseGame :: GetNextTimedActionTicks( )
 	if( !m_GameLoaded || m_Lagging )
 		return 50;
 
-	uint32_t TicksSinceLastUpdate = GetTicks( ) - m_LastActionSentTicks;
+	quint32 TicksSinceLastUpdate = GetTicks( ) - m_LastActionSentTicks;
 
 	if( TicksSinceLastUpdate > m_Latency - m_LastActionLateBy )
 		return 0;
@@ -326,9 +326,9 @@ uint32_t CBaseGame :: GetNextTimedActionTicks( )
 		return m_Latency - m_LastActionLateBy - TicksSinceLastUpdate;
 }
 
-uint32_t CBaseGame :: GetSlotsOccupied( )
+quint32 CBaseGame :: GetSlotsOccupied( )
 {
-	uint32_t NumSlotsOccupied = 0;
+	quint32 NumSlotsOccupied = 0;
 
 	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
@@ -339,9 +339,9 @@ uint32_t CBaseGame :: GetSlotsOccupied( )
 	return NumSlotsOccupied;
 }
 
-uint32_t CBaseGame :: GetSlotsOpen( )
+quint32 CBaseGame :: GetSlotsOpen( )
 {
-	uint32_t NumSlotsOpen = 0;
+	quint32 NumSlotsOpen = 0;
 
 	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
@@ -352,9 +352,9 @@ uint32_t CBaseGame :: GetSlotsOpen( )
 	return NumSlotsOpen;
 }
 
-uint32_t CBaseGame :: GetNumPlayers( )
+quint32 CBaseGame :: GetNumPlayers( )
 {
-	uint32_t NumPlayers = GetNumHumanPlayers( );
+	quint32 NumPlayers = GetNumHumanPlayers( );
 
 	if( m_FakePlayerPID != 255 )
 		NumPlayers++;
@@ -362,9 +362,9 @@ uint32_t CBaseGame :: GetNumPlayers( )
 	return NumPlayers;
 }
 
-uint32_t CBaseGame :: GetNumHumanPlayers( )
+quint32 CBaseGame :: GetNumHumanPlayers( )
 {
-	uint32_t NumHumanPlayers = 0;
+	quint32 NumHumanPlayers = 0;
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -387,7 +387,7 @@ QString CBaseGame :: GetDescription( )
 	return Description;
 }
 
-void CBaseGame :: SetAnnounce( uint32_t interval, QString message )
+void CBaseGame :: SetAnnounce( quint32 interval, QString message )
 {
 	m_AnnounceTimer.start(1000 * interval);
 	m_AnnounceMessage = message;
@@ -535,7 +535,7 @@ void CBaseGame::EventBroadcastTimeout()
 	// when a player joins a game we can obtain the ID from the received host counter
 	// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
-	uint32_t FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
+	quint32 FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
 	QString target = m_GHost->m_UDPSocket->property("target").toString();
 	QHostAddress hostAddr = target == "" ? QHostAddress::LocalHost : QHostAddress(m_GHost->m_UDPSocket->property("target").toString());
 
@@ -543,7 +543,7 @@ void CBaseGame::EventBroadcastTimeout()
 	{
 		// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 
-		uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+		quint32 MapGameType = MAPGAMETYPE_SAVEDGAME;
 		QByteArray MapWidth;
 		MapWidth.push_back( (char)0 );
 		MapWidth.push_back( (char)0 );
@@ -575,7 +575,7 @@ void CBaseGame::EventBroadcastTimeout()
 		// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
 		// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
-		uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
+		quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
 		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
 				 hostAddr,
 				 6112 );
@@ -694,7 +694,7 @@ void CBaseGame::EventMapDataTimeout()
 		return;
 	}
 
-	uint32_t Downloaders = 0;
+	quint32 Downloaders = 0;
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -719,7 +719,7 @@ void CBaseGame::EventMapDataTimeout()
 			// in addition to this, the throughput is limited by the configuration value bot_maxdownloadspeed
 			// in summary: the actual throughput is MIN( 140 * 1000 / ping, 1400, bot_maxdownloadspeed ) in KB/sec assuming only one player is downloading the map
 
-			uint32_t MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
+			quint32 MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
 
 			while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 100 && (*i)->GetLastMapPartSent( ) < MapSize )
 			{
@@ -932,7 +932,7 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 			if( message.size( ) > 127 )
 				message = message.mid( 0, 127 );
 
-			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateBYTEARRAY( (uint32_t)0, false ), message ) );
+			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateBYTEARRAY( (quint32)0, false ), message ) );
 
 			if( m_Replay )
 				m_Replay->AddChatMessage( fromPID, 32, 0, message );
@@ -1055,7 +1055,7 @@ void CBaseGame :: SendAllActions( )
 		CIncomingAction *Action = m_Actions.front( );
 		m_Actions.dequeue( );
 		SubActions.enqueue( Action );
-		uint32_t SubActionsLength = Action->GetLength( );
+		quint32 SubActionsLength = Action->GetLength( );
 
 		while( !m_Actions.isEmpty( ) )
 		{
@@ -1107,8 +1107,8 @@ void CBaseGame :: SendAllActions( )
 			m_Replay->AddTimeSlot( m_Latency, m_Actions );
 	}
 
-	uint32_t ActualSendInterval = GetTicks( ) - m_LastActionSentTicks;
-	uint32_t ExpectedSendInterval = m_Latency - m_LastActionLateBy;
+	quint32 ActualSendInterval = GetTicks( ) - m_LastActionSentTicks;
+	quint32 ExpectedSendInterval = m_Latency - m_LastActionLateBy;
 	m_LastActionLateBy = ActualSendInterval - ExpectedSendInterval;
 
 	if( m_LastActionLateBy > m_Latency )
@@ -1569,9 +1569,9 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 
 		if( GetTime( ) - player->GetLastGProxyWaitNoticeSentTime( ) >= 20 )
 		{
-			uint32_t TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60 - ( GetTime( ) - m_StartedLaggingTime );
+			quint32 TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60 - ( GetTime( ) - m_StartedLaggingTime );
 
-			if( TimeRemaining > ( (uint32_t)m_GProxyEmptyActions + 1 ) * 60 )
+			if( TimeRemaining > ( (quint32)m_GProxyEmptyActions + 1 ) * 60 )
 				TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60;
 
 			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
@@ -1601,9 +1601,9 @@ void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
 
 		if( GetTime( ) - player->GetLastGProxyWaitNoticeSentTime( ) >= 20 )
 		{
-			uint32_t TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60 - ( GetTime( ) - m_StartedLaggingTime );
+			quint32 TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60 - ( GetTime( ) - m_StartedLaggingTime );
 
-			if( TimeRemaining > ( (uint32_t)m_GProxyEmptyActions + 1 ) * 60 )
+			if( TimeRemaining > ( (quint32)m_GProxyEmptyActions + 1 ) * 60 )
 				TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60;
 
 			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
@@ -1659,7 +1659,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// the client sends the host counter when it joins so we can extract the ID value here
 	// note: this is not a replacement for spoof checking since it doesn't verify the player's name and it can be spoofed anyway
 
-	uint32_t HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
+	quint32 HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
 	QString JoinedRealm;
 
 	// we use an ID value of 0 to denote joining via LAN
@@ -1702,7 +1702,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 						// this causes them to be kicked back to the chat channel on battle.net
 
 						QVector<CGameSlot> Slots = m_Map->GetSlots( );
-						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 						potential->SetDeleteMe( true );
 						return;
 					}
@@ -1730,7 +1730,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 					// this causes them to be kicked back to the chat channel on battle.net
 
 					QVector<CGameSlot> Slots = m_Map->GetSlots( );
-					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 					potential->SetDeleteMe( true );
 					return;
 				}
@@ -1977,7 +1977,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2162,7 +2162,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			// this ensures that the players' scores will tend to converge as players join the game
 
 			double AverageScore = 0.0;
-			uint32_t PlayersScored = 0;
+			quint32 PlayersScored = 0;
 
 			if( score > -99999.0 )
 			{
@@ -2319,7 +2319,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// the client sends the host counter when it joins so we can extract the ID value here
 	// note: this is not a replacement for spoof checking since it doesn't verify the player's name and it can be spoofed anyway
 
-	uint32_t HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
+	quint32 HostCounterID = joinPlayer->GetHostCounter( ) >> 28;
 	QString JoinedRealm;
 
 	// we use an ID value of 0 to denote joining via LAN
@@ -2356,7 +2356,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2428,8 +2428,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	else
 		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) );
 
-	uint32_t PlayersScored = 0;
-	uint32_t PlayersNotScored = 0;
+	quint32 PlayersScored = 0;
+	quint32 PlayersNotScored = 0;
 	double AverageScore = 0.0;
 	double MinScore = 0.0;
 	double MaxScore = 0.0;
@@ -2458,7 +2458,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	}
 
 	double Spread = MaxScore - MinScore;
-	SendAllChat( m_GHost->m_Language->RatedPlayersSpread( UTIL_ToString( PlayersScored ), UTIL_ToString( PlayersScored + PlayersNotScored ), UTIL_ToString( (uint32_t)Spread ) ) );
+	SendAllChat( m_GHost->m_Language->RatedPlayersSpread( UTIL_ToString( PlayersScored ), UTIL_ToString( PlayersScored + PlayersNotScored ), UTIL_ToString( (quint32)Spread ) ) );
 
 	// check for multiple IP usage
 
@@ -2503,7 +2503,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		BalanceSlots( );
 }
 
-void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
+void CBaseGame :: EventPlayerLeft( CGamePlayer *player, quint32 reason )
 {
 	// this function is only called when a player leave packet is received, not when there's a socket error, kick, etc...
 
@@ -2589,7 +2589,7 @@ void CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *actio
 	}
 }
 
-void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*checkSum*/ )
+void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*checkSum*/ )
 {
 	// check for desyncs
 	// however, it's possible that not every player has sent a checksum for this frame yet
@@ -2604,7 +2604,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*chec
 	// now we check for desyncs since we know that every player has at least one checksum waiting
 
 	bool FoundPlayer = false;
-	uint32_t FirstCheckSum = 0;
+	quint32 FirstCheckSum = 0;
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -2632,7 +2632,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*chec
 			// this is complicated by the fact that we don't know what the correct game state is so we let the players vote
 			// put the players into bins based on their game state
 
-			QMap<uint32_t, QVector<unsigned char> > Bins;
+			QMap<quint32, QVector<unsigned char> > Bins;
 
 			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 			{
@@ -2640,11 +2640,11 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*chec
 					Bins[(*j)->GetCheckSums( )->front( )].push_back( (*j)->GetPID( ) );
 			}
 
-			uint32_t StateNumber = 1;
-			QMap<uint32_t, QVector<unsigned char> > :: iterator LargestBin = Bins.begin( );
+			quint32 StateNumber = 1;
+			QMap<quint32, QVector<unsigned char> > :: iterator LargestBin = Bins.begin( );
 			bool Tied = false;
 
-			for( QMap<uint32_t, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
+			for( QMap<quint32, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
 			{
 				if( j.value().size( ) > LargestBin.value().size( ) )
 				{
@@ -2692,7 +2692,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*chec
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] kicking desynced players" );
 
-				for( QMap<uint32_t, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
+				for( QMap<quint32, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
 				{
 					// kick players who are NOT in the largest bin
 					// examples: suppose there are 10 players
@@ -2999,7 +2999,7 @@ void CBaseGame :: EventPlayerDropRequest( CGamePlayer *player )
 
 		// check if at least half the players voted to drop
 
-		uint32_t Votes = 0;
+		quint32 Votes = 0;
 
 		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
@@ -3019,7 +3019,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 	// todotodo: the variable names here are confusing due to extremely poor design on my part
 
-	uint32_t MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
+	quint32 MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
 
 	if( mapSize->GetSizeFlag( ) != 1 || mapSize->GetMapSize( ) != MapSize )
 	{
@@ -3131,7 +3131,7 @@ void CBaseGame::EventCallableUpdateTimeout()
 	}
 }
 
-void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, uint32_t /*pong*/ )
+void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, quint32 /*pong*/ )
 {
 	// autokick players with excessive pings but only if they're not reserved and we've received at least 3 pings from them
 	// also don't kick anyone if the game is loading or loaded - this could happen because we send pings during loading but we stop sending them after the game is loaded
@@ -3191,7 +3191,7 @@ void CBaseGame :: EventGameStarted( )
 				unsigned char EncodingMap[256];
 				unsigned char j = 0;
 
-				for( uint32_t i = 0; i < 256; i++ )
+				for( quint32 i = 0; i < 256; i++ )
 				{
 					// the following 7 handicap values are forbidden
 
@@ -3287,7 +3287,7 @@ void CBaseGame :: EventGameStarted( )
 
 		if( m_SaveGame )
 		{
-			uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+			quint32 MapGameType = MAPGAMETYPE_SAVEDGAME;
 
 			if( m_GameState == GAME_PRIVATE )
 				MapGameType |= MAPGAMETYPE_PRIVATEGAME;
@@ -3296,7 +3296,7 @@ void CBaseGame :: EventGameStarted( )
 		}
 		else
 		{
-			uint32_t MapGameType = m_Map->GetMapGameType( );
+			quint32 MapGameType = m_Map->GetMapGameType( );
 			MapGameType |= MAPGAMETYPE_UNKNOWN0;
 
 			if( m_GameState == GAME_PRIVATE )
@@ -3458,10 +3458,10 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 	return NULL;
 }
 
-uint32_t CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **player )
+quint32 CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **player )
 {
 	name = name.toLower();
-	uint32_t Matches = 0;
+	quint32 Matches = 0;
 	*player = NULL;
 
 	// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
@@ -4135,8 +4135,8 @@ void CBaseGame :: BalanceSlots( )
 	//  4 teams of 2 =   2520 ~   30ms *** ok
 	//  4 teams of 3 = 369600 ~ 3500ms *** unacceptable
 
-	uint32_t AlgorithmCost = 0;
-	uint32_t PlayersLeft = PlayerIDs.size( );
+	quint32 AlgorithmCost = 0;
+	quint32 PlayersLeft = PlayerIDs.size( );
 
 	for( unsigned char i = 0; i < 12; i++ )
 	{
@@ -4162,9 +4162,9 @@ void CBaseGame :: BalanceSlots( )
 		return;
 	}
 
-	uint32_t StartTicks = GetTicks( );
+	quint32 StartTicks = GetTicks( );
 	QVector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
-	uint32_t EndTicks = GetTicks( );
+	quint32 EndTicks = GetTicks( );
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order

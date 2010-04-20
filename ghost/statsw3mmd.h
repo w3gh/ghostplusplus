@@ -26,18 +26,18 @@
 //
 
 #include <QPair>
-typedef QPair<uint32_t,QString> VarP;
+typedef QPair<quint32,QString> VarP;
 
 class CStatsW3MMD : public CStats
 {
 private:
 	QString m_Category;
-	uint32_t m_NextValueID;
-	uint32_t m_NextCheckID;
-	QMap<uint32_t,QString> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
-	QMap<uint32_t,QString> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
-	QMap<uint32_t,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
-	QMap<uint32_t,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
+	quint32 m_NextValueID;
+	quint32 m_NextCheckID;
+	QMap<quint32,QString> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
+	QMap<quint32,QString> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
+	QMap<quint32,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
+	QMap<quint32,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
 	QMap<QString,QString> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
 	QMap<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
 	QMap<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
@@ -49,7 +49,7 @@ public:
 	virtual ~CStatsW3MMD( );
 
 	virtual bool ProcessAction( CIncomingAction *Action );
-	virtual void Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID );
+	virtual void Save( CGHost *GHost, CGHostDB *DB, quint32 GameID );
 	virtual QVector<QString> TokenizeKey( QString key );
 };
 

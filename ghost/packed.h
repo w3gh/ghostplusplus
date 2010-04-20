@@ -36,37 +36,37 @@ protected:
 	bool m_Valid;
 	QByteArray m_Compressed;
 	QByteArray m_Decompressed;
-	uint32_t m_HeaderSize;
-	uint32_t m_CompressedSize;
-	uint32_t m_HeaderVersion;
-	uint32_t m_DecompressedSize;
-	uint32_t m_NumBlocks;
-	uint32_t m_War3Identifier;
-	uint32_t m_War3Version;
-	uint16_t m_BuildNumber;
-	uint16_t m_Flags;
-	uint32_t m_ReplayLength;
+	quint32 m_HeaderSize;
+	quint32 m_CompressedSize;
+	quint32 m_HeaderVersion;
+	quint32 m_DecompressedSize;
+	quint32 m_NumBlocks;
+	quint32 m_War3Identifier;
+	quint32 m_War3Version;
+	quint16 m_BuildNumber;
+	quint16 m_Flags;
+	quint32 m_ReplayLength;
 
 public:
 	CPacked( );
 	virtual ~CPacked( );
 
 	virtual bool GetValid( )				{ return m_Valid; }
-	virtual uint32_t GetHeaderSize( )		{ return m_HeaderSize; }
-	virtual uint32_t GetCompressedSize( )	{ return m_CompressedSize; }
-	virtual uint32_t GetHeaderVersion( )	{ return m_HeaderVersion; }
-	virtual uint32_t GetDecompressedSize( )	{ return m_DecompressedSize; }
-	virtual uint32_t GetNumBlocks( )		{ return m_NumBlocks; }
-	virtual uint32_t GetWar3Identifier( )	{ return m_War3Identifier; }
-	virtual uint32_t GetWar3Version( )		{ return m_War3Version; }
-	virtual uint16_t GetBuildNumber( )		{ return m_BuildNumber; }
-	virtual uint16_t GetFlags( )			{ return m_Flags; }
-	virtual uint32_t GetReplayLength( )		{ return m_ReplayLength; }
+	virtual quint32 GetHeaderSize( )		{ return m_HeaderSize; }
+	virtual quint32 GetCompressedSize( )	{ return m_CompressedSize; }
+	virtual quint32 GetHeaderVersion( )	{ return m_HeaderVersion; }
+	virtual quint32 GetDecompressedSize( )	{ return m_DecompressedSize; }
+	virtual quint32 GetNumBlocks( )		{ return m_NumBlocks; }
+	virtual quint32 GetWar3Identifier( )	{ return m_War3Identifier; }
+	virtual quint32 GetWar3Version( )		{ return m_War3Version; }
+	virtual quint16 GetBuildNumber( )		{ return m_BuildNumber; }
+	virtual quint16 GetFlags( )			{ return m_Flags; }
+	virtual quint32 GetReplayLength( )		{ return m_ReplayLength; }
 
-	virtual void SetWar3Version( uint32_t nWar3Version )			{ m_War3Version = nWar3Version; }
-	virtual void SetBuildNumber( uint16_t nBuildNumber )			{ m_BuildNumber = nBuildNumber; }
-	virtual void SetFlags( uint16_t nFlags )						{ m_Flags = nFlags; }
-	virtual void SetReplayLength( uint32_t nReplayLength )			{ m_ReplayLength = nReplayLength; }
+	virtual void SetWar3Version( quint32 nWar3Version )			{ m_War3Version = nWar3Version; }
+	virtual void SetBuildNumber( quint16 nBuildNumber )			{ m_BuildNumber = nBuildNumber; }
+	virtual void SetFlags( quint16 nFlags )						{ m_Flags = nFlags; }
+	virtual void SetReplayLength( quint32 nReplayLength )			{ m_ReplayLength = nReplayLength; }
 
 	virtual void Load( QString fileName, bool allBlocks );
 	virtual bool Save( bool TFT, QString fileName );

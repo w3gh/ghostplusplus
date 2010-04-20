@@ -30,8 +30,8 @@
 QByteArray UTIL_CreateBYTEARRAY( unsigned char c );
 QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse );
 QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse );
-uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start = 0 );
-uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start = 0 );
+quint16 UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start = 0 );
+quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
 void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append );
@@ -56,18 +56,18 @@ QString UTIL_ToString( short i );
 QString UTIL_ToString( int i );
 QString UTIL_ToString( float f, int digits );
 QString UTIL_ToString( double d, int digits );
-QString UTIL_ToHexString( uint32_t i );
-uint16_t UTIL_ToUInt16( QString &s );
-uint32_t UTIL_ToUInt32( QString &s );
+QString UTIL_ToHexString( quint32 i );
+quint16 UTIL_ToUInt16( QString &s );
+quint32 UTIL_ToUInt32( QString &s );
 int16_t UTIL_ToInt16( QString &s );
 int32_t UTIL_ToInt32( QString &s );
 double UTIL_ToDouble( QString &s );
-QString UTIL_MSToString( uint32_t ms );
+QString UTIL_MSToString( quint32 ms );
 
 // files
 
 bool UTIL_FileExists( QString file );
-QByteArray UTIL_FileRead( QString file, uint32_t start, uint32_t length );
+QByteArray UTIL_FileRead( QString file, quint32 start, quint32 length );
 QByteArray UTIL_FileRead( QString file );
 bool UTIL_FileWrite( QString file, const QByteArray &data );
 QString UTIL_FileSafeName( QString fileName );
@@ -87,7 +87,7 @@ QVector<QString> UTIL_Tokenize( QString s, char delim );
 
 // math
 
-uint32_t UTIL_Factorial( uint32_t x );
+quint32 UTIL_Factorial( quint32 x );
 
 #define nCr(n, r) (UTIL_Factorial(n) / UTIL_Factorial((n)-(r)) / UTIL_Factorial(r))
 #define nPr(n, r) (UTIL_Factorial(n) / UTIL_Factorial((n)-(r)))

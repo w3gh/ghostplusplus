@@ -23,6 +23,8 @@
 #include "config.h"
 #include "ghostdb.h"
 
+#include <QObject>
+
 //
 // CGHostDB
 //
@@ -59,7 +61,7 @@ bool CGHostDB :: Commit( )
 	return true;
 }
 
-uint32_t CGHostDB :: AdminCount( QString /*server*/ )
+quint32 CGHostDB :: AdminCount( QString /*server*/ )
 {
 	return 0;
 }
@@ -84,7 +86,7 @@ QVector<QString> CGHostDB :: AdminList( QString /*server*/ )
 	return QVector<QString>( );
 }
 
-uint32_t CGHostDB :: BanCount( QString /*server*/ )
+quint32 CGHostDB :: BanCount( QString /*server*/ )
 {
 	return 0;
 }
@@ -114,17 +116,17 @@ QVector<CDBBan *> CGHostDB :: BanList( QString /*server*/ )
 	return QVector<CDBBan *>( );
 }
 
-uint32_t CGHostDB :: GameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, uint32_t /*duration*/, uint32_t /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
+quint32 CGHostDB :: GameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, quint32 /*duration*/, quint32 /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: GamePlayerAdd( uint32_t /*gameid*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*reserved*/, uint32_t /*loadingtime*/, uint32_t /*left*/, QString /*leftreason*/, uint32_t /*team*/, uint32_t /*colour*/ )
+quint32 CGHostDB :: GamePlayerAdd( quint32 /*gameid*/, QString /*name*/, QString /*ip*/, quint32 /*spoofed*/, QString /*spoofedrealm*/, quint32 /*reserved*/, quint32 /*loadingtime*/, quint32 /*left*/, QString /*leftreason*/, quint32 /*team*/, quint32 /*colour*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: GamePlayerCount( QString /*name*/ )
+quint32 CGHostDB :: GamePlayerCount( QString /*name*/ )
 {
 	return 0;
 }
@@ -134,17 +136,17 @@ CDBGamePlayerSummary *CGHostDB :: GamePlayerSummaryCheck( QString /*name*/ )
 	return NULL;
 }
 
-uint32_t CGHostDB :: DotAGameAdd( uint32_t /*gameid*/, uint32_t /*winner*/, uint32_t /*min*/, uint32_t /*sec*/ )
+quint32 CGHostDB :: DotAGameAdd( quint32 /*gameid*/, quint32 /*winner*/, quint32 /*min*/, quint32 /*sec*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAPlayerAdd( uint32_t /*gameid*/, uint32_t /*colour*/, uint32_t /*kills*/, uint32_t /*deaths*/, uint32_t /*creepkills*/, uint32_t /*creepdenies*/, uint32_t /*assists*/, uint32_t /*gold*/, uint32_t /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, uint32_t /*newcolour*/, uint32_t /*towerkills*/, uint32_t /*raxkills*/, uint32_t /*courierkills*/ )
+quint32 CGHostDB :: DotAPlayerAdd( quint32 /*gameid*/, quint32 /*colour*/, quint32 /*kills*/, quint32 /*deaths*/, quint32 /*creepkills*/, quint32 /*creepdenies*/, quint32 /*assists*/, quint32 /*gold*/, quint32 /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, quint32 /*newcolour*/, quint32 /*towerkills*/, quint32 /*raxkills*/, quint32 /*courierkills*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAPlayerCount( QString /*name*/ )
+quint32 CGHostDB :: DotAPlayerCount( QString /*name*/ )
 {
 	return 0;
 }
@@ -154,37 +156,37 @@ CDBDotAPlayerSummary *CGHostDB :: DotAPlayerSummaryCheck( QString /*name*/ )
 	return NULL;
 }
 
-QString CGHostDB :: FromCheck( uint32_t /*ip*/ )
+QString CGHostDB :: FromCheck( quint32 /*ip*/ )
 {
 	return "??";
 }
 
-bool CGHostDB :: FromAdd( uint32_t /*ip1*/, uint32_t /*ip2*/, QString /*country*/ )
+bool CGHostDB :: FromAdd( quint32 /*ip1*/, quint32 /*ip2*/, QString /*country*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: DownloadAdd( QString /*map*/, uint32_t /*mapsize*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*downloadtime*/ )
+bool CGHostDB :: DownloadAdd( QString /*map*/, quint32 /*mapsize*/, QString /*name*/, QString /*ip*/, quint32 /*spoofed*/, QString /*spoofedrealm*/, quint32 /*downloadtime*/ )
 {
 	return false;
 }
 
-uint32_t CGHostDB :: W3MMDPlayerAdd( QString /*category*/, uint32_t /*gameid*/, uint32_t /*pid*/, QString /*name*/, QString /*flag*/, uint32_t /*leaver*/, uint32_t /*practicing*/ )
+quint32 CGHostDB :: W3MMDPlayerAdd( QString /*category*/, quint32 /*gameid*/, quint32 /*pid*/, QString /*name*/, QString /*flag*/, quint32 /*leaver*/, quint32 /*practicing*/ )
 {
 	return 0;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
+bool CGHostDB :: W3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,double> /*var_reals*/ )
+bool CGHostDB :: W3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,double> /*var_reals*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
+bool CGHostDB :: W3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
 {
 	return false;
 }
@@ -249,12 +251,12 @@ CCallableBanList *CGHostDB :: ThreadedBanList( QString /*server*/ )
 	return NULL;
 }
 
-CCallableGameAdd *CGHostDB :: ThreadedGameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, uint32_t /*duration*/, uint32_t /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
+CCallableGameAdd *CGHostDB :: ThreadedGameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, quint32 /*duration*/, quint32 /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
 {
 	return NULL;
 }
 
-CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( uint32_t /*gameid*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*reserved*/, uint32_t /*loadingtime*/, uint32_t /*left*/, QString /*leftreason*/, uint32_t /*team*/, uint32_t /*colour*/ )
+CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( quint32 /*gameid*/, QString /*name*/, QString /*ip*/, quint32 /*spoofed*/, QString /*spoofedrealm*/, quint32 /*reserved*/, quint32 /*loadingtime*/, quint32 /*left*/, QString /*leftreason*/, quint32 /*team*/, quint32 /*colour*/ )
 {
 	return NULL;
 }
@@ -264,12 +266,12 @@ CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( QSt
 	return NULL;
 }
 
-CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( uint32_t /*gameid*/, uint32_t /*winner*/, uint32_t /*min*/, uint32_t /*sec*/ )
+CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( quint32 /*gameid*/, quint32 /*winner*/, quint32 /*min*/, quint32 /*sec*/ )
 {
 	return NULL;
 }
 
-CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t /*gameid*/, uint32_t /*colour*/, uint32_t /*kills*/, uint32_t /*deaths*/, uint32_t /*creepkills*/, uint32_t /*creepdenies*/, uint32_t /*assists*/, uint32_t /*gold*/, uint32_t /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, uint32_t /*newcolour*/, uint32_t /*towerkills*/, uint32_t /*raxkills*/, uint32_t /*courierkills*/ )
+CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( quint32 /*gameid*/, quint32 /*colour*/, quint32 /*kills*/, quint32 /*deaths*/, quint32 /*creepkills*/, quint32 /*creepdenies*/, quint32 /*assists*/, quint32 /*gold*/, quint32 /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, quint32 /*newcolour*/, quint32 /*towerkills*/, quint32 /*raxkills*/, quint32 /*courierkills*/ )
 {
 	return NULL;
 }
@@ -279,7 +281,7 @@ CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( QSt
 	return NULL;
 }
 
-CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( QString /*map*/, uint32_t /*mapsize*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*downloadtime*/ )
+CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( QString /*map*/, quint32 /*mapsize*/, QString /*name*/, QString /*ip*/, quint32 /*spoofed*/, QString /*spoofedrealm*/, quint32 /*downloadtime*/ )
 {
 	return NULL;
 }
@@ -289,22 +291,22 @@ CCallableScoreCheck *CGHostDB :: ThreadedScoreCheck( QString /*category*/, QStri
 	return NULL;
 }
 
-CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString /*category*/, uint32_t /*gameid*/, uint32_t /*pid*/, QString /*name*/, QString /*flag*/, uint32_t /*leaver*/, uint32_t /*practicing*/ )
+CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString /*category*/, quint32 /*gameid*/, quint32 /*pid*/, QString /*name*/, QString /*flag*/, quint32 /*leaver*/, quint32 /*practicing*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,double> /*var_reals*/ )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,double> /*var_reals*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
 {
 	return NULL;
 }
@@ -448,7 +450,7 @@ CDBBan :: ~CDBBan( )
 // CDBGame
 //
 
-CDBGame :: CDBGame( uint32_t nID, QString nServer, QString nMap, QString nDateTime, QString nGameName, QString nOwnerName, uint32_t nDuration )
+CDBGame :: CDBGame( quint32 nID, QString nServer, QString nMap, QString nDateTime, QString nGameName, QString nOwnerName, quint32 nDuration )
 {
 	m_ID = nID;
 	m_Server = nServer;
@@ -468,7 +470,7 @@ CDBGame :: ~CDBGame( )
 // CDBGamePlayer
 //
 
-CDBGamePlayer :: CDBGamePlayer( uint32_t nID, uint32_t nGameID, QString nName, QString nIP, uint32_t nSpoofed, QString nSpoofedRealm, uint32_t nReserved, uint32_t nLoadingTime, uint32_t nLeft, QString nLeftReason, uint32_t nTeam, uint32_t nColour )
+CDBGamePlayer :: CDBGamePlayer( quint32 nID, quint32 nGameID, QString nName, QString nIP, quint32 nSpoofed, QString nSpoofedRealm, quint32 nReserved, quint32 nLoadingTime, quint32 nLeft, QString nLeftReason, quint32 nTeam, quint32 nColour )
 {
 	m_ID = nID;
 	m_GameID = nGameID;
@@ -493,7 +495,7 @@ CDBGamePlayer :: ~CDBGamePlayer( )
 // CDBGamePlayerSummary
 //
 
-CDBGamePlayerSummary :: CDBGamePlayerSummary( QString nServer, QString nName, QString nFirstGameDateTime, QString nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration )
+CDBGamePlayerSummary :: CDBGamePlayerSummary( QString nServer, QString nName, QString nFirstGameDateTime, QString nLastGameDateTime, quint32 nTotalGames, quint32 nMinLoadingTime, quint32 nAvgLoadingTime, quint32 nMaxLoadingTime, quint32 nMinLeftPercent, quint32 nAvgLeftPercent, quint32 nMaxLeftPercent, quint32 nMinDuration, quint32 nAvgDuration, quint32 nMaxDuration )
 {
 	m_Server = nServer;
 	m_Name = nName;
@@ -520,7 +522,7 @@ CDBGamePlayerSummary :: ~CDBGamePlayerSummary( )
 // CDBDotAGame
 //
 
-CDBDotAGame :: CDBDotAGame( uint32_t nID, uint32_t nGameID, uint32_t nWinner, uint32_t nMin, uint32_t nSec )
+CDBDotAGame :: CDBDotAGame( quint32 nID, quint32 nGameID, quint32 nWinner, quint32 nMin, quint32 nSec )
 {
 	m_ID = nID;
 	m_GameID = nGameID;
@@ -556,7 +558,7 @@ CDBDotAPlayer :: CDBDotAPlayer( )
 	m_CourierKills = 0;
 }
 
-CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills )
+CDBDotAPlayer :: CDBDotAPlayer( quint32 nID, quint32 nGameID, quint32 nColour, quint32 nKills, quint32 nDeaths, quint32 nCreepKills, quint32 nCreepDenies, quint32 nAssists, quint32 nGold, quint32 nNeutralKills, QString nItem1, QString nItem2, QString nItem3, QString nItem4, QString nItem5, QString nItem6, QString nHero, quint32 nNewColour, quint32 nTowerKills, quint32 nRaxKills, quint32 nCourierKills )
 {
 	m_ID = nID;
 	m_GameID = nGameID;
@@ -604,7 +606,7 @@ void CDBDotAPlayer :: SetItem( unsigned int i, QString item )
 // CDBDotAPlayerSummary
 //
 
-CDBDotAPlayerSummary :: CDBDotAPlayerSummary( QString nServer, QString nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills )
+CDBDotAPlayerSummary :: CDBDotAPlayerSummary( QString nServer, QString nName, quint32 nTotalGames, quint32 nTotalWins, quint32 nTotalLosses, quint32 nTotalKills, quint32 nTotalDeaths, quint32 nTotalCreepKills, quint32 nTotalCreepDenies, quint32 nTotalAssists, quint32 nTotalNeutralKills, quint32 nTotalTowerKills, quint32 nTotalRaxKills, quint32 nTotalCourierKills )
 {
 	m_Server = nServer;
 	m_Name = nName;

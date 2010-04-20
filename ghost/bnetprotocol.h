@@ -148,12 +148,12 @@ public:
 	QByteArray SEND_SID_JOINCHANNEL( QString channel );
 	QByteArray SEND_SID_CHATCOMMAND( QString command );
 	QByteArray SEND_SID_CHECKAD( );
-	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, uint32_t upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, uint32_t hostCounter );
+	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, quint32 hostCounter );
 	QByteArray SEND_SID_NOTIFYJOIN( QString gameName );
 	QByteArray SEND_SID_PING( QByteArray pingValue );
 	QByteArray SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, QString accountName );
-	QByteArray SEND_SID_NETGAMEPORT( uint16_t serverPort );
-	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uint32_t localeID, QString countryAbbrev, QString country );
+	QByteArray SEND_SID_NETGAMEPORT( quint16 serverPort );
+	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, quint32 localeID, QString countryAbbrev, QString country );
 	QByteArray SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToken, QByteArray exeVersion, QByteArray exeVersionHash, QByteArray keyInfoROC, QByteArray keyInfoTFT, QString exeInfo, QString keyOwnerName );
 	QByteArray SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicKey, QString accountName );
 	QByteArray SEND_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray clientPasswordProof );
@@ -176,17 +176,17 @@ class CIncomingGameHost
 {
 private:
 	QByteArray m_IP;
-	uint16_t m_Port;
+	quint16 m_Port;
 	QString m_GameName;
 	QByteArray m_HostCounter;
 
 public:
-	CIncomingGameHost( QByteArray &nIP, uint16_t nPort, QString nGameName, QByteArray &nHostCounter );
+	CIncomingGameHost( QByteArray &nIP, quint16 nPort, QString nGameName, QByteArray &nHostCounter );
 	~CIncomingGameHost( );
 
 	QByteArray GetIP( )			{ return m_IP; }
 	QString GetIPString( );
-	uint16_t GetPort( )			{ return m_Port; }
+	quint16 GetPort( )			{ return m_Port; }
 	QString GetGameName( )		{ return m_GameName; }
 	QByteArray GetHostCounter( )	{ return m_HostCounter; }
 };
@@ -199,16 +199,16 @@ class CIncomingChatEvent
 {
 private:
 	CBNETProtocol :: IncomingChatEvent m_ChatEvent;
-	uint32_t m_Ping;
+	quint32 m_Ping;
 	QString m_User;
 	QString m_Message;
 
 public:
-	CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, QString nUser, QString nMessage );
+	CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, quint32 nPing, QString nUser, QString nMessage );
 	~CIncomingChatEvent( );
 
 	CBNETProtocol :: IncomingChatEvent GetChatEvent( )	{ return m_ChatEvent; }
-	uint32_t GetPing( )									{ return m_Ping; }
+	quint32 GetPing( )									{ return m_Ping; }
 	QString GetUser( )									{ return m_User; }
 	QString GetMessage( )								{ return m_Message; }
 };

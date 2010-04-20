@@ -14,15 +14,15 @@ QFile gLogFile;
 QTextStream gLogStream(&gLogFile);
 
 QString gCFGFile;
-uint32_t gLogMethod;
+quint32 gLogMethod;
 CGHost *gGHost = NULL;
 
-uint32_t GetTime()
+quint32 GetTime()
 {
 	return GetTicks( ) / 1000;
 }
 
-uint32_t GetTicks()
+quint32 GetTicks()
 {
 	return gBasicTime.msec();
 }

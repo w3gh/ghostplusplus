@@ -94,7 +94,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 						Value = ActionData->mid(i + 8 + Data.size( ) + Key.size( ), 4 );
 						QString DataString = Data;
 						QString KeyString = Key;
-						uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
+						quint32 ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
@@ -109,7 +109,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								// a hero died
 
 								QString VictimColourString = KeyString.mid( 4 );
-								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
+								quint32 VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
 
@@ -136,7 +136,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								}
 
 								QString VictimColourString = KeyString.mid( 7 );
-								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
+								quint32 VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
 
@@ -292,7 +292,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 						{
 							// these are only received at the end of the game
 
-							uint32_t ID = UTIL_ToUInt32( DataString );
+							quint32 ID = UTIL_ToUInt32( DataString );
 
 							if( ( ID >= 1 && ID <= 5 ) || ( ID >= 7 && ID <= 11 ) )
 							{
@@ -376,7 +376,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 	return m_Winner != 0;
 }
 
-void CStatsDOTA :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
+void CStatsDOTA :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 {
 	if( DB->Begin( ) )
 	{
@@ -398,7 +398,7 @@ void CStatsDOTA :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		{
 			if( m_Players[i] )
 			{
-				uint32_t Colour = m_Players[i]->GetNewColour( );
+				quint32 Colour = m_Players[i]->GetNewColour( );
 
 				if( !( ( Colour >= 1 && Colour <= 5 ) || ( Colour >= 7 && Colour <= 11 ) ) )
 				{

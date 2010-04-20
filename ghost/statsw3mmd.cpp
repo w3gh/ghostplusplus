@@ -79,14 +79,14 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 						Value = ActionData->mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
 						QString MissionKeyString = MissionKey;
 						QString KeyString = Key;
-						//uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
+						//quint32 ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKeyString + "], key [" + KeyString + "], value [" + UTIL_ToString( ValueInt ) + "]" );
 
 						if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "val:" )
 						{
 							QString ValueIDString = MissionKeyString.mid( 4 );
-							//uint32_t ValueID = UTIL_ToUInt32( ValueIDString );
+							//quint32 ValueID = UTIL_ToUInt32( ValueIDString );
 							QVector<QString> Tokens = TokenizeKey( KeyString );
 
 							if( !Tokens.isEmpty( ) )
@@ -108,7 +108,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										// Tokens[2] = pid
 										// Tokens[3] = name
 
-										uint32_t PID = UTIL_ToUInt32( Tokens[2] );
+										quint32 PID = UTIL_ToUInt32( Tokens[2] );
 
 										if( m_PIDToName.find( PID ) != m_PIDToName.end( ) )
 											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] overwriting previous name [" + m_PIDToName[PID] + "] with new name [" + Tokens[3] + "] for PID [" + Tokens[2] + "]" );
@@ -223,7 +223,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 									if( Tokens[2] == "winner" || Tokens[2] == "loser" || Tokens[2] == "drawer" || Tokens[2] == "leaver" || Tokens[2] == "practicing" )
 									{
-										uint32_t PID = UTIL_ToUInt32( Tokens[1] );
+										quint32 PID = UTIL_ToUInt32( Tokens[1] );
 
 										if( Tokens[2] == "leaver" )
 											m_FlagsLeaver[PID] = true;
@@ -251,7 +251,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefEvent [" + KeyString + "] found, ignoring" );
 									else
 									{
-										uint32_t Arguments = UTIL_ToUInt32( Tokens[2] );
+										quint32 Arguments = UTIL_ToUInt32( Tokens[2] );
 
 										if( (unsigned int)Tokens.size( ) == Arguments + 4 )
 											m_DefEvents[Tokens[1]] = Tokens.mid(3);
@@ -286,7 +286,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 													{
 														// replace it with the player's name rather than their PID
 
-														uint32_t PID = UTIL_ToUInt32( Tokens[i + 2] );
+														quint32 PID = UTIL_ToUInt32( Tokens[i + 2] );
 
 														if( m_PIDToName.find( PID ) == m_PIDToName.end( ) )
 															UTIL_Replace( Format, "{" + UTIL_ToString( i ) + "}", "PID:" + Tokens[i + 2] );
@@ -321,7 +321,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 						else if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "chk:" )
 						{
 							QString CheckIDString = MissionKeyString.mid( 4 );
-							//uint32_t CheckID = UTIL_ToUInt32( CheckIDString );
+							//quint32 CheckID = UTIL_ToUInt32( CheckIDString );
 
 							// todotodo: cheat detection
 
@@ -348,7 +348,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 	return false;
 }
 
-void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
+void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 {
 	CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] received " + UTIL_ToString( m_NextValueID ) + "/" + UTIL_ToString( m_NextCheckID ) + " value/check messages" );
 
@@ -357,11 +357,11 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
 		// todotodo: there's no reason to create a new callable for each entry in this map
 		// rewrite ThreadedW3MMDPlayerAdd to act more like ThreadedW3MMDVarAdd
 
-		for( QMap<uint32_t,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
+		for( QMap<quint32,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
 		{
 			QString Flags = m_Flags[i.key()];
-			uint32_t Leaver = 0;
-			uint32_t Practicing = 0;
+			quint32 Leaver = 0;
+			quint32 Practicing = 0;
 
 			if( m_FlagsLeaver.find( i.key() ) != m_FlagsLeaver.end( ) && m_FlagsLeaver[i.key()] )
 			{

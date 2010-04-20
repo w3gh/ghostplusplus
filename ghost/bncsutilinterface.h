@@ -62,7 +62,7 @@ public:
 	bool HELP_PvPGNPasswordHash( QString userPassword );
 
 private:
-	QByteArray CreateKeyInfo( QString key, uint32_t clientToken, uint32_t serverToken );
+	QByteArray CreateKeyInfo( QString key, quint32 clientToken, quint32 serverToken );
 };
 
 #endif

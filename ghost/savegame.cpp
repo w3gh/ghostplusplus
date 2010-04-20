@@ -72,10 +72,10 @@ void CSaveGame :: ParseSaveGame( )
 	// 4 bytes		-> magic number
 
 	unsigned char Garbage1;
-	uint16_t Garbage2;
-	uint32_t Garbage4;
+	quint16 Garbage2;
+	quint32 Garbage4;
 	QString GarbageString;
-	uint32_t MagicNumber;
+	quint32 MagicNumber;
 
 	READSTR( ISS, m_MapPath );				// map path
 	READSTR( ISS, GarbageString );			// ???
