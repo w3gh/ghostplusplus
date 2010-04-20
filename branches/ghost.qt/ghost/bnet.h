@@ -130,7 +130,7 @@ private:
 	QByteArray m_EXEVersionHash;						// custom exe version hash for PvPGN users
 	QString m_PasswordHashType;						// password hash type for PvPGN users
 	QString m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
-	uint32_t m_MaxMessageLength;					// maximum message length for PvPGN users
+	int m_MaxMessageLength;					// maximum message length for PvPGN users
 	uint32_t m_HostCounterID;						// the host counter ID to identify players from this realm
 	uint32_t m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
 	uint32_t m_LastConnectionAttemptTime;			// GetTime when we last attempted to connect to battle.net

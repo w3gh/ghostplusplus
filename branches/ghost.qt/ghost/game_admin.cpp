@@ -401,7 +401,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				m_GHost->m_AutoHostServer.clear( );
 				m_GHost->m_AutoHostMaximumGames = 0;
 				m_GHost->m_AutoHostAutoStartPlayers = 0;
-				m_GHost->m_LastAutoHostTime = GetTime( );
 				m_GHost->m_AutoHostMatchMaking = false;
 				m_GHost->m_AutoHostMinimumScore = 0.0;
 				m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -446,7 +445,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							m_GHost->m_AutoHostServer.clear( );
 							m_GHost->m_AutoHostMaximumGames = MaximumGames;
 							m_GHost->m_AutoHostAutoStartPlayers = AutoStartPlayers;
-							m_GHost->m_LastAutoHostTime = GetTime( );
 							m_GHost->m_AutoHostMatchMaking = false;
 							m_GHost->m_AutoHostMinimumScore = 0.0;
 							m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -470,7 +468,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				m_GHost->m_AutoHostServer.clear( );
 				m_GHost->m_AutoHostMaximumGames = 0;
 				m_GHost->m_AutoHostAutoStartPlayers = 0;
-				m_GHost->m_LastAutoHostTime = GetTime( );
 				m_GHost->m_AutoHostMatchMaking = false;
 				m_GHost->m_AutoHostMinimumScore = 0.0;
 				m_GHost->m_AutoHostMaximumScore = 0.0;
@@ -529,7 +526,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 									m_GHost->m_AutoHostServer.clear( );
 									m_GHost->m_AutoHostMaximumGames = MaximumGames;
 									m_GHost->m_AutoHostAutoStartPlayers = AutoStartPlayers;
-									m_GHost->m_LastAutoHostTime = GetTime( );
 									m_GHost->m_AutoHostMatchMaking = true;
 									m_GHost->m_AutoHostMinimumScore = MinimumScore;
 									m_GHost->m_AutoHostMaximumScore = MaximumScore;
@@ -798,7 +794,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		{
 			// todotodo: what if a game ends just as you're typing this command and the numbering changes?
 
-			uint32_t GameNumber = UTIL_ToUInt32( Payload ) - 1;
+			int GameNumber = UTIL_ToUInt32( Payload ) - 1;
 
 			if( GameNumber < m_GHost->m_Games.size( ) )
 			{
@@ -864,7 +860,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 		if( Command == "getgame" && !Payload.isEmpty( ) )
 		{
-			uint32_t GameNumber = UTIL_ToUInt32( Payload ) - 1;
+			int GameNumber = UTIL_ToUInt32( Payload ) - 1;
 
 			if( GameNumber < m_GHost->m_Games.size( ) )
 				SendChat( player, m_GHost->m_Language->GameNumberIs( Payload, m_GHost->m_Games[GameNumber]->GetDescription( ) ) );
@@ -1125,7 +1121,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 			// extract the game number and the message
 			// e.g. "3 hello everyone" -> game number: "3", message: "hello everyone"
 
-			uint32_t GameNumber;
+			int GameNumber;
 			QString Message;
 			QTextStream SS(&Payload);
 

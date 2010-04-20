@@ -54,39 +54,39 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 	QByteArray Key;
 	QByteArray Value;
 
-	while( ActionData->size( ) >= i + 9 )
+	while( (unsigned int)ActionData->size( ) >= i + 9 )
 	{
-		if( (*ActionData)[i] == 'k' &&
-			(*ActionData)[i + 1] == 'M' &&
-			(*ActionData)[i + 2] == 'M' &&
-			(*ActionData)[i + 3] == 'D' &&
-			(*ActionData)[i + 4] == '.' &&
-			(*ActionData)[i + 5] == 'D' &&
-			(*ActionData)[i + 6] == 'a' &&
-			(*ActionData)[i + 7] == 't' &&
-			(*ActionData)[i + 8] == 0x00 )
+		if( (*ActionData).at(i) == 'k' &&
+			(*ActionData).at(i + 1) == 'M' &&
+			(*ActionData).at(i + 2) == 'M' &&
+			(*ActionData).at(i + 3) == 'D' &&
+			(*ActionData).at(i + 4) == '.' &&
+			(*ActionData).at(i + 5) == 'D' &&
+			(*ActionData).at(i + 6) == 'a' &&
+			(*ActionData).at(i + 7) == 't' &&
+			(*ActionData).at(i + 8) == 0x00 )
 		{
-			if( ActionData->size( ) >= i + 10 )
+			if( (unsigned int)ActionData->size( ) >= i + 10 )
 			{
 				MissionKey = UTIL_ExtractCString( *ActionData, i + 9 );
 
-				if( ActionData->size( ) >= i + 11 + MissionKey.size( ) )
+				if( (unsigned int)ActionData->size( ) >= i + 11 + MissionKey.size( ) )
 				{
 					Key = UTIL_ExtractCString( *ActionData, i + 10 + MissionKey.size( ) );
 
-					if( ActionData->size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
+					if( (unsigned int)ActionData->size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
 					{
 						Value = ActionData->mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
 						QString MissionKeyString = MissionKey;
 						QString KeyString = Key;
-						uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
+						//uint32_t ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKeyString + "], key [" + KeyString + "], value [" + UTIL_ToString( ValueInt ) + "]" );
 
 						if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "val:" )
 						{
 							QString ValueIDString = MissionKeyString.mid( 4 );
-							uint32_t ValueID = UTIL_ToUInt32( ValueIDString );
+							//uint32_t ValueID = UTIL_ToUInt32( ValueIDString );
 							QVector<QString> Tokens = TokenizeKey( KeyString );
 
 							if( !Tokens.isEmpty( ) )
@@ -253,7 +253,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 									{
 										uint32_t Arguments = UTIL_ToUInt32( Tokens[2] );
 
-										if( Tokens.size( ) == Arguments + 4 )
+										if( (unsigned int)Tokens.size( ) == Arguments + 4 )
 											m_DefEvents[Tokens[1]] = Tokens.mid(3);
 									}
 								}
@@ -278,7 +278,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 											{
 												// replace the markers in the format QString with the arguments
 
-												for( uint32_t i = 0; i < Tokens.size( ) - 2; i++ )
+												for( int i = 0; i < Tokens.size( ) - 2; i++ )
 												{
 													// check if the marker is a PID marker
 
@@ -321,7 +321,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 						else if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "chk:" )
 						{
 							QString CheckIDString = MissionKeyString.mid( 4 );
-							uint32_t CheckID = UTIL_ToUInt32( CheckIDString );
+							//uint32_t CheckID = UTIL_ToUInt32( CheckIDString );
 
 							// todotodo: cheat detection
 

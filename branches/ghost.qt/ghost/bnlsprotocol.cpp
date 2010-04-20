@@ -48,10 +48,10 @@ QByteArray CBNLSProtocol :: RECEIVE_BNLS_WARDEN( QByteArray data )
 
 	if( ValidateLength( data ) && data.size( ) >= 11 )
 	{
-		unsigned char Usage = data[3];
-		uint32_t Cookie = UTIL_QByteArrayToUInt32( data, false, 4 );
+		//unsigned char Usage = data[3];
+		//uint32_t Cookie = UTIL_QByteArrayToUInt32( data, false, 4 );
 		unsigned char Result = data[8];
-		uint16_t Length = UTIL_QByteArrayToUInt16( data, false, 10 );
+		//uint16_t Length = UTIL_QByteArrayToUInt16( data, false, 10 );
 
 		if( Result == 0x00 )
 			return data.mid(11);
@@ -110,7 +110,7 @@ QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RAW( uint32_t cookie, QByteArray ra
 	return packet;
 }
 
-QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RUNMODULE( uint32_t cookie )
+QByteArray CBNLSProtocol :: SEND_BNLS_WARDEN_RUNMODULE( uint32_t /*cookie*/ )
 {
 	return QByteArray( );
 }

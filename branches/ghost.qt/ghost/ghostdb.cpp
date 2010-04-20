@@ -27,7 +27,7 @@
 // CGHostDB
 //
 
-CGHostDB :: CGHostDB( CConfig *CFG )
+CGHostDB :: CGHostDB( CConfig */*CFG*/ )
 {
 	m_HasError = false;
 }
@@ -37,7 +37,14 @@ CGHostDB :: ~CGHostDB( )
 
 }
 
-void CGHostDB :: RecoverCallable( CBaseCallable *callable )
+void CGHostDB::SetError(const QString &sError)
+{
+	m_Error = sError;
+	m_HasError = true;
+	emit error(m_Error);
+}
+
+void CGHostDB :: RecoverCallable( CBaseCallable */*callable*/ )
 {
 
 }
@@ -52,132 +59,132 @@ bool CGHostDB :: Commit( )
 	return true;
 }
 
-uint32_t CGHostDB :: AdminCount( QString server )
+uint32_t CGHostDB :: AdminCount( QString /*server*/ )
 {
 	return 0;
 }
 
-bool CGHostDB :: AdminCheck( QString server, QString user )
+bool CGHostDB :: AdminCheck( QString /*server*/, QString /*user*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: AdminAdd( QString server, QString user )
+bool CGHostDB :: AdminAdd( QString /*server*/, QString /*user*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: AdminRemove( QString server, QString user )
+bool CGHostDB :: AdminRemove( QString /*server*/, QString /*user*/ )
 {
 	return false;
 }
 
-QVector<QString> CGHostDB :: AdminList( QString server )
+QVector<QString> CGHostDB :: AdminList( QString /*server*/ )
 {
 	return QVector<QString>( );
 }
 
-uint32_t CGHostDB :: BanCount( QString server )
+uint32_t CGHostDB :: BanCount( QString /*server*/ )
 {
 	return 0;
 }
 
-CDBBan *CGHostDB :: BanCheck( QString server, QString user, QString ip )
+CDBBan *CGHostDB :: BanCheck( QString /*server*/, QString /*user*/, QString /*ip*/ )
 {
 	return NULL;
 }
 
-bool CGHostDB :: BanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
+bool CGHostDB :: BanAdd( QString /*server*/, QString /*user*/, QString /*ip*/, QString /*gamename*/, QString /*admin*/, QString /*reason*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: BanRemove( QString server, QString user )
+bool CGHostDB :: BanRemove( QString /*server*/, QString /*user*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: BanRemove( QString user )
+bool CGHostDB :: BanRemove( QString /*user*/ )
 {
 	return false;
 }
 
-QVector<CDBBan *> CGHostDB :: BanList( QString server )
+QVector<CDBBan *> CGHostDB :: BanList( QString /*server*/ )
 {
 	return QVector<CDBBan *>( );
 }
 
-uint32_t CGHostDB :: GameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+uint32_t CGHostDB :: GameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, uint32_t /*duration*/, uint32_t /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: GamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+uint32_t CGHostDB :: GamePlayerAdd( uint32_t /*gameid*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*reserved*/, uint32_t /*loadingtime*/, uint32_t /*left*/, QString /*leftreason*/, uint32_t /*team*/, uint32_t /*colour*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: GamePlayerCount( QString name )
+uint32_t CGHostDB :: GamePlayerCount( QString /*name*/ )
 {
 	return 0;
 }
 
-CDBGamePlayerSummary *CGHostDB :: GamePlayerSummaryCheck( QString name )
+CDBGamePlayerSummary *CGHostDB :: GamePlayerSummaryCheck( QString /*name*/ )
 {
 	return NULL;
 }
 
-uint32_t CGHostDB :: DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+uint32_t CGHostDB :: DotAGameAdd( uint32_t /*gameid*/, uint32_t /*winner*/, uint32_t /*min*/, uint32_t /*sec*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+uint32_t CGHostDB :: DotAPlayerAdd( uint32_t /*gameid*/, uint32_t /*colour*/, uint32_t /*kills*/, uint32_t /*deaths*/, uint32_t /*creepkills*/, uint32_t /*creepdenies*/, uint32_t /*assists*/, uint32_t /*gold*/, uint32_t /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, uint32_t /*newcolour*/, uint32_t /*towerkills*/, uint32_t /*raxkills*/, uint32_t /*courierkills*/ )
 {
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAPlayerCount( QString name )
+uint32_t CGHostDB :: DotAPlayerCount( QString /*name*/ )
 {
 	return 0;
 }
 
-CDBDotAPlayerSummary *CGHostDB :: DotAPlayerSummaryCheck( QString name )
+CDBDotAPlayerSummary *CGHostDB :: DotAPlayerSummaryCheck( QString /*name*/ )
 {
 	return NULL;
 }
 
-QString CGHostDB :: FromCheck( uint32_t ip )
+QString CGHostDB :: FromCheck( uint32_t /*ip*/ )
 {
 	return "??";
 }
 
-bool CGHostDB :: FromAdd( uint32_t ip1, uint32_t ip2, QString country )
+bool CGHostDB :: FromAdd( uint32_t /*ip1*/, uint32_t /*ip2*/, QString /*country*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: DownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+bool CGHostDB :: DownloadAdd( QString /*map*/, uint32_t /*mapsize*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*downloadtime*/ )
 {
 	return false;
 }
 
-uint32_t CGHostDB :: W3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+uint32_t CGHostDB :: W3MMDPlayerAdd( QString /*category*/, uint32_t /*gameid*/, uint32_t /*pid*/, QString /*name*/, QString /*flag*/, uint32_t /*leaver*/, uint32_t /*practicing*/ )
 {
 	return 0;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
+bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
+bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,double> /*var_reals*/ )
 {
 	return false;
 }
 
-bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
+bool CGHostDB :: W3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
 {
 	return false;
 }
@@ -187,117 +194,117 @@ void CGHostDB :: CreateThread( CBaseCallable *callable )
 	callable->SetReady( true );
 }
 
-CCallableAdminCount *CGHostDB :: ThreadedAdminCount( QString server )
+CCallableAdminCount *CGHostDB :: ThreadedAdminCount( QString /*server*/ )
 {
 	return NULL;
 }
 
-CCallableAdminCheck *CGHostDB :: ThreadedAdminCheck( QString server, QString user )
+CCallableAdminCheck *CGHostDB :: ThreadedAdminCheck( QString /*server*/, QString /*user*/ )
 {
 	return NULL;
 }
 
-CCallableAdminAdd *CGHostDB :: ThreadedAdminAdd( QString server, QString user )
+CCallableAdminAdd *CGHostDB :: ThreadedAdminAdd( QString /*server*/, QString /*user*/ )
 {
 	return NULL;
 }
 
-CCallableAdminRemove *CGHostDB :: ThreadedAdminRemove( QString server, QString user )
+CCallableAdminRemove *CGHostDB :: ThreadedAdminRemove( QString /*server*/, QString /*user*/ )
 {
 	return NULL;
 }
 
-CCallableAdminList *CGHostDB :: ThreadedAdminList( QString server )
+CCallableAdminList *CGHostDB :: ThreadedAdminList( QString /*server*/ )
 {
 	return NULL;
 }
 
-CCallableBanCount *CGHostDB :: ThreadedBanCount( QString server )
+CCallableBanCount *CGHostDB :: ThreadedBanCount( QString /*server*/ )
 {
 	return NULL;
 }
 
-CCallableBanCheck *CGHostDB :: ThreadedBanCheck( QString server, QString user, QString ip )
+CCallableBanCheck *CGHostDB :: ThreadedBanCheck( QString /*server*/, QString /*user*/, QString /*ip*/ )
 {
 	return NULL;
 }
 
-CCallableBanAdd *CGHostDB :: ThreadedBanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason )
+CCallableBanAdd *CGHostDB :: ThreadedBanAdd( QString /*server*/, QString /*user*/, QString /*ip*/, QString /*gamename*/, QString /*admin*/, QString /*reason*/ )
 {
 	return NULL;
 }
 
-CCallableBanRemove *CGHostDB :: ThreadedBanRemove( QString server, QString user )
+CCallableBanRemove *CGHostDB :: ThreadedBanRemove( QString /*server*/, QString /*user*/ )
 {
 	return NULL;
 }
 
-CCallableBanRemove *CGHostDB :: ThreadedBanRemove( QString user )
+CCallableBanRemove *CGHostDB :: ThreadedBanRemove( QString /*user*/ )
 {
 	return NULL;
 }
 
-CCallableBanList *CGHostDB :: ThreadedBanList( QString server )
+CCallableBanList *CGHostDB :: ThreadedBanList( QString /*server*/ )
 {
 	return NULL;
 }
 
-CCallableGameAdd *CGHostDB :: ThreadedGameAdd( QString server, QString map, QString gamename, QString ownername, uint32_t duration, uint32_t gamestate, QString creatorname, QString creatorserver )
+CCallableGameAdd *CGHostDB :: ThreadedGameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, uint32_t /*duration*/, uint32_t /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
 {
 	return NULL;
 }
 
-CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( uint32_t gameid, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, QString leftreason, uint32_t team, uint32_t colour )
+CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( uint32_t /*gameid*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*reserved*/, uint32_t /*loadingtime*/, uint32_t /*left*/, QString /*leftreason*/, uint32_t /*team*/, uint32_t /*colour*/ )
 {
 	return NULL;
 }
 
-CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( QString name )
+CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( QString /*name*/ )
 {
 	return NULL;
 }
 
-CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec )
+CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( uint32_t /*gameid*/, uint32_t /*winner*/, uint32_t /*min*/, uint32_t /*sec*/ )
 {
 	return NULL;
 }
 
-CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, QString item1, QString item2, QString item3, QString item4, QString item5, QString item6, QString hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t /*gameid*/, uint32_t /*colour*/, uint32_t /*kills*/, uint32_t /*deaths*/, uint32_t /*creepkills*/, uint32_t /*creepdenies*/, uint32_t /*assists*/, uint32_t /*gold*/, uint32_t /*neutralkills*/, QString /*item1*/, QString /*item2*/, QString /*item3*/, QString /*item4*/, QString /*item5*/, QString /*item6*/, QString /*hero*/, uint32_t /*newcolour*/, uint32_t /*towerkills*/, uint32_t /*raxkills*/, uint32_t /*courierkills*/ )
 {
 	return NULL;
 }
 
-CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( QString name )
+CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( QString /*name*/ )
 {
 	return NULL;
 }
 
-CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( QString map, uint32_t mapsize, QString name, QString ip, uint32_t spoofed, QString spoofedrealm, uint32_t downloadtime )
+CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( QString /*map*/, uint32_t /*mapsize*/, QString /*name*/, QString /*ip*/, uint32_t /*spoofed*/, QString /*spoofedrealm*/, uint32_t /*downloadtime*/ )
 {
 	return NULL;
 }
 
-CCallableScoreCheck *CGHostDB :: ThreadedScoreCheck( QString category, QString name, QString server )
+CCallableScoreCheck *CGHostDB :: ThreadedScoreCheck( QString /*category*/, QString /*name*/, QString /*server*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString category, uint32_t gameid, uint32_t pid, QString name, QString flag, uint32_t leaver, uint32_t practicing )
+CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString /*category*/, uint32_t /*gameid*/, uint32_t /*pid*/, QString /*name*/, QString /*flag*/, uint32_t /*leaver*/, uint32_t /*practicing*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,double> var_reals )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,double> /*var_reals*/ )
 {
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, QMap<VarP,QString> var_strings )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
 {
 	return NULL;
 }

@@ -43,6 +43,7 @@ class CSaveGame;
 class CConfig;
 
 #include <QTimer>
+#include <QTime>
 
 class CGHost : public QObject
 {
@@ -52,8 +53,15 @@ public slots:
 	void EventIncomingReconnection();
 	void EventReconnectionSocketReadyRead();
 	void EventCallableUpdateTimeout();
+	void EventDatabaseError(const QString &error);
+	void EventExitNice();
+	void EventWaitForNiceExitTimeout();
+	void EventAutoHost();
+	void EventGameStarted();
+	void CreateReconnectServer();
 
 public:
+	QTime m_LastAutoHostTime;
 	QTimer m_CallableUpdateTimer;
 	QUdpSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
 	QTcpServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
@@ -82,9 +90,8 @@ public:
 	QString m_AutoHostGameName;				// the base game name to auto host with
 	QString m_AutoHostOwner;
 	QString m_AutoHostServer;
-	uint32_t m_AutoHostMaximumGames;		// maximum number of games to auto host
+	int m_AutoHostMaximumGames;		// maximum number of games to auto host
 	uint32_t m_AutoHostAutoStartPlayers;	// when using auto hosting auto start the game when this many players have joined
-	uint32_t m_LastAutoHostTime;			// GetTime when the last auto host was attempted
 	bool m_AutoHostMatchMaking;
 	double m_AutoHostMinimumScore;
 	double m_AutoHostMaximumScore;
@@ -98,7 +105,7 @@ public:
 	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
 	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
 	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
-	uint32_t m_MaxGames;					// config value: maximum number of games in progress
+	int m_MaxGames;							// config value: maximum number of games in progress
 	char m_CommandTrigger;					// config value: the command trigger inside games
 	QString m_MapCFGPath;					// config value: map cfg path
 	QString m_SaveGamePath;					// config value: savegame path
@@ -145,10 +152,6 @@ public:
 
 	CGHost( CConfig *CFG, QString configFile );
 	~CGHost( );
-
-	// processing functions
-
-	bool Update( long usecBlock );
 
 	// events
 

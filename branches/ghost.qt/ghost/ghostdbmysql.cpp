@@ -60,8 +60,7 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 	if( !( Connection = mysql_init( NULL ) ) )
 	{
 		CONSOLE_Print( QString( "[MYSQL] " ) + mysql_error( Connection ) );
-		m_HasError = true;
-		m_Error = "error initializing MySQL connection";
+		SetError("error initializing MySQL connection");
 		return;
 	}
 
@@ -71,8 +70,7 @@ CGHostDBMySQL :: CGHostDBMySQL( CConfig *CFG ) : CGHostDB( CFG )
 	if( !( mysql_real_connect( Connection, m_Server.c_str( ), m_User.c_str( ), m_Password.c_str( ), m_Database.c_str( ), m_Port, NULL, 0 ) ) )
 	{
 		CONSOLE_Print( QString( "[MYSQL] " ) + mysql_error( Connection ) );
-		m_HasError = true;
-		m_Error = "error connecting to MySQL server";
+		SetError("error connecting to MySQL server");
 		return;
 	}
 

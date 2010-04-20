@@ -220,7 +220,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, uint32_t war3
 #define READB( x, y, z )	(x).read( (char *)(y), (z) )
 #define READSTR( x, y )		getline( (x), (y), '\0' )
 
-void CReplay :: ParseReplay( bool parseBlocks )
+void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 {
 	/*
 	m_HostPID = 0;

@@ -175,7 +175,7 @@ void CPotentialPlayer :: ExtractPackets( )
 
 	while( m_Socket->bytesAvailable() >= 4 )
 	{
-		char header = m_Socket->peek(1).at(0);
+		unsigned char header = m_Socket->peek(1).at(0);
 		if (header != W3GS_HEADER_CONSTANT && header != GPS_HEADER_CONSTANT )
 		{
 			m_Error = true;
@@ -433,7 +433,7 @@ uint32_t CGamePlayer :: GetPing( bool LCPing )
 
 	uint32_t AvgPing = 0;
 
-	for( unsigned int i = 0; i < m_Pings.size( ); i++ )
+	for( int i = 0; i < m_Pings.size( ); i++ )
 		AvgPing += m_Pings[i];
 
 	AvgPing /= m_Pings.size( );
@@ -454,7 +454,7 @@ void CGamePlayer :: ExtractPackets( )
 
 	while( m_Socket->bytesAvailable() >= 4 )
 	{
-		char header = m_Socket->peek(1).at(0);
+		unsigned char header = m_Socket->peek(1).at(0);
 		if (header != W3GS_HEADER_CONSTANT && header != GPS_HEADER_CONSTANT )
 		{
 			m_Error = true;
@@ -500,7 +500,6 @@ void CGamePlayer :: ProcessPackets( )
 	CIncomingAction *Action = NULL;
 	CIncomingChatPlayer *ChatPlayer = NULL;
 	CIncomingMapSize *MapSize = NULL;
-	bool HasMap = false;
 	uint32_t CheckSum = 0;
 	uint32_t Pong = 0;
 
@@ -638,12 +637,12 @@ void CGamePlayer :: ProcessPackets( )
 			}
 			else if( Packet->GetID( ) == CGPSProtocol :: GPS_ACK && Data.size( ) == 8 )
 			{
-				uint32_t LastPacket = UTIL_QByteArrayToUInt32( Data, false, 4 );
-				uint32_t PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
+				int LastPacket = UTIL_QByteArrayToUInt32( Data, false, 4 );
+				int PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
 
 				if( LastPacket > PacketsAlreadyUnqueued )
 				{
-					uint32_t PacketsToUnqueue = LastPacket - PacketsAlreadyUnqueued;
+					int PacketsToUnqueue = LastPacket - PacketsAlreadyUnqueued;
 
 					if( PacketsToUnqueue > m_GProxyBuffer.size( ) )
 						PacketsToUnqueue = m_GProxyBuffer.size( );
@@ -685,7 +684,7 @@ void CGamePlayer :: EventGProxyReconnect( QTcpSocket *NewSocket, uint32_t LastPa
 
 	if( LastPacket > PacketsAlreadyUnqueued )
 	{
-		uint32_t PacketsToUnqueue = LastPacket - PacketsAlreadyUnqueued;
+		int PacketsToUnqueue = LastPacket - PacketsAlreadyUnqueued;
 
 		if( PacketsToUnqueue > m_GProxyBuffer.size( ) )
 			PacketsToUnqueue = m_GProxyBuffer.size( );

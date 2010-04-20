@@ -234,7 +234,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 				// ignore lines that don't look like IP addresses
 
-				if( Line.indexOf( QRegExp("[^0-9\.]") ) != -1 )
+				if( Line.indexOf( QRegExp("[^0-9\\.]") ) != -1 )
 					continue;
 
 				m_IPBlackList.insert( Line );
@@ -850,7 +850,7 @@ void CBaseGame :: Send( unsigned char PID, QByteArray data )
 
 void CBaseGame :: Send( QByteArray PIDs, QByteArray data )
 {
-	for( unsigned int i = 0; i < PIDs.size( ); i++ )
+	for( int i = 0; i < PIDs.size( ); i++ )
 		Send( PIDs[i], data );
 }
 
@@ -1388,7 +1388,7 @@ void CBaseGame :: EventPlayerDeleted()
 	}
 
 	// end the game if there aren't any players left
-	if( m_Players.isEmpty( ) && m_GameLoading || m_GameLoaded )
+	if( m_Players.isEmpty( ) && (m_GameLoading || m_GameLoaded) )
 	{
 		if( !m_Saving )
 		{
@@ -2577,14 +2577,14 @@ void CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *actio
 
 	// check for players saving the game and notify everyone
 
-	if( !action->GetAction( )->isEmpty( ) && (*action->GetAction( ))[0] == 6 )
+	if( !action->GetAction( )->isEmpty( ) && (*action->GetAction( )).at(0) == 6 )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] is saving the game" );
 		SendAllChat( m_GHost->m_Language->PlayerIsSavingTheGame( player->GetName( ) ) );
 	}
 }
 
-void CBaseGame :: EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum )
+void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, uint32_t /*checkSum*/ )
 {
 	// check for desyncs
 	// however, it's possible that not every player has sent a checksum for this frame yet
@@ -2753,7 +2753,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			if( !ExtraFlags.isEmpty( ) )
 			{
-				if( ExtraFlags[0] == 0 )
+				if( ExtraFlags.at(0) == 0 )
 				{
 					// this is an ingame [All] message, print it to the console
 
@@ -2765,7 +2765,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 					if( m_MuteAll )
 						Relay = false;
 				}
-				else if( ExtraFlags[0] == 2 )
+				else if( ExtraFlags.at(0) == 2 )
 				{
 					// this is an ingame [Obs/Ref] message, print it to the console
 
@@ -2837,7 +2837,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 	}
 }
 
-bool CBaseGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload )
+bool CBaseGame :: EventPlayerBotCommand( CGamePlayer */*player*/, QString /*command*/, QString /*payload*/ )
 {
 	// return true if the command itself should be hidden from other players
 
@@ -3126,7 +3126,7 @@ void CBaseGame::EventCallableUpdateTimeout()
 	}
 }
 
-void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, uint32_t pong )
+void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, uint32_t /*pong*/ )
 {
 	// autokick players with excessive pings but only if they're not reserved and we've received at least 3 pings from them
 	// also don't kick anyone if the game is loading or loaded - this could happen because we send pings during loading but we stop sending them after the game is loaded
@@ -3144,7 +3144,7 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, uint32_t pong )
 	}
 }
 
-void CBaseGame :: EventGameRefreshed( QString server )
+void CBaseGame :: EventGameRefreshed( QString /*server*/ )
 {
 	if( m_RefreshRehosted )
 	{
@@ -3177,7 +3177,7 @@ void CBaseGame :: EventGameStarted( )
 
 	if( !m_HCLCommandString.isEmpty( ) )
 	{
-		if( m_HCLCommandString.size( ) <= GetSlotsOccupied( ) )
+		if( m_HCLCommandString.size( ) <= (int)GetSlotsOccupied( ) )
 		{
 			QString HCLChars = "abcdefghijklmnopqrstuvwxyz0123456789 -=,.";
 
@@ -3345,7 +3345,7 @@ void CBaseGame :: EventGameStarted( )
 
 	// move the game to the games in progress vector
 
-	m_GHost->m_CurrentGame = NULL;
+	emit gameStarted();
 	m_GHost->m_Games.push_back( this );
 
 	// and finally reenter battle.net chat
@@ -4325,7 +4325,7 @@ void CBaseGame :: StartCountDown( bool force )
 		{
 			// check if the HCL command QString is short enough
 
-			if( m_HCLCommandString.size( ) > GetSlotsOccupied( ) )
+			if( m_HCLCommandString.size( ) > (int)GetSlotsOccupied( ) )
 			{
 				SendAllChat( m_GHost->m_Language->TheHCLIsTooLongUseForceToStart( ) );
 				return;

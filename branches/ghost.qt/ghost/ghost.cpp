@@ -94,6 +94,22 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	CONSOLE_Print( "[GHOST] opening secondary (local) database" );
 	m_DBLocal = new CGHostDBSQLite( CFG );
 
+	if (m_DB->HasError() )
+	{
+		CONSOLE_Print( "[GHOST] database initialization error - " + m_DB->GetError() );
+		deleteLater();
+		return;
+	}
+	if (m_DBLocal->HasError() )
+	{
+		CONSOLE_Print( "[GHOST] local database initialization error - " + m_DB->GetError() );
+		deleteLater();
+		return;
+	}
+
+	QObject::connect(m_DBLocal, SIGNAL(error(QString)), this, SLOT(EventDatabaseError(QString)));
+	QObject::connect(m_DB, SIGNAL(error(QString)), this, SLOT(EventDatabaseError(QString)));
+
 	// get a list of local IP addresses
 	// this list is used elsewhere to determine if a player connecting to the bot is local or not
 
@@ -121,7 +137,6 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
 	m_AutoHostGameName = CFG->GetString( "autohost_gamename", QString( ) );
 	m_AutoHostOwner = CFG->GetString( "autohost_owner", QString( ) );
-	m_LastAutoHostTime = GetTime( );
 	m_AutoHostMatchMaking = false;
 	m_AutoHostMinimumScore = 0.0;
 	m_AutoHostMaximumScore = 0.0;
@@ -146,6 +161,9 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_ReplayWar3Version = CFG->GetInt( "replay_war3version", 24 );
 	m_ReplayBuildNumber = CFG->GetInt( "replay_buildnumber", 6059 );
 	SetConfigs( CFG );
+
+	if (m_Reconnect)
+		CreateReconnectServer();
 
 	// load the battle.net connections
 	// we're just loading the config data and creating the CBNET classes here, the connections are established later (in the Update function)
@@ -317,6 +335,8 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 #else
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
+
+	EventAutoHost();
 }
 
 CGHost :: ~CGHost( )
@@ -351,6 +371,19 @@ CGHost :: ~CGHost( )
 	delete m_SaveGame;
 }
 
+void CGHost::EventGameStarted()
+{
+	m_CurrentGame = NULL;
+
+	if (m_LastAutoHostTime.elapsed() > 30)
+	{
+		EventAutoHost();
+		return;
+	}
+
+	QTimer::singleShot(30 - m_LastAutoHostTime.elapsed(), this, SLOT(EventAutoHost()));
+}
+
 void CGHost::EventIncomingReconnection()
 {
 	QTcpSocket *con = m_ReconnectSocket->nextPendingConnection();
@@ -368,7 +401,7 @@ void CGHost::EventReconnectionSocketReadyRead()
 	if (con->bytesAvailable() < 4)
 		return;
 
-	if( con->peek(1).at(0) == GPS_HEADER_CONSTANT )
+	if( (unsigned char)con->peek(1).at(0) == GPS_HEADER_CONSTANT )
 	{
 		// bytes 2 and 3 contain the length of the packet
 
@@ -448,191 +481,173 @@ void CGHost::EventCallableUpdateTimeout()
 	}
 }
 
-bool CGHost :: Update( long usecBlock )
+void CGHost::EventDatabaseError(const QString &error)
 {
 	// todotodo: do we really want to shutdown if there's a database error? is there any way to recover from this?
+	if( QObject::sender() == m_DB )
+		CONSOLE_Print( "[GHOST] database error - " + error );
 
-	if( m_DB->HasError( ) )
+	else if (QObject::sender() == m_DBLocal)
+		CONSOLE_Print( "[GHOST] local database error - " + error );
+
+	deleteLater();
+}
+
+void CGHost::EventExitNice()
+{
+	m_ExitingNice = true;
+
+	if( !m_BNETs.isEmpty( ) )
 	{
-		CONSOLE_Print( "[GHOST] database error - " + m_DB->GetError( ) );
-		return true;
+		CONSOLE_Print( "[GHOST] deleting all battle.net connections in preparation for exiting nicely" );
+
+		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+			delete *i;
+
+		m_BNETs.clear( );
 	}
 
-	if( m_DBLocal->HasError( ) )
+	if( m_CurrentGame )
 	{
-		CONSOLE_Print( "[GHOST] local database error - " + m_DBLocal->GetError( ) );
-		return true;
+		CONSOLE_Print( "[GHOST] deleting current game in preparation for exiting nicely" );
+		delete m_CurrentGame;
+		m_CurrentGame = NULL;
 	}
 
-	// try to exit nicely if requested to do so
-
-	if( m_ExitingNice )
+	if( m_AdminGame )
 	{
-		if( !m_BNETs.isEmpty( ) )
+		CONSOLE_Print( "[GHOST] deleting admin game in preparation for exiting nicely" );
+		delete m_AdminGame;
+		m_AdminGame = NULL;
+	}
+
+	if( m_Games.isEmpty( ) )
+	{
+		if( !m_AllGamesFinished )
 		{
-			CONSOLE_Print( "[GHOST] deleting all battle.net connections in preparation for exiting nicely" );
-
-			for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-				delete *i;
-
-			m_BNETs.clear( );
+			CONSOLE_Print( "[GHOST] all games finished, waiting 60 seconds for threads to finish" );
+			CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads in progress" );
+			m_AllGamesFinished = true;
+			m_AllGamesFinishedTime = GetTime( );
+			QTimer::singleShot(60000, this, SLOT(EventWaitForNiceExitTimeout()));
 		}
-
-		if( m_CurrentGame )
+		else if( m_Callables.isEmpty( ) )
 		{
-			CONSOLE_Print( "[GHOST] deleting current game in preparation for exiting nicely" );
-			delete m_CurrentGame;
-			m_CurrentGame = NULL;
-		}
-
-		if( m_AdminGame )
-		{
-			CONSOLE_Print( "[GHOST] deleting admin game in preparation for exiting nicely" );
-			delete m_AdminGame;
-			m_AdminGame = NULL;
-		}
-
-		if( m_Games.isEmpty( ) )
-		{
-			if( !m_AllGamesFinished )
-			{
-				CONSOLE_Print( "[GHOST] all games finished, waiting 60 seconds for threads to finish" );
-				CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads in progress" );
-				m_AllGamesFinished = true;
-				m_AllGamesFinishedTime = GetTime( );
-			}
-			else
-			{
-				if( m_Callables.isEmpty( ) )
-				{
-					CONSOLE_Print( "[GHOST] all threads finished, exiting nicely" );
-					m_Exiting = true;
-				}
-				else if( GetTime( ) - m_AllGamesFinishedTime >= 60 )
-				{
-					CONSOLE_Print( "[GHOST] waited 60 seconds for threads to finish, exiting anyway" );
-					CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads still in progress which will be terminated" );
-					m_Exiting = true;
-				}
-			}
+			CONSOLE_Print( "[GHOST] all threads finished, exiting nicely" );
+			deleteLater();
+			return;
 		}
 	}
 
+	// try again in 2 seconds
+	QTimer::singleShot(2000, this, SLOT(EventExitNice()));
+}
+
+void CGHost::EventWaitForNiceExitTimeout()
+{
+	CONSOLE_Print( "[GHOST] waited 60 seconds for threads to finish, exiting anyway" );
+	CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads still in progress which will be terminated" );
+	deleteLater();
+}
+
+void CGHost::EventAutoHost()
+{
+	// autohost
+
+	if( m_AutoHostGameName.isEmpty( ) || m_AutoHostMaximumGames == 0 || m_AutoHostAutoStartPlayers == 0 )
+		return;
+
+	// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
+	// instead we fail silently and try again soon
+
+	if( m_ExitingNice || !m_Enabled || m_CurrentGame || m_Games.size( ) >= m_MaxGames || m_Games.size( ) >= m_AutoHostMaximumGames )
+		return;
+
+	if( !m_AutoHostMap->GetValid( ) )
+	{
+		CONSOLE_Print( "[GHOST] stopped auto hosting, map config file [" + m_AutoHostMap->GetCFGFile( ) + "] is invalid" );
+		m_AutoHostGameName.clear( );
+		m_AutoHostOwner.clear( );
+		m_AutoHostServer.clear( );
+		m_AutoHostMaximumGames = 0;
+		m_AutoHostAutoStartPlayers = 0;
+		m_AutoHostMatchMaking = false;
+		m_AutoHostMinimumScore = 0.0;
+		m_AutoHostMaximumScore = 0.0;
+		return;
+	}
+
+	QString GameName = m_AutoHostGameName + " #" + UTIL_ToString( m_HostCounter );
+
+	if( GameName.size( ) >= 31 )
+	{
+		CONSOLE_Print( "[GHOST] stopped auto hosting, next game name [" + GameName + "] is too long (the maximum is 31 characters)" );
+		m_AutoHostGameName.clear( );
+		m_AutoHostOwner.clear( );
+		m_AutoHostServer.clear( );
+		m_AutoHostMaximumGames = 0;
+		m_AutoHostAutoStartPlayers = 0;
+		m_AutoHostMatchMaking = false;
+		m_AutoHostMinimumScore = 0.0;
+		m_AutoHostMaximumScore = 0.0;
+		return;
+	}
+
+	CreateGame( m_AutoHostMap, GAME_PUBLIC, false, GameName, m_AutoHostOwner, m_AutoHostOwner, m_AutoHostServer, false );
+
+	if( !m_CurrentGame )
+		return;
+
+	m_LastAutoHostTime.restart();
+	m_CurrentGame->SetAutoStartPlayers( m_AutoHostAutoStartPlayers );
+
+	if( !m_AutoHostMatchMaking )
+		return;
+
+	if( m_Map->GetMapMatchMakingCategory( ).isEmpty( ) )
+	{
+		CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory not found, matchmaking disabled" );
+		return;
+	}
+
+	if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) )
+	{
+		CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found but matchmaking can only be used with fixed player settings, matchmaking disabled" );
+		return;
+	}
+
+	CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found, matchmaking enabled" );
+
+	m_CurrentGame->SetMatchMaking( true );
+	m_CurrentGame->SetMinimumScore( m_AutoHostMinimumScore );
+	m_CurrentGame->SetMaximumScore( m_AutoHostMaximumScore );
+}
+
+void CGHost::CreateReconnectServer()
+{
 	// create the GProxy++ reconnect listener
-
-	if( m_Reconnect )
+	if( !m_ReconnectSocket )
 	{
-		if( !m_ReconnectSocket )
-		{
-			m_ReconnectSocket = new QTcpServer( this );
-			QObject::connect(m_ReconnectSocket, SIGNAL(newConnection()), this, SLOT(EventIncomingReconnection()));
+		m_ReconnectSocket = new QTcpServer( this );
+		QObject::connect(m_ReconnectSocket, SIGNAL(newConnection()), this, SLOT(EventIncomingReconnection()));
 
-			if( m_ReconnectSocket->listen( QHostAddress(m_BindAddress), m_ReconnectPort ) )
-				CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
-			else
-			{
-				CONSOLE_Print( "[GHOST] error listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
-				delete m_ReconnectSocket;
-				m_ReconnectSocket = NULL;
-				m_Reconnect = false;
-			}
-		}
-		else if( !m_ReconnectSocket->isListening() )
+		if( m_ReconnectSocket->listen( QHostAddress(m_BindAddress), m_ReconnectPort ) )
+			CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
+		else
 		{
-			CONSOLE_Print( "[GHOST] GProxy++ reconnect listener error (" + m_ReconnectSocket->errorString() + ")" );
+			CONSOLE_Print( "[GHOST] error listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
 			delete m_ReconnectSocket;
 			m_ReconnectSocket = NULL;
 			m_Reconnect = false;
 		}
 	}
-
-	// before we call select we need to determine how long to block for
-	// previously we just blocked for a maximum of the passed usecBlock microseconds
-	// however, in an effort to make game updates happen closer to the desired latency setting we now use a dynamic block interval
-	// note: we still use the passed usecBlock as a hard maximum
-
-	for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
+	else if( !m_ReconnectSocket->isListening() )
 	{
-		if( (*i)->GetNextTimedActionTicks( ) * 1000 < usecBlock )
-			usecBlock = (*i)->GetNextTimedActionTicks( ) * 1000;
+		CONSOLE_Print( "[GHOST] GProxy++ reconnect listener error (" + m_ReconnectSocket->errorString() + ")" );
+		delete m_ReconnectSocket;
+		m_ReconnectSocket = NULL;
+		m_Reconnect = false;
 	}
-
-
-	bool AdminExit = false;
-	bool BNETExit = false;
-
-	// autohost
-
-	if( !m_AutoHostGameName.isEmpty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) - m_LastAutoHostTime >= 30 )
-	{
-		// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
-		// instead we fail silently and try again soon
-
-		if( !m_ExitingNice && m_Enabled && !m_CurrentGame && m_Games.size( ) < m_MaxGames && m_Games.size( ) < m_AutoHostMaximumGames )
-		{
-			if( m_AutoHostMap->GetValid( ) )
-			{
-				QString GameName = m_AutoHostGameName + " #" + UTIL_ToString( m_HostCounter );
-
-				if( GameName.size( ) <= 31 )
-				{
-					CreateGame( m_AutoHostMap, GAME_PUBLIC, false, GameName, m_AutoHostOwner, m_AutoHostOwner, m_AutoHostServer, false );
-
-					if( m_CurrentGame )
-					{
-						m_CurrentGame->SetAutoStartPlayers( m_AutoHostAutoStartPlayers );
-
-						if( m_AutoHostMatchMaking )
-						{
-							if( !m_Map->GetMapMatchMakingCategory( ).isEmpty( ) )
-							{
-								if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) )
-									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found but matchmaking can only be used with fixed player settings, matchmaking disabled" );
-								else
-								{
-									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found, matchmaking enabled" );
-
-									m_CurrentGame->SetMatchMaking( true );
-									m_CurrentGame->SetMinimumScore( m_AutoHostMinimumScore );
-									m_CurrentGame->SetMaximumScore( m_AutoHostMaximumScore );
-								}
-							}
-							else
-								CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory not found, matchmaking disabled" );
-						}
-					}
-				}
-				else
-				{
-					CONSOLE_Print( "[GHOST] stopped auto hosting, next game name [" + GameName + "] is too long (the maximum is 31 characters)" );
-					m_AutoHostGameName.clear( );
-					m_AutoHostOwner.clear( );
-					m_AutoHostServer.clear( );
-					m_AutoHostMaximumGames = 0;
-					m_AutoHostAutoStartPlayers = 0;
-					m_AutoHostMatchMaking = false;
-					m_AutoHostMinimumScore = 0.0;
-					m_AutoHostMaximumScore = 0.0;
-				}
-			}
-			else
-			{
-				CONSOLE_Print( "[GHOST] stopped auto hosting, map config file [" + m_AutoHostMap->GetCFGFile( ) + "] is invalid" );
-				m_AutoHostGameName.clear( );
-				m_AutoHostOwner.clear( );
-				m_AutoHostServer.clear( );
-				m_AutoHostMaximumGames = 0;
-				m_AutoHostAutoStartPlayers = 0;
-				m_AutoHostMatchMaking = false;
-				m_AutoHostMinimumScore = 0.0;
-				m_AutoHostMaximumScore = 0.0;
-			}
-		}
-
-		m_LastAutoHostTime = GetTime( );
-	}
-
-	return m_Exiting || AdminExit || BNETExit;
 }
 
 void CGHost :: EventBNETConnecting( CBNET *bnet )

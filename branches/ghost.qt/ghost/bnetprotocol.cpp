@@ -362,13 +362,13 @@ QVector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteAr
 		{
 			Total--;
 
-			if( data.size( ) < i + 1 )
+			if( (unsigned int)data.size( ) < i + 1 )
 				break;
 
 			QByteArray Account = UTIL_ExtractCString( data, i );
 			i += Account.size( ) + 1;
 
-			if( data.size( ) < i + 7 )
+			if( (unsigned int)data.size( ) < i + 7 )
 				break;
 
 			unsigned char Status = data[i];
@@ -412,13 +412,13 @@ QVector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteA
 		{
 			Total--;
 
-			if( data.size( ) < i + 1 )
+			if( (unsigned int)data.size( ) < i + 1 )
 				break;
 
 			QByteArray Name = UTIL_ExtractCString( data, i );
 			i += Name.size( ) + 1;
 
-			if( data.size( ) < i + 3 )
+			if( (unsigned int)data.size( ) < i + 3 )
 				break;
 
 			unsigned char Rank = data[i];

@@ -18,6 +18,9 @@
 
 */
 
+#include <sstream>
+using std::istringstream;
+
 #include "ghost.h"
 #include "util.h"
 #include "crc32.h"
