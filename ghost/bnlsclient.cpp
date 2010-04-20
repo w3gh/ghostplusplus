@@ -20,7 +20,6 @@
 
 #include "ghost.h"
 #include "util.h"
-#include "socket.h"
 #include "commandpacket.h"
 #include "bnlsprotocol.h"
 #include "bnlsclient.h"
