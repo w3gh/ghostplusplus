@@ -87,10 +87,24 @@ void DEBUG_Print( QString message )
 // main
 //
 
-#include "gameslot.h"
+#include "crc32.h"
 int main( int argc, char **argv )
 {
 	QCoreApplication a(argc, argv);
+/*
+	QByteArray data = QByteArray::fromHex("0224001b019a0700009a070000160101009a0700009a0700001a19303030559a0700009a070000");
+	CCRC32 *crc = new CCRC32();
+	crc->Initialize();
+	DEBUG_Print("Expected: 868c6fa1");
+	QByteArray crc32 = UTIL_CreateBYTEARRAY( crc->FullCRC( data ), false );
+	// expected: bb76fe69
+	DEBUG_Print(crc32.toHex());
+	crc32.resize( 2 );
+	DEBUG_Print(crc32.toHex());
+
+	quint16 crc16 = qChecksum("ABCDEF", 6);
+	DEBUG_Print(UTIL_CreateBYTEARRAY(crc16, false).toHex()); // 5e6f
+	return 0;*/
 
 	gCFGFile = "ghost.cfg";
 

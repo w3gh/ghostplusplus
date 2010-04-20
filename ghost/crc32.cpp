@@ -29,10 +29,10 @@ quint32 CCRC32 :: Reflect( quint32 ulReflect, char cChar )
 	return ulValue;
 }
 
-quint32 CCRC32 :: FullCRC( QString data )
+quint32 CCRC32 :: FullCRC( const QByteArray& data )
 {
 	quint32 ulCRC = 0xFFFFFFFF;
-	PartialCRC( &ulCRC, (const unsigned char*)data.toStdString().c_str(), data.toStdString().size() );
+	PartialCRC( &ulCRC, (const unsigned char*)data.data(), data.size() );
 	return ulCRC ^ 0xFFFFFFFF;
 }
 

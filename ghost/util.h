@@ -30,8 +30,8 @@
 QByteArray UTIL_CreateBYTEARRAY( unsigned char c );
 QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse );
 QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse );
-quint16 UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start = 0 );
-quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start = 0 );
+quint16 UTIL_QByteArrayToUInt16( const QByteArray& b, bool reverse, unsigned int start = 0 );
+quint32 UTIL_QByteArrayToUInt32( const QByteArray& b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
 void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append );

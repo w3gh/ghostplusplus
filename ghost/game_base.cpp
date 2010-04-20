@@ -3006,7 +3006,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 		if( m_GHost->m_AllowDownloads != 0 )
 		{
-			QString *MapData = m_Map->GetMapData( );
+			QByteArray *MapData = m_Map->GetMapData( );
 
 			if( !MapData->isEmpty( ) )
 			{

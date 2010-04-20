@@ -7,7 +7,7 @@ class CCRC32
 {
 public:
 	void Initialize( );
-	quint32 FullCRC( QString data );
+	quint32 FullCRC( const QByteArray& data );
 	void PartialCRC( quint32 *ulInCRC, const unsigned char *sData, quint32 ulLength );
 
 private:

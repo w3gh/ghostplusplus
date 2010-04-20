@@ -359,9 +359,7 @@ void CPacked :: Compress( bool TFT )
 	UTIL_AppendBYTEARRAY( Header, (quint32)0, false );
 
 	// calculate header CRC
-
-	QString HeaderString = Header;
-	quint32 CRC = m_CRC->FullCRC( HeaderString );
+	quint32 CRC = m_CRC->FullCRC( Header );
 
 	// overwrite the (currently zero) header CRC with the calculated CRC
 
@@ -388,7 +386,7 @@ void CPacked :: Compress( bool TFT )
 
 		quint32 CRC1 = m_CRC->FullCRC( BlockHeader );
 		CRC1 = CRC1 ^ ( CRC1 >> 16 );
-		quint32 CRC2 = m_CRC->FullCRC( QString::fromStdString(*i) );
+		quint32 CRC2 = m_CRC->FullCRC( QString::fromStdString(*i).toUtf8() );
 		CRC2 = CRC2 ^ ( CRC2 >> 16 );
 		quint32 BlockCRC = ( CRC1 & 0xFFFF ) | ( CRC2 << 16 );
 
