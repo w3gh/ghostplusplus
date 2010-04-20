@@ -35,8 +35,9 @@ quint32 UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start 
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
 void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append );
+void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append );
 void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size );
-void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator = true );
+void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator );
 void UTIL_AppendBYTEARRAYFast( QByteArray &b, QString &append, bool terminator = true );
 void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse );
 void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse );

@@ -83,20 +83,11 @@ void DEBUG_Print( QString message )
 	cout << message.toStdString() << endl;
 }
 
-void DEBUG_Print( QByteArray b )
-{
-	cout << "{ ";
-
-	for( int i = 0; i < b.size( ); i++ )
-		cout << hex << (int)b[i] << " ";
-
-	cout << "}" << endl;
-}
-
 //
 // main
 //
 
+#include "gameslot.h"
 int main( int argc, char **argv )
 {
 	QCoreApplication a(argc, argv);

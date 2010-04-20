@@ -826,7 +826,7 @@ void CBaseGame::EventNewConnection()
 	if( !NewSocket )
 		return;
 
-	CONSOLE_Print("New socket connected");
+	CONSOLE_Print("New socket connected: " + QString::number((int)NewSocket));
 
 	// check the IP blacklist
 	if( m_IPBlackList.find( NewSocket->localAddress().toString() ) != m_IPBlackList.end( ) )
@@ -1447,7 +1447,7 @@ void CBaseGame :: EventPlayerDeleted()
 		QByteArray CRC;
 		QByteArray Action;
 		Action.push_back( 6 );
-		UTIL_AppendBYTEARRAY( Action, SaveGameName );
+		UTIL_AppendBYTEARRAY( Action, SaveGameName.toUtf8() );
 		m_Actions.enqueue( new CIncomingAction( player->GetPID( ), CRC, Action ) );
 
 		// todotodo: with the new latency system there needs to be a way to send a 0-time action
@@ -1629,7 +1629,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with an invalid name of length " + UTIL_ToString( joinPlayer->GetName( ).size( ) ) );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -1639,7 +1639,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with the virtual host name" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -1650,7 +1650,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but that name is already taken" );
 		// SendAllChat( m_GHost->m_Language->TryingToJoinTheGameButTaken( joinPlayer->GetName( ) ) );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -1703,7 +1703,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 						QVector<CGameSlot> Slots = m_Map->GetSlots( );
 						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
-						potential->SetDeleteMe( true );
+						potential->deleteLater();
 						return;
 					}
 
@@ -1731,7 +1731,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 					QVector<CGameSlot> Slots = m_Map->GetSlots( );
 					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
-					potential->SetDeleteMe( true );
+					potential->deleteLater();
 					return;
 				}
 
@@ -1877,7 +1877,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	if( SID >= m_Slots.size( ) )
 	{
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-		potential->SetDeleteMe( true );
+		potential->deleteLater();
 		return;
 	}
 
@@ -1936,7 +1936,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	Player->SetWhoisShouldBeSent( m_GHost->m_SpoofChecks == 1 || ( m_GHost->m_SpoofChecks == 2 && AnyAdminCheck ) );
 	m_Players.push_back( Player );
 	potential->SetSocket( NULL );
-	potential->SetDeleteMe( true );
+	potential->deleteLater();
 
 	if( m_SaveGame )
 		m_Slots[SID] = EnforceSlot;
@@ -1977,11 +1977,14 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
+DEBUG_Print("sent SEND_W3GS_SLOTINFOJOIN");
 	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
+DEBUG_Print("sent SendVirtualHostPlayerInfo");
 	SendVirtualHostPlayerInfo( Player );
+DEBUG_Print("sent SendFakePlayerInfo");
 	SendFakePlayerInfo( Player );
 
 	QByteArray BlankIP;
@@ -2015,15 +2018,19 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	// send a map check packet to the new player
 
+DEBUG_Print("sent SEND_W3GS_MAPCHECK");
 	Player->Send( m_Protocol->SEND_W3GS_MAPCHECK( m_Map->GetMapPath( ), m_Map->GetMapSize( ), m_Map->GetMapInfo( ), m_Map->GetMapCRC( ), m_Map->GetMapSHA1( ) ) );
 
 	// send slot info to everyone, so the new player gets this info twice but everyone else still needs to know the new slot layout
 
+DEBUG_Print("sent SendAllSlotInfo");
 	SendAllSlotInfo( );
 
 	// send a welcome message
 
+DEBUG_Print("sent SendWelcomeMessage");
 	SendWelcomeMessage( Player );
+DEBUG_Print("sent done");
 
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
@@ -3323,7 +3330,7 @@ void CBaseGame :: EventGameStarted( )
 	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapWidth( ) );
 	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapHeight( ) );
 	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapCRC( ) );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapPath( ) );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapPath( ).toUtf8() );
 	UTIL_AppendBYTEARRAY( StatString, "GHost++" );
 	StatString.push_back( (char)0 );
 	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing

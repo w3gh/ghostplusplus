@@ -446,6 +446,9 @@ QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( QVector<CGameSlot> &lslots, quin
 {
 	QByteArray SlotInfo = EncodeSlotInfo( lslots, randomSeed, layoutStyle, playerSlots );
 	QByteArray packet;
+
+	// f709 1900 1300 0c00      0000 0000 0000 0000 0000 0000 0000 0000 0c
+	// f709 1c00 1600 0c01 ff02 0000 0000 0000 0000 0000 0000 0000 0000 000c
 	packet.push_back( W3GS_HEADER_CONSTANT );									// W3GS header constant
 	packet.push_back( W3GS_SLOTINFO );											// W3GS_SLOTINFO
 	packet.push_back( (char)0 );														// packet length will be assigned later
