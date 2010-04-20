@@ -52,6 +52,7 @@ class CGame : public CBaseGame
 public slots:
 	virtual void EventPlayerDeleted();
 	void EventCallableUpdateTimeout();
+	void EventGameDataSaved();
 
 protected:
 	CDBBan *m_DBBanLast;						// last ban for the !banlast command - this is a pointer to one of the items in m_DBBans

@@ -323,7 +323,7 @@ void CBaseCallable :: Init( )
 void CBaseCallable :: Close( )
 {
 	m_EndTicks = GetTicks( );
-	m_Ready = true;
+	SetReady(true);
 }
 
 CCallableAdminCount :: ~CCallableAdminCount( )

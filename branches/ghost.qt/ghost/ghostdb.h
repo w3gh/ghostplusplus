@@ -165,10 +165,17 @@ public:
 //  - you should deliver any to-be-orphaned callables to the main vector in CGHost so they can be properly deleted when ready even if you don't care about the result anymore
 //  - e.g. if a player does a stats check immediately before a game is deleted you can't just delete the callable on game deletion unless it's ready
 
-class CBaseCallable
+class CBaseCallable : public QObject
 {
+	Q_OBJECT
+
+signals:
+	void finished();
+
 protected:
 	QString m_Error;
+
+private:
 	volatile bool m_Ready;
 	quint32 m_StartTicks;
 	quint32 m_EndTicks;
@@ -184,11 +191,11 @@ public:
 
 	virtual QString GetError( )				{ return m_Error; }
 	virtual bool GetReady( )				{ return m_Ready; }
-	virtual void SetReady( bool nReady )	{ m_Ready = nReady; }
+	virtual void SetReady( bool nReady )	{ m_Ready = nReady; if (nReady) emit finished(); }
 	virtual quint32 GetElapsed( )			{ return m_Ready ? m_EndTicks - m_StartTicks : 0; }
 };
 
-class CCallableAdminCount : virtual public CBaseCallable
+class CCallableAdminCount : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -203,7 +210,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableAdminCheck : virtual public CBaseCallable
+class CCallableAdminCheck : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -220,7 +227,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableAdminAdd : virtual public CBaseCallable
+class CCallableAdminAdd : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -237,7 +244,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableAdminRemove : virtual public CBaseCallable
+class CCallableAdminRemove : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -254,7 +261,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableAdminList : virtual public CBaseCallable
+class CCallableAdminList : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -268,7 +275,7 @@ public:
 	virtual void SetResult( QVector<QString> nResult )	{ m_Result = nResult; }
 };
 
-class CCallableBanCount : virtual public CBaseCallable
+class CCallableBanCount : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -283,7 +290,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableBanCheck : virtual public CBaseCallable
+class CCallableBanCheck : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -302,7 +309,7 @@ public:
 	virtual void SetResult( CDBBan *nResult )	{ m_Result = nResult; }
 };
 
-class CCallableBanAdd : virtual public CBaseCallable
+class CCallableBanAdd : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -327,7 +334,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableBanRemove : virtual public CBaseCallable
+class CCallableBanRemove : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -344,7 +351,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableBanList : virtual public CBaseCallable
+class CCallableBanList : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -358,7 +365,7 @@ public:
 	virtual void SetResult( QVector<CDBBan *> nResult )	{ m_Result = nResult; }
 };
 
-class CCallableGameAdd : virtual public CBaseCallable
+class CCallableGameAdd : public CBaseCallable
 {
 protected:
 	QString m_Server;
@@ -379,7 +386,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableGamePlayerAdd : virtual public CBaseCallable
+class CCallableGamePlayerAdd : public CBaseCallable
 {
 protected:
 	quint32 m_GameID;
@@ -403,7 +410,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableGamePlayerSummaryCheck : virtual public CBaseCallable
+class CCallableGamePlayerSummaryCheck : public CBaseCallable
 {
 protected:
 	QString m_Name;
@@ -418,7 +425,7 @@ public:
 	virtual void SetResult( CDBGamePlayerSummary *nResult )	{ m_Result = nResult; }
 };
 
-class CCallableDotAGameAdd : virtual public CBaseCallable
+class CCallableDotAGameAdd : public CBaseCallable
 {
 protected:
 	quint32 m_GameID;
@@ -435,7 +442,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableDotAPlayerAdd : virtual public CBaseCallable
+class CCallableDotAPlayerAdd : public CBaseCallable
 {
 protected:
 	quint32 m_GameID;
@@ -468,7 +475,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableDotAPlayerSummaryCheck : virtual public CBaseCallable
+class CCallableDotAPlayerSummaryCheck : public CBaseCallable
 {
 protected:
 	QString m_Name;
@@ -483,7 +490,7 @@ public:
 	virtual void SetResult( CDBDotAPlayerSummary *nResult )	{ m_Result = nResult; }
 };
 
-class CCallableDownloadAdd : virtual public CBaseCallable
+class CCallableDownloadAdd : public CBaseCallable
 {
 protected:
 	QString m_Map;
@@ -503,7 +510,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
-class CCallableScoreCheck : virtual public CBaseCallable
+class CCallableScoreCheck : public CBaseCallable
 {
 protected:
 	QString m_Category;
@@ -520,7 +527,7 @@ public:
 	virtual void SetResult( double nResult )	{ m_Result = nResult; }
 };
 
-class CCallableW3MMDPlayerAdd : virtual public CBaseCallable
+class CCallableW3MMDPlayerAdd : public CBaseCallable
 {
 protected:
 	QString m_Category;
@@ -540,7 +547,7 @@ public:
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 
-class CCallableW3MMDVarAdd : virtual public CBaseCallable
+class CCallableW3MMDVarAdd : public CBaseCallable
 {
 protected:
 	quint32 m_GameID;

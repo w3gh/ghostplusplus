@@ -553,6 +553,7 @@ void CGHost::EventWaitForNiceExitTimeout()
 void CGHost::EventAutoHost()
 {
 	// autohost
+	DEBUG_Print("EventAutoHost");
 
 	if( m_AutoHostGameName.isEmpty( ) || m_AutoHostMaximumGames == 0 || m_AutoHostAutoStartPlayers == 0 )
 		return;
