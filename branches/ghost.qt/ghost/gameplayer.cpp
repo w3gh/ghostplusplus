@@ -41,6 +41,7 @@ CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame
 	m_Protocol = nProtocol;
 	m_Game = nGame;
 	m_Socket = nSocket;
+	m_Socket->setParent(this);
 
 	m_DeleteMe = false;
 	m_Error = false;
@@ -75,12 +76,12 @@ void CPotentialPlayer::EventDataReady()
 
 void CPotentialPlayer::EventConnectionError(QAbstractSocket::SocketError /*error*/)
 {
-	this->deleteLater();
+	deleteLater();
 }
 
 void CPotentialPlayer::EventConnectionClosed()
 {
-	this->deleteLater();
+	deleteLater();
 }
 
 void CGamePlayer::EventPingTimeout()
@@ -129,7 +130,7 @@ void CGamePlayer::EventWhoisTimeout()
 void CGamePlayer::EventConnectionError(QAbstractSocket::SocketError /*error*/)
 {
 	m_Game->EventPlayerDisconnectSocketError( this );
-	this->deleteLater();
+	deleteLater();
 }
 
 void CGamePlayer::EventConnectionTimeout()
@@ -139,13 +140,13 @@ void CGamePlayer::EventConnectionTimeout()
 	// this works because in the lobby we send pings every 5 seconds and expect a response to each one
 	// and in the game the Warcraft 3 client sends keepalives frequently (at least once per second it looks like)
 	m_Game->EventPlayerDisconnectTimedOut( this );
-	this->deleteLater();
+	deleteLater();
 }
 
 void CGamePlayer::EventConnectionClosed()
 {
 	m_Game->EventPlayerDisconnectConnectionClosed( this );
-	this->deleteLater();
+	deleteLater();
 }
 
 QByteArray CPotentialPlayer :: GetExternalIP( )
@@ -167,7 +168,7 @@ QString CPotentialPlayer :: GetExternalIPString( )
 
 void CPotentialPlayer :: ExtractPackets( )
 {
-	if( !m_Socket )
+	if( !m_Socket || !m_Socket->isValid() )
 		return;
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
@@ -210,7 +211,7 @@ void CPotentialPlayer :: ExtractPackets( )
 
 void CPotentialPlayer :: ProcessPackets( )
 {
-	if( !m_Socket )
+	if( !m_Socket || !m_Socket->isValid())
 		return;
 
 	// process all the received packets in the m_Packets queue
@@ -248,7 +249,7 @@ void CPotentialPlayer :: ProcessPackets( )
 
 void CPotentialPlayer :: Send( QByteArray data )
 {
-	if( m_Socket )
+	if( m_Socket && m_Socket->isValid() )
 		m_Socket->write(data);
 }
 
@@ -304,6 +305,12 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QSt
 {
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
+
+	QTcpSocket *s = potential->GetSocket();
+
+	s->disconnect(potential, SLOT(EventConnectionClosed()));
+	s->disconnect(potential, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
+	s->disconnect(potential, SLOT(EventDataReady()));
 
 	// m_Packets = potential->GetPackets( );
 	m_PID = nPID;
@@ -446,12 +453,13 @@ quint32 CGamePlayer :: GetPing( bool LCPing )
 
 void CGamePlayer :: ExtractPackets( )
 {
-	if( !m_Socket )
+	if( !m_Socket || !m_Socket->isValid() )
 		return;
 
 	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
 
+	DEBUG_Print("Receiving as normal player with socket " + QString::number((int)m_Socket));
 	while( m_Socket->bytesAvailable() >= 4 )
 	{
 		unsigned char header = m_Socket->peek(1).at(0);
@@ -463,7 +471,7 @@ void CGamePlayer :: ExtractPackets( )
 			m_Socket->abort();
 			m_Socket->deleteLater();
 			m_Socket = NULL;
-			this->deleteLater();
+			deleteLater();
 			return;
 		}
 
@@ -494,7 +502,7 @@ void CGamePlayer :: ExtractPackets( )
 
 void CGamePlayer :: ProcessPackets( )
 {
-	if( !m_Socket )
+	if( !m_Socket || !m_Socket->isValid() )
 		return;
 
 	CIncomingAction *Action = NULL;
@@ -666,6 +674,8 @@ void CGamePlayer :: Send( QByteArray data )
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
 	// this prevents us from buffering packets for non-GProxy++ clients
 
+	DEBUG_Print("CGamePlayer::Send(" + data.toHex() + ");");
+
 	m_TotalPacketsSent++;
 
 	if( m_GProxy && m_Game->GetGameLoaded( ) )
@@ -676,8 +686,13 @@ void CGamePlayer :: Send( QByteArray data )
 
 void CGamePlayer :: EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPacket )
 {
-	delete m_Socket;
+	m_Socket->deleteLater();
 	m_Socket = NewSocket;
+
+	QObject::connect(m_Socket, SIGNAL(readyRead()), this, SLOT(EventDataReady()));
+	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(EventConnectionClosed()));
+	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
+
 	m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_RECONNECT( m_TotalPacketsReceived ) );
 
 	quint32 PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );

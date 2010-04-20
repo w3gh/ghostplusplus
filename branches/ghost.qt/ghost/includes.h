@@ -45,6 +45,5 @@ quint32 GetTicks( );		// milliseconds
 
 void CONSOLE_Print( QString message );
 void DEBUG_Print( QString message );
-void DEBUG_Print( QByteArray b );
 
 #endif

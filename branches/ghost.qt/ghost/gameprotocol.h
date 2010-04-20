@@ -123,12 +123,12 @@ public:
 	// send functions
 
 	QByteArray SEND_W3GS_PING_FROM_HOST( );
-	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_REJECTJOIN( quint32 reason );
 	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, QString name, QByteArray externalIP, QByteArray internalIP );
 	QByteArray SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, quint32 leftCode );
 	QByteArray SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
-	QByteArray SEND_W3GS_SLOTINFO( QVector<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFO( QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_COUNTDOWN_START( );
 	QByteArray SEND_W3GS_COUNTDOWN_END( );
 	QByteArray SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, quint16 sendInterval );

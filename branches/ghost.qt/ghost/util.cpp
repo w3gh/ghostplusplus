@@ -110,7 +110,7 @@ QString UTIL_QByteArrayToHexString( QByteArray b )
 	return QString::fromAscii(b.toHex());
 }
 
-void UTIL_AppendBYTEARRAY( QByteArray &b, QByteArray append )
+void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append )
 {
 	b.append(append);
 }
