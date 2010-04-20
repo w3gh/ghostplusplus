@@ -51,12 +51,15 @@ class CBaseGame : public QObject
 	Q_OBJECT
 
 signals:
-	void gameStarted();
+	void startedLoading();
+	void finishedLoading();
 
 public:
 	CGHost *m_GHost;
 
 public slots:
+	virtual void EventGameStarted( );
+	virtual void EventGameLoaded( );
 	void EventNewConnection();
 	void EventBroadcastTimeout();
 	void EventRefreshTimeout();
@@ -249,8 +252,6 @@ public:
 	// these events are called outside of any iterations
 
 	virtual void EventGameRefreshed( QString server );
-	virtual void EventGameStarted( );
-	virtual void EventGameLoaded( );
 
 	// other functions
 

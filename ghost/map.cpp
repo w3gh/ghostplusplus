@@ -905,8 +905,6 @@ void CMap :: CheckValid( )
 	else if( !m_MapData.isEmpty( ) && (unsigned int)m_MapData.size( ) != UTIL_QByteArrayToUInt32( m_MapSize, false ) )
 	{
 		m_Valid = false;
-		DEBUG_Print(m_MapSize.toHex());
-		DEBUG_Print("(" + QString::number(m_MapData.size( )) + " vs. " + QString::number(UTIL_QByteArrayToUInt32( m_MapSize, false )));
 		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with actual map data ");
 	}
 

@@ -103,8 +103,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 	m_SendActionTimer.setInterval(m_Latency);
 	QObject::connect(&m_SendActionTimer, SIGNAL(timeout()), this, SLOT(EventSendActions()));
 
-
-
+	QObject::connect(this, SIGNAL(finishedLoading()), &m_SendActionTimer, SLOT(start()));
+	QObject::connect(this, SIGNAL(startedLoading()), this, SLOT(EventGameStarted()));
+	QObject::connect(this, SIGNAL(finishedLoading()), this, SLOT(EventGameLoaded()));
 
 
 
@@ -413,7 +414,7 @@ void CBaseGame::CheckGameLoaded()
 		m_LastActionSentTicks = GetTicks( );
 		m_GameLoading = false;
 		m_GameLoaded = true;
-		EventGameLoaded( );
+		emit finishedLoading();
 		return;
 	}
 }
@@ -3329,7 +3330,7 @@ void CBaseGame :: EventGameStarted( )
 
 	// move the game to the games in progress vector
 
-	emit gameStarted();
+	emit startedLoading();
 	m_GHost->m_Games.push_back( this );
 
 	// and finally reenter battle.net chat
@@ -3358,9 +3359,6 @@ void CBaseGame :: EventGameLoaded( )
 		if( !Longest || (*i)->GetFinishedLoadingTicks( ) > Longest->GetFinishedLoadingTicks( ) )
 			Longest = *i;
 	}
-
-	// start sending actions
-	m_SendActionTimer.start();
 
 	if( Shortest && Longest )
 	{
