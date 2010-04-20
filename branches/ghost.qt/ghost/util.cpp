@@ -335,7 +335,7 @@ QByteArray UTIL_FileRead( QString file )
 bool UTIL_FileWrite( QString file, const QByteArray &data )
 {
 	QFile f(file);
-	f.open(QFile::Truncate);
+	f.open(QFile::Truncate | QFile::WriteOnly);
 
 	if (f.error() != QFile::NoError || !f.isWritable())
 	{
