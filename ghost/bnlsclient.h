@@ -43,6 +43,9 @@ public slots:
 	void socketError();
 	void timeout_NULL();
 
+signals:
+	emit void newWardenResponse(const QByteArray &data);
+
 private:
 	QTimer m_NULLTimer;
 	QTcpSocket *m_Socket;							// the connection to the BNLS server
@@ -54,7 +57,6 @@ private:
 	uint32_t m_LastNullTime;
 	uint32_t m_WardenCookie;						// the warden cookie
 	QQueue<QByteArray> m_OutPackets;					// queue of outgoing packets to be sent
-	QQueue<QByteArray> m_WardenResponses;				// the warden responses to be sent to battle.net
 	uint32_t m_TotalWardenIn;
 	uint32_t m_TotalWardenOut;
 	int m_Retries;

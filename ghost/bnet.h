@@ -25,7 +25,6 @@
 // CBNET
 //
 
-class CTCPClient;
 class CCommandPacket;
 class CBNCSUtilInterface;
 class CBNETProtocol;
@@ -44,6 +43,14 @@ class CCallableBanList;
 class CCallableGamePlayerSummaryCheck;
 class CCallableDotAPlayerSummaryCheck;
 class CDBBan;
+class CGHost;
+class CSaveGame;
+class CBaseGame;
+class CMap;
+
+#include "includes.h"
+#include <QTcpSocket>
+#include <QTimer>
 
 typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
 typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
@@ -54,12 +61,33 @@ typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
 typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
-class CBNET
+
+class CBNET : public QObject
 {
+	Q_OBJECT
+public slots:
+	void socketConnected();
+	void socketDisconnected();
+	void socketDataReady();
+	void socketConnect();
+	void socketError();
+	void sendWardenResponse(const QByteArray & response);
+	void timeout_NULL();
+
+	void EventCallableUpdateTimeout();
+	void EventUpdateAdminList();
+	void EventRefreshBanList();
+
+private:
+	QTimer m_NULLTimer;
+	QTimer m_CallableUpdateTimer, m_AdminListUpdateTimer, m_BanListRefreshTimer;
+
 public:
 	CGHost *m_GHost;
+
 private:
-	CTCPClient *m_Socket;							// the connection to battle.net
+	int m_Retries;
+	QTcpSocket *m_Socket;							// the connection to battle.net
 	CBNETProtocol *m_Protocol;						// battle.net protocol
 	CBNLSClient *m_BNLSClient;						// the BNLS client (for external warden handling)
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
@@ -112,7 +140,6 @@ private:
 	uint32_t m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
 	uint32_t m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
 	bool m_FirstConnect;							// if we haven't tried to connect to battle.net yet
-	bool m_WaitingToConnect;						// if we're waiting to reconnect to battle.net after being disconnected
 	bool m_LoggedIn;								// if we've logged into battle.net or not
 	bool m_InChat;									// if we've entered chat or not (but we're not necessarily in a chat channel yet)
 	bool m_HoldFriends;								// whether to auto hold friends when creating a game or not
@@ -121,7 +148,7 @@ private:
 
 public:
 	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, uint32_t nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
-	~CBNET( );
+	virtual ~CBNET( );
 
 	bool GetExiting( )					{ return m_Exiting; }
 	QString GetServer( )					{ return m_Server; }
@@ -149,8 +176,6 @@ public:
 
 	// processing functions
 
-	unsigned int SetFD( void *fd, void *send_fd, int *nfds );
-	bool Update( void *fd, void *send_fd );
 	void ExtractPackets( );
 	void ProcessPackets( );
 	void ProcessChatEvent( CIncomingChatEvent *chatEvent );

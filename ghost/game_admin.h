@@ -50,7 +50,6 @@ class CAdminGame : public CBaseGame
 	Q_OBJECT
 
 public slots:
-	void EventCallableReady();
 	void EventCallableUpdateTimeout();
 
 protected:

@@ -71,6 +71,9 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_CurrentGame = NULL;
 	QString DBType = CFG->GetString( "db_type", "sqlite3" );
 
+	m_CallableUpdateTimer.setInterval(200);
+	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
+
 	// create connections
 
 	CONSOLE_Print( "[GHOST] opening primary database" );
@@ -472,9 +475,21 @@ void CGHost::EventReconnectionSocketReadyRead()
 	}
 }
 
-void CGHost::UpdateEvent()
+void CGHost::EventCallableUpdateTimeout()
 {
-	Update(50000);
+	// update callables
+
+	for( QVector<CBaseCallable *> :: iterator i = m_Callables.begin( ); i != m_Callables.end( ); )
+	{
+		if( (*i)->GetReady( ) )
+		{
+			m_DB->RecoverCallable( *i );
+			delete *i;
+			i = m_Callables.erase( i );
+		}
+		else
+			i++;
+	}
 }
 
 bool CGHost :: Update( long usecBlock )
@@ -547,20 +562,6 @@ bool CGHost :: Update( long usecBlock )
 		}
 	}
 
-	// update callables
-
-	for( QVector<CBaseCallable *> :: iterator i = m_Callables.begin( ); i != m_Callables.end( ); )
-	{
-		if( (*i)->GetReady( ) )
-		{
-			m_DB->RecoverCallable( *i );
-			delete *i;
-			i = m_Callables.erase( i );
-		}
-		else
-			i++;
-	}
-
 	// create the GProxy++ reconnect listener
 
 	if( m_Reconnect )
@@ -589,21 +590,6 @@ bool CGHost :: Update( long usecBlock )
 		}
 	}
 
-	unsigned int NumFDs = 0;
-
-	// take every socket we own and throw it in one giant select statement so we can block on all sockets
-
-	int nfds = 0;
-	fd_set fd;
-	fd_set send_fd;
-	FD_ZERO( &fd );
-	FD_ZERO( &send_fd );
-
-	// 1. all battle.net sockets
-
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-		NumFDs += (*i)->SetFD( &fd, &send_fd, &nfds );
-
 	// before we call select we need to determine how long to block for
 	// previously we just blocked for a maximum of the passed usecBlock microseconds
 	// however, in an effort to make game updates happen closer to the desired latency setting we now use a dynamic block interval
@@ -615,93 +601,9 @@ bool CGHost :: Update( long usecBlock )
 			usecBlock = (*i)->GetNextTimedActionTicks( ) * 1000;
 	}
 
-	// always block for at least 1ms just in case something goes wrong
-	// this prevents the bot from sucking up all the available CPU if a game keeps asking for immediate updates
-	// it's a bit ridiculous to include this check since, in theory, the bot is programmed well enough to never make this mistake
-	// however, considering who programmed it, it's worthwhile to do it anyway
-
-	if( usecBlock < 1000 )
-		usecBlock = 1000;
-
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = usecBlock;
-
-	struct timeval send_tv;
-	send_tv.tv_sec = 0;
-	send_tv.tv_usec = 0;
-
-#ifdef WIN32
-	select( 1, &fd, NULL, NULL, &tv );
-	select( 1, NULL, &send_fd, NULL, &send_tv );
-#else
-	select( nfds + 1, &fd, NULL, NULL, &tv );
-	select( nfds + 1, NULL, &send_fd, NULL, &send_tv );
-#endif
-
-	if( NumFDs == 0 )
-	{
-		// we don't have any sockets (i.e. we aren't connected to battle.net maybe due to a lost connection and there aren't any games running)
-		// select will return immediately and we'll chew up the CPU if we let it loop so just sleep for 50ms to kill some time
-
-		MILLISLEEP( 50 );
-	}
 
 	bool AdminExit = false;
 	bool BNETExit = false;
-
-	// update current game
-
-	if( m_CurrentGame )
-	{
-		if( m_CurrentGame->Update( &fd, &send_fd ) )
-		{
-			CONSOLE_Print( "[GHOST] deleting current game [" + m_CurrentGame->GetGameName( ) + "]" );
-			delete m_CurrentGame;
-			m_CurrentGame = NULL;
-
-			for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-			{
-				(*i)->QueueGameUncreate( );
-				(*i)->QueueEnterChat( );
-			}
-		}
-	}
-
-	// update admin game
-
-	if( m_AdminGame )
-	{
-		if( m_AdminGame->Update( &fd, &send_fd ) )
-		{
-			CONSOLE_Print( "[GHOST] deleting admin game" );
-			delete m_AdminGame;
-			m_AdminGame = NULL;
-			AdminExit = true;
-		}
-	}
-
-	// update running games
-
-	for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); )
-	{
-		if( (*i)->Update( &fd, &send_fd ) )
-		{
-			CONSOLE_Print( "[GHOST] deleting game [" + (*i)->GetGameName( ) + "]" );
-			EventGameDeleted( *i );
-			delete *i;
-			i = m_Games.erase( i );
-		}
-	}
-
-	// update battle.net connections
-
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-	{
-		if( (*i)->Update( &fd, &send_fd ) )
-			BNETExit = true;
-	}
-
 
 	// autohost
 
