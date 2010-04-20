@@ -24,7 +24,7 @@ quint32 GetTime()
 
 quint32 GetTicks()
 {
-	return gBasicTime.msec();
+	return gBasicTime.elapsed();
 }
 
 void SignalCatcher2( int s )
@@ -99,6 +99,7 @@ int main( int argc, char **argv )
 
 	// read config file
 
+	gBasicTime.start();
 	CConfig CFG;
 	CFG.Read( "default.cfg" );
 	CFG.Read( gCFGFile );

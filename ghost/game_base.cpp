@@ -247,6 +247,8 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 		}
 	}
 
+	CreateVirtualHost( );
+
 	// start listening for connections
 
 	if( !m_GHost->m_BindAddress.isEmpty( ) )
@@ -528,7 +530,6 @@ void CBaseGame::EventBroadcastTimeout()
 		m_BroadcastTimer.stop();
 		return;
 	}
-	DEBUG_Print("EventBroadcastTimeout");
 
 	// construct a fixed host counter which will be used to identify players from this "realm" (i.e. LAN)
 	// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
@@ -635,7 +636,6 @@ void CBaseGame::EventRefreshTimeout()
 		m_RefreshTimer.stop();
 		return;
 	}
-	DEBUG_Print("EventRefreshTimeout");
 
 	// refresh every 3 seconds
 	if( !m_RefreshError && m_GameState == GAME_PUBLIC && GetSlotsOpen( ) > 0)
@@ -787,6 +787,7 @@ void CBaseGame::EventGameOverTimeout()
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
 	StopPlayers( "was disconnected (gameover timer finished)" );
+	deleteLater();
 }
 
 void CBaseGame::EventVotekickTimeout()
@@ -818,6 +819,8 @@ void CBaseGame::EventNewConnection()
 
 	if( !NewSocket )
 		return;
+
+	DEBUG_Print("New connection incomming");
 
 	// check the IP blacklist
 	if( m_IPBlackList.find( NewSocket->localAddress().toString() ) != m_IPBlackList.end( ) )
@@ -883,7 +886,7 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 			if( message.size( ) > 127 )
 				message = message.mid( 0, 127 );
 
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray( (char*)player->GetPID( ) ), 32, QByteArray( (char*)ExtraFlags, 4 ), message ) );
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray( 1, player->GetPID( ) ), 32, QByteArray( (char*)ExtraFlags, 4 ), message ) );
 		}
 	}
 }
@@ -1389,14 +1392,8 @@ void CBaseGame :: EventPlayerDeleted()
 	// end the game if there aren't any players left
 	if( m_Players.isEmpty( ) && (m_GameLoading || m_GameLoaded) )
 	{
-		if( !m_Saving )
-		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (no players left)" );
-			SaveGameData( );
-			m_Saving = true;
-		}
-		else if( IsGameDataSaved( ) )
-			deleteLater();
+		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (no players left)" );
+		SaveGameData( );
 	}
 
 	// remove any queued spoofcheck messages for this player
@@ -3361,6 +3358,9 @@ void CBaseGame :: EventGameLoaded( )
 		if( !Longest || (*i)->GetFinishedLoadingTicks( ) > Longest->GetFinishedLoadingTicks( ) )
 			Longest = *i;
 	}
+
+	// start sending actions
+	m_SendActionTimer.start();
 
 	if( Shortest && Longest )
 	{
