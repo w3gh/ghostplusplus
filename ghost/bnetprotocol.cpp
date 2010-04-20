@@ -522,11 +522,11 @@ QByteArray CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
 	packet.push_back( SID_GETADVLISTEX );				// SID_GETADVLISTEX
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, MapFilter1, 4 );		// Map Filter
-	UTIL_AppendQByteArray( packet, MapFilter2, 4 );		// Map Filter
-	UTIL_AppendQByteArray( packet, MapFilter3, 4 );		// Map Filter
-	UTIL_AppendQByteArray( packet, NumGames, 4 );		// maximum number of games to list
-	UTIL_AppendQByteArrayFast( packet, gameName );		// Game Name
+	UTIL_AppendBYTEARRAY( packet, MapFilter1, 4 );		// Map Filter
+	UTIL_AppendBYTEARRAY( packet, MapFilter2, 4 );		// Map Filter
+	UTIL_AppendBYTEARRAY( packet, MapFilter3, 4 );		// Map Filter
+	UTIL_AppendBYTEARRAY( packet, NumGames, 4 );		// maximum number of games to list
+	UTIL_AppendBYTEARRAYFast( packet, gameName );		// Game Name
 	packet.push_back( (char)0 );								// Game Password is NULL
 	packet.push_back( (char)0 );								// Game Stats is NULL
 	AssignLength( packet );
@@ -562,11 +562,11 @@ QByteArray CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
 	packet.push_back( (char)0 );									// packet length will be assigned later
 
 	if( channel.size( ) > 0 )
-		UTIL_AppendQByteArray( packet, NoCreateJoin, 4 );	// flags for no create join
+		UTIL_AppendBYTEARRAY( packet, NoCreateJoin, 4 );	// flags for no create join
 	else
-		UTIL_AppendQByteArray( packet, FirstJoin, 4 );		// flags for first join
+		UTIL_AppendBYTEARRAY( packet, FirstJoin, 4 );		// flags for first join
 
-	UTIL_AppendQByteArrayFast( packet, channel );
+	UTIL_AppendBYTEARRAYFast( packet, channel );
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_JOINCHANNEL" );
 	// DEBUG_Print( packet );
@@ -580,7 +580,7 @@ QByteArray CBNETProtocol :: SEND_SID_CHATCOMMAND( QString command )
 	packet.push_back( SID_CHATCOMMAND );			// SID_CHATCOMMAND
 	packet.push_back( (char)0 );							// packet length will be assigned later
 	packet.push_back( (char)0 );							// packet length will be assigned later
-	UTIL_AppendQByteArrayFast( packet, command );	// Message
+	UTIL_AppendBYTEARRAYFast( packet, command );	// Message
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CHATCOMMAND" );
 	// DEBUG_Print( packet );
@@ -596,10 +596,10 @@ QByteArray CBNETProtocol :: SEND_SID_CHECKAD( )
 	packet.push_back( SID_CHECKAD );			// SID_CHECKAD
 	packet.push_back( (char)0 );						// packet length will be assigned later
 	packet.push_back( (char)0 );						// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
-	UTIL_AppendQByteArray( packet, Zeros, 4 );	// ???
+	UTIL_AppendBYTEARRAY( packet, Zeros, 4 );	// ???
+	UTIL_AppendBYTEARRAY( packet, Zeros, 4 );	// ???
+	UTIL_AppendBYTEARRAY( packet, Zeros, 4 );	// ???
+	UTIL_AppendBYTEARRAY( packet, Zeros, 4 );	// ???
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CHECKAD" );
 	// DEBUG_Print( packet );
@@ -652,15 +652,15 @@ Flags:
 	// make the stat QString
 
 	QByteArray StatString;
-	UTIL_AppendQByteArrayFast( StatString, mapFlags );
+	UTIL_AppendBYTEARRAYFast( StatString, mapFlags );
 	StatString.push_back( (char)0 );
-	UTIL_AppendQByteArrayFast( StatString, mapWidth );
-	UTIL_AppendQByteArrayFast( StatString, mapHeight );
-	UTIL_AppendQByteArrayFast( StatString, mapCRC );
-	UTIL_AppendQByteArrayFast( StatString, mapPath );
-	UTIL_AppendQByteArrayFast( StatString, hostName );
+	UTIL_AppendBYTEARRAYFast( StatString, mapWidth );
+	UTIL_AppendBYTEARRAYFast( StatString, mapHeight );
+	UTIL_AppendBYTEARRAYFast( StatString, mapCRC );
+	UTIL_AppendBYTEARRAYFast( StatString, mapPath );
+	UTIL_AppendBYTEARRAYFast( StatString, hostName );
 	StatString.push_back( (char)0 );
-	UTIL_AppendQByteArrayFast( StatString, mapSHA1 );
+	UTIL_AppendBYTEARRAYFast( StatString, mapSHA1 );
 	StatString = UTIL_EncodeStatString( StatString );
 
 	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.isEmpty( ) && !hostName.isEmpty( ) && !mapPath.isEmpty( ) && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 && StatString.size( ) < 128 && HostCounterString.size( ) == 8 )
@@ -675,15 +675,15 @@ Flags:
 		packet.push_back( (char)0 );											// State continued...
 		packet.push_back( (char)0 );											// State continued...
 		packet.push_back( (char)0 );											// State continued...
-		UTIL_AppendQByteArray( packet, upTime, false );					// time since creation
-		UTIL_AppendQByteArrayFast( packet, mapGameType );				// Game Type, Parameter
-		UTIL_AppendQByteArray( packet, Unknown, 4 );						// ???
-		UTIL_AppendQByteArray( packet, CustomGame, 4 );					// Custom Game
-		UTIL_AppendQByteArrayFast( packet, gameName );					// Game Name
+		UTIL_AppendBYTEARRAY( packet, upTime, false );					// time since creation
+		UTIL_AppendBYTEARRAYFast( packet, mapGameType );				// Game Type, Parameter
+		UTIL_AppendBYTEARRAY( packet, Unknown, 4 );						// ???
+		UTIL_AppendBYTEARRAY( packet, CustomGame, 4 );					// Custom Game
+		UTIL_AppendBYTEARRAYFast( packet, gameName );					// Game Name
 		packet.push_back( (char)0 );											// Game Password is NULL
 		packet.push_back( 98 );											// Slots Free (ascii 98 = char 'b' = 11 slots free) - note: do not reduce this as this is the # of PID's Warcraft III will allocate
-		UTIL_AppendQByteArrayFast( packet, HostCounterString, false );	// Host Counter
-		UTIL_AppendQByteArrayFast( packet, StatString );					// Stat String
+		UTIL_AppendBYTEARRAYFast( packet, HostCounterString, false );	// Host Counter
+		UTIL_AppendBYTEARRAYFast( packet, StatString );					// Stat String
 		packet.push_back( (char)0 );											// Stat String null terminator (the stat QString is encoded to remove all even numbers i.e. zeros)
 		AssignLength( packet );
 	}
@@ -705,9 +705,9 @@ QByteArray CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
 	packet.push_back( SID_NOTIFYJOIN );					// SID_NOTIFYJOIN
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, ProductID, 4 );		// Product ID
-	UTIL_AppendQByteArray( packet, ProductVersion, 4 );	// Product Version
-	UTIL_AppendQByteArrayFast( packet, gameName );		// Game Name
+	UTIL_AppendBYTEARRAY( packet, ProductID, 4 );		// Product ID
+	UTIL_AppendBYTEARRAY( packet, ProductVersion, 4 );	// Product Version
+	UTIL_AppendBYTEARRAYFast( packet, gameName );		// Game Name
 	packet.push_back( (char)0 );								// Game Password is NULL
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_NOTIFYJOIN" );
@@ -725,7 +725,7 @@ QByteArray CBNETProtocol :: SEND_SID_PING( QByteArray pingValue )
 		packet.push_back( SID_PING );					// SID_PING
 		packet.push_back( (char)0 );							// packet length will be assigned later
 		packet.push_back( (char)0 );							// packet length will be assigned later
-		UTIL_AppendQByteArrayFast( packet, pingValue );	// Ping Value
+		UTIL_AppendBYTEARRAYFast( packet, pingValue );	// Ping Value
 		AssignLength( packet );
 	}
 	else
@@ -745,10 +745,10 @@ QByteArray CBNETProtocol :: SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByt
 	packet.push_back( SID_LOGONRESPONSE );				// SID_LOGONRESPONSE
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArrayFast( packet, clientToken );	// Client Token
-	UTIL_AppendQByteArrayFast( packet, serverToken );	// Server Token
-	UTIL_AppendQByteArrayFast( packet, passwordHash );	// Password Hash
-	UTIL_AppendQByteArrayFast( packet, accountName );	// Account Name
+	UTIL_AppendBYTEARRAYFast( packet, clientToken );	// Client Token
+	UTIL_AppendBYTEARRAYFast( packet, serverToken );	// Server Token
+	UTIL_AppendBYTEARRAYFast( packet, passwordHash );	// Password Hash
+	UTIL_AppendBYTEARRAYFast( packet, accountName );	// Account Name
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_LOGONRESPONSE" );
 	// DEBUG_Print( packet );
@@ -762,7 +762,7 @@ QByteArray CBNETProtocol :: SEND_SID_NETGAMEPORT( uint16_t serverPort )
 	packet.push_back( SID_NETGAMEPORT );				// SID_NETGAMEPORT
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, serverPort, false );	// local game server port
+	UTIL_AppendBYTEARRAY( packet, serverPort, false );	// local game server port
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_NETGAMEPORT" );
 	// DEBUG_Print( packet );
@@ -785,22 +785,22 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, uin
 	packet.push_back( SID_AUTH_INFO );						// SID_AUTH_INFO
 	packet.push_back( (char)0 );									// packet length will be assigned later
 	packet.push_back( (char)0 );									// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, ProtocolID, 4 );			// Protocol ID
-	UTIL_AppendQByteArray( packet, PlatformID, 4 );			// Platform ID
+	UTIL_AppendBYTEARRAY( packet, ProtocolID, 4 );			// Protocol ID
+	UTIL_AppendBYTEARRAY( packet, PlatformID, 4 );			// Platform ID
 
 	if( TFT )
-		UTIL_AppendQByteArray( packet, ProductID_TFT, 4 );	// Product ID (TFT)
+		UTIL_AppendBYTEARRAY( packet, ProductID_TFT, 4 );	// Product ID (TFT)
 	else
-		UTIL_AppendQByteArray( packet, ProductID_ROC, 4 );	// Product ID (ROC)
+		UTIL_AppendBYTEARRAY( packet, ProductID_ROC, 4 );	// Product ID (ROC)
 
-	UTIL_AppendQByteArray( packet, Version, 4 );				// Version
-	UTIL_AppendQByteArray( packet, Language, 4 );			// Language (hardcoded as enUS to ensure battle.net sends the bot messages in English)
-	UTIL_AppendQByteArray( packet, LocalIP, 4 );				// Local IP for NAT compatibility
-	UTIL_AppendQByteArray( packet, TimeZoneBias, 4 );		// Time Zone Bias
-	UTIL_AppendQByteArray( packet, localeID, false );		// Locale ID
-	UTIL_AppendQByteArray( packet, localeID, false );		// Language ID (copying the locale ID should be sufficient since we don't care about sublanguages)
-	UTIL_AppendQByteArrayFast( packet, countryAbbrev );		// Country Abbreviation
-	UTIL_AppendQByteArrayFast( packet, country );			// Country
+	UTIL_AppendBYTEARRAY( packet, Version, 4 );				// Version
+	UTIL_AppendBYTEARRAY( packet, Language, 4 );			// Language (hardcoded as enUS to ensure battle.net sends the bot messages in English)
+	UTIL_AppendBYTEARRAY( packet, LocalIP, 4 );				// Local IP for NAT compatibility
+	UTIL_AppendBYTEARRAY( packet, TimeZoneBias, 4 );		// Time Zone Bias
+	UTIL_AppendBYTEARRAY( packet, localeID, false );		// Locale ID
+	UTIL_AppendBYTEARRAY( packet, localeID, false );		// Language ID (copying the locale ID should be sufficient since we don't care about sublanguages)
+	UTIL_AppendBYTEARRAYFast( packet, countryAbbrev );		// Country Abbreviation
+	UTIL_AppendBYTEARRAYFast( packet, country );			// Country
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_AUTH_INFO" );
 	// DEBUG_Print( packet );
@@ -824,18 +824,18 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToke
 		packet.push_back( SID_AUTH_CHECK );					// SID_AUTH_CHECK
 		packet.push_back( (char)0 );								// packet length will be assigned later
 		packet.push_back( (char)0 );								// packet length will be assigned later
-		UTIL_AppendQByteArrayFast( packet, clientToken );	// Client Token
-		UTIL_AppendQByteArrayFast( packet, exeVersion );		// EXE Version
-		UTIL_AppendQByteArrayFast( packet, exeVersionHash );	// EXE Version Hash
-		UTIL_AppendQByteArray( packet, NumKeys, false );		// number of keys in this packet
-		UTIL_AppendQByteArray( packet, (uint32_t)0, false );	// boolean Using Spawn (32 bit)
-		UTIL_AppendQByteArrayFast( packet, keyInfoROC );		// ROC Key Info
+		UTIL_AppendBYTEARRAYFast( packet, clientToken );	// Client Token
+		UTIL_AppendBYTEARRAYFast( packet, exeVersion );		// EXE Version
+		UTIL_AppendBYTEARRAYFast( packet, exeVersionHash );	// EXE Version Hash
+		UTIL_AppendBYTEARRAY( packet, NumKeys, false );		// number of keys in this packet
+		UTIL_AppendBYTEARRAY( packet, (uint32_t)0, false );	// boolean Using Spawn (32 bit)
+		UTIL_AppendBYTEARRAYFast( packet, keyInfoROC );		// ROC Key Info
 
 		if( TFT )
-			UTIL_AppendQByteArrayFast( packet, keyInfoTFT );	// TFT Key Info
+			UTIL_AppendBYTEARRAYFast( packet, keyInfoTFT );	// TFT Key Info
 
-		UTIL_AppendQByteArrayFast( packet, exeInfo );		// EXE Info
-		UTIL_AppendQByteArrayFast( packet, keyOwnerName );	// CD Key Owner Name
+		UTIL_AppendBYTEARRAYFast( packet, exeInfo );		// EXE Info
+		UTIL_AppendBYTEARRAYFast( packet, keyOwnerName );	// CD Key Owner Name
 		AssignLength( packet );
 	}
 	else
@@ -856,8 +856,8 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( QByteArray clientPublicK
 		packet.push_back( SID_AUTH_ACCOUNTLOGON );				// SID_AUTH_ACCOUNTLOGON
 		packet.push_back( (char)0 );									// packet length will be assigned later
 		packet.push_back( (char)0 );									// packet length will be assigned later
-		UTIL_AppendQByteArrayFast( packet, clientPublicKey );	// Client Key
-		UTIL_AppendQByteArrayFast( packet, accountName );		// Account Name
+		UTIL_AppendBYTEARRAYFast( packet, clientPublicKey );	// Client Key
+		UTIL_AppendBYTEARRAYFast( packet, accountName );		// Account Name
 		AssignLength( packet );
 	}
 	else
@@ -878,7 +878,7 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray clientPa
 		packet.push_back( SID_AUTH_ACCOUNTLOGONPROOF );				// SID_AUTH_ACCOUNTLOGONPROOF
 		packet.push_back( (char)0 );										// packet length will be assigned later
 		packet.push_back( (char)0 );										// packet length will be assigned later
-		UTIL_AppendQByteArrayFast( packet, clientPasswordProof );	// Client Password Proof
+		UTIL_AppendBYTEARRAYFast( packet, clientPasswordProof );	// Client Password Proof
 		AssignLength( packet );
 	}
 	else
@@ -896,7 +896,7 @@ QByteArray CBNETProtocol :: SEND_SID_WARDEN( QByteArray wardenResponse )
 	packet.push_back( SID_WARDEN );						// SID_WARDEN
 	packet.push_back( (char)0 );								// packet length will be assigned later
 	packet.push_back( (char)0 );								// packet length will be assigned later
-	UTIL_AppendQByteArrayFast( packet, wardenResponse );	// warden response
+	UTIL_AppendBYTEARRAYFast( packet, wardenResponse );	// warden response
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_WARDEN" );
 	// DEBUG_Print( packet );
@@ -925,7 +925,7 @@ QByteArray CBNETProtocol :: SEND_SID_CLANMEMBERLIST( )
 	packet.push_back( SID_CLANMEMBERLIST );		// SID_CLANMEMBERLIST
 	packet.push_back( (char)0 );						// packet length will be assigned later
 	packet.push_back( (char)0 );						// packet length will be assigned later
-	UTIL_AppendQByteArray( packet, Cookie, 4 );	// cookie
+	UTIL_AppendBYTEARRAY( packet, Cookie, 4 );	// cookie
 	AssignLength( packet );
 	// DEBUG_Print( "SENT SID_CLANMEMBERLIST" );
 	// DEBUG_Print( packet );
@@ -944,7 +944,7 @@ bool CBNETProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateQByteArray( (uint16_t)content.size( ), false );
+		LengthBytes = UTIL_CreateBYTEARRAY( (uint16_t)content.size( ), false );
 		content[2] = LengthBytes[0];
 		content[3] = LengthBytes[1];
 		return true;

@@ -27,19 +27,19 @@
 
 // byte arrays
 
-QByteArray UTIL_CreateQByteArray( unsigned char c );
-QByteArray UTIL_CreateQByteArray( uint16_t i, bool reverse );
-QByteArray UTIL_CreateQByteArray( uint32_t i, bool reverse );
+QByteArray UTIL_CreateBYTEARRAY( unsigned char c );
+QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse );
+QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse );
 uint16_t UTIL_QByteArrayToUInt16( QByteArray b, bool reverse, unsigned int start = 0 );
 uint32_t UTIL_QByteArrayToUInt32( QByteArray b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
-void UTIL_AppendQByteArrayFast( QByteArray &b, QByteArray &append );
-void UTIL_AppendQByteArray( QByteArray &b, unsigned char *a, int size );
-void UTIL_AppendQByteArray( QByteArray &b, QString append, bool terminator = true );
-void UTIL_AppendQByteArrayFast( QByteArray &b, QString &append, bool terminator = true );
-void UTIL_AppendQByteArray( QByteArray &b, uint16_t i, bool reverse );
-void UTIL_AppendQByteArray( QByteArray &b, uint32_t i, bool reverse );
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append );
+void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size );
+void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator = true );
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, QString &append, bool terminator = true );
+void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse );
+void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse );
 QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start );
 unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse );
 QByteArray UTIL_ExtractNumbers( QString s, unsigned int count );

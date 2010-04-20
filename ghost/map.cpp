@@ -158,7 +158,7 @@ QByteArray CMap :: GetMapGameFlags( )
 	if( m_MapFlags & MAPFLAG_RANDOMRACES )
 		GameFlags |= 0x04000000;
 
-	return UTIL_CreateQByteArray( GameFlags, false );
+	return UTIL_CreateBYTEARRAY( GameFlags, false );
 }
 
 uint32_t CMap :: GetMapGameType( )
@@ -292,12 +292,12 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		// calculate map_size
 
-		MapSize = UTIL_CreateQByteArray( (uint32_t)m_MapData.size( ), false );
+		MapSize = UTIL_CreateBYTEARRAY( (uint32_t)m_MapData.size( ), false );
 		CONSOLE_Print( "[MAP] calculated map_size = " + UTIL_QByteArrayToDecString( MapSize ) );
 
 		// calculate map_info (this is actually the CRC)
 
-		MapInfo = UTIL_CreateQByteArray( (uint32_t)m_GHost->m_CRC->FullCRC( m_MapData ), false );
+		MapInfo = UTIL_CreateBYTEARRAY( (uint32_t)m_GHost->m_CRC->FullCRC( m_MapData ), false );
 		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_QByteArrayToDecString( MapInfo ) );
 
 		// calculate map_crc (this is not the CRC) and map_sha1
@@ -456,7 +456,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					if( !FoundScript )
 						CONSOLE_Print( "[MAP] couldn't find war3map.j or scripts\\war3map.j in MPQ file, calculated map_crc/sha1 is probably wrong" );
 
-					MapCRC = UTIL_CreateQByteArray( Val, false );
+					MapCRC = UTIL_CreateBYTEARRAY( Val, false );
 					CONSOLE_Print( "[MAP] calculated map_crc = " + UTIL_QByteArrayToDecString( MapCRC ) );
 
 					m_GHost->m_SHA->Final( );
@@ -656,9 +656,9 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
 							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
-							MapWidth = UTIL_CreateQByteArray( (uint16_t)RawMapWidth, false );
+							MapWidth = UTIL_CreateBYTEARRAY( (uint16_t)RawMapWidth, false );
 							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_QByteArrayToDecString( MapWidth ) );
-							MapHeight = UTIL_CreateQByteArray( (uint16_t)RawMapHeight, false );
+							MapHeight = UTIL_CreateBYTEARRAY( (uint16_t)RawMapHeight, false );
 							CONSOLE_Print( "[MAP] calculated map_height = " + UTIL_QByteArrayToDecString( MapHeight ) );
 							MapNumPlayers = RawMapNumPlayers - ClosedSlots;
 							CONSOLE_Print( "[MAP] calculated map_numplayers = " + UTIL_ToString( MapNumPlayers ) );

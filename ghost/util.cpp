@@ -24,14 +24,14 @@
 #include <QFile>
 #include <QRegExp>
 
-QByteArray UTIL_CreateQByteArray( unsigned char c )
+QByteArray UTIL_CreateBYTEARRAY( unsigned char c )
 {
 	QByteArray result;
 	result.push_back( c );
 	return result;
 }
 
-QByteArray UTIL_CreateQByteArray( uint16_t i, bool reverse )
+QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse )
 {
 	QByteArray result;
 
@@ -46,7 +46,7 @@ QByteArray UTIL_CreateQByteArray( uint16_t i, bool reverse )
 	return result;
 }
 
-QByteArray UTIL_CreateQByteArray( uint32_t i, bool reverse )
+QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse )
 {
 	QByteArray result;
 
@@ -110,22 +110,22 @@ QString UTIL_QByteArrayToHexString( QByteArray b )
 	return QString::fromAscii(b.toHex());
 }
 
-void UTIL_AppendQByteArray( QByteArray &b, QByteArray append )
+void UTIL_AppendBYTEARRAY( QByteArray &b, QByteArray append )
 {
 	b.append(append);
 }
 
-void UTIL_AppendQByteArrayFast( QByteArray &b, QByteArray &append )
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append )
 {
 	b.append(append);
 }
 
-void UTIL_AppendQByteArray( QByteArray &b, unsigned char *a, int size )
+void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size )
 {
 	b.append((char*)a, size);
 }
 
-void UTIL_AppendQByteArray( QByteArray &b, QString append, bool terminator )
+void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator )
 {
 	b.append(append);
 
@@ -133,7 +133,7 @@ void UTIL_AppendQByteArray( QByteArray &b, QString append, bool terminator )
 		b.push_back( (char)0 );
 }
 
-void UTIL_AppendQByteArrayFast( QByteArray &b, QString &append, bool terminator )
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, QString &append, bool terminator )
 {
 	b.append(append);
 
@@ -141,14 +141,14 @@ void UTIL_AppendQByteArrayFast( QByteArray &b, QString &append, bool terminator 
 		b.push_back( (char)0 );
 }
 
-void UTIL_AppendQByteArray( QByteArray &b, uint16_t i, bool reverse )
+void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse )
 {
-	b.append( UTIL_CreateQByteArray( i, reverse ) );
+	b.append( UTIL_CreateBYTEARRAY( i, reverse ) );
 }
 
-void UTIL_AppendQByteArray( QByteArray &b, uint32_t i, bool reverse )
+void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse )
 {
-	b.append( UTIL_CreateQByteArray( i, reverse ) );
+	b.append( UTIL_CreateBYTEARRAY( i, reverse ) );
 }
 
 QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start )

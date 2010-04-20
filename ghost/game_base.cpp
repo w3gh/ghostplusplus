@@ -253,12 +253,13 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	else
 		CONSOLE_Print( "[GAME: " + m_GameName + "] attempting to bind to all available addresses" );
 
-	if( m_Socket->listen( QHostAddress(m_GHost->m_BindAddress), m_HostPort ) )
-		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on port " + UTIL_ToString( m_Socket->serverPort() ) );
+	QHostAddress hostAddr = m_GHost->m_BindAddress == "" ? QHostAddress::Any : QHostAddress(m_GHost->m_BindAddress);
+	if( m_Socket->listen( hostAddr, m_HostPort ) )
+		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on " + hostAddr.toString() + ":" + UTIL_ToString( m_Socket->serverPort() ) );
 	else
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on port " + UTIL_ToString( m_HostPort ) );
-		m_Exiting = true;
+		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on " + hostAddr.toString() + ":" + UTIL_ToString( m_HostPort ) );
+		deleteLater();
 	}
 }
 
@@ -553,7 +554,7 @@ void CBaseGame::EventBroadcastTimeout()
 			m_Protocol->SEND_W3GS_GAMEINFO(
 						m_GHost->m_TFT,
 						m_GHost->m_LANWar3Version,
-						UTIL_CreateQByteArray( MapGameType, false ),
+						UTIL_CreateBYTEARRAY( MapGameType, false ),
 						m_Map->GetMapGameFlags( ),
 						MapWidth,
 						MapHeight,
@@ -575,7 +576,7 @@ void CBaseGame::EventBroadcastTimeout()
 		// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 		uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
-		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateQByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
+		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
 				 hostAddr,
 				 6112 );
 	}
@@ -825,6 +826,8 @@ void CBaseGame::EventNewConnection()
 	if( !NewSocket )
 		return;
 
+	CONSOLE_Print("New socket connected");
+
 	// check the IP blacklist
 	if( m_IPBlackList.find( NewSocket->localAddress().toString() ) != m_IPBlackList.end( ) )
 	{
@@ -873,7 +876,7 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 			if( message.size( ) > 254 )
 				message = message.mid( 0, 254 );
 
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateQByteArray( player->GetPID( ) ), 16, QByteArray( ), message ) );
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateBYTEARRAY( player->GetPID( ) ), 16, QByteArray( ), message ) );
 		}
 		else
 		{
@@ -929,7 +932,7 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 			if( message.size( ) > 127 )
 				message = message.mid( 0, 127 );
 
-			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateQByteArray( (uint32_t)0, false ), message ) );
+			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateBYTEARRAY( (uint32_t)0, false ), message ) );
 
 			if( m_Replay )
 				m_Replay->AddChatMessage( fromPID, 32, 0, message );
@@ -1444,7 +1447,7 @@ void CBaseGame :: EventPlayerDeleted()
 		QByteArray CRC;
 		QByteArray Action;
 		Action.push_back( 6 );
-		UTIL_AppendQByteArray( Action, SaveGameName );
+		UTIL_AppendBYTEARRAY( Action, SaveGameName );
 		m_Actions.enqueue( new CIncomingAction( player->GetPID( ), CRC, Action ) );
 
 		// todotodo: with the new latency system there needs to be a way to send a 0-time action
@@ -1699,7 +1702,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 						// this causes them to be kicked back to the chat channel on battle.net
 
 						QVector<CGameSlot> Slots = m_Map->GetSlots( );
-						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateQByteArray((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 						potential->SetDeleteMe( true );
 						return;
 					}
@@ -1727,7 +1730,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 					// this causes them to be kicked back to the chat channel on battle.net
 
 					QVector<CGameSlot> Slots = m_Map->GetSlots( );
-					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateQByteArray((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((uint16_t)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 					potential->SetDeleteMe( true );
 					return;
 				}
@@ -1974,7 +1977,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateQByteArray((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2353,7 +2356,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateQByteArray((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((uint16_t)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -3315,15 +3318,15 @@ void CBaseGame :: EventGameStarted( )
 	// we have to build this now because the map data is going to be deleted
 
 	QByteArray StatString;
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapGameFlags( ) );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapGameFlags( ) );
 	StatString.push_back( (char)0 );
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapWidth( ) );
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapHeight( ) );
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapCRC( ) );
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapPath( ) );
-	UTIL_AppendQByteArray( StatString, "GHost++" );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapWidth( ) );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapHeight( ) );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapCRC( ) );
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapPath( ) );
+	UTIL_AppendBYTEARRAY( StatString, "GHost++" );
 	StatString.push_back( (char)0 );
-	UTIL_AppendQByteArray( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
+	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
 	StatString = UTIL_EncodeStatString( StatString );
 	m_StatString = StatString;
 

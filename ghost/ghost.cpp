@@ -124,7 +124,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	for (int i = 0; i < info.addresses().size(); i++)
 	{
 		CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + info.addresses().at(i).toString() + "]" );
-		m_LocalAddresses.push_back( UTIL_CreateQByteArray( (uint32_t)info.addresses().at(i).toIPv4Address() ) );
+		m_LocalAddresses.push_back( UTIL_CreateBYTEARRAY( (uint32_t)info.addresses().at(i).toIPv4Address() ) );
 	}
 
 	m_Language = NULL;

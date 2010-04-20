@@ -2275,9 +2275,9 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateQByteArray( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateQByteArray( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateQByteArray( (uint16_t)0, false ), UTIL_CreateQByteArray( (uint16_t)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateBYTEARRAY( (uint16_t)0, false ), UTIL_CreateBYTEARRAY( (uint16_t)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 		else
 		{
@@ -2297,9 +2297,9 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateQByteArray( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateQByteArray( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 	}
 }
