@@ -902,7 +902,7 @@ void CMap :: CheckValid( )
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected" );
 	}
-	else if( !m_MapData.isEmpty( ) && m_MapData.size( ) != UTIL_QByteArrayToUInt32( m_MapSize, false ) )
+	else if( !m_MapData.isEmpty( ) && (unsigned int)m_MapData.size( ) != UTIL_QByteArrayToUInt32( m_MapSize, false ) )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with actual map data" );
