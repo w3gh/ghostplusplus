@@ -406,6 +406,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( ( Command == "abort" || Command == "a" ) && m_CountDownStarted && !m_GameLoading && !m_GameLoaded )
 			{
 				SendAllChat( m_GHost->m_Language->CountDownAborted( ) );
+				m_CountdownTimer.stop();
 				m_CountDownStarted = false;
 			}
 
