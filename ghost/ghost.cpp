@@ -341,7 +341,14 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
 
-	m_AutoHostTimer.start(0);
+	if( m_BNETs.isEmpty( ) )
+		m_AutoHostTimer.start(0);
+
+	else
+	{
+		for (int i = 0; i < m_BNETs.size(); i++)
+			m_BNETs.at(i)->socketConnect();
+	}
 }
 
 void CGHost::EventAdminGameDeleted()
@@ -540,7 +547,7 @@ void CGHost::EventExitNice()
 
 	if( m_Games.isEmpty( ) )
 	{
-		if( !m_AllGamesFinished )
+		if( !m_AllGamesFinished && m_Callables.size( ) > 0 )
 		{
 			CONSOLE_Print( "[GHOST] all games finished, waiting 60 seconds for threads to finish" );
 			CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads in progress" );
@@ -802,14 +809,6 @@ void CGHost :: EventBNETEmote( CBNET *bnet, QString user, QString message )
 void CGHost::EventGameDeleted()
 {
 	CBaseGame *game = (CBaseGame *)QObject::sender();
-
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-	{
-		(*i)->QueueChatCommand( m_Language->GameIsOver( game->GetDescription( ) ) );
-
-		if( (*i)->GetServer( ) == game->GetCreatorServer( ) )
-			(*i)->QueueChatCommand( m_Language->GameIsOver( game->GetDescription( ) ), game->GetCreatorName( ), true );
-	}
 
 	if (game == m_CurrentGame)
 		m_CurrentGame = NULL;

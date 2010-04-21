@@ -606,7 +606,19 @@ QByteArray CBNETProtocol :: SEND_SID_CHECKAD( )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, quint32 hostCounter )
+QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3(
+		unsigned char state,
+		QByteArray mapGameType,
+		QByteArray mapFlags,
+		QByteArray mapWidth,
+		QByteArray mapHeight,
+		QString gameName,
+		QString hostName,
+		quint32 upTime,
+		QString mapPath,
+		QByteArray mapCRC,
+		QByteArray mapSHA1,
+		quint32 hostCounter )
 {
 	// todotodo: sort out how GameType works, the documentation is horrendous
 
@@ -637,15 +649,8 @@ Flags:
 	unsigned char Unknown[]		= { 255,  3,  0,  0 };
 	unsigned char CustomGame[]	= {   0,  0,  0,  0 };
 
-	QString HostCounterString = UTIL_ToHexString( hostCounter );
-
-	QString fi;
-	fi.fill('0', 8 - HostCounterString.size( ) );
-
-	if( HostCounterString.size( ) < 8 )
-		HostCounterString += fi;
-
-	HostCounterString = UTIL_QByteArrayReverse( HostCounterString.toUtf8() );
+	QString HostCounterString = QString::number(hostCounter, 16);
+	HostCounterString.prepend(QString(8 - HostCounterString.size(), '0'));
 
 	QByteArray packet;
 
@@ -663,7 +668,9 @@ Flags:
 	UTIL_AppendBYTEARRAYFast( StatString, mapSHA1 );
 	StatString = UTIL_EncodeStatString( StatString );
 
-	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 && !gameName.isEmpty( ) && !hostName.isEmpty( ) && !mapPath.isEmpty( ) && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 && StatString.size( ) < 128 && HostCounterString.size( ) == 8 )
+	if( mapGameType.size( ) == 4 && mapFlags.size( ) == 4 && mapWidth.size( ) == 2 && mapHeight.size( ) == 2 &&
+		!gameName.isEmpty( ) && !hostName.isEmpty( ) && !mapPath.isEmpty( ) && mapCRC.size( ) == 4 && mapSHA1.size( ) == 20 &&
+		StatString.size( ) < 128 && HostCounterString.size( ) == 8 )
 	{
 		// make the rest of the packet
 

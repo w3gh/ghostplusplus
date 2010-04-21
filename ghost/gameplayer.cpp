@@ -88,7 +88,6 @@ void CPotentialPlayer::EventConnectionClosed()
 
 void CGamePlayer::EventPingTimeout()
 {
-	DEBUG_Print("EventPingTimeout()");
 	Send(m_Protocol->SEND_W3GS_PING_FROM_HOST( ) );
 }
 
@@ -681,8 +680,8 @@ void CGamePlayer :: Send( QByteArray data )
 	// must start counting packet total from beginning of connection
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
 	// this prevents us from buffering packets for non-GProxy++ clients
-	if (data.toHex() != "f70c06006400")
-		DEBUG_Print("Sending " + data.toHex());
+	//if (data.toHex() != "f70c06006400")
+	//	DEBUG_Print("Sending " + data.toHex());
 
 	m_TotalPacketsSent++;
 

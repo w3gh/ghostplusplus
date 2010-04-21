@@ -263,6 +263,8 @@ void CBNET::socketConnected()
 
 	while( !m_OutPackets.isEmpty( ) )
 		m_OutPackets.dequeue( );
+
+	QTimer::singleShot(500, m_GHost, SLOT(EventAutoHost()));
 }
 
 void CBNET::socketDisconnected()
@@ -309,29 +311,39 @@ void CBNET::socketDataReady()
 
 	ExtractPackets( );
 	ProcessPackets( );
+}
 
-	// check if at least one packet is waiting to be sent and if we've waited long enough to prevent flooding
-	// this formula has changed many times but currently we wait 1 second if the last packet was "small", 3.5 seconds if it was "medium", and 4 seconds if it was "big"
+void CBNET::EnqueuePacket(const QByteArray &pkg)
+{
+	int ticks = getWaitTicks();
+	int pkgs = m_OutPackets.empty();
 
-	quint32 WaitTicks = 0;
+	m_OutPackets.enqueue(pkg);
 
-	if( m_LastOutPacketSize < 10 )
-		WaitTicks = 1000;
-	else if( m_LastOutPacketSize < 100 )
-		WaitTicks = 3500;
-	else
-		WaitTicks = 4000;
+	if (pkgs > 0)
+		return;
 
-	if( !m_OutPackets.isEmpty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
+	if (m_LastPacketSent.elapsed() >= ticks)
 	{
-		if( m_OutPackets.size( ) > 7 )
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
-
-		m_Socket->write( m_OutPackets.front( ) );
-		m_LastOutPacketSize = m_OutPackets.front( ).size( );
-		m_OutPackets.dequeue( );
-		m_LastOutPacketTicks = GetTicks( );
+		SendPacket();
+		return;
 	}
+
+	QTimer::singleShot(getWaitTicks() - m_LastPacketSent.elapsed(), this, SLOT(SendPacket()));
+}
+
+void CBNET::SendPacket()
+{
+	if( m_OutPackets.size( ) > 7 )
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
+
+	m_Socket->write( m_OutPackets.front() );
+	m_LastOutPacketSize = m_OutPackets.front( ).size( );
+	m_OutPackets.dequeue( );
+	m_LastPacketSent.restart();
+
+	if (m_OutPackets.size() > 0)
+		QTimer::singleShot(getWaitTicks(), this, SLOT(SendPacket()));
 }
 
 void CBNET::socketError()
@@ -642,6 +654,8 @@ void CBNET :: ProcessPackets( )
 
 	// process all the received packets in the m_Packets queue
 	// this normally means sending some kind of response
+
+	DEBUG_Print("Received " + QString::number(m_Packets.size()));
 
 	while( !m_Packets.isEmpty( ) )
 	{
@@ -2274,9 +2288,33 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3(
+						state,
+						UTIL_CreateBYTEARRAY( MapGameType, false ),
+						map->GetMapGameFlags( ),
+						MapWidth,
+						MapHeight,
+						gameName,
+						hostName,
+						upTime,
+						"Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ),
+						saveGame->GetMagicNumber( ),
+						map->GetMapSHA1( ),
+						FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateBYTEARRAY( (quint16)0, false ), UTIL_CreateBYTEARRAY( (quint16)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3(
+						state,
+						UTIL_CreateBYTEARRAY( MapGameType, false ),
+						map->GetMapGameFlags( ),
+						UTIL_CreateBYTEARRAY( (quint16)0, false ),
+						UTIL_CreateBYTEARRAY( (quint16)0, false ),
+						gameName,
+						hostName,
+						upTime,
+						"Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ),
+						saveGame->GetMagicNumber( ),
+						map->GetMapSHA1( ),
+						FixedHostCounter ) );
 		}
 		else
 		{
