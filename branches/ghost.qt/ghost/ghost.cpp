@@ -800,6 +800,8 @@ void CGHost::EventGameDeleted()
 	int ind = m_Games.indexOf(game);
 	if (ind != -1)
 		m_Games.remove(ind);
+
+	m_AutoHostTimer.start();
 }
 
 void CGHost :: ReloadConfigs( )
