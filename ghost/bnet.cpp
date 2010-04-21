@@ -333,6 +333,12 @@ void CBNET::EnqueuePacket(const QByteArray &pkg)
 
 void CBNET::SendPacket()
 {
+	if (m_OutPackets.size() == 0)
+	{
+		DEBUG_Print("Nice, empty query... but actually, this shouldn't happen...");
+		return;
+	}
+
 	if( m_OutPackets.size( ) > 7 )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
 
