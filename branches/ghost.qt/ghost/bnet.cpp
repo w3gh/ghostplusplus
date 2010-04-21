@@ -346,7 +346,7 @@ void CBNET::SendPacket()
 	m_LastOutPacketSize = m_OutPackets.front( ).size( );
 	m_OutPackets.dequeue( );
 	m_LastPacketSent.restart();
-	CONSOLE_Print(QString::number(m_OutPackets.size( ) - 1) + " left in queue.");
+	CONSOLE_Print(QString::number(m_OutPackets.size( )) + " left in queue.");
 
 	if (m_OutPackets.size() > 0)
 		QTimer::singleShot(getWaitTicks(), this, SLOT(SendPacket()));
