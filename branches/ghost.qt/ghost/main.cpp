@@ -176,7 +176,7 @@ int main( int argc, char **argv )
 
 	gGHost = new CGHost( &CFG, gCFGFile );
 
-	QObject::connect(gGHost, SIGNAL(destroyed()), &a, SLOT(quit()));
+	QObject::connect(gGHost, SIGNAL(destroyed()), &a, SLOT(deleteLater()));
 
 	return a.exec();
 }

@@ -134,7 +134,6 @@ private:
 	quint32 m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
 	quint32 m_LastConnectionAttemptTime;			// GetTime when we last attempted to connect to battle.net
 	quint32 m_LastNullTime;						// GetTime when the last null packet was sent for detecting disconnects
-	quint32 m_LastOutPacketTicks;					// GetTicks when the last packet was sent for the m_OutPackets queue
 	quint32 m_LastOutPacketSize;
 	quint32 m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
 	quint32 m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
@@ -144,6 +143,24 @@ private:
 	bool m_HoldFriends;								// whether to auto hold friends when creating a game or not
 	bool m_HoldClan;								// whether to auto hold clan members when creating a game or not
 	bool m_PublicCommands;							// whether to allow public commands or not
+
+	inline int getWaitTicks()
+	{
+		// this formula has changed many times but currently we wait 1 second if the last packet was "small", 3.5 seconds if it was "medium", and 4 seconds if it was "big"
+		if( m_LastOutPacketSize < 10 )
+			return 1000;
+
+		else if( m_LastOutPacketSize < 100 )
+			return 3500;
+
+		return 4000;
+	}
+
+	QTime m_LastPacketSent;
+
+public slots:
+	void EnqueuePacket(const QByteArray &pkg);
+	void SendPacket();
 
 public:
 	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );

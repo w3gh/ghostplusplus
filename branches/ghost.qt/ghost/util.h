@@ -34,11 +34,11 @@ quint16 UTIL_QByteArrayToUInt16( const QByteArray& b, bool reverse, unsigned int
 quint32 UTIL_QByteArrayToUInt32( const QByteArray& b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
 QString UTIL_QByteArrayToHexString( QByteArray b );
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append );
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QByteArray &append );
 void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append );
 void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size );
 void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator );
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, QString &append, bool terminator = true );
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QString &append, bool terminator = true );
 void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse );
 void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse );
 QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start );

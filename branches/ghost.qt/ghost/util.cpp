@@ -126,7 +126,7 @@ void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append )
 	b.append(append);
 }
 
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, QByteArray &append )
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QByteArray &append )
 {
 	b.append(append);
 }
@@ -144,9 +144,9 @@ void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator )
 		b.push_back( (char)0 );
 }
 
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, QString &append, bool terminator )
+void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QString &append, bool terminator )
 {
-	b.append(append);
+	b.append(append.toUtf8());
 
 	if( terminator )
 		b.push_back( (char)0 );
@@ -268,7 +268,7 @@ QString UTIL_ToString( double d, int digits )
 
 QString UTIL_ToHexString( quint32 i )
 {
-	return QString::number(i);
+	return QString::number(i, 16);
 }
 
 // todotodo: these UTIL_ToXXX functions don't fail gracefully, they just return garbage (in the uint case usually just -1 casted to an unsigned type it looks like)

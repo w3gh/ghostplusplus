@@ -263,6 +263,14 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 
 CBaseGame :: ~CBaseGame( )
 {
+	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	{
+		(*i)->QueueChatCommand( m_GHost->m_Language->GameIsOver( GetDescription( ) ) );
+
+		if( (*i)->GetServer( ) == GetCreatorServer( ) )
+			(*i)->QueueChatCommand( m_GHost->m_Language->GameIsOver( GetDescription( ) ), GetCreatorName( ), true );
+	}
+
 	// save replay
 	// todotodo: put this in a thread
 
