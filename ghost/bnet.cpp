@@ -346,7 +346,6 @@ void CBNET::SendPacket()
 	m_LastOutPacketSize = m_OutPackets.front( ).size( );
 	m_OutPackets.dequeue( );
 	m_LastPacketSent.restart();
-	CONSOLE_Print(QString::number(m_OutPackets.size( )) + " left in queue.");
 
 	if (m_OutPackets.size() > 0)
 		QTimer::singleShot(getWaitTicks(), this, SLOT(SendPacket()));
@@ -660,8 +659,6 @@ void CBNET :: ProcessPackets( )
 
 	// process all the received packets in the m_Packets queue
 	// this normally means sending some kind of response
-
-	DEBUG_Print("Received " + QString::number(m_Packets.size()));
 
 	while( !m_Packets.isEmpty( ) )
 	{

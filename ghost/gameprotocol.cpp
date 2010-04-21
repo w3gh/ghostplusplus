@@ -515,7 +515,6 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 
 		QByteArray crc32 = UTIL_CreateBYTEARRAY( m_GHost->m_CRC->FullCRC( subpacket ), false );
 		crc32.resize( 2 );
-		DEBUG_Print("Calculating CRC for " + subpacket.toHex() + ":  " + crc32.toHex());
 
 		// finish subpacket
 
