@@ -1798,7 +1798,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 				if( KickedPlayer )
 				{
-					KickedPlayer->deleteLater();
 					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
 					KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -1807,6 +1806,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 					SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
 					KickedPlayer->SetLeftMessageSent( true );
+					KickedPlayer->deleteLater();
 				}
 			}
 		}
@@ -1831,7 +1831,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 			if( KickedPlayer )
 			{
-				KickedPlayer->deleteLater();
 				KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
 				KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -1840,6 +1839,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 				SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
 				KickedPlayer->SetLeftMessageSent( true );
+				KickedPlayer->deleteLater();
 			}
 		}
 	}
@@ -2189,7 +2189,6 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			// kick the furthest player
 
 			SID = GetSIDFromPID( FurthestPlayer->GetPID( ) );
-			FurthestPlayer->deleteLater();
 
 			if( FurthestPlayer->GetScore( ) < -99999.0 )
 				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( "N/A", UTIL_ToString( AverageScore, 2 ) ) );
@@ -2203,6 +2202,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 			SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( FurthestPlayer->GetPID( ), FurthestPlayer->GetLeftCode( ) ) );
 			FurthestPlayer->SetLeftMessageSent( true );
+			FurthestPlayer->deleteLater();
 
 			if( FurthestPlayer->GetScore( ) < -99999.0 )
 				SendAllChat( m_GHost->m_Language->PlayerWasKickedForFurthestScore( FurthestPlayer->GetName( ), "N/A", UTIL_ToString( AverageScore, 2 ) ) );
@@ -2249,7 +2249,6 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			// kick the lowest player
 
 			SID = GetSIDFromPID( LowestPlayer->GetPID( ) );
-			LowestPlayer->deleteLater();
 
 			if( LowestPlayer->GetScore( ) < -99999.0 )
 				LowestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingLowestScore( "N/A" ) );
@@ -2263,6 +2262,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 			SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( LowestPlayer->GetPID( ), LowestPlayer->GetLeftCode( ) ) );
 			LowestPlayer->SetLeftMessageSent( true );
+			LowestPlayer->deleteLater();
 
 			if( LowestPlayer->GetScore( ) < -99999.0 )
 				SendAllChat( m_GHost->m_Language->PlayerWasKickedForLowestScore( LowestPlayer->GetName( ), "N/A" ) );
@@ -2478,7 +2478,6 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player, quint32 reason )
 	// this function is only called when a player leave packet is received, not when there's a socket error, kick, etc...
 	DEBUG_Print("EventPlayerLeft");
 
-	player->deleteLater();
 
 	if( reason == PLAYERLEAVE_GPROXY )
 		player->SetLeftReason( m_GHost->m_Language->WasUnrecoverablyDroppedFromGProxy( ) );
@@ -2486,6 +2485,7 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player, quint32 reason )
 		player->SetLeftReason( m_GHost->m_Language->HasLeftVoluntarily( ) );
 
 	player->SetLeftCode( PLAYERLEAVE_LOST );
+	player->deleteLater();
 
 	if( !m_GameLoading && !m_GameLoaded )
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
@@ -2672,9 +2672,9 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 							if( Player )
 							{
-								Player->deleteLater();
 								Player->SetLeftReason( m_GHost->m_Language->WasDroppedDesync( ) );
 								Player->SetLeftCode( PLAYERLEAVE_LOST );
+								Player->deleteLater();
 							}
 						}
 					}
@@ -3010,17 +3010,17 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 			}
 			else
 			{
-				player->deleteLater();
 				player->SetLeftReason( "doesn't have the map and there is no local copy of the map to send" );
 				player->SetLeftCode( PLAYERLEAVE_LOBBY );
+				player->deleteLater();
 				OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 			}
 		}
 		else
 		{
-			player->deleteLater();
 			player->SetLeftReason( "doesn't have the map and map downloads are disabled" );
 			player->SetLeftCode( PLAYERLEAVE_LOBBY );
+			player->deleteLater();
 			OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 		}
 	}
@@ -3104,9 +3104,9 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, quint32 /*pong*/ )
 		// send a chat message because we don't normally do so when a player leaves the lobby
 
 		SendAllChat( m_GHost->m_Language->AutokickingPlayerForExcessivePing( player->GetName( ), UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) ) );
-		player->deleteLater();
 		player->SetLeftReason( "was autokicked for excessive ping of " + UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) );
 		player->SetLeftCode( PLAYERLEAVE_LOBBY );
+		player->deleteLater();
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 	}
 }
@@ -3735,9 +3735,9 @@ void CBaseGame :: OpenSlot( unsigned char SID, bool kick )
 
 			if( Player )
 			{
-				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when opening a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+				Player->deleteLater();
 			}
 		}
 
@@ -3757,9 +3757,9 @@ void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 
 			if( Player )
 			{
-				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when closing a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+				Player->deleteLater();
 			}
 		}
 
@@ -3779,9 +3779,9 @@ void CBaseGame :: ComputerSlot( unsigned char SID, unsigned char skill, bool kic
 
 			if( Player )
 			{
-				Player->deleteLater();
 				Player->SetLeftReason( "was kicked when creating a computer in a slot" );
 				Player->SetLeftCode( PLAYERLEAVE_LOBBY );
+				Player->deleteLater();
 			}
 		}
 
