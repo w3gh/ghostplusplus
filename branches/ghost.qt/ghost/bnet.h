@@ -62,6 +62,8 @@ typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
 
+#include <QTime>
+
 class CBNET : public QObject
 {
 	Q_OBJECT
