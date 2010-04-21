@@ -135,7 +135,6 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_HostCounterID = nHostCounterID;
 	m_LastDisconnectedTime = 0;
 	m_LastConnectionAttemptTime = 0;
-	m_LastOutPacketTicks = 0;
 	m_LastOutPacketSize = 0;
 	m_LastAdminRefreshTime = GetTime( );
 	m_LastBanRefreshTime = GetTime( );
