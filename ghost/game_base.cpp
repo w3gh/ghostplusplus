@@ -984,6 +984,14 @@ void CBaseGame :: SendAllActions( )
 			UsingGProxy = true;
 	}
 
+	if (m_RequestedLatency != 0)
+	{
+		m_Latency = m_RequestedLatency;
+		m_SendActionTimer.setInterval(m_RequestedLatency);
+		m_SendActionTimer.start();
+		m_RequestedLatency = 0;
+	}
+
 	m_GameTicks += m_Latency;
 
 	if( UsingGProxy )
@@ -1086,13 +1094,6 @@ void CBaseGame :: SendAllActions( )
 		// other solutions - dynamically modify the latency, request higher priority, terminate other games, ???
 
 		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms	, your machine is probably overloaded" );
-	}
-
-	if (m_RequestedLatency != 0)
-	{
-		m_Latency = m_RequestedLatency;
-		m_SendActionTimer.setInterval(m_RequestedLatency);
-		m_RequestedLatency = 0;
 	}
 
 	m_LastActionSentTicks = GetTicks( );
@@ -4456,11 +4457,14 @@ void CBaseGame :: StopPlayers( QString reason )
 	// therefore calling this function when m_GameLoading || m_GameLoaded is roughly equivalent to setting m_Exiting = true
 	// the only difference is whether the code in the Update function is executed or not
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); )
 	{
-		(*i)->deleteLater();
-		(*i)->SetLeftReason( reason );
-		(*i)->SetLeftCode( PLAYERLEAVE_LOST );
+		CGamePlayer *p = *i;
+		i = m_Players.erase(i);
+
+		p->SetLeftReason( reason );
+		p->SetLeftCode( PLAYERLEAVE_LOST );
+		p->deleteLater();
 	}
 }
 
@@ -4470,9 +4474,12 @@ void CBaseGame :: StopLaggers( QString reason )
 	{
 		if( (*i)->GetLagging( ) )
 		{
-			(*i)->deleteLater();
-			(*i)->SetLeftReason( reason );
-			(*i)->SetLeftCode( PLAYERLEAVE_DISCONNECT );
+			CGamePlayer *p = *i;
+			i = m_Players.erase(i);
+
+			p->SetLeftReason( reason );
+			p->SetLeftCode( PLAYERLEAVE_LOST );
+			p->deleteLater();
 		}
 	}
 }
