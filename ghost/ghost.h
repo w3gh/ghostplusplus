@@ -59,6 +59,7 @@ public slots:
 	void EventAutoHost();
 	void EventGameStarted();
 	void EventGameDeleted();
+	void EventAdminGameDeleted();
 	void CreateReconnectServer();
 
 public:

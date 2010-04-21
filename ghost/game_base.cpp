@@ -123,7 +123,6 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 	else
 		m_Replay = NULL;
 
-	m_Exiting = false;
 	m_Saving = false;
 	m_HostPort = nHostPort;
 	m_GameState = nGameState;

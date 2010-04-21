@@ -844,13 +844,13 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 			if( Payload == "nice" )
 				m_GHost->m_ExitingNice = true;
 			else if( Payload == "force" )
-				m_Exiting = true;
+				deleteLater();
 			else
 			{
 				if( m_GHost->m_CurrentGame || !m_GHost->m_Games.isEmpty( ) )
 					SendChat( player, m_GHost->m_Language->AtLeastOneGameActiveUseForceToShutdown( ) );
 				else
-					m_Exiting = true;
+					deleteLater();
 			}
 		}
 
@@ -1175,7 +1175,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				else
 				{
 					SendChat( player, m_GHost->m_Language->UnhostingGame( m_GHost->m_CurrentGame->GetDescription( ) ) );
-					m_GHost->m_CurrentGame->SetExiting( true );
+					m_GHost->m_CurrentGame->deleteLater();
 				}
 			}
 			else

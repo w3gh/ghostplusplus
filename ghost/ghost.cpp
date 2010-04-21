@@ -324,6 +324,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	{
 		CONSOLE_Print( "[GHOST] creating admin game" );
 		m_AdminGame = new CAdminGame( this, m_AdminMap, NULL, m_AdminGamePort, 0, "GHost++ Admin Game", m_AdminGamePassword );
+		QObject::connect(m_AdminGame, SIGNAL(destroyed()), this, SLOT(EventAdminGameDeleted()));
 
 		if( m_AdminGamePort == m_HostPort )
 			CONSOLE_Print( "[GHOST] warning - admingame_port and bot_hostport are set to the same value, you won't be able to host any games" );
@@ -341,6 +342,12 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 #endif
 
 	m_AutoHostTimer.start(0);
+}
+
+void CGHost::EventAdminGameDeleted()
+{
+	m_AdminGame = NULL;
+	deleteLater();
 }
 
 CGHost :: ~CGHost( )
@@ -725,7 +732,7 @@ void CGHost :: EventBNETGameRefreshFailed( CBNET *bnet )
 	// we only close the game if it has no players since we support game rehosting (via !priv and !pub in the lobby)
 
 	if( m_CurrentGame->GetNumHumanPlayers( ) == 0 )
-		m_CurrentGame->SetExiting( true );
+		m_CurrentGame->deleteLater();
 
 	m_CurrentGame->EventRefreshError();
 }
