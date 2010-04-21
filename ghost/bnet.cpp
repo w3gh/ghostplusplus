@@ -2195,7 +2195,7 @@ void CBNET :: SendGetClanList( )
 void CBNET :: QueueEnterChat( )
 {
 	if( m_LoggedIn )
-		m_OutPackets.enqueue( m_Protocol->SEND_SID_ENTERCHAT( ) );
+		EnqueuePacket( m_Protocol->SEND_SID_ENTERCHAT( ) );
 }
 
 void CBNET :: QueueChatCommand( QString chatCommand )
@@ -2216,7 +2216,7 @@ void CBNET :: QueueChatCommand( QString chatCommand )
 		else
 		{
 			CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
-			m_OutPackets.enqueue( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );
+			EnqueuePacket( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );
 		}
 	}
 }
@@ -2287,7 +2287,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3(
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
 						state,
 						UTIL_CreateBYTEARRAY( MapGameType, false ),
 						map->GetMapGameFlags( ),
@@ -2301,7 +2301,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 						map->GetMapSHA1( ),
 						FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3(
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
 						state,
 						UTIL_CreateBYTEARRAY( MapGameType, false ),
 						map->GetMapGameFlags( ),
@@ -2333,9 +2333,9 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				m_OutPackets.enqueue( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 	}
 }
@@ -2343,7 +2343,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 void CBNET :: QueueGameUncreate( )
 {
 	if( m_LoggedIn )
-		m_OutPackets.enqueue( m_Protocol->SEND_SID_STOPADV( ) );
+		EnqueuePacket( m_Protocol->SEND_SID_STOPADV( ) );
 }
 
 void CBNET :: UnqueuePackets( unsigned char type )
