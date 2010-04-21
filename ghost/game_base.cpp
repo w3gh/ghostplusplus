@@ -586,6 +586,30 @@ void CBaseGame::EventBroadcastTimeout()
 	}
 }
 
+void CBaseGame::EventTryAutoRehost()
+{
+	// there's a slim chance that this isn't actually an autohosted game since there is no explicit autohost flag
+	// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
+	// so rehost it using the current autohost game name
+
+	QString GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
+	CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
+	m_LastGameName = m_GameName;
+	m_GameName = GameName;
+	m_HostCounter = m_GHost->m_HostCounter++;
+	m_RefreshError = false;
+
+	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	{
+		(*i)->QueueGameUncreate( );
+		(*i)->QueueEnterChat( );
+
+		// the game creation message will be sent on the next refresh
+	}
+
+	m_CreationTime = GetTime( );
+}
+
 void CBaseGame::EventRefreshError()
 {
 	if (m_GameLoading || m_GameLoaded)
@@ -606,28 +630,7 @@ void CBaseGame::EventRefreshError()
 	   m_GHost->m_AutoHostMaximumGames != 0 &&
 	   m_GHost->m_AutoHostAutoStartPlayers != 0 &&
 	   m_AutoStartPlayers != 0 )
-	{
-		// there's a slim chance that this isn't actually an autohosted game since there is no explicit autohost flag
-		// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
-		// so rehost it using the current autohost game name
-
-		QString GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
-		CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
-		m_LastGameName = m_GameName;
-		m_GameName = GameName;
-		m_HostCounter = m_GHost->m_HostCounter++;
-		m_RefreshError = false;
-
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
-		{
-			(*i)->QueueGameUncreate( );
-			(*i)->QueueEnterChat( );
-
-			// the game creation message will be sent on the next refresh
-		}
-
-		m_CreationTime = GetTime( );
-	}
+		QTimer::singleShot(5000, this, SLOT(EventTryAutoRehost()));
 }
 
 void CBaseGame::EventRefreshTimeout()
@@ -752,17 +755,15 @@ void CBaseGame::EventMapDataTimeout()
 
 void CBaseGame::EventCountdownTimeout()
 {
-	if( m_CountDownCounter > 0 )
+	if( m_CountDownCounter <= 0 )
 	{
-		// we use a countdown counter rather than a "finish countdown time" here because it might alternately round up or down the count
-		// this sometimes resulted in a countdown of e.g. "6 5 3 2 1" during my testing which looks pretty dumb
-		// doing it this way ensures it's always "5 4 3 2 1" but each interval might not be *exactly* the same length
-
-		SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
-		m_CountDownCounter--;
+		emit startedLoading();
+		m_CountdownTimer.stop();
+		return;
 	}
-	else if( !m_GameLoading && !m_GameLoaded )
-		EventGameStarted( );
+
+	SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+	m_CountDownCounter--;
 }
 
 void CBaseGame::EventAutostartTimeout()
@@ -3327,19 +3328,6 @@ void CBaseGame :: EventGameStarted( )
 				(*j)->AddLoadInGameData( m_Protocol->SEND_W3GS_GAMELOADED_OTHERS( (*i)->GetPID( ) ) );
 		}
 	}
-
-	// move the game to the games in progress vector
-
-	emit startedLoading();
-	m_GHost->m_Games.push_back( this );
-
-	// and finally reenter battle.net chat
-
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
-	{
-		(*i)->QueueGameUncreate( );
-		(*i)->QueueEnterChat( );
-	}
 }
 
 void CBaseGame :: EventGameLoaded( )
@@ -4393,93 +4381,93 @@ void CBaseGame :: StartCountDown( bool force )
 
 void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 {
-	if( !m_CountDownStarted )
+	if( m_CountDownStarted )
+		return;
+
+	// check if enough players are present
+
+	if( GetNumHumanPlayers( ) < m_AutoStartPlayers )
 	{
-		// check if enough players are present
+		SendAllChat( m_GHost->m_Language->WaitingForPlayersBeforeAutoStart( UTIL_ToString( m_AutoStartPlayers ), UTIL_ToString( m_AutoStartPlayers - GetNumHumanPlayers( ) ) ) );
+		return;
+	}
 
-		if( GetNumHumanPlayers( ) < m_AutoStartPlayers )
+	// check if everyone has the map
+
+	QString StillDownloading;
+
+	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	{
+		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetDownloadStatus( ) != 100 )
 		{
-			SendAllChat( m_GHost->m_Language->WaitingForPlayersBeforeAutoStart( UTIL_ToString( m_AutoStartPlayers ), UTIL_ToString( m_AutoStartPlayers - GetNumHumanPlayers( ) ) ) );
-			return;
-		}
+			CGamePlayer *Player = GetPlayerFromPID( (*i).GetPID( ) );
 
-		// check if everyone has the map
-
-		QString StillDownloading;
-
-		for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
-		{
-			if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetDownloadStatus( ) != 100 )
+			if( Player )
 			{
-				CGamePlayer *Player = GetPlayerFromPID( (*i).GetPID( ) );
-
-				if( Player )
-				{
-					if( StillDownloading.isEmpty( ) )
-						StillDownloading = Player->GetName( );
-					else
-						StillDownloading += ", " + Player->GetName( );
-				}
+				if( StillDownloading.isEmpty( ) )
+					StillDownloading = Player->GetName( );
+				else
+					StillDownloading += ", " + Player->GetName( );
 			}
 		}
+	}
 
-		if( !StillDownloading.isEmpty( ) )
-		{
-			SendAllChat( m_GHost->m_Language->PlayersStillDownloading( StillDownloading ) );
-			return;
-		}
+	if( !StillDownloading.isEmpty( ) )
+	{
+		SendAllChat( m_GHost->m_Language->PlayersStillDownloading( StillDownloading ) );
+		return;
+	}
 
-		// check if everyone is spoof checked
+	// check if everyone is spoof checked
 
-		QString NotSpoofChecked;
+	QString NotSpoofChecked;
 
-		if( requireSpoofChecks )
-		{
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( !(*i)->GetSpoofed( ) )
-				{
-					if( NotSpoofChecked.isEmpty( ) )
-						NotSpoofChecked = (*i)->GetName( );
-					else
-						NotSpoofChecked += ", " + (*i)->GetName( );
-				}
-			}
-
-			if( !NotSpoofChecked.isEmpty( ) )
-				SendAllChat( m_GHost->m_Language->PlayersNotYetSpoofChecked( NotSpoofChecked ) );
-		}
-
-		// check if everyone has been pinged enough (3 times) that the autokicker would have kicked them by now
-		// see function EventPlayerPongToHost for the autokicker code
-
-		QString NotPinged;
-
+	if( requireSpoofChecks )
+	{
 		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
-			if( !(*i)->GetReserved( ) && (*i)->GetNumPings( ) < 3 )
+			if( !(*i)->GetSpoofed( ) )
 			{
-				if( NotPinged.isEmpty( ) )
-					NotPinged = (*i)->GetName( );
+				if( NotSpoofChecked.isEmpty( ) )
+					NotSpoofChecked = (*i)->GetName( );
 				else
-					NotPinged += ", " + (*i)->GetName( );
+					NotSpoofChecked += ", " + (*i)->GetName( );
 			}
 		}
 
-		if( !NotPinged.isEmpty( ) )
-		{
-			SendAllChat( m_GHost->m_Language->PlayersNotYetPingedAutoStart( NotPinged ) );
-			return;
-		}
+		if( !NotSpoofChecked.isEmpty( ) )
+			SendAllChat( m_GHost->m_Language->PlayersNotYetSpoofChecked( NotSpoofChecked ) );
+	}
 
-		// if no problems found start the game
+	// check if everyone has been pinged enough (3 times) that the autokicker would have kicked them by now
+	// see function EventPlayerPongToHost for the autokicker code
 
-		if( StillDownloading.isEmpty( ) && NotSpoofChecked.isEmpty( ) && NotPinged.isEmpty( ) )
+	QString NotPinged;
+
+	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	{
+		if( !(*i)->GetReserved( ) && (*i)->GetNumPings( ) < 3 )
 		{
-			m_CountDownStarted = true;
-			m_CountdownTimer.start();
-			m_CountDownCounter = 10;
+			if( NotPinged.isEmpty( ) )
+				NotPinged = (*i)->GetName( );
+			else
+				NotPinged += ", " + (*i)->GetName( );
 		}
+	}
+
+	if( !NotPinged.isEmpty( ) )
+	{
+		SendAllChat( m_GHost->m_Language->PlayersNotYetPingedAutoStart( NotPinged ) );
+		return;
+	}
+
+	// if no problems found start the game
+
+	if( StillDownloading.isEmpty( ) && NotSpoofChecked.isEmpty( ) && NotPinged.isEmpty( ) )
+	{
+		m_CountDownStarted = true;
+		m_CountdownTimer.start();
+		m_CountDownCounter = 10;
 	}
 }
 

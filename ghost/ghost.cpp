@@ -75,6 +75,10 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_CallableUpdateTimer.setInterval(200);
 	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
 
+	m_AutoHostTimer.setSingleShot(true);
+	m_AutoHostTimer.setInterval(500);
+	QObject::connect(&m_AutoHostTimer, SIGNAL(timeout()), this, SLOT(EventAutoHost()));
+
 	// create connections
 
 	CONSOLE_Print( "[GHOST] opening primary database" );
@@ -336,7 +340,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
 
-	EventAutoHost();
+	m_AutoHostTimer.start(0);
 }
 
 CGHost :: ~CGHost( )
@@ -373,15 +377,20 @@ CGHost :: ~CGHost( )
 
 void CGHost::EventGameStarted()
 {
+	DEBUG_Print("EventGameStarted");
+	// move the game to the games in progress vector
+	m_Games.push_back( m_CurrentGame );
 	m_CurrentGame = NULL;
 
-	if (m_LastAutoHostTime.elapsed() > 30)
+	// and finally reenter battle.net chat
+
+	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
-		EventAutoHost();
-		return;
+		(*i)->QueueGameUncreate( );
+		(*i)->QueueEnterChat( );
 	}
 
-	QTimer::singleShot(30 - m_LastAutoHostTime.elapsed(), this, SLOT(EventAutoHost()));
+	m_AutoHostTimer.start();
 }
 
 void CGHost::EventIncomingReconnection()
@@ -560,6 +569,7 @@ void CGHost::EventAutoHost()
 
 	// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
 	// instead we fail silently and try again soon
+	DEBUG_Print(QString::number( m_Games.size( ) ));
 
 	if( m_ExitingNice || !m_Enabled || m_CurrentGame || m_Games.size( ) >= m_MaxGames || m_Games.size( ) >= m_AutoHostMaximumGames )
 		return;
@@ -698,30 +708,30 @@ void CGHost :: EventBNETGameRefreshed( CBNET *bnet )
 
 void CGHost :: EventBNETGameRefreshFailed( CBNET *bnet )
 {
-	if( m_CurrentGame )
+	if( !m_CurrentGame )
+		return;
+
+	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-		{
-			(*i)->QueueChatCommand( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
+		(*i)->QueueChatCommand( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
 
-			if( (*i)->GetServer( ) == m_CurrentGame->GetCreatorServer( ) )
-				(*i)->QueueChatCommand( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ), m_CurrentGame->GetCreatorName( ), true );
-		}
-
-		if( m_AdminGame )
-			m_AdminGame->SendAllChat( m_Language->BNETGameHostingFailed( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
-
-		m_CurrentGame->SendAllChat( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
-
-		// we take the easy route and simply close the lobby if a refresh fails
-		// it's possible at least one refresh succeeded and therefore the game is still joinable on at least one battle.net (plus on the local network) but we don't keep track of that
-		// we only close the game if it has no players since we support game rehosting (via !priv and !pub in the lobby)
-
-		if( m_CurrentGame->GetNumHumanPlayers( ) == 0 )
-			m_CurrentGame->SetExiting( true );
-
-		m_CurrentGame->EventRefreshError();
+		if( (*i)->GetServer( ) == m_CurrentGame->GetCreatorServer( ) )
+			(*i)->QueueChatCommand( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ), m_CurrentGame->GetCreatorName( ), true );
 	}
+
+	if( m_AdminGame )
+		m_AdminGame->SendAllChat( m_Language->BNETGameHostingFailed( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
+
+	m_CurrentGame->SendAllChat( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
+
+	// we take the easy route and simply close the lobby if a refresh fails
+	// it's possible at least one refresh succeeded and therefore the game is still joinable on at least one battle.net (plus on the local network) but we don't keep track of that
+	// we only close the game if it has no players since we support game rehosting (via !priv and !pub in the lobby)
+
+	if( m_CurrentGame->GetNumHumanPlayers( ) == 0 )
+		m_CurrentGame->SetExiting( true );
+
+	m_CurrentGame->EventRefreshError();
 }
 
 void CGHost :: EventBNETConnectTimedOut( CBNET *bnet )
@@ -775,8 +785,10 @@ void CGHost :: EventBNETEmote( CBNET *bnet, QString user, QString message )
 	}
 }
 
-void CGHost :: EventGameDeleted( CBaseGame *game )
+void CGHost::EventGameDeleted()
 {
+	CBaseGame *game = (CBaseGame *)QObject::sender();
+
 	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
 		(*i)->QueueChatCommand( m_Language->GameIsOver( game->GetDescription( ) ) );
@@ -784,6 +796,10 @@ void CGHost :: EventGameDeleted( CBaseGame *game )
 		if( (*i)->GetServer( ) == game->GetCreatorServer( ) )
 			(*i)->QueueChatCommand( m_Language->GameIsOver( game->GetDescription( ) ), game->GetCreatorName( ), true );
 	}
+
+	int ind = m_Games.indexOf(game);
+	if (ind != -1)
+		m_Games.remove(ind);
 }
 
 void CGHost :: ReloadConfigs( )
@@ -1128,6 +1144,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 		m_CurrentGame = new CGame( this, map, NULL, m_HostPort, gameState, gameName, ownerName, creatorName, creatorServer );
 
 	QObject::connect(m_CurrentGame, SIGNAL(startedLoading()), this, SLOT(EventGameStarted()));
+	QObject::connect(m_CurrentGame, SIGNAL(destroyed()), this, SLOT(EventGameDeleted()));
 
 	// todotodo: check if listening failed and report the error to the user
 

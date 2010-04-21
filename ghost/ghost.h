@@ -58,11 +58,12 @@ public slots:
 	void EventWaitForNiceExitTimeout();
 	void EventAutoHost();
 	void EventGameStarted();
+	void EventGameDeleted();
 	void CreateReconnectServer();
 
 public:
 	QTime m_LastAutoHostTime;
-	QTimer m_CallableUpdateTimer;
+	QTimer m_CallableUpdateTimer, m_AutoHostTimer;
 	QUdpSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
 	QTcpServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
 	CGPSProtocol *m_GPSProtocol;
@@ -165,7 +166,7 @@ public:
 	void EventBNETWhisper( CBNET *bnet, QString user, QString message );
 	void EventBNETChat( CBNET *bnet, QString user, QString message );
 	void EventBNETEmote( CBNET *bnet, QString user, QString message );
-	void EventGameDeleted( CBaseGame *game );
+//	void EventGameDeleted( CBaseGame *game );
 
 	// other functions
 

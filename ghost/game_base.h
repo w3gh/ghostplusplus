@@ -64,6 +64,7 @@ public slots:
 	void EventBroadcastTimeout();
 	void EventRefreshTimeout();
 	void EventRefreshError();
+	void EventTryAutoRehost();
 	void EventMapDataTimeout();
 	void EventCountdownTimeout();
 	void EventAutostartTimeout();
