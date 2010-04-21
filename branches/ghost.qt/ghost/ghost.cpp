@@ -562,14 +562,10 @@ void CGHost::EventWaitForNiceExitTimeout()
 void CGHost::EventAutoHost()
 {
 	// autohost
-	DEBUG_Print("EventAutoHost");
-
 	if( m_AutoHostGameName.isEmpty( ) || m_AutoHostMaximumGames == 0 || m_AutoHostAutoStartPlayers == 0 )
 		return;
 
 	// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
-	// instead we fail silently and try again soon
-	DEBUG_Print(QString::number( m_Games.size( ) ));
 
 	if( m_ExitingNice || !m_Enabled || m_CurrentGame || m_Games.size( ) >= m_MaxGames || m_Games.size( ) >= m_AutoHostMaximumGames )
 		return;
