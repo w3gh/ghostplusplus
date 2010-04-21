@@ -1340,8 +1340,10 @@ void CBaseGame :: EventPlayerDeleted()
 
 	int ind = m_Players.indexOf(player);
 
-	if (ind != -1)
-		m_Players.remove(ind);
+	if (ind == -1)
+		return;
+
+	m_Players.remove(ind);
 
 	// create the virtual host player if there is room
 	if( !m_GameLoading && !m_GameLoaded && GetNumPlayers( ) < 12 )
