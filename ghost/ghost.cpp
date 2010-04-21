@@ -575,6 +575,12 @@ void CGHost::EventAutoHost()
 
 	// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
 
+	if (m_CurrentGame)
+		DEBUG_Print("Not autohosting because a game is still open");
+
+	if (m_Games.size( ) >= m_MaxGames)
+		DEBUG_Print("Not autohosting because m_Games.size( ) >= m_MaxGames");
+
 	if( m_ExitingNice || !m_Enabled || m_CurrentGame || m_Games.size( ) >= m_MaxGames || m_Games.size( ) >= m_AutoHostMaximumGames )
 		return;
 
