@@ -148,6 +148,12 @@ void CGamePlayer::EventConnectionTimeout()
 
 void CGamePlayer::EventConnectionClosed()
 {
+	if (m_Socket->error() != QAbstractSocket::UnknownSocketError)
+	{
+		DEBUG_Print("Error is " + QString::number((int)m_Socket->error()));
+		return;
+	}
+
 	m_Game->EventPlayerDisconnectConnectionClosed( this );
 	deleteLater();
 }
