@@ -569,6 +569,7 @@ void CGHost::EventWaitForNiceExitTimeout()
 
 void CGHost::EventAutoHost()
 {
+	DEBUG_Print("EventAutoHost");
 	// autohost
 	if( m_AutoHostGameName.isEmpty( ) || m_AutoHostMaximumGames == 0 || m_AutoHostAutoStartPlayers == 0 )
 		return;
@@ -580,6 +581,9 @@ void CGHost::EventAutoHost()
 
 	if (m_Games.size( ) >= m_MaxGames)
 		DEBUG_Print("Not autohosting because m_Games.size( ) >= m_MaxGames");
+
+	if (m_Games.size( ) >= m_AutoHostMaximumGames)
+		DEBUG_Print("Not autohosting because m_Games.size( ) >= m_AutoHostMaximumGames");
 
 	if( m_ExitingNice || !m_Enabled || m_CurrentGame || m_Games.size( ) >= m_MaxGames || m_Games.size( ) >= m_AutoHostMaximumGames )
 		return;
