@@ -1079,13 +1079,13 @@ void CBaseGame :: SendAllActions( )
 			m_Replay->AddTimeSlot( m_Latency, m_Actions );
 	}
 
-	if( GetTicks() - m_LastActionSentTicks > m_Latency )
+	if( GetTicks() - m_LastActionSentTicks > 1.5 * m_Latency )
 	{
 		// something is going terribly wrong - GHost++ is probably starved of resources
 		// print a message because even though this will take more resources it should provide some information to the administrator for future reference
 		// other solutions - dynamically modify the latency, request higher priority, terminate other games, ???
 
-		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms, your machine is probably overloaded" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms	, your machine is probably overloaded" );
 	}
 
 	if (m_RequestedLatency != 0)

@@ -1123,18 +1123,20 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				{
 					m_RequestedLatency = UTIL_ToUInt32( Payload );
 
-					if( m_RequestedLatency <= 20 )
+					quint32 min = 20, max = 2000;
+
+					if( m_RequestedLatency <= min )
 					{
-						m_RequestedLatency = 20;
-						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "20" ) );
+						m_RequestedLatency = min;
+						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( QString::number(m_RequestedLatency) ) );
 					}
-					else if( m_RequestedLatency >= 2000 )
+					else if( m_RequestedLatency >= max )
 					{
-						m_RequestedLatency = 2000;
-						SendAllChat( m_GHost->m_Language->SettingLatencyToMaximum( "2000" ) );
+						m_RequestedLatency = max;
+						SendAllChat( m_GHost->m_Language->SettingLatencyToMaximum( QString::number(m_RequestedLatency) ) );
 					}
 					else
-						SendAllChat( m_GHost->m_Language->SettingLatencyTo( UTIL_ToString( m_Latency ) ) );
+						SendAllChat( m_GHost->m_Language->SettingLatencyTo( UTIL_ToString( m_RequestedLatency ) ) );
 				}
 			}
 
