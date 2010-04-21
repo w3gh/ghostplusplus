@@ -108,7 +108,6 @@ protected:
 	CMap *m_Map;									// map data
 	CSaveGame *m_SaveGame;							// savegame data (this is a pointer to global data)
 	CReplay *m_Replay;								// replay
-	bool m_Exiting;									// set to true and this class will be deleted next update
 	bool m_Saving;									// if we're currently saving game data to the database
 	quint16 m_HostPort;							// the port to host games on
 	unsigned char m_GameState;						// game state, public or private
@@ -190,7 +189,6 @@ public:
 
 	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
 	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
-	virtual void SetExiting( bool nExiting )							{ m_Exiting = nExiting; }
 	virtual void SetAutoStartPlayers( quint32 nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
 	virtual void SetMinimumScore( double nMinimumScore )				{ m_MinimumScore = nMinimumScore; }
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }

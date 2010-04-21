@@ -75,7 +75,6 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_BNCSUtil = new CBNCSUtilInterface( nUserName, nUserPassword );
 	m_CallableAdminList = m_GHost->m_DB->ThreadedAdminList( nServer );
 	m_CallableBanList = m_GHost->m_DB->ThreadedBanList( nServer );
-	m_Exiting = false;
 	m_Server = nServer;
 	QString LowerServer = m_Server;
 	LowerServer = LowerServer.toLower();
@@ -1505,13 +1504,13 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						if( Payload == "nice" )
 							m_GHost->m_ExitingNice = true;
 						else if( Payload == "force" )
-							m_Exiting = true;
+							m_GHost->deleteLater();
 						else
 						{
 							if( m_GHost->m_CurrentGame || !m_GHost->m_Games.isEmpty( ) )
 								QueueChatCommand( m_GHost->m_Language->AtLeastOneGameActiveUseForceToShutdown( ), User, Whisper );
 							else
-								m_Exiting = true;
+								m_GHost->deleteLater();
 						}
 					}
 					else
@@ -2018,7 +2017,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						else
 						{
 							QueueChatCommand( m_GHost->m_Language->UnhostingGame( m_GHost->m_CurrentGame->GetDescription( ) ), User, Whisper );
-							m_GHost->m_CurrentGame->SetExiting( true );
+							m_GHost->m_CurrentGame->deleteLater();
 						}
 					}
 					else

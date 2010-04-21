@@ -1560,7 +1560,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			//
 
 			if( Command == "unhost" && !m_CountDownStarted )
-				m_Exiting = true;
+				deleteLater();
 
 			//
 			// !UNLOCK

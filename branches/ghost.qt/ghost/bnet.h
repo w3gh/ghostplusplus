@@ -107,7 +107,6 @@ private:
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
 	QVector<QString> m_Admins;						// vector of cached admins
 	QVector<CDBBan *> m_Bans;						// vector of cached bans
-	bool m_Exiting;									// set to true and this class will be deleted next update
 	QString m_Server;								// battle.net server to connect to
 	QString m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
 	QString m_ServerAlias;							// battle.net server alias (short name, e.g. "USEast")
@@ -150,7 +149,6 @@ public:
 	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );
 	virtual ~CBNET( );
 
-	bool GetExiting( )					{ return m_Exiting; }
 	QString GetServer( )					{ return m_Server; }
 	QString GetServerAlias( )			{ return m_ServerAlias; }
 	QString GetCDKeyROC( )				{ return m_CDKeyROC; }
