@@ -128,6 +128,7 @@ protected:
 	quint32 m_RandomSeed;							// the random seed sent to the Warcraft III clients
 	quint32 m_HostCounter;							// a unique game number
 	quint32 m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
+	quint32 m_RequestedLatency;
 	quint32 m_SyncLimit;							// the maximum number of packets a player can fall out of sync before starting the lag screen
 	quint32 m_SyncCounter;							// the number of actions sent so far (for determining if anyone is lagging)
 	quint32 m_GameTicks;							// ingame ticks
@@ -139,7 +140,6 @@ protected:
 	quint32 m_StartedLoadingTicks;					// GetTicks when the game started loading
 	quint32 m_StartPlayers;						// number of players when the game started
 	quint32 m_LastActionSentTicks;					// GetTicks when the last action packet was sent
-	quint32 m_LastActionLateBy;					// the number of ticks we were late sending the last action packet by
 	quint32 m_StartedLaggingTime;					// GetTime when the last lag screen started
 	quint32 m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
 	quint32 m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
@@ -194,7 +194,6 @@ public:
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
 
-	virtual quint32 GetNextTimedActionTicks( );
 	virtual quint32 GetSlotsOccupied( );
 	virtual quint32 GetSlotsOpen( );
 	virtual quint32 GetNumPlayers( );

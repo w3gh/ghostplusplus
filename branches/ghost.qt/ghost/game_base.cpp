@@ -109,11 +109,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 
 
 
-
-
-
-
-
+	m_RequestedLatency = 0;
 	m_Protocol = new CGameProtocol( m_GHost );
 	m_Map = new CMap( *nMap );
 	m_SaveGame = nSaveGame;
@@ -165,7 +161,6 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 	m_StartedLoadingTicks = 0;
 	m_StartPlayers = 0;
 	m_LastActionSentTicks = 0;
-	m_LastActionLateBy = 0;
 	m_StartedLaggingTime = 0;
 	m_LastLagScreenTime = 0;
 	m_LastPlayerLeaveTicks = 0;
@@ -309,24 +304,6 @@ CBaseGame :: ~CBaseGame( )
 		delete m_Actions.front( );
 		m_Actions.dequeue( );
 	}
-}
-
-quint32 CBaseGame :: GetNextTimedActionTicks( )
-{
-	// return the number of ticks (ms) until the next "timed action", which for our purposes is the next game update
-	// the main GHost++ loop will make sure the next loop update happens at or before this value
-	// note: there's no reason this function couldn't take into account the game's other timers too but they're far less critical
-	// warning: this function must take into account when actions are not being sent (e.g. during loading or lagging)
-
-	if( !m_GameLoaded || m_Lagging )
-		return 50;
-
-	quint32 TicksSinceLastUpdate = GetTicks( ) - m_LastActionSentTicks;
-
-	if( TicksSinceLastUpdate > m_Latency - m_LastActionLateBy )
-		return 0;
-	else
-		return m_Latency - m_LastActionLateBy - TicksSinceLastUpdate;
 }
 
 quint32 CBaseGame :: GetSlotsOccupied( )
@@ -1102,18 +1079,20 @@ void CBaseGame :: SendAllActions( )
 			m_Replay->AddTimeSlot( m_Latency, m_Actions );
 	}
 
-	quint32 ActualSendInterval = GetTicks( ) - m_LastActionSentTicks;
-	quint32 ExpectedSendInterval = m_Latency - m_LastActionLateBy;
-	m_LastActionLateBy = ActualSendInterval - ExpectedSendInterval;
-
-	if( m_LastActionLateBy > m_Latency )
+	if( GetTicks() - m_LastActionSentTicks > m_Latency )
 	{
 		// something is going terribly wrong - GHost++ is probably starved of resources
 		// print a message because even though this will take more resources it should provide some information to the administrator for future reference
 		// other solutions - dynamically modify the latency, request higher priority, terminate other games, ???
 
-		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but the last update was late by " + UTIL_ToString( m_LastActionLateBy ) + "ms" );
-		m_LastActionLateBy = m_Latency;
+		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms, your machine is probably overloaded" );
+	}
+
+	if (m_RequestedLatency != 0)
+	{
+		m_Latency = m_RequestedLatency;
+		m_SendActionTimer.setInterval(m_RequestedLatency);
+		m_RequestedLatency = 0;
 	}
 
 	m_LastActionSentTicks = GetTicks( );

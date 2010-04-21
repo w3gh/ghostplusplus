@@ -1121,17 +1121,17 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					SendAllChat( m_GHost->m_Language->LatencyIs( UTIL_ToString( m_Latency ) ) );
 				else
 				{
-					m_Latency = UTIL_ToUInt32( Payload );
+					m_RequestedLatency = UTIL_ToUInt32( Payload );
 
-					if( m_Latency <= 20 )
+					if( m_RequestedLatency <= 20 )
 					{
-						m_Latency = 20;
+						m_RequestedLatency = 20;
 						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "20" ) );
 					}
-					else if( m_Latency >= 500 )
+					else if( m_RequestedLatency >= 2000 )
 					{
-						m_Latency = 500;
-						SendAllChat( m_GHost->m_Language->SettingLatencyToMaximum( "500" ) );
+						m_RequestedLatency = 2000;
+						SendAllChat( m_GHost->m_Language->SettingLatencyToMaximum( "2000" ) );
 					}
 					else
 						SendAllChat( m_GHost->m_Language->SettingLatencyTo( UTIL_ToString( m_Latency ) ) );
@@ -1611,6 +1611,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				DeleteVirtualHost( );
 				m_VirtualHostName = Payload;
+				CreateVirtualHost();
 			}
 
 			//
