@@ -346,6 +346,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 void CGHost::EventAdminGameDeleted()
 {
+	CONSOLE_Print("[GHOST] Admin Game has been deleted, quitting.");
 	m_AdminGame = NULL;
 	deleteLater();
 }
@@ -799,6 +800,9 @@ void CGHost::EventGameDeleted()
 		if( (*i)->GetServer( ) == game->GetCreatorServer( ) )
 			(*i)->QueueChatCommand( m_Language->GameIsOver( game->GetDescription( ) ), game->GetCreatorName( ), true );
 	}
+
+	if (game == m_CurrentGame)
+		m_CurrentGame = NULL;
 
 	int ind = m_Games.indexOf(game);
 	if (ind != -1)
