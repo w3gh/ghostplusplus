@@ -23,84 +23,40 @@
 
 #include <QFile>
 #include <QRegExp>
+#include <QtEndian>
 
-QByteArray UTIL_CreateBYTEARRAY( unsigned char c )
+quint16 Util::extractUInt16(const QByteArray& data, int offset)
 {
-	QByteArray result;
-	result.push_back( c );
-	return result;
+	return qFromLittleEndian<quint16>((uchar*)data.mid(offset, 2).data());
 }
 
-QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse )
+quint32 Util::extractUInt32(const QByteArray& data, int offset)
 {
-	QByteArray result;
-
-	if (!reverse)
-		result.push_back( (unsigned char)i );
-
-	result.push_back( (unsigned char)( i >> 8 ) );
-
-	if (reverse)
-		result.push_back( (unsigned char)i );
-
-	return result;
+	return qFromLittleEndian<quint32>((uchar*)data.mid(offset, 4).data());
 }
 
-QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse )
+QByteArray Util::fromUInt16(const quint16 &value)
 {
-	QByteArray result;
-
-	if( reverse )
-	{
-		result.push_back( (unsigned char)( i >> 24 ) );
-		result.push_back( (unsigned char)( i >> 16 ) );
-		result.push_back( (unsigned char)( i >> 8 ) );
-		result.push_back( (unsigned char)i );
-	}
-
-	else
-	{
-		result.push_back( (unsigned char)i );
-		result.push_back( (unsigned char)( i >> 8 ) );
-		result.push_back( (unsigned char)( i >> 16 ) );
-		result.push_back( (unsigned char)( i >> 24 ) );
-	}
-
-	return result;
+	uchar dest[2];
+	qToLittleEndian<quint16>(value, dest);
+	return QByteArray((char*)dest, 2);
 }
 
-quint16 UTIL_QByteArrayToUInt16( const QByteArray& b, bool reverse, unsigned int start )
+QByteArray Util::fromUInt32(const quint32 &value)
 {
-	if( (unsigned int)b.size( ) < start + 2 )
-		return 0;
-
-	QByteArray temp = b.mid(start, 2);
-
-	if (reverse)
-		return (quint32)( (unsigned char)temp.at(0) <<  8 |
-						  (unsigned char)temp.at(1) <<  0  );
-
-	return (quint32)( (unsigned char)temp.at(1) <<  8 |
-					  (unsigned char)temp.at(0) <<  0  );
+	uchar dest[4];
+	qToLittleEndian<quint32>(value, dest);
+	return QByteArray((char*)dest, 4);
 }
 
-quint32 UTIL_QByteArrayToUInt32( const QByteArray& b, bool reverse, unsigned int start )
+QByteArray Util::reverse(const QByteArray &b)
 {
-	if( (unsigned int)b.size( ) < start + 4 )
-		return 0;
+	QByteArray res;
+	QByteArray::const_iterator it;
+	for (it = b.end(); it != b.begin(); it--)
+		res.push_back(*it);
 
-	QByteArray temp = b.mid(start, 4);
-
-	if (reverse)
-		return (quint32)( (unsigned char)temp.at(0) << 24 |
-						  (unsigned char)temp.at(1) << 16 |
-						  (unsigned char)temp.at(2) <<  8 |
-						  (unsigned char)temp.at(3) <<  0  );
-
-	return (quint32)( (unsigned char)temp.at(3) << 24 |
-					  (unsigned char)temp.at(2) << 16 |
-					  (unsigned char)temp.at(1) <<  8 |
-					  (unsigned char)temp.at(0) <<  0  );
+	return res;
 }
 
 QString UTIL_QByteArrayToDecString( QByteArray b )
@@ -114,52 +70,6 @@ QString UTIL_QByteArrayToDecString( QByteArray b )
 		result += " " + QString::number( (unsigned char)*i );
 
 	return result;
-}
-
-QString UTIL_QByteArrayToHexString( QByteArray b )
-{
-	return QString::fromAscii(b.toHex());
-}
-
-void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append )
-{
-	b.append(append);
-}
-
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QByteArray &append )
-{
-	b.append(append);
-}
-
-void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size )
-{
-	b.append((char*)a, size);
-}
-
-void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator )
-{
-	b.append(append);
-
-	if( terminator )
-		b.push_back( (char)0 );
-}
-
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QString &append, bool terminator )
-{
-	b.append(append.toUtf8());
-
-	if( terminator )
-		b.push_back( (char)0 );
-}
-
-void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse )
-{
-	b.append( UTIL_CreateBYTEARRAY( i, reverse ) );
-}
-
-void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse )
-{
-	b.append( UTIL_CreateBYTEARRAY( i, reverse ) );
 }
 
 QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start )
@@ -203,133 +113,6 @@ QByteArray UTIL_ExtractNumbers( QString s, unsigned int count )
 	}
 
 	return result;
-}
-
-QByteArray UTIL_ExtractHexNumbers( QString s )
-{
-	// consider the QString to contain a QByteArray in hex-text form, e.g. "4e 17 b7 e6"
-
-	QByteArray result;
-	unsigned int c;
-	QTextStream SS(&s);
-
-
-	while( !SS.atEnd() )
-	{
-		SS >> hex >> c;
-
-		// todotodo: if c > 255 handle the error instead of truncating
-
-		result.push_back( (unsigned char)c );
-	}
-
-	return result;
-}
-
-QString UTIL_ToString( unsigned long i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( unsigned short i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( unsigned int i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( long i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( short i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( int i )
-{
-	return QString::number(i);
-}
-
-QString UTIL_ToString( float f, int digits )
-{
-	return QString::number(f, 'g', digits);
-}
-
-QString UTIL_ToString( double d, int digits )
-{
-	return QString::number(d, 'g', digits);
-}
-
-QString UTIL_ToHexString( quint32 i )
-{
-	return QString::number(i, 16);
-}
-
-// todotodo: these UTIL_ToXXX functions don't fail gracefully, they just return garbage (in the uint case usually just -1 casted to an unsigned type it looks like)
-
-quint16 UTIL_ToUInt16( QString &s )
-{
-	return s.toUShort();
-}
-
-quint32 UTIL_ToUInt32( QString &s )
-{
-	return s.toUInt();
-}
-
-int16_t UTIL_ToInt16( QString &s )
-{
-	return s.toShort();
-}
-
-int32_t UTIL_ToInt32( QString &s )
-{
-	return s.toInt();
-}
-
-double UTIL_ToDouble( QString &s )
-{
-	return s.toDouble();
-}
-
-QString UTIL_MSToString( quint32 ms )
-{
-	QString MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
-	QString SecString = UTIL_ToString( ( ms / 1000 ) % 60 );
-
-	if( MinString.size( ) == 1 )
-		MinString.insert( 0, "0" );
-
-	if( SecString.size( ) == 1 )
-		SecString.insert( 0, "0" );
-
-	return MinString + "m" + SecString + "s";
-}
-
-bool UTIL_FileExists( QString file )
-{
-	return QFile::exists(file);
-}
-
-QByteArray UTIL_FileRead( QString file, quint32 start, quint32 length )
-{
-	QFile f(file);
-	f.open(QFile::ReadOnly);
-
-	if (f.error() != QFile::NoError)
-	{
-		CONSOLE_Print( "[UTIL] warning - unable to read file part [" + file + "]" );
-		return QByteArray();
-	}
-
-	f.seek(start);
-	return f.read(length);
 }
 
 QByteArray UTIL_FileRead( QString file )
@@ -408,37 +191,6 @@ QByteArray UTIL_EncodeStatString( QByteArray &data )
 	return Result;
 }
 
-QByteArray UTIL_QByteArrayReverse(const QByteArray &b)
-{
-	QByteArray res;
-	QByteArray::const_iterator it;
-	for (it = b.end(); it != b.begin(); it--)
-		res.push_back(*it);
-
-	return res;
-}
-
-QByteArray UTIL_DecodeStatString( QByteArray &data )
-{
-	unsigned char Mask;
-	QByteArray Result;
-
-	for( int i = 0; i < data.size( ); i++ )
-	{
-		if( ( i % 8 ) == 0 )
-			Mask = data[i];
-		else
-		{
-			if( ( Mask & ( 1 << ( i % 8 ) ) ) == 0 )
-				Result.push_back( data[i] - 1 );
-			else
-				Result.push_back( data[i] );
-		}
-	}
-
-	return Result;
-}
-
 bool UTIL_IsLanIP( QByteArray ip )
 {
 	if( ip.size( ) != 4 )
@@ -486,11 +238,6 @@ bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs )
 	return false;
 }
 
-void UTIL_Replace( QString &Text, QString Key, QString Value )
-{
-	Text.replace(Key, Value);
-}
-
 QVector<QString> UTIL_Tokenize( QString s, char delim )
 {
 	QVector<QString> Tokens;
@@ -525,3 +272,4 @@ quint32 UTIL_Factorial( quint32 x )
 
 	return Factorial;
 }
+

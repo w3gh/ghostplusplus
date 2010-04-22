@@ -158,7 +158,7 @@ QByteArray CMap :: GetMapGameFlags( )
 	if( m_MapFlags & MAPFLAG_RANDOMRACES )
 		GameFlags |= 0x04000000;
 
-	return UTIL_CreateBYTEARRAY( GameFlags, false );
+	return Util::fromUInt32(GameFlags);
 }
 
 quint32 CMap :: GetMapGameType( )
@@ -292,12 +292,12 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		// calculate map_size
 
-		MapSize = UTIL_CreateBYTEARRAY( (quint32)m_MapData.size( ), false );
+		MapSize = Util::fromUInt32(m_MapData.size( ));
 		CONSOLE_Print( "[MAP] calculated map_size = " + UTIL_QByteArrayToDecString( MapSize ) );
 
 		// calculate map_info (this is actually the CRC)
 
-		MapInfo = UTIL_CreateBYTEARRAY( (quint32)m_GHost->m_CRC->FullCRC( m_MapData ), false );
+		MapInfo = Util::fromUInt32(m_GHost->m_CRC->FullCRC( m_MapData ));
 		CONSOLE_Print( "[MAP] calculated map_info = " + UTIL_QByteArrayToDecString( MapInfo ) );
 
 		// calculate map_crc (this is not the CRC) and map_sha1
@@ -456,7 +456,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					if( !FoundScript )
 						CONSOLE_Print( "[MAP] couldn't find war3map.j or scripts\\war3map.j in MPQ file, calculated map_crc/sha1 is probably wrong" );
 
-					MapCRC = UTIL_CreateBYTEARRAY( Val, false );
+					MapCRC = Util::fromUInt32( Val );
 					CONSOLE_Print( "[MAP] calculated map_crc = " + UTIL_QByteArrayToDecString( MapCRC ) );
 
 					m_GHost->m_SHA->Final( );
@@ -655,21 +655,21 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 							// let's not confuse the user by displaying erroneous map options so zero them out now
 
 							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
-							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
-							MapWidth = UTIL_CreateBYTEARRAY( (quint16)RawMapWidth, false );
+							CONSOLE_Print( "[MAP] calculated map_options = " + QString::number( MapOptions ) );
+							MapWidth = Util::fromUInt16(RawMapWidth);
 							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_QByteArrayToDecString( MapWidth ) );
-							MapHeight = UTIL_CreateBYTEARRAY( (quint16)RawMapHeight, false );
+							MapHeight = Util::fromUInt16(RawMapHeight);
 							CONSOLE_Print( "[MAP] calculated map_height = " + UTIL_QByteArrayToDecString( MapHeight ) );
 							MapNumPlayers = RawMapNumPlayers - ClosedSlots;
-							CONSOLE_Print( "[MAP] calculated map_numplayers = " + UTIL_ToString( MapNumPlayers ) );
+							CONSOLE_Print( "[MAP] calculated map_numplayers = " + QString::number( MapNumPlayers ) );
 							MapNumTeams = RawMapNumTeams;
-							CONSOLE_Print( "[MAP] calculated map_numteams = " + UTIL_ToString( MapNumTeams ) );
+							CONSOLE_Print( "[MAP] calculated map_numteams = " + QString::number( MapNumTeams ) );
 
 							quint32 SlotNum = 1;
 
 							for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 							{
-								CONSOLE_Print( "[MAP] calculated map_slot" + UTIL_ToString( SlotNum ) + " = " + UTIL_QByteArrayToDecString( (*i).GetQByteArray( ) ) );
+								CONSOLE_Print( "[MAP] calculated map_slot" + QString::number( SlotNum ) + " = " + UTIL_QByteArrayToDecString( (*i).GetQByteArray( ) ) );
 								SlotNum++;
 							}
 
@@ -831,7 +831,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	{
 		for( quint32 Slot = 1; Slot <= 12; Slot++ )
 		{
-			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
+			QString SlotString = CFG->GetString( "map_slot" + QString::number( Slot ), QString( ) );
 
 			if( SlotString.isEmpty( ) )
 				break;
@@ -847,7 +847,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		for( quint32 Slot = 1; Slot <= 12; Slot++ )
 		{
-			QString SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), QString( ) );
+			QString SlotString = CFG->GetString( "map_slot" + QString::number( Slot ), QString( ) );
 
 			if( SlotString.isEmpty( ) )
 				break;
@@ -873,7 +873,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 	if( m_MapObservers == MAPOBS_ALLOWED || m_MapObservers == MAPOBS_REFEREES )
 	{
-		CONSOLE_Print( "[MAP] adding " + UTIL_ToString( 12 - m_Slots.size( ) ) + " observer slots" );
+		CONSOLE_Print( "[MAP] adding " + QString::number( 12 - m_Slots.size( ) ) + " observer slots" );
 
 		while( m_Slots.size( ) < 12 )
 			m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 12, 12, SLOTRACE_RANDOM ) );
@@ -902,7 +902,7 @@ void CMap :: CheckValid( )
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected" );
 	}
-	else if( !m_MapData.isEmpty( ) && (unsigned int)m_MapData.size( ) != UTIL_QByteArrayToUInt32( m_MapSize, false ) )
+	else if( !m_MapData.isEmpty( ) && (unsigned int)m_MapData.size( ) != Util::extractUInt32(m_MapSize) )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with actual map data ");

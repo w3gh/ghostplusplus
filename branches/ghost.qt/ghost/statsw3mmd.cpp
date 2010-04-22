@@ -77,17 +77,15 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 					if( (unsigned int)ActionData->size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
 					{
 						Value = ActionData->mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
-						QString MissionKeyString = MissionKey;
-						QString KeyString = Key;
 						//quint32 ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
-						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKeyString + "], key [" + KeyString + "], value [" + UTIL_ToString( ValueInt ) + "]" );
+						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKey + "], key [" + Key + "], value [" + QString::number(ValueInt) + "]" );
 
-						if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "val:" )
+						if( MissionKey.size( ) > 4 && MissionKey.mid( 0, 4 ) == "val:" )
 						{
-							QString ValueIDString = MissionKeyString.mid( 4 );
+							//QByteArray ValueIDString = MissionKey.mid( 4 );
 							//quint32 ValueID = UTIL_ToUInt32( ValueIDString );
-							QVector<QString> Tokens = TokenizeKey( KeyString );
+							QVector<QByteArray> Tokens = TokenizeKey( Key );
 
 							if( !Tokens.isEmpty( ) )
 							{
@@ -100,7 +98,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] map is using Warcraft 3 Map Meta Data library version [" + Tokens[3] + "]" );
 
-										if( UTIL_ToUInt32( Tokens[2] ) > 1 )
+										if( Tokens[2].toUInt() > 1 )
 											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] warning - parser version 1 is not compatible with this map, minimum version [" + Tokens[2] + "]" );
 									}
 									else if( Tokens[1] == "pid" && Tokens.size( ) == 4 )
@@ -108,7 +106,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										// Tokens[2] = pid
 										// Tokens[3] = name
 
-										quint32 PID = UTIL_ToUInt32( Tokens[2] );
+										quint32 PID = Tokens[2].toUInt();
 
 										if( m_PIDToName.find( PID ) != m_PIDToName.end( ) )
 											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] overwriting previous name [" + m_PIDToName[PID] + "] with new name [" + Tokens[3] + "] for PID [" + Tokens[2] + "]" );
@@ -124,13 +122,13 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 									// Tokens[4] = suggestion (ignored here)
 
 									if( m_DefVarPs.find( Tokens[1] ) != m_DefVarPs.end( ) )
-										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefVarP [" + KeyString + "] found, ignoring" );
+										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefVarP [" + Key + "] found, ignoring" );
 									else
 									{
 										if( Tokens[2] == "int" || Tokens[2] == "real" || Tokens[2] == "QString" )
 											m_DefVarPs[Tokens[1]] = Tokens[2];
 										else
-											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown DefVarP [" + KeyString + "] found, ignoring" );
+											CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown DefVarP [" + Key + "] found, ignoring" );
 									}
 
 								}
@@ -142,77 +140,77 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 									// Tokens[4] = value
 
 									if( m_DefVarPs.find( Tokens[2] ) == m_DefVarPs.end( ) )
-										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] VarP [" + KeyString + "] found without a corresponding DefVarP, ignoring" );
+										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] VarP [" + Key + "] found without a corresponding DefVarP, ignoring" );
 									else
 									{
 										QString ValueType = m_DefVarPs[Tokens[2]];
 
 										if( ValueType == "int" )
 										{
-											VarP VP = VarP( UTIL_ToUInt32( Tokens[1] ), Tokens[2] );
+											VarP VP = VarP( Tokens[1].toUInt(), Tokens[2] );
 
 											if( Tokens[3] == "=" )
-												m_VarPInts[VP] = UTIL_ToInt32( Tokens[4] );
+													m_VarPInts[VP] = Tokens[4].toInt();
 											else if( Tokens[3] == "+=" )
 											{
 												if( m_VarPInts.find( VP ) != m_VarPInts.end( ) )
-													m_VarPInts[VP] += UTIL_ToInt32( Tokens[4] );
+													m_VarPInts[VP] += Tokens[4].toInt();
 												else
 												{
-													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] int VarP [" + KeyString + "] found with relative operation [+=] without a previously assigned value, ignoring" );
-													m_VarPInts[VP] = UTIL_ToInt32( Tokens[4] );
+													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] int VarP [" + Key + "] found with relative operation [+=] without a previously assigned value, ignoring" );
+													m_VarPInts[VP] = Tokens[4].toInt();
 												}
 											}
 											else if( Tokens[3] == "-=" )
 											{
 												if( m_VarPInts.find( VP ) != m_VarPInts.end( ) )
-													m_VarPInts[VP] -= UTIL_ToInt32( Tokens[4] );
+													m_VarPInts[VP] -= Tokens[4].toInt();
 												else
 												{
-													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] int VarP [" + KeyString + "] found with relative operation [-=] without a previously assigned value, ignoring" );
-													m_VarPInts[VP] = -UTIL_ToInt32( Tokens[4] );
+													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] int VarP [" + Key + "] found with relative operation [-=] without a previously assigned value, ignoring" );
+													m_VarPInts[VP] = -Tokens[4].toInt();
 												}
 											}
 											else
-												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown int VarP [" + KeyString + "] operation [" + Tokens[3] + "] found, ignoring" );
+												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown int VarP [" + Key + "] operation [" + Tokens[3] + "] found, ignoring" );
 										}
 										else if( ValueType == "real" )
 										{
-											VarP VP = VarP( UTIL_ToUInt32( Tokens[1] ), Tokens[2] );
+											VarP VP = VarP( Tokens[1].toUInt(), Tokens[2] );
 
 											if( Tokens[3] == "=" )
-												m_VarPReals[VP] = UTIL_ToDouble( Tokens[4] );
+												m_VarPReals[VP] = Tokens[4].toDouble();
 											else if( Tokens[3] == "+=" )
 											{
 												if( m_VarPReals.find( VP ) != m_VarPReals.end( ) )
-													m_VarPReals[VP] += UTIL_ToDouble( Tokens[4] );
+													m_VarPReals[VP] += Tokens[4].toDouble();
 												else
 												{
-													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] real VarP [" + KeyString + "] found with relative operation [+=] without a previously assigned value, ignoring" );
-													m_VarPReals[VP] = UTIL_ToDouble( Tokens[4] );
+													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] real VarP [" + Key + "] found with relative operation [+=] without a previously assigned value, ignoring" );
+													m_VarPReals[VP] = Tokens[4].toDouble();
 												}
 											}
 											else if( Tokens[3] == "-=" )
 											{
 												if( m_VarPReals.find( VP ) != m_VarPReals.end( ) )
-													m_VarPReals[VP] -= UTIL_ToDouble( Tokens[4] );
+													m_VarPReals[VP] -= Tokens[4].toDouble();
 												else
 												{
-													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] real VarP [" + KeyString + "] found with relative operation [-=] without a previously assigned value, ignoring" );
-													m_VarPReals[VP] = -UTIL_ToDouble( Tokens[4] );
+													// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] real VarP [" + Key + "] found with relative operation [-=] without a previously assigned value, ignoring" );
+													m_VarPReals[VP] = -Tokens[4].toDouble();
 												}
 											}
 											else
-												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown real VarP [" + KeyString + "] operation [" + Tokens[3] + "] found, ignoring" );
+												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown real VarP [" + Key + "] operation [" + Tokens[3] + "] found, ignoring" );
 										}
 										else
 										{
-											VarP VP = VarP( UTIL_ToUInt32( Tokens[1] ), Tokens[2] );
+											VarP VP = VarP( Tokens[1].toUInt(), Tokens[2]);
 
 											if( Tokens[3] == "=" )
 												m_VarPStrings[VP] = Tokens[4];
 											else
-												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown QString VarP [" + KeyString + "] operation [" + Tokens[3] + "] found, ignoring" );
+												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown QString VarP [" + Key + "] operation [" + Tokens[3] + "] found, ignoring" );
 										}
 									}
 								}
@@ -223,7 +221,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 									if( Tokens[2] == "winner" || Tokens[2] == "loser" || Tokens[2] == "drawer" || Tokens[2] == "leaver" || Tokens[2] == "practicing" )
 									{
-										quint32 PID = UTIL_ToUInt32( Tokens[1] );
+										quint32 PID = Tokens[1].toUInt();
 
 										if( Tokens[2] == "leaver" )
 											m_FlagsLeaver[PID] = true;
@@ -248,10 +246,10 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 									// Tokens[n+3] = format
 
 									if( m_DefEvents.find( Tokens[1] ) != m_DefEvents.end( ) )
-										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefEvent [" + KeyString + "] found, ignoring" );
+										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] duplicate DefEvent [" + Key + "] found, ignoring" );
 									else
 									{
-										quint32 Arguments = UTIL_ToUInt32( Tokens[2] );
+										quint32 Arguments = Tokens[2].toUInt();
 
 										if( (unsigned int)Tokens.size( ) == Arguments + 4 )
 											m_DefEvents[Tokens[1]] = Tokens.mid(3);
@@ -263,17 +261,17 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 									// Tokens[2..n+2] = arguments (where n is the # of arguments in the corresponding DefEvent)
 
 									if( m_DefEvents.find( Tokens[1] ) == m_DefEvents.end( ) )
-										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + KeyString + "] found without a corresponding DefEvent, ignoring" );
+										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + Key + "] found without a corresponding DefEvent, ignoring" );
 									else
 									{
-										QVector<QString> DefEvent = m_DefEvents[Tokens[1]];
+										QVector<QByteArray> DefEvent = m_DefEvents[Tokens[1]];
 
 										if( !DefEvent.isEmpty( ) )
 										{
 											QString Format = DefEvent[DefEvent.size( ) - 1];
 
 											if( Tokens.size( ) - 2 != DefEvent.size( ) - 1 )
-												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + KeyString + "] found with " + UTIL_ToString( Tokens.size( ) - 2 ) + " arguments but expected " + UTIL_ToString( DefEvent.size( ) - 1 ) + " arguments, ignoring" );
+												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + Key + "] found with " + QString::number( Tokens.size( ) - 2 ) + " arguments but expected " + QString::number(DefEvent.size() - 1 ) + " arguments, ignoring" );
 											else
 											{
 												// replace the markers in the format QString with the arguments
@@ -282,19 +280,19 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 												{
 													// check if the marker is a PID marker
 
-													if( DefEvent[i].midRef( 0, 4 ) == "pid:" )
+													if( DefEvent[i].mid( 0, 4 ) == "pid:" )
 													{
 														// replace it with the player's name rather than their PID
 
-														quint32 PID = UTIL_ToUInt32( Tokens[i + 2] );
+														quint32 PID = Tokens[i + 2].toUInt();
 
 														if( m_PIDToName.find( PID ) == m_PIDToName.end( ) )
-															UTIL_Replace( Format, "{" + UTIL_ToString( i ) + "}", "PID:" + Tokens[i + 2] );
+															Format.replace( "{" + QString::number(i) + "}", "PID:" + Tokens[i + 2] );
 														else
-															UTIL_Replace( Format, "{" + UTIL_ToString( i ) + "}", m_PIDToName[PID] );
+															Format.replace( "{" + QString::number(i) + "}", m_PIDToName[PID] );
 													}
 													else
-														UTIL_Replace( Format, "{" + UTIL_ToString( i ) + "}", Tokens[i + 2] );
+														Format.replace( "{" + QString::number(i) + "}", Tokens[i + 2] );
 												}
 
 												CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] " + Format );
@@ -302,7 +300,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										}
 									}
 
-									// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] event [" + KeyString + "]" );
+									// CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] event [" + Key + "]" );
 								}
 								else if( Tokens[0] == "Blank" )
 								{
@@ -310,7 +308,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 								}
 								else if( Tokens[0] == "Custom" )
 								{
-									CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] custom [" + KeyString + "]" );
+									CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] custom [" + Key + "]" );
 								}
 								else
 									CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown message type [" + Tokens[0] + "] found, ignoring" );
@@ -318,9 +316,9 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 							m_NextValueID++;
 						}
-						else if( MissionKeyString.size( ) > 4 && MissionKeyString.midRef( 0, 4 ) == "chk:" )
+						else if( MissionKey.size( ) > 4 && MissionKey.mid( 0, 4 ) == "chk:" )
 						{
-							QString CheckIDString = MissionKeyString.mid( 4 );
+							QString CheckIDString = MissionKey.mid( 4 );
 							//quint32 CheckID = UTIL_ToUInt32( CheckIDString );
 
 							// todotodo: cheat detection
@@ -328,7 +326,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 							m_NextCheckID++;
 						}
 						else
-							CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown mission key [" + MissionKeyString + "] found, ignoring" );
+							CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unknown mission key [" + MissionKey + "] found, ignoring" );
 
 						i += 15 + MissionKey.size( ) + Key.size( );
 					}
@@ -350,14 +348,14 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 
 void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 {
-	CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] received " + UTIL_ToString( m_NextValueID ) + "/" + UTIL_ToString( m_NextCheckID ) + " value/check messages" );
+	CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] received " + QString::number(m_NextValueID) + "/" + QString::number(m_NextCheckID) + " value/check messages" );
 
 	if( DB->Begin( ) )
 	{
 		// todotodo: there's no reason to create a new callable for each entry in this map
 		// rewrite ThreadedW3MMDPlayerAdd to act more like ThreadedW3MMDVarAdd
 
-		for( QMap<quint32,QString> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
+		for( QMap<quint32,QByteArray> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
 		{
 			QString Flags = m_Flags[i.key()];
 			quint32 Leaver = 0;
@@ -383,7 +381,7 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 				Flags += "practicing";
 			}
 
-			CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] recorded flags [" + Flags + "] for player [" + i.value() + "] with PID [" + UTIL_ToString( i.key() ) + "]" );
+			CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] recorded flags [" + Flags + "] for player [" + i.value() + "] with PID [" + QString::number( i.key() ) + "]" );
 			GHost->m_Callables.push_back( DB->ThreadedW3MMDPlayerAdd( m_Category, GameID, i.key(), i.value(), m_Flags[i.key()], Leaver, Practicing ) );
 		}
 
@@ -405,13 +403,15 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
 }
 
-QVector<QString> CStatsW3MMD :: TokenizeKey( QString key )
+QVector<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
 {
-	QVector<QString> Tokens;
-	QString Token;
+	QVector<QByteArray> Tokens;
+	QByteArray Token;
 	bool Escaping = false;
 
-	for( QString :: iterator i = key.begin( ); i != key.end( ); i++ )
+	for( QByteArray::const_iterator i = key.begin();
+		i != key.end();
+		i++ )
 	{
 		if( Escaping )
 		{
@@ -422,7 +422,7 @@ QVector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 			else
 			{
 				CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], invalid escape sequence found, ignoring" );
-				return QVector<QString>( );
+				return QVector<QByteArray>( );
 			}
 
 			Escaping = false;
@@ -434,7 +434,7 @@ QVector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 				if( Token.isEmpty( ) )
 				{
 					CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-					return QVector<QString>( );
+					return QVector<QByteArray>( );
 				}
 
 				Tokens.push_back( Token );
@@ -450,7 +450,7 @@ QVector<QString> CStatsW3MMD :: TokenizeKey( QString key )
 	if( Token.isEmpty( ) )
 	{
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-		return QVector<QString>( );
+		return QVector<QByteArray>( );
 	}
 
 	Tokens.push_back( Token );

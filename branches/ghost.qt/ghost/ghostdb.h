@@ -57,7 +57,7 @@ class CConfig;
 #include "includes.h"
 #include <QPair>
 
-typedef QPair<quint32,QString> VarP;
+typedef QPair<quint32,QByteArray> VarP;
 
 class CGHostDB : public QObject
 {
@@ -139,7 +139,7 @@ public:
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QByteArray> var_strings );
 };
 
 //

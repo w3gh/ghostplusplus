@@ -26,7 +26,7 @@
 //
 
 #include <QPair>
-typedef QPair<quint32,QString> VarP;
+typedef QPair<quint32,QByteArray> VarP;
 
 class CStatsW3MMD : public CStats
 {
@@ -34,15 +34,15 @@ private:
 	QString m_Category;
 	quint32 m_NextValueID;
 	quint32 m_NextCheckID;
-	QMap<quint32,QString> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
-	QMap<quint32,QString> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
+	QMap<quint32,QByteArray> m_PIDToName;			// pid -> player name (e.g. 0 -> "Varlock") --- note: will not be automatically converted to lower case
+	QMap<quint32,QByteArray> m_Flags;				// pid -> flag (e.g. 0 -> "winner")
 	QMap<quint32,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
 	QMap<quint32,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
-	QMap<QString,QString> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
+	QMap<QByteArray,QByteArray> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
 	QMap<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
 	QMap<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
-	QMap<VarP,QString> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
-	QMap<QString, QVector<QString> > m_DefEvents;	// event -> vector of arguments + format
+	QMap<VarP,QByteArray> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
+	QMap<QByteArray, QVector<QByteArray> > m_DefEvents;	// event -> vector of arguments + format
 
 public:
 	CStatsW3MMD( CBaseGame *nGame, QString nCategory );
@@ -50,7 +50,7 @@ public:
 
 	virtual bool ProcessAction( CIncomingAction *Action );
 	virtual void Save( CGHost *GHost, CGHostDB *DB, quint32 GameID );
-	virtual QVector<QString> TokenizeKey( QString key );
+	virtual QVector<QByteArray> TokenizeKey( const QByteArray& key );
 };
 
 #endif

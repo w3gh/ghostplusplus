@@ -23,6 +23,7 @@
 #include "bncsutilinterface.h"
 
 #include <bncsutil/bncsutil.h>
+#include <QFile>
 
 //
 // CBNCSUtilInterface
@@ -55,13 +56,13 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 	QString FileWar3EXE = war3Path + "war3.exe";
 	QString FileStormDLL = war3Path + "Storm.dll";
 
-	if( !UTIL_FileExists( FileStormDLL ) )
+	if( !QFile::exists( FileStormDLL ) )
 		FileStormDLL = war3Path + "storm.dll";
 
 	QString FileGameDLL = war3Path + "game.dll";
-	bool ExistsWar3EXE = UTIL_FileExists( FileWar3EXE );
-	bool ExistsStormDLL = UTIL_FileExists( FileStormDLL );
-	bool ExistsGameDLL = UTIL_FileExists( FileGameDLL );
+	bool ExistsWar3EXE = QFile::exists( FileWar3EXE );
+	bool ExistsStormDLL = QFile::exists( FileStormDLL );
+	bool ExistsGameDLL = QFile::exists( FileGameDLL );
 
 	if( ExistsWar3EXE && ExistsStormDLL && ExistsGameDLL )
 	{
@@ -71,14 +72,14 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 		quint32 EXEVersion;
 		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (quint32 *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
-		m_EXEVersion = UTIL_CreateBYTEARRAY( EXEVersion, false );
+		m_EXEVersion = Util::fromUInt32( EXEVersion);
 		quint32 EXEVersionHash;
 		checkRevisionFlat( valueStringFormula.toStdString().c_str( ), FileWar3EXE.toStdString().c_str( ), FileStormDLL.toStdString().c_str( ), FileGameDLL.toStdString().c_str( ), extractMPQNumber( mpqFileName.toStdString().c_str( ) ), (unsigned long *)&EXEVersionHash );
-		m_EXEVersionHash = UTIL_CreateBYTEARRAY( EXEVersionHash, false );
-		m_KeyInfoROC = CreateKeyInfo( keyROC, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
+		m_EXEVersionHash = Util::fromUInt32( EXEVersionHash);
+		m_KeyInfoROC = CreateKeyInfo( keyROC, Util::extractUInt32(clientToken), Util::extractUInt32(serverToken) );
 
 		if( TFT )
-			m_KeyInfoTFT = CreateKeyInfo( keyTFT, UTIL_QByteArrayToUInt32( clientToken, false ), UTIL_QByteArrayToUInt32( serverToken, false ) );
+			m_KeyInfoTFT = CreateKeyInfo( keyTFT, Util::extractUInt32(clientToken), Util::extractUInt32(serverToken) );
 
 		if( m_KeyInfoROC.size( ) == 36 && ( !TFT || m_KeyInfoTFT.size( ) == 36 ) )
 			return true;
@@ -146,14 +147,14 @@ QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, quint32 clientToken
 
 	if( Decoder.isKeyValid( ) )
 	{
-		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( (quint32)key.size( ), false ) );
-		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getProduct( ), false ) );
-		UTIL_AppendBYTEARRAY( KeyInfo, UTIL_CreateBYTEARRAY( Decoder.getVal1( ), false ) );
-		UTIL_AppendBYTEARRAY( KeyInfo, QByteArray( (char*)Zeros, 4 ) );
+		KeyInfo.append(Util::fromUInt32( key.size( )));
+		KeyInfo.append(Util::fromUInt32( Decoder.getProduct( )));
+		KeyInfo.append(Util::fromUInt32( Decoder.getVal1( )));
+		KeyInfo.append(QByteArray( (char*)Zeros, 4 ) );
 		size_t Length = Decoder.calculateHash( clientToken, serverToken );
 		char *buf = new char[Length];
 		Length = Decoder.getHash( buf );
-		UTIL_AppendBYTEARRAY( KeyInfo, QByteArray( buf, Length ) );
+		KeyInfo.append(QByteArray( buf, Length ) );
 		delete [] buf;
 	}
 

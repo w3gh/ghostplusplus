@@ -49,7 +49,7 @@ QByteArray CGPSProtocol :: SEND_GPSC_INIT( quint32 version )
 	packet.push_back( GPS_INIT );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, version, false );
+	packet.append(Util::fromUInt32(version));
 	AssignLength( packet );
 	return packet;
 }
@@ -62,8 +62,8 @@ QByteArray CGPSProtocol :: SEND_GPSC_RECONNECT( unsigned char PID, quint32 recon
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
 	packet.push_back( PID );
-	UTIL_AppendBYTEARRAY( packet, reconnectKey, false );
-	UTIL_AppendBYTEARRAY( packet, lastPacket, false );
+	packet.append(Util::fromUInt32(reconnectKey));
+	packet.append(Util::fromUInt32(lastPacket));
 	AssignLength( packet );
 	return packet;
 }
@@ -75,7 +75,7 @@ QByteArray CGPSProtocol :: SEND_GPSC_ACK( quint32 lastPacket )
 	packet.push_back( GPS_ACK );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, lastPacket, false );
+	packet.append(Util::fromUInt32(lastPacket));
 	AssignLength( packet );
 	return packet;
 }
@@ -87,9 +87,9 @@ QByteArray CGPSProtocol :: SEND_GPSS_INIT( quint16 reconnectPort, unsigned char 
 	packet.push_back( GPS_INIT );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, reconnectPort, false );
+	packet.append(Util::fromUInt16(reconnectPort));
 	packet.push_back( PID );
-	UTIL_AppendBYTEARRAY( packet, reconnectKey, false );
+	packet.append(Util::fromUInt32(reconnectKey));
 	packet.push_back( numEmptyActions );
 	AssignLength( packet );
 	return packet;
@@ -102,7 +102,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_RECONNECT( quint32 lastPacket )
 	packet.push_back( GPS_RECONNECT );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, lastPacket, false );
+	packet.append(Util::fromUInt32(lastPacket));
 	AssignLength( packet );
 	return packet;
 }
@@ -114,7 +114,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_ACK( quint32 lastPacket )
 	packet.push_back( GPS_ACK );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, lastPacket, false );
+	packet.append(Util::fromUInt32(lastPacket));
 	AssignLength( packet );
 	return packet;
 }
@@ -126,7 +126,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_REJECT( quint32 reason )
 	packet.push_back( GPS_REJECT );
 	packet.push_back( (char)0 );
 	packet.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( packet, reason, false );
+	packet.append(Util::fromUInt32(reason));
 	AssignLength( packet );
 	return packet;
 }
@@ -143,7 +143,7 @@ bool CGPSProtocol :: AssignLength( QByteArray &content )
 
 	if( content.size( ) >= 4 && content.size( ) <= 65535 )
 	{
-		LengthBytes = UTIL_CreateBYTEARRAY( (quint16)content.size( ), false );
+		LengthBytes = Util::fromUInt16(content.size( ));
 		content[2] = LengthBytes[0];
 		content[3] = LengthBytes[1];
 		return true;
@@ -163,7 +163,7 @@ bool CGPSProtocol :: ValidateLength( QByteArray &content )
 	{
 		LengthBytes.push_back( content[2] );
 		LengthBytes.push_back( content[3] );
-		Length = UTIL_QByteArrayToUInt16( LengthBytes, false );
+		Length = LengthBytes.toUShort();
 
 		if( Length == content.size( ) )
 			return true;

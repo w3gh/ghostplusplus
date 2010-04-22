@@ -24,51 +24,29 @@
 #include <QString>
 #include <QByteArray>
 #include <QVector>
+#include <QtEndian>
+
+class Util
+{
+public:
+	static quint16 extractUInt16(const QByteArray& data, int offset = 0);
+	static quint32 extractUInt32(const QByteArray& data, int offset = 0);
+
+	static QByteArray fromUInt16(const quint16 &value);
+	static QByteArray fromUInt32(const quint32 &value);
+
+	static QByteArray reverse(const QByteArray &b);
+};
 
 // byte arrays
 
-QByteArray UTIL_CreateBYTEARRAY( unsigned char c );
-QByteArray UTIL_CreateBYTEARRAY( quint16 i, bool reverse );
-QByteArray UTIL_CreateBYTEARRAY( quint32 i, bool reverse );
-quint16 UTIL_QByteArrayToUInt16( const QByteArray& b, bool reverse, unsigned int start = 0 );
-quint32 UTIL_QByteArrayToUInt32( const QByteArray& b, bool reverse, unsigned int start = 0 );
 QString UTIL_QByteArrayToDecString( QByteArray b );
-QString UTIL_QByteArrayToHexString( QByteArray b );
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QByteArray &append );
-void UTIL_AppendBYTEARRAY( QByteArray &b, const QByteArray &append );
-void UTIL_AppendBYTEARRAY( QByteArray &b, unsigned char *a, int size );
-void UTIL_AppendBYTEARRAY( QByteArray &b, QString append, bool terminator );
-void UTIL_AppendBYTEARRAYFast( QByteArray &b, const QString &append, bool terminator = true );
-void UTIL_AppendBYTEARRAY( QByteArray &b, quint16 i, bool reverse );
-void UTIL_AppendBYTEARRAY( QByteArray &b, quint32 i, bool reverse );
 QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start );
 unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse );
 QByteArray UTIL_ExtractNumbers( QString s, unsigned int count );
-QByteArray UTIL_ExtractHexNumbers( QString s );
-QByteArray UTIL_QByteArrayReverse(const QByteArray &b);
-
-// conversions
-
-QString UTIL_ToString( unsigned long i );
-QString UTIL_ToString( unsigned short i );
-QString UTIL_ToString( unsigned int i );
-QString UTIL_ToString( long i );
-QString UTIL_ToString( short i );
-QString UTIL_ToString( int i );
-QString UTIL_ToString( float f, int digits );
-QString UTIL_ToString( double d, int digits );
-QString UTIL_ToHexString( quint32 i );
-quint16 UTIL_ToUInt16( QString &s );
-quint32 UTIL_ToUInt32( QString &s );
-int16_t UTIL_ToInt16( QString &s );
-int32_t UTIL_ToInt32( QString &s );
-double UTIL_ToDouble( QString &s );
-QString UTIL_MSToString( quint32 ms );
 
 // files
 
-bool UTIL_FileExists( QString file );
-QByteArray UTIL_FileRead( QString file, quint32 start, quint32 length );
 QByteArray UTIL_FileRead( QString file );
 bool UTIL_FileWrite( QString file, const QByteArray &data );
 QString UTIL_FileSafeName( QString fileName );
@@ -77,13 +55,11 @@ QString UTIL_AddPathSeperator( QString path );
 // stat strings
 
 QByteArray UTIL_EncodeStatString( QByteArray &data );
-QByteArray UTIL_DecodeStatString( QByteArray &data );
 
 // other
 
 bool UTIL_IsLanIP( QByteArray ip );
 bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs );
-void UTIL_Replace( QString &Text, QString Key, QString Value );
 QVector<QString> UTIL_Tokenize( QString s, char delim );
 
 // math

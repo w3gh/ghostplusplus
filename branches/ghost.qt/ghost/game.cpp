@@ -208,13 +208,13 @@ void CGame::EventCallableUpdateTimeout()
 			if( GamePlayerSummary )
 			{
 				if( i->first.isEmpty( ) )
-					SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
+					SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), QString::number( GamePlayerSummary->GetTotalGames( ) ), QString::number( 2, (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000 ), QString::number( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
 				else
 				{
 					CGamePlayer *Player = GetPlayerFromName( i->first, true );
 
 					if( Player )
-						SendChat( Player, m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
+						SendChat( Player, m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), QString::number( GamePlayerSummary->GetTotalGames( ) ), QString::number( 2, (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000 ), QString::number( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
 				}
 			}
 			else
@@ -247,27 +247,27 @@ void CGame::EventCallableUpdateTimeout()
 			if( DotAPlayerSummary )
 			{
 				QString Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName( ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalDeaths( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepDenies( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalAssists( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalNeutralKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalTowerKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalRaxKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCourierKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgDeaths( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepDenies( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgAssists( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
+																						QString::number( DotAPlayerSummary->GetTotalGames( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalWins( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalLosses( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalDeaths( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCreepKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCreepDenies( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalAssists( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalNeutralKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalTowerKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalRaxKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCourierKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgDeaths( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCreepKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCreepDenies( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgAssists( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgNeutralKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgTowerKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgRaxKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCourierKills( ) ) );
 
 				if( i->first.isEmpty( ) )
 					SendAllChat( Summary );
@@ -558,11 +558,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				}
 				else
 				{
-					quint32 AutoStartPlayers = UTIL_ToUInt32( Payload );
+					quint32 AutoStartPlayers = Payload.toUInt();
 
 					if( AutoStartPlayers != 0 )
 					{
-						SendAllChat( m_GHost->m_Language->AutoStartEnabled( UTIL_ToString( AutoStartPlayers ) ) );
+						SendAllChat( m_GHost->m_Language->AutoStartEnabled( QString::number( AutoStartPlayers ) ) );
 						m_AutoStartPlayers = AutoStartPlayers;
 					}
 				}
@@ -612,13 +612,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 							}
 						}
 
-						SendAllChat( m_GHost->m_Language->CheckedPlayer( LastMatch->GetName( ), LastMatch->GetNumPings( ) > 0 ? UTIL_ToString( LastMatch->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( LastMatch->GetExternalIP( ), true ) ), LastMatchAdminCheck || LastMatchRootAdminCheck ? "Yes" : "No", IsOwner( LastMatch->GetName( ) ) ? "Yes" : "No", LastMatch->GetSpoofed( ) ? "Yes" : "No", LastMatch->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : LastMatch->GetSpoofedRealm( ), LastMatch->GetReserved( ) ? "Yes" : "No" ) );
+						SendAllChat( m_GHost->m_Language->CheckedPlayer( LastMatch->GetName( ), LastMatch->GetNumPings( ) > 0 ? QString::number( LastMatch->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( Util::extractUInt32( Util::reverse(LastMatch->GetExternalIP( )) ) ), LastMatchAdminCheck || LastMatchRootAdminCheck ? "Yes" : "No", IsOwner( LastMatch->GetName( ) ) ? "Yes" : "No", LastMatch->GetSpoofed( ) ? "Yes" : "No", LastMatch->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : LastMatch->GetSpoofedRealm( ), LastMatch->GetReserved( ) ? "Yes" : "No" ) );
 					}
 					else
 						SendAllChat( m_GHost->m_Language->UnableToCheckPlayerFoundMoreThanOneMatch( Payload ) );
 				}
 				else
-					SendAllChat( m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
+					SendAllChat( m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? QString::number( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( Util::extractUInt32(Util::reverse(player->GetExternalIP( ))) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 			}
 
 			//
@@ -1009,7 +1009,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					Froms += (*i)->GetNameTerminated( );
 					Froms += ": (";
-					Froms += m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( (*i)->GetExternalIP( ), true ) );
+					Froms += m_GHost->m_DBLocal->FromCheck( Util::extractUInt32(Util::reverse((*i)->GetExternalIP( ))) );
 					Froms += ")";
 
 					if( i != m_Players.end( ) - 1 )
@@ -1119,10 +1119,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( Command == "latency" )
 			{
 				if( Payload.isEmpty( ) )
-					SendAllChat( m_GHost->m_Language->LatencyIs( UTIL_ToString( m_Latency ) ) );
+					SendAllChat( m_GHost->m_Language->LatencyIs( QString::number( m_Latency ) ) );
 				else
 				{
-					m_RequestedLatency = UTIL_ToUInt32( Payload );
+					m_RequestedLatency = Payload.toUInt();
 
 					quint32 min = 20, max = 2000;
 
@@ -1137,7 +1137,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						SendAllChat( m_GHost->m_Language->SettingLatencyToMaximum( QString::number(m_RequestedLatency) ) );
 					}
 					else
-						SendAllChat( m_GHost->m_Language->SettingLatencyTo( UTIL_ToString( m_RequestedLatency ) ) );
+						SendAllChat( m_GHost->m_Language->SettingLatencyTo( QString::number( m_RequestedLatency ) ) );
 				}
 			}
 
@@ -1268,7 +1268,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				quint32 KickPing = 0;
 
 				if( !m_GameLoading && !m_GameLoaded && !Payload.isEmpty( ) )
-					KickPing = UTIL_ToUInt32( Payload );
+					KickPing = Payload.toUInt();
 
 				// copy the m_Players vector so we can sort by descending ping so it's easier to find players with high pings
 
@@ -1283,11 +1283,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					if( (*i)->GetNumPings( ) > 0 )
 					{
-						Pings += UTIL_ToString( (*i)->GetPing( m_GHost->m_LCPings ) );
+						Pings += QString::number( (*i)->GetPing( m_GHost->m_LCPings ) );
 
 						if( !m_GameLoading && !m_GameLoaded && !(*i)->GetReserved( ) && KickPing > 0 && (*i)->GetPing( m_GHost->m_LCPings ) > KickPing )
 						{
-							(*i)->SetLeftReason( "was kicked for excessive ping " + UTIL_ToString( (*i)->GetPing( m_GHost->m_LCPings ) ) + " > " + UTIL_ToString( KickPing ) );
+							(*i)->SetLeftReason( "was kicked for excessive ping " + QString::number( (*i)->GetPing( m_GHost->m_LCPings ) ) + " > " + QString::number( KickPing ) );
 							(*i)->SetLeftCode( PLAYERLEAVE_LOBBY );
 							(*i)->deleteLater();
 							OpenSlot( GetSIDFromPID( (*i)->GetPID( ) ), false );
@@ -1315,7 +1315,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					SendAllChat( Pings );
 
 				if( Kicked > 0 )
-					SendAllChat( m_GHost->m_Language->KickingPlayersWithPingsGreaterThan( UTIL_ToString( Kicked ), UTIL_ToString( KickPing ) ) );
+					SendAllChat( m_GHost->m_Language->KickingPlayersWithPingsGreaterThan( QString::number( Kicked ), QString::number( KickPing ) ) );
 			}
 
 			//
@@ -1457,7 +1457,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						QByteArray MapHeight;
 						MapHeight.push_back( (char)0 );
 						MapHeight.push_back( (char)0 );
-						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ),
+						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ),
 								QHostAddress(IP), Port);
 					}
 					else
@@ -1466,7 +1466,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 						quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
-						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
+						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
 								QHostAddress(IP), Port);
 					}
 				}
@@ -1539,10 +1539,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			if( Command == "synclimit" )
 			{
 				if( Payload.isEmpty( ) )
-					SendAllChat( m_GHost->m_Language->SyncLimitIs( UTIL_ToString( m_SyncLimit ) ) );
+					SendAllChat( m_GHost->m_Language->SyncLimitIs( QString::number( m_SyncLimit ) ) );
 				else
 				{
-					m_SyncLimit = UTIL_ToUInt32( Payload );
+					m_SyncLimit = Payload.toUInt();
 
 					if( m_SyncLimit <= 10 )
 					{
@@ -1555,7 +1555,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						SendAllChat( m_GHost->m_Language->SettingSyncLimitToMaximum( "10000" ) );
 					}
 					else
-						SendAllChat( m_GHost->m_Language->SettingSyncLimitTo( UTIL_ToString( m_SyncLimit ) ) );
+						SendAllChat( m_GHost->m_Language->SettingSyncLimitTo( QString::number( m_SyncLimit ) ) );
 				}
 			}
 
@@ -1676,7 +1676,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	//
 
 	if( Command == "checkme" )
-		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_QByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
+		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? QString::number( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( Util::extractUInt32(Util::reverse(player->GetExternalIP( ))) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).isEmpty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 
 	//
 	// !STATS
@@ -1759,7 +1759,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 					player->SetKickVote( true );
 					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] started by player [" + User + "]" );
-					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (quint32)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
+					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, QString::number( (quint32)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
 					SendAllChat( m_GHost->m_Language->TypeYesToVote( QString( 1, m_GHost->m_CommandTrigger ) ) );
 				}
 			}
@@ -1802,7 +1802,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				if( !m_GameLoading && !m_GameLoaded )
 					OpenSlot( GetSIDFromPID( Victim->GetPID( ) ), false );
 
-				CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
+				CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + QString::number( Votes ) + "/" + QString::number( GetNumHumanPlayers( ) ) + " votes" );
 				SendAllChat( m_GHost->m_Language->VoteKickPassed( m_KickVotePlayer ) );
 			}
 			else
@@ -1812,7 +1812,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			m_VotekickTimer.stop();
 		}
 		else
-			SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
+			SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, QString::number( VotesNeeded - Votes ) ) );
 	}
 
 	return HideCommand;

@@ -94,9 +94,9 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 						Value = ActionData->mid(i + 8 + Data.size( ) + Key.size( ), 4 );
 						QString DataString = Data;
 						QString KeyString = Key;
-						quint32 ValueInt = UTIL_QByteArrayToUInt32( Value, false );
+						quint32 ValueInt = Util::extractUInt32( Value );
 
-						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
+						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + QString::number( ValueInt ) );
 
 						if( DataString == "Data" )
 						{
@@ -108,8 +108,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 							{
 								// a hero died
 
-								QString VictimColourString = KeyString.mid( 4 );
-								quint32 VictimColour = UTIL_ToUInt32( VictimColourString );
+								quint32 VictimColour = KeyString.mid( 4 ).toUInt();
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
 
@@ -135,8 +134,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 									m_Players[ValueInt]->SetCourierKills( m_Players[ValueInt]->GetCourierKills( ) + 1 );
 								}
 
-								QString VictimColourString = KeyString.mid( 7 );
-								quint32 VictimColour = UTIL_ToUInt32( VictimColourString );
+								quint32 VictimColour = KeyString.mid( 7 ).toUInt();
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
 
@@ -252,13 +250,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 							{
 								// the frozen throne got hurt
 
-								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Frozen Throne is now at " + UTIL_ToString( ValueInt ) + "% HP" );
+								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Frozen Throne is now at " + QString::number( ValueInt ) + "% HP" );
 							}
 							else if( KeyString.size( ) >= 4 && KeyString.mid( 0, 4 ) == "Tree" )
 							{
 								// the world tree got hurt
 
-								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the World Tree is now at " + UTIL_ToString( ValueInt ) + "% HP" );
+								CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the World Tree is now at " + QString::number( ValueInt ) + "% HP" );
 							}
 							else if( KeyString.size( ) >= 2 && KeyString.mid( 0, 2 ) == "CK" )
 							{
@@ -281,7 +279,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								else if( m_Winner == 2 )
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] detected winner: Scourge" );
 								else
-									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] detected winner: " + UTIL_ToString( ValueInt ) );
+									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] detected winner: " + QString::number( ValueInt ) );
 							}
 							else if( KeyString == "m" )
 								m_Min = ValueInt;
@@ -292,7 +290,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 						{
 							// these are only received at the end of the game
 
-							quint32 ID = UTIL_ToUInt32( DataString );
+							quint32 ID = DataString.toUInt();
 
 							if( ( ID >= 1 && ID <= 5 ) || ( ID >= 7 && ID <= 11 ) )
 							{
@@ -332,19 +330,19 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								else if( KeyString == "7" )
 									m_Players[ID]->SetNeutralKills( ValueInt );
 								else if( KeyString == "8_0" )
-									m_Players[ID]->SetItem( 0, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 0, QString( Util::reverse(Value) ) );
 								else if( KeyString == "8_1" )
-									m_Players[ID]->SetItem( 1, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 1, QString( Util::reverse(Value) ) );
 								else if( KeyString == "8_2" )
-									m_Players[ID]->SetItem( 2, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 2, QString( Util::reverse(Value) ) );
 								else if( KeyString == "8_3" )
-									m_Players[ID]->SetItem( 3, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 3, QString( Util::reverse(Value) ) );
 								else if( KeyString == "8_4" )
-									m_Players[ID]->SetItem( 4, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 4, QString( Util::reverse(Value) ) );
 								else if( KeyString == "8_5" )
-									m_Players[ID]->SetItem( 5, QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetItem( 5, QString( Util::reverse(Value) ) );
 								else if( KeyString == "9" )
-									m_Players[ID]->SetHero( QString( UTIL_QByteArrayReverse(Value) ) );
+									m_Players[ID]->SetHero( QString( Util::reverse(Value) ) );
 								else if( KeyString == "id" )
 								{
 									// DotA sends id values from 1-10 with 1-5 being sentinel players and 6-10 being scourge players
@@ -431,7 +429,7 @@ void CStatsDOTA :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 		}
 
 		if( DB->Commit( ) )
-			CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] saving " + UTIL_ToString( Players ) + " players" );
+			CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] saving " + QString::number( Players ) + " players" );
 		else
 			CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] unable to commit database transaction, data not saved" );
 	}
