@@ -891,12 +891,12 @@ quint32 CGHostDBSQLite :: GameAdd( QString server, QString map, QString gamename
 		if( RC == SQLITE_DONE )
 			RowID = m_DB->LastRowID( );
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding game [" + server + " : " + map + " : " + gamename + " : " + ownername + " : " + UTIL_ToString( duration ) + " : " + UTIL_ToString( gamestate ) + " : " + creatorname + " : " + creatorserver + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding game [" + server + " : " + map + " : " + gamename + " : " + ownername + " : " + QString::number( duration ) + " : " + QString::number( gamestate ) + " : " + creatorname + " : " + creatorserver + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding game [" + server + " : " + map + " : " + gamename + " : " + ownername + " : " + UTIL_ToString( duration ) + " : " + UTIL_ToString( gamestate ) + " : " + creatorname + " : " + creatorserver + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding game [" + server + " : " + map + " : " + gamename + " : " + ownername + " : " + QString::number( duration ) + " : " + QString::number( gamestate ) + " : " + creatorname + " : " + creatorserver + "] - " + m_DB->GetError( ) );
 
 	return RowID;
 }
@@ -927,12 +927,12 @@ quint32 CGHostDBSQLite :: GamePlayerAdd( quint32 gameid, QString name, QString i
 		if( RC == SQLITE_DONE )
 			RowID = m_DB->LastRowID( );
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding gameplayer [" + UTIL_ToString( gameid ) + " : " + name + " : " + ip + " : " + UTIL_ToString( spoofed ) + " : " + spoofedrealm + " : " + UTIL_ToString( reserved ) + " : " + UTIL_ToString( loadingtime ) + " : " + UTIL_ToString( left ) + " : " + leftreason + " : " + UTIL_ToString( team ) + " : " + UTIL_ToString( colour ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding gameplayer [" + QString::number( gameid ) + " : " + name + " : " + ip + " : " + QString::number( spoofed ) + " : " + spoofedrealm + " : " + QString::number( reserved ) + " : " + QString::number( loadingtime ) + " : " + QString::number( left ) + " : " + leftreason + " : " + QString::number( team ) + " : " + QString::number( colour ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding gameplayer [" + UTIL_ToString( gameid ) + " : " + name + " : " + ip + " : " + UTIL_ToString( spoofed ) + " : " + spoofedrealm + " : " + UTIL_ToString( reserved ) + " : " + UTIL_ToString( loadingtime ) + " : " + UTIL_ToString( left ) + " : " + leftreason + " : " + UTIL_ToString( team ) + " : " + UTIL_ToString( colour ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding gameplayer [" + QString::number( gameid ) + " : " + name + " : " + ip + " : " + QString::number( spoofed ) + " : " + spoofedrealm + " : " + QString::number( reserved ) + " : " + QString::number( loadingtime ) + " : " + QString::number( left ) + " : " + leftreason + " : " + QString::number( team ) + " : " + QString::number( colour ) + "] - " + m_DB->GetError( ) );
 
 	return RowID;
 }
@@ -1036,12 +1036,12 @@ quint32 CGHostDBSQLite :: DotAGameAdd( quint32 gameid, quint32 winner, quint32 m
 		if( RC == SQLITE_DONE )
 			RowID = m_DB->LastRowID( );
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding dotagame [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( winner ) + " : " + UTIL_ToString( min ) + " : " + UTIL_ToString( sec ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding dotagame [" + QString::number( gameid ) + " : " + QString::number( winner ) + " : " + QString::number( min ) + " : " + QString::number( sec ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding dotagame [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( winner ) + " : " + UTIL_ToString( min ) + " : " + UTIL_ToString( sec ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding dotagame [" + QString::number( gameid ) + " : " + QString::number( winner ) + " : " + QString::number( min ) + " : " + QString::number( sec ) + "] - " + m_DB->GetError( ) );
 
 	return RowID;
 }
@@ -1080,12 +1080,12 @@ quint32 CGHostDBSQLite :: DotAPlayerAdd( quint32 gameid, quint32 colour, quint32
 		if( RC == SQLITE_DONE )
 			RowID = m_DB->LastRowID( );
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding dotaplayer [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( colour ) + " : " + UTIL_ToString( kills ) + " : " + UTIL_ToString( deaths ) + " : " + UTIL_ToString( creepkills ) + " : " + UTIL_ToString( creepdenies ) + " : " + UTIL_ToString( assists ) + " : " + UTIL_ToString( gold ) + " : " + UTIL_ToString( neutralkills ) + " : " + item1 + " : " + item2 + " : " + item3 + " : " + item4 + " : " + item5 + " : " + item6 + " : " + hero + " : " + UTIL_ToString( newcolour ) + " : " + UTIL_ToString( towerkills ) + " : " + UTIL_ToString( raxkills ) + " : " + UTIL_ToString( courierkills ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding dotaplayer [" + QString::number( gameid ) + " : " + QString::number( colour ) + " : " + QString::number( kills ) + " : " + QString::number( deaths ) + " : " + QString::number( creepkills ) + " : " + QString::number( creepdenies ) + " : " + QString::number( assists ) + " : " + QString::number( gold ) + " : " + QString::number( neutralkills ) + " : " + item1 + " : " + item2 + " : " + item3 + " : " + item4 + " : " + item5 + " : " + item6 + " : " + hero + " : " + QString::number( newcolour ) + " : " + QString::number( towerkills ) + " : " + QString::number( raxkills ) + " : " + QString::number( courierkills ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding dotaplayer [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( colour ) + " : " + UTIL_ToString( kills ) + " : " + UTIL_ToString( deaths ) + " : " + UTIL_ToString( creepkills ) + " : " + UTIL_ToString( creepdenies ) + " : " + UTIL_ToString( assists ) + " : " + UTIL_ToString( gold ) + " : " + UTIL_ToString( neutralkills ) + " : " + item1 + " : " + item2 + " : " + item3 + " : " + item4 + " : " + item5 + " : " + item6 + " : " + hero + " : " + UTIL_ToString( newcolour ) + " : " + UTIL_ToString( towerkills ) + " : " + UTIL_ToString( raxkills ) + " : " + UTIL_ToString( courierkills ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding dotaplayer [" + QString::number( gameid ) + " : " + QString::number( colour ) + " : " + QString::number( kills ) + " : " + QString::number( deaths ) + " : " + QString::number( creepkills ) + " : " + QString::number( creepdenies ) + " : " + QString::number( assists ) + " : " + QString::number( gold ) + " : " + QString::number( neutralkills ) + " : " + item1 + " : " + item2 + " : " + item3 + " : " + item4 + " : " + item5 + " : " + item6 + " : " + hero + " : " + QString::number( newcolour ) + " : " + QString::number( towerkills ) + " : " + QString::number( raxkills ) + " : " + QString::number( courierkills ) + "] - " + m_DB->GetError( ) );
 
 	return RowID;
 }
@@ -1228,15 +1228,15 @@ QString CGHostDBSQLite :: FromCheck( quint32 ip )
 			if( Row->size( ) == 1 )
 				From = (*Row)[0];
 			else
-				CONSOLE_Print( "[SQLITE3] error checking iptocountry [" + UTIL_ToString( ip ) + "] - row doesn't have 1 column" );
+				CONSOLE_Print( "[SQLITE3] error checking iptocountry [" + QString::number( ip ) + "] - row doesn't have 1 column" );
 		}
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error checking iptocountry [" + UTIL_ToString( ip ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error checking iptocountry [" + QString::number( ip ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error checking iptocountry [" + UTIL_ToString( ip ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error checking iptocountry [" + QString::number( ip ) + "] - " + m_DB->GetError( ) );
 
 	return From;
 }
@@ -1263,12 +1263,12 @@ bool CGHostDBSQLite :: FromAdd( quint32 ip1, quint32 ip2, QString country )
 		if( RC == SQLITE_DONE )
 			Success = true;
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding iptocountry [" + UTIL_ToString( ip1 ) + " : " + UTIL_ToString( ip2 ) + " : " + country + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding iptocountry [" + QString::number( ip1 ) + " : " + QString::number( ip2 ) + " : " + country + "] - " + m_DB->GetError( ) );
 
 		m_DB->Reset( FromAddStmt );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding iptocountry [" + UTIL_ToString( ip1 ) + " : " + UTIL_ToString( ip2 ) + " : " + country + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding iptocountry [" + QString::number( ip1 ) + " : " + QString::number( ip2 ) + " : " + country + "] - " + m_DB->GetError( ) );
 
 	return Success;
 }
@@ -1294,12 +1294,12 @@ bool CGHostDBSQLite :: DownloadAdd( QString map, quint32 mapsize, QString name, 
 		if( RC == SQLITE_DONE )
 			Success = true;
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding download [" + map + " : " + UTIL_ToString( mapsize ) + " : " + name + " : " + ip + " : " + UTIL_ToString( spoofed ) + " : " + spoofedrealm + " : " + UTIL_ToString( downloadtime ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding download [" + map + " : " + QString::number( mapsize ) + " : " + name + " : " + ip + " : " + QString::number( spoofed ) + " : " + spoofedrealm + " : " + QString::number( downloadtime ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding download [" + map + " : " + UTIL_ToString( mapsize ) + " : " + name + " : " + ip + " : " + UTIL_ToString( spoofed ) + " : " + spoofedrealm + " : " + UTIL_ToString( downloadtime ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding download [" + map + " : " + QString::number( mapsize ) + " : " + name + " : " + ip + " : " + QString::number( spoofed ) + " : " + spoofedrealm + " : " + QString::number( downloadtime ) + "] - " + m_DB->GetError( ) );
 
 	return Success;
 }
@@ -1325,12 +1325,12 @@ quint32 CGHostDBSQLite :: W3MMDPlayerAdd( QString category, quint32 gameid, quin
 		if( RC == SQLITE_DONE )
 			RowID = m_DB->LastRowID( );
 		else if( RC == SQLITE_ERROR )
-			CONSOLE_Print( "[SQLITE3] error adding w3mmdplayer [" + category + " : " + UTIL_ToString( gameid ) + " : " + UTIL_ToString( pid ) + " : " + name + " : " + flag + " : " + UTIL_ToString( leaver ) + " : " + UTIL_ToString( practicing ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] error adding w3mmdplayer [" + category + " : " + QString::number( gameid ) + " : " + QString::number( pid ) + " : " + name + " : " + flag + " : " + QString::number( leaver ) + " : " + QString::number( practicing ) + "] - " + m_DB->GetError( ) );
 
 		m_DB->Finalize( Statement );
 	}
 	else
-		CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdplayer [" + category + " : " + UTIL_ToString( gameid ) + " : " + UTIL_ToString( pid ) + " : " + name + " : " + flag + " : " + UTIL_ToString( leaver ) + " : " + UTIL_ToString( practicing ) + "] - " + m_DB->GetError( ) );
+		CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdplayer [" + category + " : " + QString::number( gameid ) + " : " + QString::number( pid ) + " : " + name + " : " + flag + " : " + QString::number( leaver ) + " : " + QString::number( practicing ) + "] - " + m_DB->GetError( ) );
 
 	return RowID;
 }
@@ -1360,7 +1360,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints 
 			if( RC == SQLITE_ERROR )
 			{
 				Success = false;
-				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-int [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + UTIL_ToString( i.value() ) + "] - " + m_DB->GetError( ) );
+				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-int [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( i.value() ) + "] - " + m_DB->GetError( ) );
 				break;
 			}
 
@@ -1369,7 +1369,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints 
 		else
 		{
 			Success = false;
-			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-int [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + UTIL_ToString( i.value() ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-int [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( i.value() ) + "] - " + m_DB->GetError( ) );
 			break;
 		}
 	}
@@ -1405,7 +1405,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals 
 			if( RC == SQLITE_ERROR )
 			{
 				Success = false;
-				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-real [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + UTIL_ToString( i.value(), 10 ) + "] - " + m_DB->GetError( ) );
+				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( 10, i.value() ) + "] - " + m_DB->GetError( ) );
 				break;
 			}
 
@@ -1414,7 +1414,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals 
 		else
 		{
 			Success = false;
-			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-real [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + UTIL_ToString( i.value(), 10 ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( 10, i.value() ) + "] - " + m_DB->GetError( ) );
 			break;
 		}
 	}
@@ -1450,7 +1450,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strin
 			if( RC == SQLITE_ERROR )
 			{
 				Success = false;
-				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-QString [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + i.value() + "] - " + m_DB->GetError( ) );
+				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-QString [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + i.value() + "] - " + m_DB->GetError( ) );
 				break;
 			}
 
@@ -1459,7 +1459,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strin
 		else
 		{
 			Success = false;
-			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-QString [" + UTIL_ToString( gameid ) + " : " + UTIL_ToString( i.key().first ) + " : " + i.key().second + " : " + i.value() + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-QString [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + i.value() + "] - " + m_DB->GetError( ) );
 			break;
 		}
 	}

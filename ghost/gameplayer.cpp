@@ -160,7 +160,7 @@ void CGamePlayer::EventConnectionClosed()
 QByteArray CPotentialPlayer :: GetExternalIP( )
 {
 	if( m_Socket )
-		return UTIL_CreateBYTEARRAY((quint32)m_Socket->localAddress().toIPv4Address(), false);
+		return Util::fromUInt32(m_Socket->localAddress().toIPv4Address());
 
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	return QByteArray( (char*)Zeros, 4 );
@@ -197,7 +197,7 @@ void CPotentialPlayer :: ExtractPackets( )
 
 		// bytes 2 and 3 contain the length of the packet
 
-		quint16 Length = UTIL_QByteArrayToUInt16( m_Socket->peek(4), false, 2 );
+		quint16 Length = Util::extractUInt16( m_Socket->peek(4), 2 );
 
 		if( Length < 4 )
 		{
@@ -420,7 +420,7 @@ void CGamePlayer::EventSendGProxyMessage()
 	if( TimeRemaining > ( (quint32)m_Game->GetGProxyEmptyActions() + 1 ) * 60 )
 		TimeRemaining = ( m_Game->GetGProxyEmptyActions() + 1 ) * 60;
 
-	m_Game->SendAllChat( GetPID( ), m_Game->m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
+	m_Game->SendAllChat( GetPID( ), m_Game->m_GHost->m_Language->WaitForReconnectSecondsRemain( QString::number( TimeRemaining ) ) );
 	SetLastGProxyWaitNoticeSentTime( GetTime( ) );
 }
 
@@ -484,7 +484,7 @@ void CGamePlayer :: ExtractPackets( )
 
 		// bytes 2 and 3 contain the length of the packet
 
-		quint16 Length = UTIL_QByteArrayToUInt16( m_Socket->peek(4), false, 2 );
+		quint16 Length = Util::extractUInt16( m_Socket->peek(4), 2 );
 
 		if( Length < 4 )
 		{
@@ -652,7 +652,7 @@ void CGamePlayer :: ProcessPackets( )
 			}
 			else if( Packet->GetID( ) == CGPSProtocol :: GPS_ACK && Data.size( ) == 8 )
 			{
-				int LastPacket = UTIL_QByteArrayToUInt32( Data, false, 4 );
+				int LastPacket = Util::extractUInt32( Data, 4 );
 				int PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
 
 				if( LastPacket > PacketsAlreadyUnqueued )

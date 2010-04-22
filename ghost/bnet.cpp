@@ -340,7 +340,7 @@ void CBNET::SendPacket()
 	}
 
 	if( m_OutPackets.size( ) > 7 )
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + QString::number( m_OutPackets.size( ) ) + " packets waiting to be sent" );
 
 	m_Socket->write( m_OutPackets.front() );
 	m_LastOutPacketSize = m_OutPackets.front( ).size( );
@@ -399,7 +399,7 @@ void CBNET::EventCallableUpdateTimeout()
 			else if( Count == 1 )
 				QueueChatCommand( m_GHost->m_Language->ThereIsAdmin( m_Server ), i->first, !i->first.isEmpty( ) );
 			else
-				QueueChatCommand( m_GHost->m_Language->ThereAreAdmins( m_Server, UTIL_ToString( Count ) ), i->first, !i->first.isEmpty( ) );
+				QueueChatCommand( m_GHost->m_Language->ThereAreAdmins( m_Server, QString::number( Count ) ), i->first, !i->first.isEmpty( ) );
 
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
@@ -460,7 +460,7 @@ void CBNET::EventCallableUpdateTimeout()
 			else if( Count == 1 )
 				QueueChatCommand( m_GHost->m_Language->ThereIsBannedUser( m_Server ), i->first, !i->first.isEmpty( ) );
 			else
-				QueueChatCommand( m_GHost->m_Language->ThereAreBannedUsers( m_Server, UTIL_ToString( Count ) ), i->first, !i->first.isEmpty( ) );
+				QueueChatCommand( m_GHost->m_Language->ThereAreBannedUsers( m_Server, QString::number( Count ) ), i->first, !i->first.isEmpty( ) );
 
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
@@ -517,7 +517,7 @@ void CBNET::EventCallableUpdateTimeout()
 			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
 
 			if( GamePlayerSummary )
-				QueueChatCommand( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ), i->first, !i->first.isEmpty( ) );
+				QueueChatCommand( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), QString::number( GamePlayerSummary->GetTotalGames( ) ), QString::number( 2, (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000 ), QString::number( GamePlayerSummary->GetAvgLeftPercent( ) ) ), i->first, !i->first.isEmpty( ) );
 			else
 				QueueChatCommand( m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.isEmpty( ) );
 
@@ -538,27 +538,27 @@ void CBNET::EventCallableUpdateTimeout()
 			if( DotAPlayerSummary )
 			{
 				QString Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName( ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalDeaths( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepDenies( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalAssists( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalNeutralKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalTowerKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalRaxKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetTotalCourierKills( ) ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgDeaths( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepDenies( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgAssists( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
+																						QString::number( DotAPlayerSummary->GetTotalGames( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalWins( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalLosses( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalDeaths( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCreepKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCreepDenies( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalAssists( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalNeutralKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalTowerKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalRaxKills( ) ),
+																						QString::number( DotAPlayerSummary->GetTotalCourierKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgDeaths( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCreepKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCreepDenies( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgAssists( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgNeutralKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgTowerKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgRaxKills( ) ),
+																						QString::number( 2, DotAPlayerSummary->GetAvgCourierKills( ) ) );
 
 				QueueChatCommand( Summary, i->first, !i->first.isEmpty( ) );
 			}
@@ -575,7 +575,7 @@ void CBNET::EventCallableUpdateTimeout()
 
 	if( m_CallableAdminList && m_CallableAdminList->GetReady( ) )
 	{
-		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed admin list (" + UTIL_ToString( m_Admins.size( ) ) + " -> " + UTIL_ToString( m_CallableAdminList->GetResult( ).size( ) ) + " admins)" );
+		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed admin list (" + QString::number( m_Admins.size( ) ) + " -> " + QString::number( m_CallableAdminList->GetResult( ).size( ) ) + " admins)" );
 		m_Admins = m_CallableAdminList->GetResult( );
 		m_GHost->m_DB->RecoverCallable( m_CallableAdminList );
 		delete m_CallableAdminList;
@@ -585,7 +585,7 @@ void CBNET::EventCallableUpdateTimeout()
 
 	if( m_CallableBanList && m_CallableBanList->GetReady( ) )
 	{
-		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed ban list (" + UTIL_ToString( m_Bans.size( ) ) + " -> " + UTIL_ToString( m_CallableBanList->GetResult( ).size( ) ) + " bans)" );
+		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed ban list (" + QString::number( m_Bans.size( ) ) + " -> " + QString::number( m_CallableBanList->GetResult( ).size( ) ) + " bans)" );
 
 		for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 			delete *i;
@@ -632,7 +632,7 @@ void CBNET :: ExtractPackets( )
 
 		// bytes 2 and 3 contain the length of the packet
 
-		quint16 Length = UTIL_QByteArrayToUInt16( header, false, 2 );
+		quint16 Length = Util::extractUInt16(header, 2);
 
 		if( Length < 4 )
 		{
@@ -739,13 +739,13 @@ void CBNET :: ProcessPackets( )
 
 						if( m_EXEVersion.size( ) == 4 )
 						{
-							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version bnet_custom_exeversion = " + UTIL_ToString( m_EXEVersion[0] ) + " " + UTIL_ToString( m_EXEVersion[1] ) + " " + UTIL_ToString( m_EXEVersion[2] ) + " " + UTIL_ToString( m_EXEVersion[3] ) );
+							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version bnet_custom_exeversion = " + QString::number( m_EXEVersion[0] ) + " " + QString::number( m_EXEVersion[1] ) + " " + QString::number( m_EXEVersion[2] ) + " " + QString::number( m_EXEVersion[3] ) );
 							m_BNCSUtil->SetEXEVersion( m_EXEVersion );
 						}
 
 						if( m_EXEVersionHash.size( ) == 4 )
 						{
-							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version hash bnet_custom_exeversionhash = " + UTIL_ToString( m_EXEVersionHash[0] ) + " " + UTIL_ToString( m_EXEVersionHash[1] ) + " " + UTIL_ToString( m_EXEVersionHash[2] ) + " " + UTIL_ToString( m_EXEVersionHash[3] ) );
+							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version hash bnet_custom_exeversionhash = " + QString::number( m_EXEVersionHash[0] ) + " " + QString::number( m_EXEVersionHash[1] ) + " " + QString::number( m_EXEVersionHash[2] ) + " " + QString::number( m_EXEVersionHash[3] ) );
 							m_BNCSUtil->SetEXEVersionHash( m_EXEVersionHash );
 						}
 
@@ -764,7 +764,7 @@ void CBNET :: ProcessPackets( )
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] creating BNLS client" );
 							delete m_BNLSClient;
 							m_BNLSClient = new CBNLSClient( m_BNLSServer, m_BNLSPort, m_BNLSWardenCookie );
-							m_BNLSClient->QueueWardenSeed( UTIL_QByteArrayToUInt32( m_BNCSUtil->GetKeyInfoROC( ), false, 16 ) );
+							m_BNLSClient->QueueWardenSeed( Util::extractUInt32(m_BNCSUtil->GetKeyInfoROC( ), 16) );
 
 							QObject::connect(m_BNLSClient, SIGNAL(newWardenResponse(QByteArray)), this, SLOT(sendWardenResponse(QByteArray)));
 						}
@@ -793,7 +793,7 @@ void CBNET :: ProcessPackets( )
 				{
 					// cd keys not accepted
 
-					switch( UTIL_QByteArrayToUInt32( m_Protocol->GetKeyState( ), false ) )
+					switch( Util::extractUInt32(m_Protocol->GetKeyState( )) )
 					{
 					case CBNETProtocol :: KR_ROC_KEY_IN_USE:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - ROC CD key in use by user [" + m_Protocol->GetKeyStateDescription( ) + "], disconnecting" );
@@ -1258,11 +1258,11 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 					else
 					{
-						quint32 AutoStartPlayers = UTIL_ToUInt32( Payload );
+						quint32 AutoStartPlayers = Payload.toUInt();
 
 						if( AutoStartPlayers != 0 )
 						{
-							QueueChatCommand( m_GHost->m_Language->AutoStartEnabled( UTIL_ToString( AutoStartPlayers ) ), User, Whisper );
+							QueueChatCommand( m_GHost->m_Language->AutoStartEnabled( QString::number( AutoStartPlayers ) ), User, Whisper );
 							m_GHost->m_CurrentGame->SetAutoStartPlayers( AutoStartPlayers );
 						}
 					}
@@ -1420,7 +1420,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 				if( Command == "downloads" && !Payload.isEmpty( ) )
 				{
-					quint32 Downloads = UTIL_ToUInt32( Payload );
+					quint32 Downloads = Payload.toUInt();
 
 					if( Downloads == 0 )
 					{
@@ -1462,7 +1462,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// todotodo: what if a game ends just as you're typing this command and the numbering changes?
 
-					int GameNumber = UTIL_ToUInt32( Payload ) - 1;
+					int GameNumber = Payload.toUInt() - 1;
 
 					if( GameNumber < m_GHost->m_Games.size( ) )
 					{
@@ -1495,7 +1495,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						QString File = m_GHost->m_ReplayPath + Payload + ".w3g";
 
-						if( UTIL_FileExists( File ) )
+						if( QFile::exists( File ) )
 						{
 							QueueChatCommand( m_GHost->m_Language->LoadingReplay( File ), User, Whisper );
 							CReplay *Replay = new CReplay( );
@@ -1560,7 +1560,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 				if( Command == "getgame" && !Payload.isEmpty( ) )
 				{
-					int GameNumber = UTIL_ToUInt32( Payload ) - 1;
+					int GameNumber = Payload.toUInt() - 1;
 
 					if( GameNumber < m_GHost->m_Games.size( ) )
 						QueueChatCommand( m_GHost->m_Language->GameNumberIs( Payload, m_GHost->m_Games[GameNumber]->GetDescription( ) ), User, Whisper );
@@ -1575,9 +1575,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				if( Command == "getgames" )
 				{
 					if( m_GHost->m_CurrentGame )
-						QueueChatCommand( m_GHost->m_Language->GameIsInTheLobby( m_GHost->m_CurrentGame->GetDescription( ), UTIL_ToString( m_GHost->m_Games.size( ) ), UTIL_ToString( m_GHost->m_MaxGames ) ), User, Whisper );
+						QueueChatCommand( m_GHost->m_Language->GameIsInTheLobby( m_GHost->m_CurrentGame->GetDescription( ), QString::number( m_GHost->m_Games.size( ) ), QString::number( m_GHost->m_MaxGames ) ), User, Whisper );
 					else
-						QueueChatCommand( m_GHost->m_Language->ThereIsNoGameInTheLobby( UTIL_ToString( m_GHost->m_Games.size( ) ), UTIL_ToString( m_GHost->m_MaxGames ) ), User, Whisper );
+						QueueChatCommand( m_GHost->m_Language->ThereIsNoGameInTheLobby( QString::number( m_GHost->m_Games.size( ) ), QString::number( m_GHost->m_MaxGames ) ), User, Whisper );
 				}
 
 				//
@@ -1684,7 +1684,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						QString File = m_GHost->m_SaveGamePath + Payload + ".w3z";
 						QString FileNoPath = Payload + ".w3z";
 
-						if( UTIL_FileExists( File ) )
+						if( QFile::exists( File ) )
 						{
 							if( m_GHost->m_CurrentGame )
 								QueueChatCommand( m_GHost->m_Language->UnableToLoadSaveGameGameInLobby( ), User, Whisper );
@@ -1920,7 +1920,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 								if( GameNumber - 1 < m_GHost->m_Games.size( ) )
 									m_GHost->m_Games[GameNumber - 1]->SendAllChat( "ADMIN: " + Message );
 								else
-									QueueChatCommand( m_GHost->m_Language->GameNumberDoesntExist( UTIL_ToString( GameNumber ) ), User, Whisper );
+									QueueChatCommand( m_GHost->m_Language->GameNumberDoesntExist( QString::number( GameNumber ) ), User, Whisper );
 							}
 						}
 					}
@@ -2048,7 +2048,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				if( Command == "wardenstatus" )
 				{
 					if( m_BNLSClient )
-						QueueChatCommand( "WARDEN STATUS --- " + UTIL_ToString( m_BNLSClient->GetTotalWardenIn( ) ) + " requests received, " + UTIL_ToString( m_BNLSClient->GetTotalWardenOut( ) ) + " responses sent.", User, Whisper );
+						QueueChatCommand( "WARDEN STATUS --- " + QString::number( m_BNLSClient->GetTotalWardenIn( ) ) + " requests received, " + QString::number( m_BNLSClient->GetTotalWardenOut( ) ) + " responses sent.", User, Whisper );
 					else
 						QueueChatCommand( "WARDEN STATUS --- Not connected to BNLS server.", User, Whisper );
 				}
@@ -2216,7 +2216,7 @@ void CBNET :: QueueChatCommand( QString chatCommand )
 			chatCommand = chatCommand.mid( 0, 255 );
 
 		if( m_OutPackets.size( ) > 10 )
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempted to queue chat command [" + chatCommand + "] but there are too many (" + UTIL_ToString( m_OutPackets.size( ) ) + ") packets queued, discarding" );
+			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempted to queue chat command [" + chatCommand + "] but there are too many (" + QString::number( m_OutPackets.size( ) ) + ") packets queued, discarding" );
 		else
 		{
 			CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
@@ -2293,7 +2293,7 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			if( m_GHost->m_Reconnect )
 				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
 						state,
-						UTIL_CreateBYTEARRAY( MapGameType, false ),
+						Util::fromUInt32( MapGameType),
 						map->GetMapGameFlags( ),
 						MapWidth,
 						MapHeight,
@@ -2307,10 +2307,10 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			else
 				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
 						state,
-						UTIL_CreateBYTEARRAY( MapGameType, false ),
+						Util::fromUInt32( MapGameType),
 						map->GetMapGameFlags( ),
-						UTIL_CreateBYTEARRAY( (quint16)0, false ),
-						UTIL_CreateBYTEARRAY( (quint16)0, false ),
+						Util::fromUInt16( (quint16)0),
+						Util::fromUInt16( (quint16)0),
 						gameName,
 						hostName,
 						upTime,
@@ -2337,9 +2337,9 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			MapHeight.push_back( 7 );
 
 			if( m_GHost->m_Reconnect )
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateBYTEARRAY( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 	}
 }
@@ -2371,7 +2371,7 @@ void CBNET :: UnqueuePackets( unsigned char type )
 	m_OutPackets = Packets;
 
 	if( Unqueued > 0 )
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + UTIL_ToString( Unqueued ) + " packets of type " + UTIL_ToString( type ) );
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + QString::number( Unqueued ) + " packets of type " + QString::number( type ) );
 }
 
 void CBNET :: UnqueueChatCommand( QString chatCommand )
@@ -2400,7 +2400,7 @@ void CBNET :: UnqueueChatCommand( QString chatCommand )
 	m_OutPackets = Packets;
 
 	if( Unqueued > 0 )
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + UTIL_ToString( Unqueued ) + " chat command packets" );
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + QString::number( Unqueued ) + " chat command packets" );
 }
 
 void CBNET :: UnqueueGameRefreshes( )

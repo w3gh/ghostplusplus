@@ -306,7 +306,7 @@ CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,QString> /*var_strings*/ )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,QByteArray> /*var_strings*/ )
 {
 	return NULL;
 }

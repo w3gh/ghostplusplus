@@ -96,7 +96,7 @@ void CAdminGame::EventCallableUpdateTimeout()
 				else if( Count == 1 )
 					SendChat( Player, m_GHost->m_Language->ThereIsAdmin( i->second->GetServer( ) ) );
 				else
-					SendChat( Player, m_GHost->m_Language->ThereAreAdmins( i->second->GetServer( ), UTIL_ToString( Count ) ) );
+					SendChat( Player, m_GHost->m_Language->ThereAreAdmins( i->second->GetServer( ), QString::number( Count ) ) );
 			}
 
 			m_GHost->m_DB->RecoverCallable( i->second );
@@ -184,7 +184,7 @@ void CAdminGame::EventCallableUpdateTimeout()
 				else if( Count == 1 )
 					SendChat( Player, m_GHost->m_Language->ThereIsBannedUser( i->second->GetServer( ) ) );
 				else
-					SendChat( Player, m_GHost->m_Language->ThereAreBannedUsers( i->second->GetServer( ), UTIL_ToString( Count ) ) );
+					SendChat( Player, m_GHost->m_Language->ThereAreBannedUsers( i->second->GetServer( ), QString::number( Count ) ) );
 			}
 
 			m_GHost->m_DB->RecoverCallable( i->second );
@@ -757,7 +757,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 		if( Command == "downloads" && !Payload.isEmpty( ) )
 		{
-			quint32 Downloads = UTIL_ToUInt32( Payload );
+			quint32 Downloads = Payload.toUInt();
 
 			if( Downloads == 0 )
 			{
@@ -794,7 +794,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		{
 			// todotodo: what if a game ends just as you're typing this command and the numbering changes?
 
-			int GameNumber = UTIL_ToUInt32( Payload ) - 1;
+			int GameNumber = Payload.toUInt() - 1;
 
 			if( GameNumber < m_GHost->m_Games.size( ) )
 			{
@@ -820,7 +820,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 			{
 				QString File = m_GHost->m_ReplayPath + Payload + ".w3g";
 
-				if( UTIL_FileExists( File ) )
+				if( QFile::exists( File ) )
 				{
 					SendChat( player, m_GHost->m_Language->LoadingReplay( File ) );
 					CReplay *Replay = new CReplay( );
@@ -860,7 +860,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 
 		if( Command == "getgame" && !Payload.isEmpty( ) )
 		{
-			int GameNumber = UTIL_ToUInt32( Payload ) - 1;
+			int GameNumber = Payload.toUInt() - 1;
 
 			if( GameNumber < m_GHost->m_Games.size( ) )
 				SendChat( player, m_GHost->m_Language->GameNumberIs( Payload, m_GHost->m_Games[GameNumber]->GetDescription( ) ) );
@@ -875,9 +875,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		if( Command == "getgames" )
 		{
 			if( m_GHost->m_CurrentGame )
-				SendChat( player, m_GHost->m_Language->GameIsInTheLobby( m_GHost->m_CurrentGame->GetDescription( ), UTIL_ToString( m_GHost->m_Games.size( ) ), UTIL_ToString( m_GHost->m_MaxGames ) ) );
+				SendChat( player, m_GHost->m_Language->GameIsInTheLobby( m_GHost->m_CurrentGame->GetDescription( ), QString::number( m_GHost->m_Games.size( ) ), QString::number( m_GHost->m_MaxGames ) ) );
 			else
-				SendChat( player, m_GHost->m_Language->ThereIsNoGameInTheLobby( UTIL_ToString( m_GHost->m_Games.size( ) ), UTIL_ToString( m_GHost->m_MaxGames ) ) );
+				SendChat( player, m_GHost->m_Language->ThereIsNoGameInTheLobby( QString::number( m_GHost->m_Games.size( ) ), QString::number( m_GHost->m_MaxGames ) ) );
 		}
 
 		//
@@ -956,7 +956,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 				QString File = m_GHost->m_SaveGamePath + Payload + ".w3z";
 				QString FileNoPath = Payload + ".w3z";
 
-				if( UTIL_FileExists( File ) )
+				if( QFile::exists( File ) )
 				{
 					if( m_GHost->m_CurrentGame )
 						SendChat( player, m_GHost->m_Language->UnableToLoadSaveGameGameInLobby( ) );
@@ -1144,7 +1144,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 					if( GameNumber - 1 < m_GHost->m_Games.size( ) )
 						m_GHost->m_Games[GameNumber - 1]->SendAllChat( "ADMIN: " + Message );
 					else
-						SendChat( player, m_GHost->m_Language->GameNumberDoesntExist( UTIL_ToString( GameNumber ) ) );
+						SendChat( player, m_GHost->m_Language->GameNumberDoesntExist( QString::number( GameNumber ) ) );
 				}
 			}
 		}
@@ -1229,7 +1229,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 			quint32 LoginAttempts = player->GetLoginAttempts( ) + 1;
 			player->SetLoginAttempts( LoginAttempts );
 			CONSOLE_Print( "[ADMINGAME] user [" + User + "] login attempt failed" );
-			SendChat( player, m_GHost->m_Language->AdminInvalidPassword( UTIL_ToString( LoginAttempts ) ) );
+			SendChat( player, m_GHost->m_Language->AdminInvalidPassword( QString::number( LoginAttempts ) ) );
 
 			if( LoginAttempts >= 1 )
 			{

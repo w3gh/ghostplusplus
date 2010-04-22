@@ -48,10 +48,10 @@ void CReplay :: AddLeaveGame( quint32 reason, unsigned char PID, quint32 result 
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_LEAVEGAME );
-	UTIL_AppendBYTEARRAY( Block, reason, false );
+	Block.append(Util::fromUInt32(reason));
 	Block.push_back( PID );
-	UTIL_AppendBYTEARRAY( Block, result, false );
-	UTIL_AppendBYTEARRAY( Block, (quint32)1, false );
+	Block.append(Util::fromUInt32(result));
+	Block.append(Util::fromUInt32(1));
 	m_CompiledBlocks += Block;
 }
 
@@ -59,10 +59,10 @@ void CReplay :: AddLeaveGameDuringLoading( quint32 reason, unsigned char PID, qu
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_LEAVEGAME );
-	UTIL_AppendBYTEARRAY( Block, reason, false );
+	Block.append(Util::fromUInt32(reason));
 	Block.push_back( PID );
-	UTIL_AppendBYTEARRAY( Block, result, false );
-	UTIL_AppendBYTEARRAY( Block, (quint32)1, false );
+	Block.append(Util::fromUInt32(result));
+	Block.append(Util::fromUInt32(1));
 	m_LoadingBlocks.enqueue( Block );
 }
 
@@ -70,21 +70,21 @@ void CReplay :: AddTimeSlot2( QQueue<CIncomingAction *> actions )
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_TIMESLOT2 );
-	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
-	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
+	Block.append(Util::fromUInt16(0));
+	Block.append(Util::fromUInt16(0));
 
 	while( !actions.isEmpty( ) )
 	{
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		UTIL_AppendBYTEARRAY( Block, (quint16)Action->GetAction( )->size( ), false );
-		UTIL_AppendBYTEARRAYFast( Block, *Action->GetAction( ) );
+		Block.append(Util::fromUInt16(Action->GetAction( )->size( )));
+		Block.append(*Action->GetAction( ));
 	}
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((quint16)( Block.size( ) - 3 ), false );
+	QByteArray LengthBytes = Util::fromUInt16( Block.size( ) - 3 );
 	Block[1] = LengthBytes[0];
 	Block[2] = LengthBytes[1];
 	m_CompiledBlocks += Block;
@@ -94,21 +94,21 @@ void CReplay :: AddTimeSlot( quint16 timeIncrement, QQueue<CIncomingAction *> ac
 {
 	QByteArray Block;
 	Block.push_back( REPLAY_TIMESLOT );
-	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
-	UTIL_AppendBYTEARRAY( Block, timeIncrement, false );
+	Block.append(Util::fromUInt16(0));
+	Block.append(Util::fromUInt16(timeIncrement));
 
 	while( !actions.isEmpty( ) )
 	{
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		UTIL_AppendBYTEARRAY( Block, (quint16)Action->GetAction( )->size( ), false );
-		UTIL_AppendBYTEARRAYFast( Block, *Action->GetAction( ) );
+		Block.append(Util::fromUInt16(Action->GetAction( )->size( )));
+		Block.append(*Action->GetAction( ));
 	}
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY((quint16)( Block.size( ) - 3 ), false );
+	QByteArray LengthBytes = Util::fromUInt16( Block.size( ) - 3 );
 	Block[1] = LengthBytes[0];
 	Block[2] = LengthBytes[1];
 	m_CompiledBlocks += Block;
@@ -120,14 +120,14 @@ void CReplay :: AddChatMessage( unsigned char PID, unsigned char flags, quint32 
 	QByteArray Block;
 	Block.push_back( REPLAY_CHATMESSAGE );
 	Block.push_back( PID );
-	UTIL_AppendBYTEARRAY( Block, (quint16)0, false );
+	Block.append(Util::fromUInt16(0));
 	Block.push_back( flags );
-	UTIL_AppendBYTEARRAY( Block, chatMode, false );
-	UTIL_AppendBYTEARRAYFast( Block, message );
+	Block.append(Util::fromUInt32(chatMode));
+	Block.append(message);
 
 	// assign length
 
-	QByteArray LengthBytes = UTIL_CreateBYTEARRAY( (quint16)( Block.size( ) - 4 ), false );
+	QByteArray LengthBytes = Util::fromUInt16( Block.size( ) - 4 );
 	Block[2] = LengthBytes[0];
 	Block[3] = LengthBytes[1];
 	m_CompiledBlocks += Block;
@@ -149,21 +149,21 @@ void CReplay :: BuildReplay( QString gameName, QString statString, quint32 war3V
 	quint32 LanguageID = 0x0012F8B0;
 
 	QByteArray Replay;
-	Replay.push_back( (char)16 );															// Unknown (4.0)
-	Replay.push_back( (char)1 );															// Unknown (4.0)
-	Replay.push_back( (char)0 );															// Unknown (4.0)
-	Replay.push_back( (char)0 );															// Unknown (4.0)
-	Replay.push_back( (char)0 );															// Host RecordID (4.1)
-	Replay.push_back( (char)m_HostPID );													// Host PlayerID (4.1)
-	UTIL_AppendBYTEARRAYFast( Replay, m_HostName );									// Host PlayerName (4.1)
-	Replay.push_back( (char)1 );															// Host AdditionalSize (4.1)
-	Replay.push_back( (char)0 );															// Host AdditionalData (4.1)
-	UTIL_AppendBYTEARRAYFast( Replay, gameName );									// GameName (4.2)
-	Replay.push_back( (char)0 );															// Null (4.0)
-	UTIL_AppendBYTEARRAYFast( Replay, statString );									// StatString (4.3)
-	UTIL_AppendBYTEARRAY( Replay, (quint32)m_Slots.size( ), false );				// PlayerCount (4.6)
-	UTIL_AppendBYTEARRAY( Replay, m_MapGameType, false );							// GameType (4.7)
-	UTIL_AppendBYTEARRAY( Replay, LanguageID, false );								// LanguageID (4.8)
+	Replay.push_back( (char)16 );								// Unknown (4.0)
+	Replay.push_back( (char)1 );								// Unknown (4.0)
+	Replay.push_back( (char)0 );								// Unknown (4.0)
+	Replay.push_back( (char)0 );								// Unknown (4.0)
+	Replay.push_back( (char)0 );								// Host RecordID (4.1)
+	Replay.push_back( (char)m_HostPID );						// Host PlayerID (4.1)
+	Replay.append(m_HostName);									// Host PlayerName (4.1)
+	Replay.push_back( (char)1 );								// Host AdditionalSize (4.1)
+	Replay.push_back( (char)0 );								// Host AdditionalData (4.1)
+	Replay.append(gameName);									// GameName (4.2)
+	Replay.push_back( (char)0 );								// Null (4.0)
+	Replay.append(statString);									// StatString (4.3)
+	Replay.append(Util::fromUInt32(m_Slots.size( )));			// PlayerCount (4.6)
+	Replay.append(Util::fromUInt32(m_MapGameType));				// GameType (4.7)
+	Replay.append(Util::fromUInt32(LanguageID));				// LanguageID (4.8)
 
 	// PlayerList (4.9)
 
@@ -173,43 +173,43 @@ void CReplay :: BuildReplay( QString gameName, QString statString, quint32 war3V
 		{
 			Replay.push_back( 22 );													// Player RecordID (4.1)
 			Replay.push_back( (*i).first );											// Player PlayerID (4.1)
-			UTIL_AppendBYTEARRAYFast( Replay, (*i).second );						// Player PlayerName (4.1)
+			Replay.append((*i).second);												// Player PlayerName (4.1)
 			Replay.push_back( 1 );													// Player AdditionalSize (4.1)
-			Replay.push_back( (char)0 );													// Player AdditionalData (4.1)
-			UTIL_AppendBYTEARRAY( Replay, (quint32)0, false );						// Unknown
+			Replay.push_back( (char)0 );											// Player AdditionalData (4.1)
+			Replay.append(Util::fromUInt32(0));										// Unknown
 		}
 	}
 
 	// GameStartRecord (4.10)
 
 	Replay.push_back( 25 );															// RecordID (4.10)
-	UTIL_AppendBYTEARRAY( Replay, (quint16)( 7 + m_Slots.size( ) * 9 ), false );	// Size (4.10)
+	Replay.append(Util::fromUInt16( 7 + m_Slots.size( ) * 9 ));						// Size (4.10)
 	Replay.push_back( m_Slots.size( ) );											// NumSlots (4.10)
 
 	for( unsigned char i = 0; i < m_Slots.size( ); i++ )
-		UTIL_AppendBYTEARRAY( Replay, m_Slots[i].GetQByteArray( ) );
+		Replay.append(m_Slots[i].GetQByteArray( ));
 
-	UTIL_AppendBYTEARRAY( Replay, m_RandomSeed, false );							// RandomSeed (4.10)
+	Replay.append(Util::fromUInt32(m_RandomSeed));									// RandomSeed (4.10)
 	Replay.push_back( m_SelectMode );												// SelectMode (4.10)
 	Replay.push_back( m_StartSpotCount );											// StartSpotCount (4.10)
 
 	// ReplayData (5.0)
 
 	Replay.push_back( REPLAY_FIRSTSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
+	Replay.append(Util::fromUInt32(1));
 	Replay.push_back( REPLAY_SECONDSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
+	Replay.append(Util::fromUInt32(1));
 
 	// leavers during loading need to be stored between the second and third start blocks
 
 	while( !m_LoadingBlocks.isEmpty( ) )
 	{
-		UTIL_AppendBYTEARRAY( Replay, m_LoadingBlocks.front( ) );
+		Replay.append(m_LoadingBlocks.front( ));
 		m_LoadingBlocks.dequeue( );
 	}
 
 	Replay.push_back( REPLAY_THIRDSTARTBLOCK );
-	UTIL_AppendBYTEARRAY( Replay, (quint32)1, false );
+	Replay.append(Util::fromUInt32(1));
 
 	// done
 
@@ -524,7 +524,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 
 			QByteArray Block;
 			Block.push_back( CReplay :: REPLAY_TIMESLOT );
-			UTIL_AppendBYTEARRAY( Block, BlockSize, false );
+			Block.append(Util::fromUInt32(BlockSize));
 			UTIL_AppendBYTEARRAY( Block, GarbageData, BlockSize );
 			m_Blocks.enqueue( Block );
 		}
@@ -549,7 +549,7 @@ void CReplay :: ParseReplay( bool /*parseBlocks*/ )
 			QByteArray Block;
 			Block.push_back( CReplay :: REPLAY_CHATMESSAGE );
 			Block.push_back( PID );
-			UTIL_AppendBYTEARRAY( Block, BlockSize, false );
+			Block.append(Util::fromUInt32(BlockSize));
 			UTIL_AppendBYTEARRAY( Block, GarbageData, BlockSize );
 			m_Blocks.enqueue( Block );
 		}

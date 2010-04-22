@@ -29,7 +29,7 @@ quint32 GetTicks()
 
 void SignalCatcher2( int s )
 {
-	CONSOLE_Print( "[!!!] caught signal " + UTIL_ToString( s ) + ", exiting NOW" );
+	CONSOLE_Print( "[!!!] caught signal " + QString::number( s ) + ", exiting NOW" );
 
 	if( gGHost )
 	{
@@ -47,7 +47,7 @@ void SignalCatcher( int s )
 	// signal( SIGABRT, SignalCatcher2 );
 	signal( SIGINT, SignalCatcher2 );
 
-	CONSOLE_Print( "[!!!] caught signal " + UTIL_ToString( s ) + ", exiting nicely" );
+	CONSOLE_Print( "[!!!] caught signal " + QString::number( s ) + ", exiting nicely" );
 
 	if( gGHost )
 		gGHost->EventExitNice();
@@ -91,6 +91,10 @@ void DEBUG_Print( QString message )
 int main( int argc, char **argv )
 {
 	QCoreApplication a(argc, argv);
+
+	/*DEBUG_Print(Util::fromUInt32(1111).toHex());
+	return 0;*/
+
 /*
 	QByteArray data = QByteArray::fromHex("0224001b019a0700009a070000160101009a0700009a0700001a19303030559a0700009a070000");
 	CCRC32 *crc = new CCRC32();

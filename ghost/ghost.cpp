@@ -52,6 +52,7 @@
 #include <stormlib/StormLib.h>
 
 #include <QHostInfo>
+#include <QCoreApplication>
 
 
 //
@@ -127,8 +128,8 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 	for (int i = 0; i < info.addresses().size(); i++)
 	{
-		CONSOLE_Print( "[GHOST] local IP address #" + UTIL_ToString( i + 1 ) + " is [" + info.addresses().at(i).toString() + "]" );
-		m_LocalAddresses.push_back( UTIL_CreateBYTEARRAY( (quint32)info.addresses().at(i).toIPv4Address(), false ) );
+		CONSOLE_Print( "[GHOST] local IP address #" + QString::number( i + 1 ) + " is [" + info.addresses().at(i).toString() + "]" );
+		m_LocalAddresses.push_back( Util::fromUInt32(info.addresses().at(i).toIPv4Address() ) );
 	}
 
 	m_Language = NULL;
@@ -179,7 +180,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 		if( i == 1 )
 			Prefix = "bnet_";
 		else
-			Prefix = "bnet" + UTIL_ToString( i ) + "_";
+			Prefix = "bnet" + QString::number( i ) + "_";
 
 		QString Server = CFG->GetString( Prefix + "server", QString( ) );
 		QString ServerAlias = CFG->GetString( Prefix + "serveralias", QString( ) );
@@ -199,7 +200,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 #endif
 		}
 		else
-			LocaleID = UTIL_ToUInt32( Locale );
+			LocaleID = Locale.toUInt();
 
 		QString UserName = CFG->GetString( Prefix + "username", QString( ) );
 		QString UserPassword = CFG->GetString( Prefix + "password", QString( ) );
@@ -250,12 +251,12 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 			continue;
 		}
 
-		CONSOLE_Print( "[GHOST] found battle.net connection #" + UTIL_ToString( i ) + " for server [" + Server + "]" );
+		CONSOLE_Print( "[GHOST] found battle.net connection #" + QString::number( i ) + " for server [" + Server + "]" );
 
 		if( Locale == "system" )
 		{
 #ifdef WIN32
-			CONSOLE_Print( "[GHOST] using system locale of " + UTIL_ToString( LocaleID ) );
+			CONSOLE_Print( "[GHOST] using system locale of " + QString::number( LocaleID ) );
 #else
 			CONSOLE_Print( "[GHOST] unable to get system locale, using default locale of 1033" );
 #endif
@@ -381,13 +382,15 @@ CGHost :: ~CGHost( )
 	// but if you try to recreate the CGHost object within a single session you will probably leak resources!
 
 	if( !m_Callables.isEmpty( ) )
-		CONSOLE_Print( "[GHOST] warning - " + UTIL_ToString( m_Callables.size( ) ) + " orphaned callables were leaked (this is not an error)" );
+		CONSOLE_Print( "[GHOST] warning - " + QString::number( m_Callables.size( ) ) + " orphaned callables were leaked (this is not an error)" );
 
 	delete m_Language;
 	delete m_Map;
 	delete m_AdminMap;
 	delete m_AutoHostMap;
 	delete m_SaveGame;
+
+	DEBUG_Print("[GHOST] good bye");
 }
 
 void CGHost::EventGameStarted()
@@ -429,7 +432,7 @@ void CGHost::EventReconnectionSocketReadyRead()
 	{
 		// bytes 2 and 3 contain the length of the packet
 
-		quint16 Length = UTIL_QByteArrayToUInt16( con->peek(4), false, 2 );
+		quint16 Length = Util::extractUInt16( con->peek(4), 2 );
 
 		if( Length < 4 )
 		{
@@ -445,8 +448,8 @@ void CGHost::EventReconnectionSocketReadyRead()
 		if( Bytes.at(0) == CGPSProtocol :: GPS_RECONNECT && Length == 13 )
 		{
 			unsigned char PID = Bytes.at(4);
-			quint32 ReconnectKey = UTIL_QByteArrayToUInt32( Bytes, false, 5 );
-			quint32 LastPacket = UTIL_QByteArrayToUInt32( Bytes, false, 9 );
+			quint32 ReconnectKey = Util::extractUInt32( Bytes, 5 );
+			quint32 LastPacket = Util::extractUInt32( Bytes, 9 );
 
 			// look for a matching player in a running game
 
@@ -550,7 +553,7 @@ void CGHost::EventExitNice()
 		if( !m_AllGamesFinished && m_Callables.size( ) > 0 )
 		{
 			CONSOLE_Print( "[GHOST] all games finished, waiting 60 seconds for threads to finish" );
-			CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads in progress" );
+			CONSOLE_Print( "[GHOST] there are " + QString::number( m_Callables.size( ) ) + " threads in progress" );
 			m_AllGamesFinished = true;
 			m_AllGamesFinishedTime = GetTime( );
 			QTimer::singleShot(60000, this, SLOT(EventWaitForNiceExitTimeout()));
@@ -559,6 +562,7 @@ void CGHost::EventExitNice()
 		{
 			CONSOLE_Print( "[GHOST] all threads finished, exiting nicely" );
 			deleteLater();
+			QCoreApplication::instance()->quit();
 			return;
 		}
 	}
@@ -570,7 +574,7 @@ void CGHost::EventExitNice()
 void CGHost::EventWaitForNiceExitTimeout()
 {
 	CONSOLE_Print( "[GHOST] waited 60 seconds for threads to finish, exiting anyway" );
-	CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads still in progress which will be terminated" );
+	CONSOLE_Print( "[GHOST] there are " + QString::number( m_Callables.size( ) ) + " threads still in progress which will be terminated" );
 	deleteLater();
 }
 
@@ -609,7 +613,7 @@ void CGHost::EventAutoHost()
 		return;
 	}
 
-	QString GameName = m_AutoHostGameName + " #" + UTIL_ToString( m_HostCounter );
+	QString GameName = m_AutoHostGameName + " #" + QString::number( m_HostCounter );
 
 	if( GameName.size( ) >= 31 )
 	{
@@ -664,10 +668,10 @@ void CGHost::CreateReconnectServer()
 		QObject::connect(m_ReconnectSocket, SIGNAL(newConnection()), this, SLOT(EventIncomingReconnection()));
 
 		if( m_ReconnectSocket->listen( QHostAddress(m_BindAddress), m_ReconnectPort ) )
-			CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
+			CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + QString::number( m_ReconnectPort ) );
 		else
 		{
-			CONSOLE_Print( "[GHOST] error listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
+			CONSOLE_Print( "[GHOST] error listening for GProxy++ reconnects on port " + QString::number( m_ReconnectPort ) );
 			delete m_ReconnectSocket;
 			m_ReconnectSocket = NULL;
 			m_Reconnect = false;
@@ -962,7 +966,7 @@ void CGHost :: ExtractScripts( )
 		SFileCloseArchive( PatchMPQ );
 	}
 	else
-		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "] - error code " + UTIL_ToString( GetLastError( ) ) );
+		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "] - error code " + QString::number( GetLastError( ) ) );
 }
 
 void CGHost :: LoadIPToCountryData( )
@@ -1007,7 +1011,7 @@ void CGHost :: LoadIPToCountryData( )
 				parser >> IP1;
 				parser >> IP2;
 				parser >> Country;
-				m_DBLocal->FromAdd( UTIL_ToUInt32( IP1 ), UTIL_ToUInt32( IP2 ), Country );
+				m_DBLocal->FromAdd( IP1.toUInt(), IP2.toUInt(), Country );
 
 				// it's probably going to take awhile to load the iptocountry data (~10 seconds on my 3.2 GHz P4 when using SQLite3)
 				// so let's print a progress meter just to keep the user from getting worried
@@ -1017,7 +1021,7 @@ void CGHost :: LoadIPToCountryData( )
 				if( NewPercent != Percent && NewPercent % 10 == 0 )
 				{
 					Percent = NewPercent;
-					CONSOLE_Print( "[GHOST] iptocountry data: " + UTIL_ToString( Percent ) + "% loaded" );
+					CONSOLE_Print( "[GHOST] iptocountry data: " + QString::number( Percent ) + "% loaded" );
 				}
 			}
 
@@ -1145,11 +1149,11 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
-				(*i)->QueueChatCommand( m_Language->UnableToCreateGameMaxGamesReached( gameName, UTIL_ToString( m_MaxGames ) ), creatorName, whisper );
+				(*i)->QueueChatCommand( m_Language->UnableToCreateGameMaxGamesReached( gameName, QString::number( m_MaxGames ) ), creatorName, whisper );
 		}
 
 		if( m_AdminGame )
-			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameMaxGamesReached( gameName, UTIL_ToString( m_MaxGames ) ) );
+			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameMaxGamesReached( gameName, QString::number( m_MaxGames ) ) );
 
 		return;
 	}

@@ -238,7 +238,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 
 			f.close( );
 
-			CONSOLE_Print( "[GAME: " + m_GameName + "] loaded " + UTIL_ToString( m_IPBlackList.size( ) ) + " lines from IP blacklist file" );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] loaded " + QString::number( m_IPBlackList.size( ) ) + " lines from IP blacklist file" );
 		}
 	}
 
@@ -253,10 +253,10 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 
 	QHostAddress hostAddr = m_GHost->m_BindAddress == "" ? QHostAddress::Any : QHostAddress(m_GHost->m_BindAddress);
 	if( m_Socket->listen( hostAddr, m_HostPort ) )
-		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on " + hostAddr.toString() + ":" + UTIL_ToString( m_Socket->serverPort() ) );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] listening on " + hostAddr.toString() + ":" + QString::number( m_Socket->serverPort() ) );
 	else
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on " + hostAddr.toString() + ":" + UTIL_ToString( m_HostPort ) );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on " + hostAddr.toString() + ":" + QString::number( m_HostPort ) );
 		deleteLater();
 	}
 }
@@ -280,8 +280,8 @@ CBaseGame :: ~CBaseGame( )
 		char Time[17];
 		memset( Time, 0, sizeof( char ) * 17 );
 		strftime( Time, sizeof( char ) * 17, "%Y-%m-%d %H-%M", localtime( &Now ) );
-		QString MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
-		QString SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+		QString MinString = QString::number( ( m_GameTicks / 1000 ) / 60 );
+		QString SecString = QString::number( ( m_GameTicks / 1000 ) % 60 );
 
 		if( MinString.size( ) == 1 )
 			MinString.insert( 0, "0" );
@@ -365,12 +365,12 @@ quint32 CBaseGame :: GetNumHumanPlayers( )
 
 QString CBaseGame :: GetDescription( )
 {
-	QString Description = m_GameName + " : " + m_OwnerName + " : " + UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) );
+	QString Description = m_GameName + " : " + m_OwnerName + " : " + QString::number( GetNumHumanPlayers( ) ) + "/" + QString::number( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) );
 
 	if( m_GameLoading || m_GameLoaded )
-		Description += " : " + UTIL_ToString( ( m_GameTicks / 1000 ) / 60 ) + "m";
+		Description += " : " + QString::number( ( m_GameTicks / 1000 ) / 60 ) + "m";
 	else
-		Description += " : " + UTIL_ToString( ( GetTime( ) - m_CreationTime ) / 60 ) + "m";
+		Description += " : " + QString::number( ( GetTime( ) - m_CreationTime ) / 60 ) + "m";
 
 	return Description;
 }
@@ -542,7 +542,7 @@ void CBaseGame::EventBroadcastTimeout()
 			m_Protocol->SEND_W3GS_GAMEINFO(
 						m_GHost->m_TFT,
 						m_GHost->m_LANWar3Version,
-						UTIL_CreateBYTEARRAY( MapGameType, false ),
+						Util::fromUInt32( MapGameType),
 						m_Map->GetMapGameFlags( ),
 						MapWidth,
 						MapHeight,
@@ -564,7 +564,23 @@ void CBaseGame::EventBroadcastTimeout()
 		// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 		quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
-		m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateBYTEARRAY( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter ),
+		m_GHost->m_UDPSocket->writeDatagram(
+				m_Protocol->SEND_W3GS_GAMEINFO(
+						m_GHost->m_TFT,
+						m_GHost->m_LANWar3Version,
+						Util::fromUInt32( MapGameType),
+						m_Map->GetMapGameFlags( ),
+						m_Map->GetMapWidth( ),
+						m_Map->GetMapHeight( ),
+						m_GameName,
+						"Varlock",
+						GetTime( ) - m_CreationTime,
+						m_Map->GetMapPath( ),
+						m_Map->GetMapCRC( ),
+						12,
+						12,
+						m_HostPort,
+						FixedHostCounter ),
 				 hostAddr,
 				 6112 );
 	}
@@ -576,7 +592,7 @@ void CBaseGame::EventTryAutoRehost()
 	// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
 	// so rehost it using the current autohost game name
 
-	QString GameName = m_GHost->m_AutoHostGameName + " #" + UTIL_ToString( m_GHost->m_HostCounter );
+	QString GameName = m_GHost->m_AutoHostGameName + " #" + QString::number( m_GHost->m_HostCounter );
 	CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
 	m_LastGameName = m_GameName;
 	m_GameName = GameName;
@@ -711,7 +727,7 @@ void CBaseGame::EventMapDataTimeout()
 			// in addition to this, the throughput is limited by the configuration value bot_maxdownloadspeed
 			// in summary: the actual throughput is MIN( 140 * 1000 / ping, 1400, bot_maxdownloadspeed ) in KB/sec assuming only one player is downloading the map
 
-			quint32 MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
+			quint32 MapSize = Util::extractUInt32(m_Map->GetMapSize( ));
 
 			while( (*i)->GetLastMapPartSent( ) < (*i)->GetLastMapPartAcked( ) + 1442 * 100 && (*i)->GetLastMapPartSent( ) < MapSize )
 			{
@@ -746,7 +762,7 @@ void CBaseGame::EventCountdownTimeout()
 		return;
 	}
 
-	SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+	SendAllChat( QString::number( m_CountDownCounter ) + ". . ." );
 	m_CountDownCounter--;
 }
 
@@ -856,7 +872,7 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 			if( message.size( ) > 254 )
 				message = message.mid( 0, 254 );
 
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, UTIL_CreateBYTEARRAY( player->GetPID( ) ), 16, QByteArray( ), message ) );
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray(1, player->GetPID( ) ), 16, QByteArray( ), message ) );
 		}
 		else
 		{
@@ -912,7 +928,7 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 			if( message.size( ) > 127 )
 				message = message.mid( 0, 127 );
 
-			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateBYTEARRAY( (quint32)0, false ), message ) );
+			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, Util::fromUInt32( 0), message ) );
 
 			if( m_Replay )
 				m_Replay->AddChatMessage( fromPID, 32, 0, message );
@@ -1101,7 +1117,7 @@ void CBaseGame :: SendAllActions( )
 		// print a message because even though this will take more resources it should provide some information to the administrator for future reference
 		// other solutions - dynamically modify the latency, request higher priority, terminate other games, ???
 
-		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + UTIL_ToString( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms	, your machine is probably overloaded" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] warning - the latency is " + QString::number( m_Latency ) + "ms but GHost needed " + QString::number(GetTicks() - m_LastActionSentTicks)  + "ms	, your machine is probably overloaded" );
 	}
 
 	m_LastActionSentTicks = GetTicks( );
@@ -1218,7 +1234,7 @@ void CBaseGame::CheckPlayersStartedLaggging()
 
 void CBaseGame::EventDropLaggerTimeout()
 {
-	StopLaggers( m_GHost->m_Language->WasAutomaticallyDroppedAfterSeconds( UTIL_ToString(m_WaitTime) ) );
+	StopLaggers( m_GHost->m_Language->WasAutomaticallyDroppedAfterSeconds( QString::number(m_WaitTime) ) );
 }
 
 void CBaseGame::EventResetLagscreenTimeout()
@@ -1425,11 +1441,11 @@ void CBaseGame :: EventPlayerDeleted()
 	if( m_GameLoaded && player->GetLeftCode( ) == PLAYERLEAVE_DISCONNECT && m_AutoSave )
 	{
 		QString SaveGameName = UTIL_FileSafeName( "GHost++ AutoSave " + m_GameName + " (" + player->GetName( ) + ").w3z" );
-		CONSOLE_Print( "[GAME: " + m_GameName + "] auto saving [" + SaveGameName + "] before player drop, shortened send interval = " + UTIL_ToString( GetTicks( ) - m_LastActionSentTicks ) );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] auto saving [" + SaveGameName + "] before player drop, shortened send interval = " + QString::number( GetTicks( ) - m_LastActionSentTicks ) );
 		QByteArray CRC;
 		QByteArray Action;
 		Action.push_back( 6 );
-		UTIL_AppendBYTEARRAY( Action, SaveGameName.toUtf8() );
+		Action.append(SaveGameName.toUtf8());
 		m_Actions.enqueue( new CIncomingAction( player->GetPID( ), CRC, Action ) );
 
 		// todotodo: with the new latency system there needs to be a way to send a 0-time action
@@ -1554,7 +1570,7 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 			if( TimeRemaining > ( (quint32)m_GProxyEmptyActions + 1 ) * 60 )
 				TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60;
 
-			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
+			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( QString::number( TimeRemaining ) ) );
 			player->SetLastGProxyWaitNoticeSentTime( GetTime( ) );
 		}
 
@@ -1585,7 +1601,7 @@ void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
 			if( TimeRemaining > ( (quint32)m_GProxyEmptyActions + 1 ) * 60 )
 				TimeRemaining = ( m_GProxyEmptyActions + 1 ) * 60;
 
-			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( UTIL_ToString( TimeRemaining ) ) );
+			SendAllChat( player->GetPID( ), m_GHost->m_Language->WaitForReconnectSecondsRemain( QString::number( TimeRemaining ) ) );
 			player->SetLastGProxyWaitNoticeSentTime( GetTime( ) );
 		}
 
@@ -1605,7 +1621,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( joinPlayer->GetName( ).isEmpty( ) || joinPlayer->GetName( ).size( ) > 15 )
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with an invalid name of length " + UTIL_ToString( joinPlayer->GetName( ).size( ) ) );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with an invalid name of length " + QString::number( joinPlayer->GetName( ).size( ) ) );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 		potential->deleteLater();
 		return;
@@ -1680,7 +1696,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 						// this causes them to be kicked back to the chat channel on battle.net
 
 						QVector<CGameSlot> Slots = m_Map->GetSlots( );
-						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, Util::fromUInt16(potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 						potential->deleteLater();
 						return;
 					}
@@ -1708,7 +1724,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 					// this causes them to be kicked back to the chat channel on battle.net
 
 					QVector<CGameSlot> Slots = m_Map->GetSlots( );
-					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, UTIL_CreateBYTEARRAY((quint16)potential->GetSocket( )->localPort(), false), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, Util::fromUInt16((quint16)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 					potential->deleteLater();
 					return;
 				}
@@ -1955,7 +1971,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), Util::fromUInt16(Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2092,7 +2108,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) )
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + QString::number( 2, score ) + "] outside the limits [" + QString::number( 2, m_MinimumScore ) + "] to [" + QString::number( 2, m_MaximumScore ) + "]" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 		potential->deleteLater();
 		return;
@@ -2185,9 +2201,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			if( score < -99999.0 || abs( score - AverageScore ) > abs( FurthestPlayer->GetScore( ) - AverageScore ) )
 			{
 				if( score < -99999.0 )
-					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the furthest rating [N/A] from the average [" + UTIL_ToString( AverageScore, 2 ) + "]" );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the furthest rating [N/A] from the average [" + QString::number( 2, AverageScore ) + "]" );
 				else
-					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the furthest rating [" + UTIL_ToString( score, 2 ) + "] from the average [" + UTIL_ToString( AverageScore, 2 ) + "]" );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the furthest rating [" + QString::number( 2, score ) + "] from the average [" + QString::number( 2, AverageScore ) + "]" );
 
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 				potential->deleteLater();
@@ -2199,9 +2215,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			SID = GetSIDFromPID( FurthestPlayer->GetPID( ) );
 
 			if( FurthestPlayer->GetScore( ) < -99999.0 )
-				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( "N/A", UTIL_ToString( AverageScore, 2 ) ) );
+				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( "N/A", QString::number( 2, AverageScore ) ) );
 			else
-				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( UTIL_ToString( FurthestPlayer->GetScore( ), 2 ), UTIL_ToString( AverageScore, 2 ) ) );
+				FurthestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingFurthestScore( QString::number( 2, FurthestPlayer->GetScore( ) ), QString::number( 2, AverageScore ) ) );
 
 			FurthestPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -2213,9 +2229,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			FurthestPlayer->deleteLater();
 
 			if( FurthestPlayer->GetScore( ) < -99999.0 )
-				SendAllChat( m_GHost->m_Language->PlayerWasKickedForFurthestScore( FurthestPlayer->GetName( ), "N/A", UTIL_ToString( AverageScore, 2 ) ) );
+				SendAllChat( m_GHost->m_Language->PlayerWasKickedForFurthestScore( FurthestPlayer->GetName( ), "N/A", QString::number( 2, AverageScore ) ) );
 			else
-				SendAllChat( m_GHost->m_Language->PlayerWasKickedForFurthestScore( FurthestPlayer->GetName( ), UTIL_ToString( FurthestPlayer->GetScore( ), 2 ), UTIL_ToString( AverageScore, 2 ) ) );
+				SendAllChat( m_GHost->m_Language->PlayerWasKickedForFurthestScore( FurthestPlayer->GetName( ), QString::number( 2, FurthestPlayer->GetScore( ) ), QString::number( 2, AverageScore ) ) );
 		}
 		else if( m_GHost->m_MatchMakingMethod == 2 )
 		{
@@ -2247,7 +2263,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 				if( score < -99999.0 )
 					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the lowest rating [N/A]" );
 				else
-					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the lowest rating [" + UTIL_ToString( score, 2 ) + "]" );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has the lowest rating [" + QString::number( 2, score ) + "]" );
 
 				potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 				potential->deleteLater();
@@ -2261,7 +2277,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			if( LowestPlayer->GetScore( ) < -99999.0 )
 				LowestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingLowestScore( "N/A" ) );
 			else
-				LowestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingLowestScore( UTIL_ToString( LowestPlayer->GetScore( ), 2 ) ) );
+				LowestPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForHavingLowestScore( QString::number( 2, LowestPlayer->GetScore( ) ) ) );
 
 			LowestPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
@@ -2275,7 +2291,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 			if( LowestPlayer->GetScore( ) < -99999.0 )
 				SendAllChat( m_GHost->m_Language->PlayerWasKickedForLowestScore( LowestPlayer->GetName( ), "N/A" ) );
 			else
-				SendAllChat( m_GHost->m_Language->PlayerWasKickedForLowestScore( LowestPlayer->GetName( ), UTIL_ToString( LowestPlayer->GetScore( ), 2 ) ) );
+				SendAllChat( m_GHost->m_Language->PlayerWasKickedForLowestScore( LowestPlayer->GetName( ), QString::number( 2, LowestPlayer->GetScore( ) ) ) );
 		}
 	}
 
@@ -2334,7 +2350,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// send slot info to the new player
 	// the SLOTINFOJOIN packet also tells the client their assigned PID and that the join was successful
 
-	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), UTIL_CreateBYTEARRAY((quint16)Player->GetSocket( )->localPort(), false), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
+	Player->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( Player->GetPID( ), Util::fromUInt16((quint16)Player->GetSocket( )->localPort()), Player->GetExternalIP( ), m_Slots, m_RandomSeed, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 
 	// send virtual host info and fake player info (if present) to the new player
 
@@ -2404,7 +2420,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	if( score < -99999.0 )
 		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), "N/A" ) );
 	else
-		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) );
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), QString::number( 2, score ) ) );
 
 	quint32 PlayersScored = 0;
 	quint32 PlayersNotScored = 0;
@@ -2436,7 +2452,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	}
 
 	double Spread = MaxScore - MinScore;
-	SendAllChat( m_GHost->m_Language->RatedPlayersSpread( UTIL_ToString( PlayersScored ), UTIL_ToString( PlayersScored + PlayersNotScored ), UTIL_ToString( (quint32)Spread ) ) );
+	SendAllChat( m_GHost->m_Language->RatedPlayersSpread( QString::number( PlayersScored ), QString::number( PlayersScored + PlayersNotScored ), QString::number( (quint32)Spread ) ) );
 
 	// check for multiple IP usage
 
@@ -2502,7 +2518,7 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player, quint32 reason )
 void CBaseGame :: EventPlayerLoaded()
 {
 	CGamePlayer *player = (CGamePlayer*)QObject::sender();
-	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] finished loading in " + UTIL_ToString( (float)( player->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) + " seconds" );
+	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] finished loading in " + QString::number( 2, (float)( player->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000 ) + " seconds" );
 
 	if( m_LoadInGame )
 	{
@@ -2642,7 +2658,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 					}
 				}
 
-				SendAllChat( m_GHost->m_Language->PlayersInGameState( UTIL_ToString( StateNumber ), Players ) );
+				SendAllChat( m_GHost->m_Language->PlayersInGameState( QString::number( StateNumber ), Players ) );
 				StateNumber++;
 			}
 
@@ -2717,8 +2733,8 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			// calculate timestamp
 
-			QString MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
-			QString SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+			QString MinString = QString::number( ( m_GameTicks / 1000 ) / 60 );
+			QString SecString = QString::number( ( m_GameTicks / 1000 ) % 60 );
 
 			if( MinString.size( ) == 1 )
 				MinString.insert( 0, "0" );
@@ -2753,7 +2769,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 					// this includes allied chat and private chat from both teams as long as it was relayed
 
 					if( m_Replay )
-						m_Replay->AddChatMessage( chatPlayer->GetFromPID( ), chatPlayer->GetFlag( ), UTIL_QByteArrayToUInt32( chatPlayer->GetExtraFlags( ), false ), chatPlayer->GetMessage( ) );
+						m_Replay->AddChatMessage( chatPlayer->GetFromPID( ), chatPlayer->GetFlag( ), Util::extractUInt32(chatPlayer->GetExtraFlags( )), chatPlayer->GetMessage( ) );
 				}
 			}
 			else
@@ -2989,7 +3005,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 	// todotodo: the variable names here are confusing due to extremely poor design on my part
 
-	quint32 MapSize = UTIL_QByteArrayToUInt32( m_Map->GetMapSize( ), false );
+	quint32 MapSize = Util::extractUInt32(m_Map->GetMapSize( ));
 
 	if( mapSize->GetSizeFlag( ) != 1 || mapSize->GetMapSize( ) != MapSize )
 	{
@@ -3040,8 +3056,8 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 			float Seconds = (float)( GetTicks( ) - player->GetStartedDownloadingTicks( ) ) / 1000;
 			float Rate = (float)MapSize / 1024 / Seconds;
-			CONSOLE_Print( "[GAME: " + m_GameName + "] map download finished for player [" + player->GetName( ) + "] in " + UTIL_ToString( Seconds, 1 ) + " seconds" );
-			SendAllChat( m_GHost->m_Language->PlayerDownloadedTheMap( player->GetName( ), UTIL_ToString( Seconds, 1 ), UTIL_ToString( Rate, 1 ) ) );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] map download finished for player [" + player->GetName( ) + "] in " + QString::number( 1, Seconds ) + " seconds" );
+			SendAllChat( m_GHost->m_Language->PlayerDownloadedTheMap( player->GetName( ), QString::number( 1, Seconds ), QString::number( 1, Rate ) ) );
 			player->SetDownloadFinished( true );
 			player->SetFinishedDownloadingTime( GetTime( ) );
 
@@ -3111,8 +3127,8 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, quint32 /*pong*/ )
 	{
 		// send a chat message because we don't normally do so when a player leaves the lobby
 
-		SendAllChat( m_GHost->m_Language->AutokickingPlayerForExcessivePing( player->GetName( ), UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) ) );
-		player->SetLeftReason( "was autokicked for excessive ping of " + UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) );
+		SendAllChat( m_GHost->m_Language->AutokickingPlayerForExcessivePing( player->GetName( ), QString::number( player->GetPing( m_GHost->m_LCPings ) ) ) );
+		player->SetLeftReason( "was autokicked for excessive ping of " + QString::number( player->GetPing( m_GHost->m_LCPings ) ) );
 		player->SetLeftCode( PLAYERLEAVE_LOBBY );
 		player->deleteLater();
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
@@ -3134,7 +3150,7 @@ void CBaseGame :: EventGameRefreshed( QString /*server*/ )
 
 void CBaseGame :: EventGameStarted( )
 {
-	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
+	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + QString::number( GetNumHumanPlayers( ) ) + " players" );
 
 	// encode the HCL command QString in the slot handicaps
 	// here's how it works:
@@ -3203,7 +3219,6 @@ void CBaseGame :: EventGameStarted( )
 		SendAllSlotInfo( );
 
 	m_StartedLoadingTicks = GetTicks( );
-	m_LoadInGameTimer.start();
 	m_GameLoading = true;
 
 	// since we use a fake countdown to deal with leavers during countdown the COUNTDOWN_START and COUNTDOWN_END packets are sent in quick succession
@@ -3288,15 +3303,15 @@ void CBaseGame :: EventGameStarted( )
 	// we have to build this now because the map data is going to be deleted
 
 	QByteArray StatString;
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapGameFlags( ) );
+	StatString.append(m_Map->GetMapGameFlags( ));
 	StatString.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapWidth( ) );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapHeight( ) );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapCRC( ) );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapPath( ).toUtf8() );
-	UTIL_AppendBYTEARRAY( StatString, "GHost++" );
+	StatString.append(m_Map->GetMapWidth( ));
+	StatString.append(m_Map->GetMapHeight( ));
+	StatString.append(m_Map->GetMapCRC( ));
+	StatString.append(m_Map->GetMapPath( ).toUtf8());
+	StatString.append("GHost++");
 	StatString.push_back( (char)0 );
-	UTIL_AppendBYTEARRAY( StatString, m_Map->GetMapSHA1( ) );		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
+	StatString.append(m_Map->GetMapSHA1( ));		// note: in replays generated by Warcraft III it stores 20 zeros for the SHA1 instead of the real thing
 	StatString = UTIL_EncodeStatString( StatString );
 	m_StatString = StatString;
 
@@ -3307,6 +3322,8 @@ void CBaseGame :: EventGameStarted( )
 
 	if( m_LoadInGame )
 	{
+		m_LoadInGameTimer.start();
+
 		// buffer all the player loaded messages
 		// this ensures that every player receives the same set of player loaded messages in the same order, even if someone leaves during loading
 		// if someone leaves during loading we buffer the leave message to ensure it gets sent in the correct position but the player loaded message wouldn't get sent if we didn't buffer it now
@@ -3321,12 +3338,13 @@ void CBaseGame :: EventGameStarted( )
 
 void CBaseGame :: EventGameLoaded( )
 {
-	CONSOLE_Print( "[GAME: " + m_GameName + "] finished loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
+	CONSOLE_Print( "[GAME: " + m_GameName + "] finished loading with " + QString::number( GetNumHumanPlayers( ) ) + " players" );
 
 	// send shortest, longest, and personal load times to each player
 
 	CGamePlayer *Shortest = NULL;
 	CGamePlayer *Longest = NULL;
+	m_LoadInGameTimer.stop();
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
@@ -3339,12 +3357,12 @@ void CBaseGame :: EventGameLoaded( )
 
 	if( Shortest && Longest )
 	{
-		SendAllChat( m_GHost->m_Language->ShortestLoadByPlayer( Shortest->GetName( ), UTIL_ToString( (float)( Shortest->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) ) );
-		SendAllChat( m_GHost->m_Language->LongestLoadByPlayer( Longest->GetName( ), UTIL_ToString( (float)( Longest->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) ) );
+		SendAllChat( m_GHost->m_Language->ShortestLoadByPlayer( Shortest->GetName( ), QString::number( 2, (float)( Shortest->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000 ) ) );
+		SendAllChat( m_GHost->m_Language->LongestLoadByPlayer( Longest->GetName( ), QString::number( 2, (float)( Longest->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000 ) ) );
 	}
 
 	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		SendChat( *i, m_GHost->m_Language->YourLoadingTimeWas( UTIL_ToString( (float)( (*i)->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) ) );
+		SendChat( *i, m_GHost->m_Language->YourLoadingTimeWas( QString::number( 2, (float)( (*i)->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000 ) ) );
 
 	// read from gameloaded.txt if available
 
@@ -4113,7 +4131,7 @@ void CBaseGame :: BalanceSlots( )
 		// the cost is too high, don't run the algorithm
 		// a possible alternative: stop after enough iterations and/or time has passed
 
-		CONSOLE_Print( "[GAME: " + m_GameName + "] shuffling slots instead of balancing - the algorithm is too slow (with a cost of " + UTIL_ToString( AlgorithmCost ) + ") for this team configuration" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] shuffling slots instead of balancing - the algorithm is too slow (with a cost of " + QString::number( AlgorithmCost ) + ") for this team configuration" );
 		SendAllChat( m_GHost->m_Language->ShufflingPlayers( ) );
 		ShuffleSlots( );
 		return;
@@ -4162,7 +4180,7 @@ void CBaseGame :: BalanceSlots( )
 		}
 	}
 
-	CONSOLE_Print( "[GAME: " + m_GameName + "] balancing slots completed in " + UTIL_ToString( EndTicks - StartTicks ) + "ms (with a cost of " + UTIL_ToString( AlgorithmCost ) + ")" );
+	CONSOLE_Print( "[GAME: " + m_GameName + "] balancing slots completed in " + QString::number( EndTicks - StartTicks ) + "ms (with a cost of " + QString::number( AlgorithmCost ) + ")" );
 	SendAllChat( m_GHost->m_Language->BalancingSlotsCompleted( ) );
 	SendAllSlotInfo( );
 
@@ -4188,7 +4206,7 @@ void CBaseGame :: BalanceSlots( )
 		}
 
 		if( TeamHasPlayers )
-			SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
+			SendAllChat( m_GHost->m_Language->TeamCombinedScore( QString::number( i + 1 ), QString::number( 2, TeamScore ) ) );
 	}
 }
 
@@ -4377,7 +4395,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 	if( GetNumHumanPlayers( ) < m_AutoStartPlayers )
 	{
-		SendAllChat( m_GHost->m_Language->WaitingForPlayersBeforeAutoStart( UTIL_ToString( m_AutoStartPlayers ), UTIL_ToString( m_AutoStartPlayers - GetNumHumanPlayers( ) ) ) );
+		SendAllChat( m_GHost->m_Language->WaitingForPlayersBeforeAutoStart( QString::number( m_AutoStartPlayers ), QString::number( m_AutoStartPlayers - GetNumHumanPlayers( ) ) ) );
 		return;
 	}
 
