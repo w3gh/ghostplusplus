@@ -845,7 +845,7 @@ QByteArray CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, QByteArray clientToke
 		packet.append(exeVersion);							// EXE Version
 		packet.append(exeVersionHash);						// EXE Version Hash
 		packet.append(Util::fromUInt32(NumKeys));			// number of keys in this packet
-		packet.append(Util::fromUInt16(0));					// boolean Using Spawn (32 bit)
+		packet.append(Util::fromUInt32(0));					// boolean Using Spawn (32 bit)
 		packet.append(keyInfoROC);							// ROC Key Info
 
 		if( TFT )

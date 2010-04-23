@@ -115,8 +115,8 @@ private:
 	QString m_BNLSServer;							// BNLS server to connect to (for warden handling)
 	quint16 m_BNLSPort;							// BNLS port
 	quint32 m_BNLSWardenCookie;					// BNLS warden cookie
-	QString m_CDKeyROC;								// ROC CD key
-	QString m_CDKeyTFT;								// TFT CD key
+	QByteArray m_CDKeyROC;								// ROC CD key
+	QByteArray m_CDKeyTFT;								// TFT CD key
 	QString m_CountryAbbrev;							// country abbreviation
 	QString m_Country;								// country
 	quint32 m_LocaleID;							// see: http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
