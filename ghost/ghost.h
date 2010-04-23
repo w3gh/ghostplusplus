@@ -100,7 +100,7 @@ public:
 	bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
 	quint32 m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
 	QString m_LanguageFile;					// config value: language file
-	QString m_Warcraft3Path;					// config value: Warcraft 3 path
+	QByteArray m_Warcraft3Path;					// config value: Warcraft 3 path
 	bool m_TFT;								// config value: TFT enabled or not
 	QString m_BindAddress;					// config value: the address to host games on
 	quint16 m_HostPort;					// config value: the port to host games on

@@ -94,30 +94,30 @@ private:
 	QByteArray m_ServerToken;			// set in RECEIVE_SID_AUTH_INFO
 	QByteArray m_MPQFileTime;			// set in RECEIVE_SID_AUTH_INFO
 	QByteArray m_IX86VerFileName;		// set in RECEIVE_SID_AUTH_INFO
-	QByteArray m_ValueStringFormula;		// set in RECEIVE_SID_AUTH_INFO
+	QByteArray m_ValueStringFormula;	// set in RECEIVE_SID_AUTH_INFO
 	QByteArray m_KeyState;				// set in RECEIVE_SID_AUTH_CHECK
 	QByteArray m_KeyStateDescription;	// set in RECEIVE_SID_AUTH_CHECK
 	QByteArray m_Salt;					// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
 	QByteArray m_ServerPublicKey;		// set in RECEIVE_SID_AUTH_ACCOUNTLOGON
-	QByteArray m_UniqueName;				// set in RECEIVE_SID_ENTERCHAT
+	QByteArray m_UniqueName;			// set in RECEIVE_SID_ENTERCHAT
 
 public:
 	CBNETProtocol( );
 	~CBNETProtocol( );
 
 	QByteArray GetClientToken( )				{ return m_ClientToken; }
-	QByteArray GetLogonType( )				{ return m_LogonType; }
+	QByteArray GetLogonType( )					{ return m_LogonType; }
 	QByteArray GetServerToken( )				{ return m_ServerToken; }
 	QByteArray GetMPQFileTime( )				{ return m_MPQFileTime; }
 	QByteArray GetIX86VerFileName( )			{ return m_IX86VerFileName; }
-	QString GetIX86VerFileNameString( )		{ return m_IX86VerFileName; }
-	QByteArray GetValueStringFormula( )		{ return m_ValueStringFormula; }
-	QString GetValueStringFormulaString( )	{ return m_ValueStringFormula; }
-	QByteArray GetKeyState( )				{ return m_KeyState; }
-	QString GetKeyStateDescription( )		{ return m_KeyStateDescription; }
-	QByteArray GetSalt( )					{ return m_Salt; }
+	QByteArray GetIX86VerFileNameString( )		{ return m_IX86VerFileName; }
+	QByteArray GetValueStringFormula( )			{ return m_ValueStringFormula; }
+	QByteArray GetValueStringFormulaString( )	{ return m_ValueStringFormula; }
+	QByteArray GetKeyState( )					{ return m_KeyState; }
+	QByteArray GetKeyStateDescription( )		{ return m_KeyStateDescription; }
+	QByteArray GetSalt( )						{ return m_Salt; }
 	QByteArray GetServerPublicKey( )			{ return m_ServerPublicKey; }
-	QByteArray GetUniqueName( )				{ return m_UniqueName; }
+	QByteArray GetUniqueName( )					{ return m_UniqueName; }
 
 	// receive functions
 

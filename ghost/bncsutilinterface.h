@@ -24,6 +24,7 @@
 //
 // CBNCSUtilInterface
 //
+#include "includes.h"
 
 class CBNCSUtilInterface
 {
@@ -56,13 +57,14 @@ public:
 
 	void Reset( QString userName, QString userPassword );
 
-	bool HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, QByteArray clientToken, QByteArray serverToken );
+	bool HELP_SID_AUTH_CHECK( bool TFT, const QByteArray & war3Path, const QByteArray & keyROC, const QByteArray & keyTFT,
+							  const QByteArray & valueStringFormula, const QByteArray & mpqFileName, const QByteArray & clientToken, const QByteArray & serverToken );
 	bool HELP_SID_AUTH_ACCOUNTLOGON( );
-	bool HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QByteArray serverKey );
-	bool HELP_PvPGNPasswordHash( QString userPassword );
+	bool HELP_SID_AUTH_ACCOUNTLOGONPROOF( const QByteArray & salt, const QByteArray & serverKey );
+	bool HELP_PvPGNPasswordHash( const QByteArray & userPassword );
 
 private:
-	QByteArray CreateKeyInfo( QString key, quint32 clientToken, quint32 serverToken );
+	QByteArray CreateKeyInfo( const QByteArray & key, quint32 clientToken, quint32 serverToken );
 };
 
 #endif

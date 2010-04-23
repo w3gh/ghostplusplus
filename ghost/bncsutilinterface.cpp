@@ -49,17 +49,19 @@ void CBNCSUtilInterface :: Reset( QString userName, QString userPassword )
 	m_NLS = new NLS( userName.toStdString(), userPassword.toStdString() );
 }
 
-bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QString keyROC, QString keyTFT, QString valueStringFormula, QString mpqFileName, QByteArray clientToken, QByteArray serverToken )
+bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, const QByteArray& war3Path, const QByteArray & keyROC,
+												const QByteArray & keyTFT, const QByteArray & valueStringFormula, const QByteArray & mpqFileName,
+												const QByteArray & clientToken, const QByteArray & serverToken )
 {
 	// set m_EXEVersion, m_EXEVersionHash, m_EXEInfo, m_InfoROC, m_InfoTFT
 
-	QString FileWar3EXE = war3Path + "war3.exe";
-	QString FileStormDLL = war3Path + "Storm.dll";
+	QByteArray FileWar3EXE = war3Path + "war3.exe";
+	QByteArray FileStormDLL = war3Path + "Storm.dll";
 
 	if( !QFile::exists( FileStormDLL ) )
 		FileStormDLL = war3Path + "storm.dll";
 
-	QString FileGameDLL = war3Path + "game.dll";
+	QByteArray FileGameDLL = war3Path + "game.dll";
 	bool ExistsWar3EXE = QFile::exists( FileWar3EXE );
 	bool ExistsStormDLL = QFile::exists( FileStormDLL );
 	bool ExistsGameDLL = QFile::exists( FileGameDLL );
@@ -67,14 +69,13 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_CHECK( bool TFT, QString war3Path, QStr
 	if( ExistsWar3EXE && ExistsStormDLL && ExistsGameDLL )
 	{
 		// todotodo: check getExeInfo return value to ensure 1024 bytes was enough
-
 		char buf[1024];
 		quint32 EXEVersion;
-		getExeInfo( FileWar3EXE.toStdString().c_str( ), (char *)&buf, 1024, (quint32 *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
+		getExeInfo( FileWar3EXE.data( ), (char *)&buf, 1024, (quint32 *)&EXEVersion, BNCSUTIL_PLATFORM_X86 );
 		m_EXEInfo = buf;
 		m_EXEVersion = Util::fromUInt32( EXEVersion);
 		quint32 EXEVersionHash;
-		checkRevisionFlat( valueStringFormula.toStdString().c_str( ), FileWar3EXE.toStdString().c_str( ), FileStormDLL.toStdString().c_str( ), FileGameDLL.toStdString().c_str( ), extractMPQNumber( mpqFileName.toStdString().c_str( ) ), (unsigned long *)&EXEVersionHash );
+		checkRevisionFlat( valueStringFormula.data( ), FileWar3EXE.data( ), FileStormDLL.data( ), FileGameDLL.data( ), extractMPQNumber( mpqFileName.data( ) ), (unsigned long *)&EXEVersionHash );
 		m_EXEVersionHash = Util::fromUInt32( EXEVersionHash);
 		m_KeyInfoROC = CreateKeyInfo( keyROC, Util::extractUInt32(clientToken), Util::extractUInt32(serverToken) );
 
@@ -118,32 +119,32 @@ bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGON( )
 	return true;
 }
 
-bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray salt, QByteArray serverKey )
+bool CBNCSUtilInterface :: HELP_SID_AUTH_ACCOUNTLOGONPROOF( const QByteArray & salt, const QByteArray & serverKey )
 {
 	// set m_M1
 
 	char buf[20];
-	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).toStdString().c_str( ), QString( salt.begin( ), salt.end( ) ).toStdString().c_str( ) );
+	// nls_get_M1( (nls_t *)m_nls, buf, QString( serverKey.begin( ), serverKey.end( ) ).data( ), QString( salt.begin( ), salt.end( ) ).data( ) );
 	( (NLS *)m_NLS )->getClientSessionKey( buf, salt.data(), serverKey.data() );
 	m_M1 = QByteArray( (char *)buf, 20 );
 	return true;
 }
 
-bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( QString userPassword )
+bool CBNCSUtilInterface :: HELP_PvPGNPasswordHash( const QByteArray &userPassword )
 {
 	// set m_PvPGNPasswordHash
 
 	char buf[20];
-	hashPassword( userPassword.toStdString().c_str( ), buf );
+	hashPassword( userPassword.data( ), buf );
 	m_PvPGNPasswordHash = QByteArray( (char *)buf, 20 );
 	return true;
 }
 
-QByteArray CBNCSUtilInterface :: CreateKeyInfo( QString key, quint32 clientToken, quint32 serverToken )
+QByteArray CBNCSUtilInterface :: CreateKeyInfo( const QByteArray & key, quint32 clientToken, quint32 serverToken )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	QByteArray KeyInfo;
-	CDKeyDecoder Decoder( key.toStdString().c_str( ), key.size( ) );
+	CDKeyDecoder Decoder( key.data(), key.size( ) );
 
 	if( Decoder.isKeyValid( ) )
 	{

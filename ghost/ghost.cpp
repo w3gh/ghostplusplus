@@ -840,7 +840,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_LanguageFile = CFG->GetString( "bot_language", "language.cfg" );
 	delete m_Language;
 	m_Language = new CLanguage( m_LanguageFile );
-	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) );
+	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) ).toAscii();
 	m_BindAddress = CFG->GetString( "bot_bindaddress", QString( ) );
 	m_ReconnectWaitTime = CFG->GetInt( "bot_reconnectwaittime", 3 );
 	m_MaxGames = CFG->GetInt( "bot_maxgames", 5 );
