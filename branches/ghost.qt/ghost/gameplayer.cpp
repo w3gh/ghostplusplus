@@ -396,6 +396,7 @@ void CGamePlayer::init()
 
 	QObject::connect(this, SIGNAL(finishedLoading()), m_Game, SLOT(EventPlayerLoaded()));
 	QObject::connect(this, SIGNAL(aboutToDelete()), m_Game, SLOT(EventPlayerDeleted()));
+	QObject::connect(this, SIGNAL(stoppedLagging()), m_Game, SLOT(EventPlayerStoppedLagging()));
 	m_SendGProxyMessageTimer.setInterval(20000);
 	QObject::connect(&m_SendGProxyMessageTimer, SIGNAL(timeout()), this, SLOT(EventSendGProxyMessage()));
 
@@ -411,6 +412,7 @@ void CGamePlayer::init()
 
 CGamePlayer :: ~CGamePlayer( )
 {
+	emit stoppedLagging();
 }
 
 void CGamePlayer::EventSendGProxyMessage()
@@ -517,6 +519,13 @@ void CGamePlayer :: ProcessPackets( )
 	CIncomingMapSize *MapSize = NULL;
 	quint32 CheckSum = 0;
 	quint32 Pong = 0;
+
+	if( m_Lagging && m_Game->GetSyncCounter() - m_SyncCounter < m_Game->GetSyncLimit() / 2 )
+	{
+		// stop the lag screen for this player
+		m_Lagging = false;
+		emit stoppedLagging();
+	}
 
 	// process all the received packets in the m_Packets queue
 

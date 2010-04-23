@@ -141,7 +141,6 @@ protected:
 	quint32 m_StartPlayers;						// number of players when the game started
 	quint32 m_LastActionSentTicks;					// GetTicks when the last action packet was sent
 	quint32 m_StartedLaggingTime;					// GetTime when the last lag screen started
-	quint32 m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
 	quint32 m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode
 	double m_MaximumScore;							// the maximum allowed score for matchmaking mode
@@ -177,7 +176,6 @@ public:
 	virtual QString GetCreatorName( )				{ return m_CreatorName; }
 	virtual QString GetCreatorServer( )				{ return m_CreatorServer; }
 	virtual quint32 GetHostCounter( )				{ return m_HostCounter; }
-	virtual quint32 GetLastLagScreenTime( )		{ return m_LastLagScreenTime; }
 	virtual quint32 GetStartedLaggingTime( )		{ return m_StartedLaggingTime; }
 	virtual quint32 GetAutoStartPlayers( )			{ return m_AutoStartPlayers; }
 	virtual bool GetLocked( )						{ return m_Locked; }
@@ -199,6 +197,8 @@ public:
 	virtual quint32 GetNumPlayers( );
 	virtual quint32 GetNumHumanPlayers( );
 	virtual QString GetDescription( );
+	quint32 GetSyncCounter() { return m_SyncCounter; }
+	quint32 GetSyncLimit() { return m_SyncLimit; }
 
 	virtual void SetAnnounce( quint32 interval, QString message );
 
