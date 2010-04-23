@@ -1405,7 +1405,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals 
 			if( RC == SQLITE_ERROR )
 			{
 				Success = false;
-				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( 10, i.value() ) + "] - " + m_DB->GetError( ) );
+				CONSOLE_Print( "[SQLITE3] error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( i.value(), 'g', 10 ) + "] - " + m_DB->GetError( ) );
 				break;
 			}
 
@@ -1414,7 +1414,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals 
 		else
 		{
 			Success = false;
-			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( 10, i.value() ) + "] - " + m_DB->GetError( ) );
+			CONSOLE_Print( "[SQLITE3] prepare error adding w3mmdvar-real [" + QString::number( gameid ) + " : " + QString::number( i.key().first ) + " : " + i.key().second + " : " + QString::number( i.value(), 'g', 10 ) + "] - " + m_DB->GetError( ) );
 			break;
 		}
 	}

@@ -517,7 +517,7 @@ void CBNET::EventCallableUpdateTimeout()
 			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
 
 			if( GamePlayerSummary )
-				QueueChatCommand( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), QString::number( GamePlayerSummary->GetTotalGames( ) ), QString::number( 2, (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000 ), QString::number( GamePlayerSummary->GetAvgLeftPercent( ) ) ), i->first, !i->first.isEmpty( ) );
+				QueueChatCommand( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), QString::number( GamePlayerSummary->GetTotalGames( ) ), QString::number( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 'g', 2 ), QString::number( GamePlayerSummary->GetAvgLeftPercent( ) ) ), i->first, !i->first.isEmpty( ) );
 			else
 				QueueChatCommand( m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.isEmpty( ) );
 
@@ -550,15 +550,15 @@ void CBNET::EventCallableUpdateTimeout()
 																						QString::number( DotAPlayerSummary->GetTotalTowerKills( ) ),
 																						QString::number( DotAPlayerSummary->GetTotalRaxKills( ) ),
 																						QString::number( DotAPlayerSummary->GetTotalCourierKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgDeaths( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgCreepKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgCreepDenies( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgAssists( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgNeutralKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgTowerKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgRaxKills( ) ),
-																						QString::number( 2, DotAPlayerSummary->GetAvgCourierKills( ) ) );
+																						QString::number( DotAPlayerSummary->GetAvgKills( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgDeaths( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgCreepKills( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgCreepDenies( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgAssists( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgNeutralKills( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgTowerKills( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgRaxKills( ), 'g', 2 ),
+																						QString::number( DotAPlayerSummary->GetAvgCourierKills( ), 'g', 2 ) );
 
 				QueueChatCommand( Summary, i->first, !i->first.isEmpty( ) );
 			}
