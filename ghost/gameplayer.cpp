@@ -160,7 +160,7 @@ void CGamePlayer::EventConnectionClosed()
 QByteArray CPotentialPlayer :: GetExternalIP( )
 {
 	if( m_Socket )
-		return Util::fromUInt32(m_Socket->localAddress().toIPv4Address());
+		return Util::fromUInt32(m_Socket->peerAddress().toIPv4Address());
 
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 	return QByteArray( (char*)Zeros, 4 );
@@ -169,7 +169,7 @@ QByteArray CPotentialPlayer :: GetExternalIP( )
 QString CPotentialPlayer :: GetExternalIPString( )
 {
 	if( m_Socket )
-		return m_Socket->localAddress().toString();
+		return m_Socket->peerAddress().toString();
 
 	return QString( );
 }
