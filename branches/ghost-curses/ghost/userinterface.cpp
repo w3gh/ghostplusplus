@@ -629,19 +629,22 @@ void CCurses :: DrawListWindow2( WindowType wType, BufferType bType )
 			{
 				x += 25;
 				y = 0;
-				wmove( data.Window, 0, x );
+
+				if ( x > COLS - 25 )
+					break;
 			}
 			
 			if( y++ < LINES - 5 )
 			{
+				wmove( data.Window, y, x );
+				refresh( );
+
 				SetAttribute( data, message, flag, bType, true );
 
 				for( uint32_t j = 0; j < message.size( ) && j < 23; j++ )
 					waddch( data.Window, UTIL_ToULong( message[j] ) );
 
 				SetAttribute( data, message, flag, bType, false );
-
-				waddch( data.Window, '\n' );
 			}
 		}
 
