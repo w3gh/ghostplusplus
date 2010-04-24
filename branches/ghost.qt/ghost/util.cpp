@@ -53,7 +53,7 @@ QByteArray Util::reverse(const QByteArray &b)
 {
 	QByteArray res;
 	QByteArray::const_iterator it;
-	for (it = b.end(); it != b.begin(); it--)
+	for (it = b.end() - 1; it == b.begin(); it--)
 		res.push_back(*it);
 
 	return res;

@@ -22,6 +22,8 @@
 #include "util.h"
 #include "bncsutilinterface.h"
 
+#undef WIN32
+
 #include <bncsutil/bncsutil.h>
 #include <QFile>
 
