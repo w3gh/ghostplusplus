@@ -44,11 +44,21 @@ OTHER_FILES += w3g_format.txt \
 	w3g_actions.txt \
 	ghost.vcproj
 INCLUDEPATH += ../StormLib \
-	../bncsutil/src
+        ../bncsutil/src \
+        ../zlib/include
 LIBS += -L../StormLib/stormlib \
-	-L../bncsutil/src/bncsutil \
-	-lbncsutil \
-	-lStorm
+        -L../bncsutil/src/bncsutil \
+        -L. \
+        -L"../bncsutil/vc8_build/Release MySQL" \
+        -lbncsutil
+ win32 {
+    LIBS += -lStormLibRAS
+}
+
+!win32 {
+    LIBS += -lStorm
+}
+
 HEADERS += util.h \
 	statsw3mmd.h \
 	statsdota.h \

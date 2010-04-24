@@ -8,6 +8,9 @@
 #include "ghost.h"
 #include "util.h"
 #include "config.h"
+#ifdef WIN32
+#include "windows.h"
+#endif
 
 QTime gBasicTime;
 QFile gLogFile;
