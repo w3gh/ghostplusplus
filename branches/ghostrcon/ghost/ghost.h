@@ -29,6 +29,9 @@
 
 class CRemoteConsole;
 class CUDPSocket;
+class CTCPServer;
+class CTCPSocket;
+class CGPSProtocol;
 class CCRC32;
 class CSHA1;
 class CBNET;
@@ -46,6 +49,9 @@ class CGHost
 public:
 	CRemoteConsole *m_RConsole;				// remote console using an UDP socket for sending/receiving
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
+	CTCPServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
+	vector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
+	CGPSProtocol *m_GPSProtocol;
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's
 	vector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
@@ -76,11 +82,16 @@ public:
 	bool m_AutoHostMatchMaking;
 	double m_AutoHostMinimumScore;
 	double m_AutoHostMaximumScore;
+	bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
 	uint32_t m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
 	string m_LanguageFile;					// config value: language file
 	string m_Warcraft3Path;					// config value: Warcraft 3 path
+	bool m_TFT;								// config value: TFT enabled or not
 	string m_BindAddress;					// config value: the address to host games on
 	uint16_t m_HostPort;					// config value: the port to host games on
+	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
+	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
+	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
 	uint32_t m_MaxGames;					// config value: maximum number of games in progress
 	char m_CommandTrigger;					// config value: the command trigger inside games
 	string m_MapCFGPath;					// config value: map cfg path
@@ -93,6 +104,7 @@ public:
 	bool m_CheckMultipleIPUsage;			// config value: check for multiple IP address usage
 	uint32_t m_SpoofChecks;					// config value: do automatic spoof checks or not
 	bool m_RequireSpoofChecks;				// config value: require spoof checks or not
+	bool m_ReserveAdmins;					// config value: consider admins to be reserved players or not
 	bool m_RefreshMessages;					// config value: display refresh messages or not (by default)
 	bool m_AutoLock;						// config value: auto lock games when the owner is present
 	bool m_AutoSave;						// config value: auto save before someone disconnects
@@ -113,7 +125,7 @@ public:
 	string m_MOTDFile;						// config value: motd.txt
 	string m_GameLoadedFile;				// config value: gameloaded.txt
 	string m_GameOverFile;					// config value: gameover.txt
-	bool m_UseRegexes;						// config value: use regular expressions or not
+	bool m_LocalAdminMessages;				// config value: send local admin messages or not
 	bool m_AdminGameCreate;					// config value: create the admin game or not
 	uint16_t m_AdminGamePort;				// config value: the port to host the admin game on
 	string m_AdminGamePassword;				// config value: the admin game password

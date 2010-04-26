@@ -37,7 +37,6 @@
 #include <string.h>
 
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 
 using namespace boost :: filesystem;
 
@@ -280,7 +279,7 @@ void CAdminGame :: SendAdminChat( string message )
 
 void CAdminGame :: SendWelcomeMessage( CGamePlayer *player )
 {
-	SendChat( player, "GHost++ Admin Game                    http://forum.codelain.com/" );
+	SendChat( player, "GHost++ Admin Game                     http://www.codelain.com/" );
 	SendChat( player, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" );
 	SendChat( player, "Commands: addadmin, autohost, autohostmm, checkadmin" );
 	SendChat( player, "Commands: checkban, countadmins, countbans, deladmin" );
@@ -296,9 +295,9 @@ void CAdminGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoin
 
 	for( vector<TempBan> :: iterator i = m_TempBans.begin( ); i != m_TempBans.end( ); )
 	{
-		// remove old tempbans
+		// remove old tempbans (after 5 seconds)
 
-		if( Time >= (*i).second )
+		if( Time - (*i).second >= 5 )
 			i = m_TempBans.erase( i );
 		else
 		{
@@ -911,7 +910,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				try
 				{
 					path MapCFGPath( m_GHost->m_MapCFGPath );
-					boost :: regex Regex( Payload );
 					string Pattern = Payload;
 					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
@@ -932,17 +930,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 							string Stem = i->path( ).stem( );
 							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-							bool Matched = false;
 
-							if( m_GHost->m_UseRegexes )
-							{
-								if( boost :: regex_match( FileName, Regex ) )
-									Matched = true;
-							}
-							else if( FileName.find( Pattern ) != string :: npos )
-								Matched = true;
-
-							if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && Matched )
+							if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != string :: npos )
 							{
 								LastMatch = i->path( );
 								Matches++;
@@ -952,9 +941,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 								else
 									FoundMapConfigs += ", " + i->filename( );
 
-								// if we aren't using regexes and the pattern matches the filename exactly, with or without extension, stop any further matching
+								// if the pattern matches the filename exactly, with or without extension, stop any further matching
 
-								if( !m_GHost->m_UseRegexes && ( FileName == Pattern || Stem == Pattern ) )
+								if( FileName == Pattern || Stem == Pattern )
 								{
 									Matches = 1;
 									break;
@@ -1032,7 +1021,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 				try
 				{
 					path MapPath( m_GHost->m_MapPath );
-					boost :: regex Regex( Payload );
 					string Pattern = Payload;
 					transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
@@ -1053,17 +1041,8 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 							string Stem = i->path( ).stem( );
 							transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 							transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-							bool Matched = false;
 
-							if( m_GHost->m_UseRegexes )
-							{
-								if( boost :: regex_match( FileName, Regex ) )
-									Matched = true;
-							}
-							else if( FileName.find( Pattern ) != string :: npos )
-								Matched = true;
-
-							if( !is_directory( i->status( ) ) && Matched )
+							if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != string :: npos )
 							{
 								LastMatch = i->path( );
 								Matches++;
@@ -1073,9 +1052,9 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 								else
 									FoundMaps += ", " + i->filename( );
 
-								// if we aren't using regexes and the pattern matches the filename exactly, with or without extension, stop any further matching
+								// if the pattern matches the filename exactly, with or without extension, stop any further matching
 
-								if( !m_GHost->m_UseRegexes && ( FileName == Pattern || Stem == Pattern ) )
+								if( FileName == Pattern || Stem == Pattern )
 								{
 									Matches = 1;
 									break;
@@ -1308,10 +1287,12 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			{
 				player->SetDeleteMe( true );
 				player->SetLeftReason( "was kicked for too many failed login attempts" );
+				player->SetLeftCode( PLAYERLEAVE_LOBBY );
+				OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 
 				// tempban for 5 seconds to prevent bruteforcing
 
-				m_TempBans.push_back( TempBan( player->GetExternalIPString( ), GetTime( ) + 5 ) );
+				m_TempBans.push_back( TempBan( player->GetExternalIPString( ), GetTime( ) ) );
 			}
 		}
 	}

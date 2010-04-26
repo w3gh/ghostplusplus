@@ -1,5 +1,5 @@
 ====================
-GHost++ Version 15.0
+GHost++ Version 17.0
 ====================
 
 GHost++ is a port of the original GHost project to C++. It was ported by Trevor Hogan.
@@ -12,8 +12,8 @@ The official GHost++ SVN repository is currently located at http://code.google.c
 Overview
 ========
 
-GHost++ is a Warcraft III: The Frozen Throne game hosting bot.
-It can host Warcraft III: The Frozen Throne games on LAN, on battle.net, on PVPGN, and on any combination of these networks at the same time.
+GHost++ is a Warcraft III: Reign of Chaos and Warcraft III: The Frozen Throne game hosting bot.
+It can host Warcraft III games on LAN, on battle.net, on PVPGN, and on any combination of these networks at the same time.
 Since GHost++ is a bot it must have its own CD keys, username, and password for each battle.net server.
 Note that you can use the same set of CD keys on each battle.net server (East, West, Europe, Asia) at the same time.
 This means that to play on your own GHost++ bot you will need one set of CD keys for yourself and one set for your bot.
@@ -77,6 +77,10 @@ You can disable anonymous access to !stats and !statsdota by setting the bnet*_p
 4.) Another reason for lag on Windows is that Windows does not handle very large log files efficiently.
 If your ghost.log is too large (several MB) you should delete or rename it. You can do this while the bot is running.
 
+5.) You can also make GHost++ lock the log file.
+This works particularly well on Windows but means you can't edit/move/delete the log file while GHost++ is running.
+Set bot_logmethod = 2 to make the bot lock the log file.
+
 *** Network Tips:
 
 1.) If you are experiencing spikes when the bot is reconnecting to battle.net the most likely reason is due to the DNS resolver.
@@ -98,7 +102,7 @@ There are three types of admins:
 
 1.) Root Admins.
 
-Each battle.net server has a root admin defined in ghost.cfg.
+Each battle.net server has one or more root admins defined in ghost.cfg.
 Root admins have access to every command both in battle.net and in the lobby and ingame.
 In particular this includes !addadmin, !checkadmin, !countadmins, !deladmin, !exit, and !quit among others.
 Root admins are also exempt from command restrictions in locked games and can change the owner of a game using !owner even when the game owner is present.
@@ -155,8 +159,8 @@ You can use the !hold command to add players to the list.
 When a player joins the game the bot considers them to be a reserved player if any one of the following is true:
 
 1.) If it finds the player in the list.
-2.) If the player is a root admin on any defined realm.
-3.) If the player is an admin on any defined realm.
+2.) If the player is a root admin on any defined realm (if bot_reserveadmins = 1).
+3.) If the player is an admin on any defined realm (if bot_reserveadmins = 1).
 4.) If the player is the game owner.
 
 Note that you do not need to be spoof checked to be considered a reserved player because you can't spoof check before joining the game.
@@ -209,6 +213,7 @@ When the bot receives a battle.net whisper it will send it to all logged in user
 When the bot receives a battle.net chat message it will send it to all logged in users in the admin game as "[L: Realm] [User] Message".
 When the bot receives a battle.net emote it will send it to all logged in users in the admin game as "[E: Realm] [User] Message".
 If you find these messages too annoying you can turn them off in a regular game by using "!messages off" and back on by using "!messages on".
+You can also configure them on or off by default with the bot_localadminmessages configuration option.
 Additionally, if you are the game owner and you are connecting to the bot from a local or LAN IP address the bot will send you the same messages in game lobbies and in games.
 You can use the bot's battle.net account to respond to messages with the !w command or the !say command.
 In the admin game, in game lobbies, and in games, you can type "!w <name> <message>" to force the bot to send a whisper to <name> on ALL connected battle.net realms.
@@ -431,31 +436,6 @@ These maps will always be loaded with default options, more specifically:
 This means you cannot use the !map command to load non-custom (e.g. blizzard or melee) maps at this time.
 You will need to create config files for any maps that you want to change these settings for and use the !load command to load them.
 
-===================
-Regular Expressions
-===================
-
-Since Version 13.2 GHost++ supports regular expressions when loading map config files and map files.
-You can control this behaviour with the bot_useregexes config value.
-When regexes are disabled, GHost++ will perform a simple partial match on the given pattern. GHost++ does NOT support wildcards such as "*" or "?".
-When regexes are enabled, GHost++ will perform a regular expression match on the given pattern.
-
-Examples (regexes disabled):
-
-!load dota -> this matches names such as "dota6.59d.cfg" or "mydota.cfg"
-!load war -> this matches names such as "warlock.cfg" or "wormwar.cfg"
-!load dota* -> this does NOT match "dota6.59d.cfg" because GHost++ does not support wildcards
-!load 59d -> this matches names such as "dota6.59d.cfg"
-
-Examples (regexes enabled):
-
-!load dota -> this matches the single name "dota"
-!load dota* -> this does NOT match "dota6.59d.cfg" because regular expressions do not work this way, it matches "dotaaa" and "dotaaaa" instead
-!load dota.* -> this matches names such as "dota6.59d.cfg" or "dota6.60.cfg" but NOT "mydota.cfg"
-!load .*war.* -> this matches names such as "warlock.cfg" or "wormwar.cfg"
-
-You can search the internet for more information on regular expressions if you are interested in learning how they work as they are quite common.
-
 ===========
 Using MySQL
 ===========
@@ -636,6 +616,15 @@ Commands
 ========
 
 Parameters in angled brackets <like this> are required and parameters in square brackets [like this] are optional.
+Note that although the commands are listed with a "!" as the command trigger, the actual command triggers are controlled by the settings in your ghost.cfg file.
+
+*** In battle.net (via local chat or whisper at any time) or in any game lobby or in any game:
+
+?trigger                        tells you what the bot's command trigger is
+
+Note that the "?trigger" command always uses a "?" as the command trigger, regardless of any command trigger settings in your bot.
+If sent via battle.net the bot will only respond to anonymous users if bnet_publiccommands = 1.
+If sent via any game lobby or any game the bot will respond with a private message visible only to the requesting user.
 
 *** In battle.net (via local chat or whisper at any time):
 
@@ -659,7 +648,7 @@ Parameters in angled brackets <like this> are required and parameters in square 
 !disable                        disable creation of new games
 !downloads <0|1|2>              disable/enable/conditional map downloads
 !enable                         enable creation of new games
-!end <number>                   end the specified game in progress (disconnect everyone)
+!end <number>                   end the specified game in progress (disconnect everyone), only root admins can end games where the game owner is still playing
 !enforcesg <filename>           load a replay to be used as a template for the player layout in the next saved game
 !exit [force|nice]              shutdown ghost++, optionally add [force] to skip checks or [nice] to allow running games to finish first
 !getclan                        refresh the internal copy of the clan members list
@@ -688,7 +677,7 @@ Parameters in angled brackets <like this> are required and parameters in square 
 !statsdota [name]               display DotA player statistics, optionally add [name] to display statistics for another player (can be used by non admins)
 !swap <n1> <n2>                 swap slots
 !unban <name>                   alias to !delban
-!unhost                         unhost game in lobby
+!unhost                         unhost game in lobby, only root admins can unhost games where the game owner is in the lobby
 !version                        display version information (can be used by non admins)
 !wardenstatus                   show warden status information
 
@@ -696,7 +685,7 @@ Parameters in angled brackets <like this> are required and parameters in square 
 
 !a                      alias to !abort
 !abort                  abort countdown
-!addban <name> <reason> add a new ban to the database (it tries to do a partial match)
+!addban <name> [reason] add a new ban to the database (it tries to do a partial match)
 !announce <sec> <msg>   set the announce message (the bot will print <msg> every <sec> seconds), leave blank or "off" to disable the announce message
 !autostart <players>    auto start the game when the specified number of players have joined, leave blank or "off" to disable auto start
 !autosave <on/off>      enable or disable autosaving
@@ -704,6 +693,7 @@ Parameters in angled brackets <like this> are required and parameters in square 
 !check <name>           check a user's status (leave blank to check your own status)
 !checkban <name>        check if a user is banned on any realm
 !checkme                check your own status (can be used by non admins, sends a private message visible only to the user)
+!clearhcl               clear the HCL command string
 !close <number> ...     close slot
 !closeall               close all open slots
 !comp <slot> <skill>    create a computer in slot <slot> of skill <skill> (skill is 0 for easy, 1 for normal, 2 for insane)
@@ -715,9 +705,10 @@ Parameters in angled brackets <like this> are required and parameters in square 
 !download <name>        allow a user to start downloading the map (only used with conditional map downloads, it tries to do a partial match)
 !fakeplayer             create or delete a fake player to occupy a slot during the game (the player will not do anything except stay AFK)
 !from                   display the country each player is from
+!hcl <string>           set the HCL command string
 !hold <name> ...        hold a slot for someone
 !kick <name>            kick a player (it tries to do a partial match)
-!latency <number>       set game latency (50-500), leave blank to see current latency
+!latency <number>       set game latency (20-500), leave blank to see current latency
 !lock                   lock the game so only the game owner can run commands
 !messages <on/off>      enable or disable local admin messages for this game (battle.net messages relayed to local admins in game)
 !mute <name>            mute a player (it tries to do a partial match)
@@ -748,7 +739,7 @@ Parameters in angled brackets <like this> are required and parameters in square 
 
 *** In game:
 
-!addban <name> <reason> add a new ban to the database (it tries to do a partial match)
+!addban <name> [reason] add a new ban to the database (it tries to do a partial match)
 !autosave <on/off>      enable or disable autosaving
 !ban                    alias to !addban
 !banlast <reason>       ban the last leaver
@@ -757,9 +748,11 @@ Parameters in angled brackets <like this> are required and parameters in square 
 !checkme                check your own status (can be used by non admins, sends a private message visible only to the user)
 !drop                   drop all lagging players
 !end                    end the game (disconnect everyone)
+!fppause                force the FakePlayer (if it exists) to pause the game
+!fpresume               force the FakePlayer (if it exists) to resume the game
 !from                   display the country each player is from
 !kick <name>            kick a player (it tries to do a partial match)
-!latency <number>       set game latency (50-500), leave blank to see current latency
+!latency <number>       set game latency (20-500), leave blank to see current latency
 !lock                   lock the game so only the game owner can run commands
 !messages <on/off>      enable or disable local admin messages for this game (battle.net messages relayed to local admins in game)
 !mute <name>            mute a player (it tries to do a partial match)
@@ -872,7 +865,7 @@ To install Boost manually:
 
 7. Download and extract Boost 1.38.0 from http://www.boost.org/
 8. su to root.
-9. ./configure --prefix=/usr --with-libraries=date_time,thread,system,filesystem,regex
+9. ./configure --prefix=/usr --with-libraries=date_time,thread,system,filesystem
 10. Edit the newly created Makefile with your favourite text editor. The second line should be "BJAM_CONFIG=". Replace it with "BJAM_CONFIG= --layout=system".
 11. make install
 

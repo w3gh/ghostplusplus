@@ -32,10 +32,11 @@ CReplay :: CReplay( ) : CPacked( )
 {
 	m_HostPID = 0;
 	m_PlayerCount = 0;
-	m_MapGameType = 1;
+	m_MapGameType = 0;
 	m_RandomSeed = 0;
 	m_SelectMode = 0;
 	m_StartSpotCount = 0;
+	m_CompiledBlocks.reserve( 262144 );
 }
 
 CReplay :: ~CReplay( )
@@ -51,7 +52,7 @@ void CReplay :: AddLeaveGame( uint32_t reason, unsigned char PID, uint32_t resul
 	Block.push_back( PID );
 	UTIL_AppendByteArray( Block, result, false );
 	UTIL_AppendByteArray( Block, (uint32_t)1, false );
-	m_Blocks.push( Block );
+	m_CompiledBlocks += string( Block.begin( ), Block.end( ) );
 }
 
 void CReplay :: AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, uint32_t result )
@@ -63,6 +64,30 @@ void CReplay :: AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, u
 	UTIL_AppendByteArray( Block, result, false );
 	UTIL_AppendByteArray( Block, (uint32_t)1, false );
 	m_LoadingBlocks.push( Block );
+}
+
+void CReplay :: AddTimeSlot2( queue<CIncomingAction *> actions )
+{
+	BYTEARRAY Block;
+	Block.push_back( REPLAY_TIMESLOT2 );
+	UTIL_AppendByteArray( Block, (uint16_t)0, false );
+	UTIL_AppendByteArray( Block, (uint16_t)0, false );
+
+	while( !actions.empty( ) )
+	{
+		CIncomingAction *Action = actions.front( );
+		actions.pop( );
+		Block.push_back( Action->GetPID( ) );
+		UTIL_AppendByteArray( Block, (uint16_t)Action->GetAction( )->size( ), false );
+		UTIL_AppendByteArrayFast( Block, *Action->GetAction( ) );
+	}
+
+	// assign length
+
+	BYTEARRAY LengthBytes = UTIL_CreateByteArray( (uint16_t)( Block.size( ) - 3 ), false );
+	Block[1] = LengthBytes[0];
+	Block[2] = LengthBytes[1];
+	m_CompiledBlocks += string( Block.begin( ), Block.end( ) );
 }
 
 void CReplay :: AddTimeSlot( uint16_t timeIncrement, queue<CIncomingAction *> actions )
@@ -86,7 +111,8 @@ void CReplay :: AddTimeSlot( uint16_t timeIncrement, queue<CIncomingAction *> ac
 	BYTEARRAY LengthBytes = UTIL_CreateByteArray( (uint16_t)( Block.size( ) - 3 ), false );
 	Block[1] = LengthBytes[0];
 	Block[2] = LengthBytes[1];
-	m_Blocks.push( Block );
+	m_CompiledBlocks += string( Block.begin( ), Block.end( ) );
+	m_ReplayLength += timeIncrement;
 }
 
 void CReplay :: AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, string message )
@@ -104,17 +130,7 @@ void CReplay :: AddChatMessage( unsigned char PID, unsigned char flags, uint32_t
 	BYTEARRAY LengthBytes = UTIL_CreateByteArray( (uint16_t)( Block.size( ) - 4 ), false );
 	Block[2] = LengthBytes[0];
 	Block[3] = LengthBytes[1];
-	m_Blocks.push( Block );
-}
-
-void CReplay :: AddCheckSum( uint32_t checkSum )
-{
-	m_CheckSums.push( checkSum );
-}
-
-void CReplay :: AddBlock( BYTEARRAY &block )
-{
-	m_Blocks.push( block );
+	m_CompiledBlocks += string( Block.begin( ), Block.end( ) );
 }
 
 void CReplay :: AddLoadingBlock( BYTEARRAY &loadingBlock )
@@ -146,10 +162,7 @@ void CReplay :: BuildReplay( string gameName, string statString, uint32_t war3Ve
 	Replay.push_back( 0 );															// Null (4.0)
 	UTIL_AppendByteArrayFast( Replay, statString );									// StatString (4.3)
 	UTIL_AppendByteArray( Replay, (uint32_t)m_Slots.size( ), false );				// PlayerCount (4.6)
-	Replay.push_back( m_MapGameType );												// GameType (4.7)
-	Replay.push_back( 32 );															// GameType (4.7)
-	Replay.push_back( 73 );															// GameType (4.7)
-	Replay.push_back( 0 );															// GameType (4.7)
+	UTIL_AppendByteArray( Replay, m_MapGameType, false );							// GameType (4.7)
 	UTIL_AppendByteArray( Replay, LanguageID, false );								// LanguageID (4.8)
 
 	// PlayerList (4.9)
@@ -198,54 +211,10 @@ void CReplay :: BuildReplay( string gameName, string statString, uint32_t war3Ve
 	Replay.push_back( REPLAY_THIRDSTARTBLOCK );
 	UTIL_AppendByteArray( Replay, (uint32_t)1, false );
 
-	// initialize replay length to zero
-	// we'll accumulate the replay length as we iterate through the timeslots
-	// this is necessary because we might be discarding some timeslots due to not enough checksums and the replay length needs to be accurate
-
-	m_ReplayLength = 0;
-	uint32_t TimeSlotsDiscarded = 0;
-
-	while( !m_Blocks.empty( ) )
-	{
-		BYTEARRAY Block = m_Blocks.front( );
-		m_Blocks.pop( );
-
-		if( Block.size( ) >= 5 && Block[0] == REPLAY_TIMESLOT )
-		{
-			if( m_CheckSums.empty( ) )
-			{
-				TimeSlotsDiscarded++;
-				continue;
-			}
-
-			// append timeslot
-
-			UTIL_AppendByteArrayFast( Replay, Block );
-
-			// append checksum
-
-			BYTEARRAY CheckSum;
-			CheckSum.reserve( 6 );
-			CheckSum.push_back( REPLAY_CHECKSUM );
-			CheckSum.push_back( 4 );
-			UTIL_AppendByteArray( CheckSum, m_CheckSums.front( ), false );
-			m_CheckSums.pop( );
-			UTIL_AppendByteArrayFast( Replay, CheckSum );
-
-			// accumulate replay length
-
-			m_ReplayLength += UTIL_ByteArrayToUInt16( Block, false, 3 );
-		}
-		else
-			UTIL_AppendByteArrayFast( Replay, Block );
-	}
-
-	if( TimeSlotsDiscarded > 0 )
-		CONSOLE_Print( "[REPLAY] ran out of checksums, discarded " + UTIL_ToString( TimeSlotsDiscarded ) + " timeslots" );
-
 	// done
 
 	m_Decompressed = string( Replay.begin( ), Replay.end( ) );
+	m_Decompressed += m_CompiledBlocks;
 }
 
 #define READB( x, y, z )	(x).read( (char *)(y), (z) )
@@ -258,7 +227,7 @@ void CReplay :: ParseReplay( bool parseBlocks )
 	m_GameName.clear( );
 	m_StatString.clear( );
 	m_PlayerCount = 0;
-	m_MapGameType = 1;
+	m_MapGameType = 0;
 	m_Players.clear( );
 	m_Slots.clear( );
 	m_RandomSeed = 0;
@@ -341,16 +310,7 @@ void CReplay :: ParseReplay( bool parseBlocks )
 		return;
 	}
 
-	READB( ISS, &Garbage4, 4 );				// GameType (4.7)
-
-	if( (Garbage4 & 0xFFFFFF00) != 4792320 )
-	{
-		CONSOLE_Print( "[REPLAY] invalid replay (4.7 GameType mismatch)" );
-		m_Valid = false;
-		return;
-	}
-
-	m_MapGameType = Garbage4 & 0x000000FF;
+	READB( ISS, &m_MapGameType, 4 );		// GameType (4.7)
 	READB( ISS, &Garbage4, 4 );				// LanguageID (4.8)
 
 	while( 1 )

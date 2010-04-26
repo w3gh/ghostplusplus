@@ -37,7 +37,6 @@
 #include "game_base.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 
 using namespace boost :: filesystem;
 
@@ -45,7 +44,7 @@ using namespace boost :: filesystem;
 // CBNET
 //
 
-CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
+CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID )
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
 
@@ -74,6 +73,14 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	else
 		m_ServerAlias = m_Server;
 
+	if( nPasswordHashType == "pvpgn" && !nBNLSServer.empty( ) )
+	{
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] pvpgn connection found with a configured BNLS server, ignoring BNLS server" );
+		nBNLSServer.clear( );
+		nBNLSPort = 0;
+		nBNLSWardenCookie = 0;
+	}
+
 	m_BNLSServer = nBNLSServer;
 	m_BNLSPort = nBNLSPort;
 	m_BNLSWardenCookie = nBNLSWardenCookie;
@@ -90,11 +97,12 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	if( m_CDKeyROC.size( ) != 26 )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - your ROC CD key is not 26 characters long and is probably invalid" );
 
-	if( m_CDKeyTFT.size( ) != 26 )
+	if( m_GHost->m_TFT && m_CDKeyTFT.size( ) != 26 )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - your TFT CD key is not 26 characters long and is probably invalid" );
 
 	m_CountryAbbrev = nCountryAbbrev;
 	m_Country = nCountry;
+	m_LocaleID = nLocaleID;
 	m_UserName = nUserName;
 	m_UserPassword = nUserPassword;
 	m_FirstChannel = nFirstChannel;
@@ -108,12 +116,14 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	m_PVPGNRealmName = nPVPGNRealmName;
 	m_MaxMessageLength = nMaxMessageLength;
 	m_HostCounterID = nHostCounterID;
-	m_NextConnectTime = GetTime( );
+	m_LastDisconnectedTime = 0;
+	m_LastConnectionAttemptTime = 0;
 	m_LastNullTime = 0;
 	m_LastOutPacketTicks = 0;
 	m_LastOutPacketSize = 0;
 	m_LastAdminRefreshTime = GetTime( );
 	m_LastBanRefreshTime = GetTime( );
+	m_FirstConnect = true;
 	m_WaitingToConnect = true;
 	m_LoggedIn = false;
 	m_InChat = false;
@@ -390,7 +400,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 	// refresh the admin list every 5 minutes
 
-	if( !m_CallableAdminList && GetTime( ) >= m_LastAdminRefreshTime + 300 )
+	if( !m_CallableAdminList && GetTime( ) - m_LastAdminRefreshTime >= 300 )
 		m_CallableAdminList = m_GHost->m_DB->ThreadedAdminList( m_Server );
 
 	if( m_CallableAdminList && m_CallableAdminList->GetReady( ) )
@@ -405,7 +415,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 	// refresh the ban list every 60 minutes
 
-	if( !m_CallableBanList && GetTime( ) >= m_LastBanRefreshTime + 3600 )
+	if( !m_CallableBanList && GetTime( ) - m_LastBanRefreshTime >= 3600 )
 		m_CallableBanList = m_GHost->m_DB->ThreadedBanList( m_Server );
 
 	if( m_CallableBanList && m_CallableBanList->GetReady( ) )
@@ -431,13 +441,17 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		// the socket has an error
 
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net due to socket error" );
+
+		if( m_Socket->GetError( ) == ECONNRESET && GetTime( ) - m_LastConnectionAttemptTime <= 15 )
+			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - you are probably temporarily IP banned from battle.net" );
+
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
 		m_GHost->EventBNETDisconnected( this );
 		delete m_BNLSClient;
 		m_BNLSClient = NULL;
 		m_BNCSUtil->Reset( m_UserName, m_UserPassword );
 		m_Socket->Reset( );
-		m_NextConnectTime = GetTime( ) + 90;
+		m_LastDisconnectedTime = GetTime( );
 		m_LoggedIn = false;
 		m_InChat = false;
 		m_WaitingToConnect = true;
@@ -448,14 +462,14 @@ bool CBNET :: Update( void *fd, void *send_fd )
 	{
 		// the socket was disconnected
 
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net due to socket not connected" );
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net" );
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
 		m_GHost->EventBNETDisconnected( this );
 		delete m_BNLSClient;
 		m_BNLSClient = NULL;
 		m_BNCSUtil->Reset( m_UserName, m_UserPassword );
 		m_Socket->Reset( );
-		m_NextConnectTime = GetTime( ) + 90;
+		m_LastDisconnectedTime = GetTime( );
 		m_LoggedIn = false;
 		m_InChat = false;
 		m_WaitingToConnect = true;
@@ -501,7 +515,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		else
 			WaitTicks = 4000;
 
-		if( !m_OutPackets.empty( ) && GetTicks( ) >= m_LastOutPacketTicks + WaitTicks )
+		if( !m_OutPackets.empty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
 		{
 			if( m_OutPackets.size( ) > 7 )
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
@@ -514,7 +528,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 		// send a null packet every 60 seconds to detect disconnects
 
-		if( GetTime( ) >= m_LastNullTime + 60 && GetTicks( ) >= m_LastOutPacketTicks + 60000 )
+		if( GetTime( ) - m_LastNullTime >= 60 && GetTicks( ) - m_LastOutPacketTicks >= 60000 )
 		{
 			m_Socket->PutBytes( m_Protocol->SEND_SID_NULL( ) );
 			m_LastNullTime = GetTime( );
@@ -535,7 +549,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connected" );
 			m_GHost->EventBNETConnected( this );
 			m_Socket->PutBytes( m_Protocol->SEND_PROTOCOL_INITIALIZE_SELECTOR( ) );
-			m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_CountryAbbrev, m_Country ) );
+			m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_GHost->m_TFT, m_LocaleID, m_CountryAbbrev, m_Country ) );
 			m_Socket->DoSend( (fd_set *)send_fd );
 			m_LastNullTime = GetTime( );
 			m_LastOutPacketTicks = GetTicks( );
@@ -545,7 +559,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 			return m_Exiting;
 		}
-		else if( GetTime( ) >= m_NextConnectTime + 15 )
+		else if( GetTime( ) - m_LastConnectionAttemptTime >= 15 )
 		{
 			// the connection attempt timed out (15 seconds)
 
@@ -553,16 +567,17 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
 			m_GHost->EventBNETConnectTimedOut( this );
 			m_Socket->Reset( );
-			m_NextConnectTime = GetTime( ) + 90;
+			m_LastDisconnectedTime = GetTime( );
 			m_WaitingToConnect = true;
 			return m_Exiting;
 		}
 	}
 
-	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && GetTime( ) >= m_NextConnectTime )
+	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && ( m_FirstConnect || GetTime( ) - m_LastDisconnectedTime >= 90 ) )
 	{
 		// attempt to connect to battle.net
 
+		m_FirstConnect = false;
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
 		m_GHost->EventBNETConnecting( this );
 
@@ -588,6 +603,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		}
 
 		m_WaitingToConnect = false;
+		m_LastConnectionAttemptTime = GetTime( );
 		return m_Exiting;
 	}
 
@@ -723,7 +739,7 @@ void CBNET :: ProcessPackets( )
 			case CBNETProtocol :: SID_AUTH_INFO:
 				if( m_Protocol->RECEIVE_SID_AUTH_INFO( Packet->GetData( ) ) )
 				{
-					if( m_BNCSUtil->HELP_SID_AUTH_CHECK( m_GHost->m_Warcraft3Path, m_CDKeyROC, m_CDKeyTFT, m_Protocol->GetValueStringFormulaString( ), m_Protocol->GetIX86VerFileNameString( ), m_Protocol->GetClientToken( ), m_Protocol->GetServerToken( ) ) )
+					if( m_BNCSUtil->HELP_SID_AUTH_CHECK( m_GHost->m_TFT, m_GHost->m_Warcraft3Path, m_CDKeyROC, m_CDKeyTFT, m_Protocol->GetValueStringFormulaString( ), m_Protocol->GetIX86VerFileNameString( ), m_Protocol->GetClientToken( ), m_Protocol->GetServerToken( ) ) )
 					{
 						// override the exe information generated by bncsutil if specified in the config file
 						// apparently this is useful for pvpgn users
@@ -740,7 +756,12 @@ void CBNET :: ProcessPackets( )
 							m_BNCSUtil->SetEXEVersionHash( m_EXEVersionHash );
 						}
 
-						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_CHECK( m_Protocol->GetClientToken( ), m_BNCSUtil->GetEXEVersion( ), m_BNCSUtil->GetEXEVersionHash( ), m_BNCSUtil->GetKeyInfoROC( ), m_BNCSUtil->GetKeyInfoTFT( ), m_BNCSUtil->GetEXEInfo( ), "GHost" ) );
+						if( m_GHost->m_TFT )
+							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: The Frozen Throne" );
+						else
+							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: Reign of Chaos" );							
+
+						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_CHECK( m_GHost->m_TFT, m_Protocol->GetClientToken( ), m_BNCSUtil->GetEXEVersion( ), m_BNCSUtil->GetEXEVersionHash( ), m_BNCSUtil->GetKeyInfoROC( ), m_BNCSUtil->GetKeyInfoTFT( ), m_BNCSUtil->GetEXEInfo( ), "GHost" ) );
 
 						// the Warden seed is the first 4 bytes of the ROC key hash
 						// initialize the Warden handler
@@ -953,7 +974,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 		// handle bot commands
 
-		if( !Message.empty( ) && Message[0] == m_CommandTrigger )
+		if( Message == "?trigger" && ( IsAdmin( User ) || IsRootAdmin( User ) || ( m_PublicCommands && m_OutPackets.size( ) <= 3 ) ) )
+			QueueChatCommand( m_GHost->m_Language->CommandTrigger( string( 1, m_CommandTrigger ) ), User, Whisper );
+		else if( !Message.empty( ) && Message[0] == m_CommandTrigger )
 		{
 			// extract the command trigger, the command, and the payload
 			// e.g. "!say hello world" -> command: "say", payload: "hello world"
@@ -1457,9 +1480,16 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					if( GameNumber < m_GHost->m_Games.size( ) )
 					{
-						QueueChatCommand( m_GHost->m_Language->EndingGame( m_GHost->m_Games[GameNumber]->GetDescription( ) ), User, Whisper );
-						CONSOLE_Print( "[GAME: " + m_GHost->m_Games[GameNumber]->GetGameName( ) + "] is over (admin ended game)" );
-						m_GHost->m_Games[GameNumber]->StopPlayers( "was disconnected (admin ended game)" );
+						// if the game owner is still in the game only allow the root admin to end the game
+
+						if( m_GHost->m_Games[GameNumber]->GetPlayerFromName( m_GHost->m_Games[GameNumber]->GetOwnerName( ), false ) && !IsRootAdmin( User ) )
+							QueueChatCommand( m_GHost->m_Language->CantEndGameOwnerIsStillPlaying( m_GHost->m_Games[GameNumber]->GetOwnerName( ) ), User, Whisper );
+						else
+						{
+							QueueChatCommand( m_GHost->m_Language->EndingGame( m_GHost->m_Games[GameNumber]->GetDescription( ) ), User, Whisper );
+							CONSOLE_Print( "[GAME: " + m_GHost->m_Games[GameNumber]->GetGameName( ) + "] is over (admin ended game)" );
+							m_GHost->m_Games[GameNumber]->StopPlayers( "was disconnected (admin ended game)" );
+						}
 					}
 					else
 						QueueChatCommand( m_GHost->m_Language->GameNumberDoesntExist( Payload ), User, Whisper );
@@ -1615,7 +1645,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						try
 						{
 							path MapCFGPath( m_GHost->m_MapCFGPath );
-							boost :: regex Regex( Payload );
 							string Pattern = Payload;
 							transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
@@ -1636,17 +1665,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									string Stem = i->path( ).stem( );
 									transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 									transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-									bool Matched = false;
 
-									if( m_GHost->m_UseRegexes )
-									{
-										if( boost :: regex_match( FileName, Regex ) )
-											Matched = true;
-									}
-									else if( FileName.find( Pattern ) != string :: npos )
-										Matched = true;
-
-									if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && Matched )
+									if( !is_directory( i->status( ) ) && i->path( ).extension( ) == ".cfg" && FileName.find( Pattern ) != string :: npos )
 									{
 										LastMatch = i->path( );
 										Matches++;
@@ -1656,9 +1676,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 										else
 											FoundMapConfigs += ", " + i->filename( );
 
-										// if we aren't using regexes and the pattern matches the filename exactly, with or without extension, stop any further matching
+										// if the pattern matches the filename exactly, with or without extension, stop any further matching
 
-										if( !m_GHost->m_UseRegexes && ( FileName == Pattern || Stem == Pattern ) )
+										if( FileName == Pattern || Stem == Pattern )
 										{
 											Matches = 1;
 											break;
@@ -1736,7 +1756,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						try
 						{
 							path MapPath( m_GHost->m_MapPath );
-							boost :: regex Regex( Payload );
 							string Pattern = Payload;
 							transform( Pattern.begin( ), Pattern.end( ), Pattern.begin( ), (int(*)(int))tolower );
 
@@ -1757,17 +1776,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									string Stem = i->path( ).stem( );
 									transform( FileName.begin( ), FileName.end( ), FileName.begin( ), (int(*)(int))tolower );
 									transform( Stem.begin( ), Stem.end( ), Stem.begin( ), (int(*)(int))tolower );
-									bool Matched = false;
 
-									if( m_GHost->m_UseRegexes )
-									{
-										if( boost :: regex_match( FileName, Regex ) )
-											Matched = true;
-									}
-									else if( FileName.find( Pattern ) != string :: npos )
-										Matched = true;
-
-									if( !is_directory( i->status( ) ) && Matched )
+									if( !is_directory( i->status( ) ) && FileName.find( Pattern ) != string :: npos )
 									{
 										LastMatch = i->path( );
 										Matches++;
@@ -1777,9 +1787,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 										else
 											FoundMaps += ", " + i->filename( );
 
-										// if we aren't using regexes and the pattern matches the filename exactly, with or without extension, stop any further matching
+										// if the pattern matches the filename exactly, with or without extension, stop any further matching
 
-										if( !m_GHost->m_UseRegexes && ( FileName == Pattern || Stem == Pattern ) )
+										if( FileName == Pattern || Stem == Pattern )
 										{
 											Matches = 1;
 											break;
@@ -2074,6 +2084,11 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					{
 						if( m_GHost->m_CurrentGame->GetCountDownStarted( ) )
 							QueueChatCommand( m_GHost->m_Language->UnableToUnhostGameCountdownStarted( m_GHost->m_CurrentGame->GetDescription( ) ), User, Whisper );
+
+						// if the game owner is still in the game only allow the root admin to unhost the game
+
+						else if( m_GHost->m_CurrentGame->GetPlayerFromName( m_GHost->m_CurrentGame->GetOwnerName( ), false ) && !IsRootAdmin( User ) )
+							QueueChatCommand( m_GHost->m_Language->CantUnhostGameOwnerIsPresent( m_GHost->m_CurrentGame->GetOwnerName( ) ), User, Whisper );
 						else
 						{
 							QueueChatCommand( m_GHost->m_Language->UnhostingGame( m_GHost->m_CurrentGame->GetDescription( ) ), User, Whisper );
@@ -2306,8 +2321,6 @@ void CBNET :: QueueGameRefresh( unsigned char state, string gameName, string hos
 
 	if( m_LoggedIn && map )
 	{
-		BYTEARRAY MapGameType;
-
 		// construct a fixed host counter which will be used to identify players from this realm
 		// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
 		// the rest of the fixed host counter will contain the 28 least significant bits of the actual host counter
@@ -2317,29 +2330,50 @@ void CBNET :: QueueGameRefresh( unsigned char state, string gameName, string hos
 
 		uint32_t FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( m_HostCounterID << 28 );
 
-		// construct the correct SID_STARTADVEX3 packet
-
 		if( saveGame )
 		{
-			MapGameType.push_back( 0 );
-			MapGameType.push_back( 10 );
-			MapGameType.push_back( 0 );
-			MapGameType.push_back( 0 );
+			uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
+
+			// the state should always be private when creating a saved game
+
+			if( state == GAME_PRIVATE )
+				MapGameType |= MAPGAMETYPE_PRIVATEGAME;
+
+			// use an invalid map width/height to indicate reconnectable games
+
 			BYTEARRAY MapWidth;
-			MapWidth.push_back( 0 );
-			MapWidth.push_back( 0 );
+			MapWidth.push_back( 192 );
+			MapWidth.push_back( 7 );
 			BYTEARRAY MapHeight;
-			MapHeight.push_back( 0 );
-			MapHeight.push_back( 0 );
-			m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, MapGameType, map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+			MapHeight.push_back( 192 );
+			MapHeight.push_back( 7 );
+
+			if( m_GHost->m_Reconnect )
+				m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateByteArray( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
+			else
+				m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateByteArray( MapGameType, false ), map->GetMapGameFlags( ), UTIL_CreateByteArray( (uint16_t)0, false ), UTIL_CreateByteArray( (uint16_t)0, false ), gameName, hostName, upTime, "Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ), saveGame->GetMagicNumber( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 		else
 		{
-			MapGameType.push_back( map->GetMapGameType( ) );
-			MapGameType.push_back( 32 );
-			MapGameType.push_back( 73 );
-			MapGameType.push_back( 0 );
-			m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, MapGameType, map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+			uint32_t MapGameType = map->GetMapGameType( );
+			MapGameType |= MAPGAMETYPE_UNKNOWN0;
+
+			if( state == GAME_PRIVATE )
+				MapGameType |= MAPGAMETYPE_PRIVATEGAME;
+
+			// use an invalid map width/height to indicate reconnectable games
+
+			BYTEARRAY MapWidth;
+			MapWidth.push_back( 192 );
+			MapWidth.push_back( 7 );
+			BYTEARRAY MapHeight;
+			MapHeight.push_back( 192 );
+			MapHeight.push_back( 7 );
+
+			if( m_GHost->m_Reconnect )
+				m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateByteArray( MapGameType, false ), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+			else
+				m_OutPackets.push( m_Protocol->SEND_SID_STARTADVEX3( state, UTIL_CreateByteArray( MapGameType, false ), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 	}
 }
@@ -2426,7 +2460,24 @@ bool CBNET :: IsRootAdmin( string name )
 	// m_RootAdmin was already transformed to lower case in the constructor
 
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	return name == m_RootAdmin;
+
+	// updated to permit multiple root admins seperated by a space, e.g. "Varlock Kilranin Instinct121"
+	// note: this function gets called frequently so it would be better to parse the root admins just once and store them in a list somewhere
+	// however, it's hardly worth optimizing at this point since the code's already written
+
+	stringstream SS;
+	string s;
+	SS << m_RootAdmin;
+
+	while( !SS.eof( ) )
+	{
+		SS >> s;
+
+		if( name == s )
+			return true;
+	}
+
+	return false;
 }
 
 CDBBan *CBNET :: IsBannedName( string name )

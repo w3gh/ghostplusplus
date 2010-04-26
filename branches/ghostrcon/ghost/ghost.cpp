@@ -34,7 +34,9 @@
 #include "map.h"
 #include "packed.h"
 #include "savegame.h"
+#include "gameplayer.h"
 #include "gameprotocol.h"
+#include "gpsprotocol.h"
 #include "game_base.h"
 #include "game.h"
 #include "game_admin.h"
@@ -76,6 +78,7 @@
 #include "gameslot.h"
 #include "gameplayer.h"
 #include "gameprotocol.h"
+#include "gpsprotocol.h"
 #include "game_base.h"
 #include "game.h"
 #include "game_admin.h"
@@ -100,20 +103,25 @@
  #include <mach/mach_time.h>
 #endif
 
-time_t gStartTime;
 string gCFGFile;
 string gLogFile;
+uint32_t gLogMethod;
+ofstream *gLog = NULL;
 CGHost *gGHost = NULL;
 
 uint32_t GetTime( )
 {
-	return (uint32_t)( ( GetTicks( ) / 1000 ) - gStartTime );
+	return GetTicks( ) / 1000;
 }
 
 uint32_t GetTicks( )
 {
 #ifdef WIN32
-	return GetTickCount( );
+	// don't use GetTickCount anymore because it's not accurate enough (~16ms resolution)
+	// don't use QueryPerformanceCounter anymore because it isn't guaranteed to be strictly increasing on some systems and thus requires "smoothing" code
+	// use timeGetTime instead, which typically has a high resolution (5ms or more) but we request a lower resolution on startup
+
+	return timeGetTime( );
 #elif __APPLE__
 	uint64_t current = mach_absolute_time( );
 	static mach_timebase_info_data_t info = { 0, 0 };
@@ -161,6 +169,67 @@ void SignalCatcher( int s )
 		exit( 1 );
 }
 
+void CONSOLE_Print( string message )
+{
+	cout << message << endl;
+
+	// output to remote console
+	if( gGHost && gGHost->m_RConsole )
+		gGHost->m_RConsole->Send( message );
+
+	// logging
+
+	if( !gLogFile.empty( ) )
+	{
+		if( gLogMethod == 1 )
+		{
+			ofstream Log;
+			Log.open( gLogFile.c_str( ), ios :: app );
+
+			if( !Log.fail( ) )
+			{
+				time_t Now = time( NULL );
+				string Time = asctime( localtime( &Now ) );
+
+				// erase the newline
+
+				Time.erase( Time.size( ) - 1 );
+				Log << "[" << Time << "] " << message << endl;
+				Log.close( );
+			}
+		}
+		else if( gLogMethod == 2 )
+		{
+			if( gLog && !gLog->fail( ) )
+			{
+				time_t Now = time( NULL );
+				string Time = asctime( localtime( &Now ) );
+
+				// erase the newline
+
+				Time.erase( Time.size( ) - 1 );
+				*gLog << "[" << Time << "] " << message << endl;
+				gLog->flush( );
+			}
+		}
+	}
+}
+
+void DEBUG_Print( string message )
+{
+	cout << message << endl;
+}
+
+void DEBUG_Print( BYTEARRAY b )
+{
+	cout << "{ ";
+
+	for( unsigned int i = 0; i < b.size( ); i++ )
+		cout << hex << (int)b[i] << " ";
+
+	cout << "}" << endl;
+}
+
 //
 // main
 //
@@ -175,12 +244,45 @@ int main( int argc, char **argv )
 	// read config file
 
 	CConfig CFG;
+	CFG.Read( "default.cfg" );
 	CFG.Read( gCFGFile );
 	gLogFile = CFG.GetString( "bot_log", string( ) );
+	gLogMethod = CFG.GetInt( "bot_logmethod", 1 );
 
-	// print something for logging purposes
+	if( !gLogFile.empty( ) )
+	{
+		if( gLogMethod == 1 )
+		{
+			// log method 1: open, append, and close the log for every message
+			// this works well on Linux but poorly on Windows, particularly as the log file grows in size
+			// the log file can be edited/moved/deleted while GHost++ is running
+		}
+		else if( gLogMethod == 2 )
+		{
+			// log method 2: open the log on startup, flush the log for every message, close the log on shutdown
+			// the log file CANNOT be edited/moved/deleted while GHost++ is running
+
+			gLog = new ofstream( );
+			gLog->open( gLogFile.c_str( ), ios :: app );
+		}
+	}
 
 	CONSOLE_Print( "[GHOST] starting up" );
+
+	if( !gLogFile.empty( ) )
+	{
+		if( gLogMethod == 1 )
+			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile + "] will not be locked" );
+		else if( gLogMethod == 2 )
+		{
+			if( gLog->fail( ) )
+				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile + "] for appending, logging is disabled" );
+			else
+				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile + "] is now locked" );
+		}
+	}
+	else
+		CONSOLE_Print( "[GHOST] no log file specified, logging is disabled" );
 
 	// catch SIGABRT and SIGINT
 
@@ -193,17 +295,43 @@ int main( int argc, char **argv )
 	signal( SIGPIPE, SIG_IGN );
 #endif
 
-	// initialize the start time
+#ifdef WIN32
+	// initialize timer resolution
+	// attempt to set the resolution as low as possible from 1ms to 5ms
 
-	gStartTime = 0;
-	gStartTime = GetTime( );
+	unsigned int TimerResolution = 0;
+
+	for( unsigned int i = 1; i <= 5; i++ )
+	{
+		if( timeBeginPeriod( i ) == TIMERR_NOERROR )
+		{
+			TimerResolution = i;
+			break;
+		}
+		else if( i < 5 )
+			CONSOLE_Print( "[GHOST] error setting Windows timer resolution to " + UTIL_ToString( i ) + " milliseconds, trying a higher resolution" );
+		else
+		{
+			CONSOLE_Print( "[GHOST] error setting Windows timer resolution" );
+			return 1;
+		}
+	}
+
+	CONSOLE_Print( "[GHOST] using Windows timer with resolution " + UTIL_ToString( TimerResolution ) + " milliseconds" );
+#elif __APPLE__
+	// not sure how to get the resolution
+#else
+	// print the timer resolution
+
+	struct timespec Resolution;
+
+	if( clock_getres( CLOCK_MONOTONIC, &Resolution ) == -1 )
+		CONSOLE_Print( "[GHOST] error getting monotonic timer resolution" );
+	else
+		CONSOLE_Print( "[GHOST] using monotonic timer with resolution " + UTIL_ToString( (double)( Resolution.tv_nsec / 1000 ), 2 ) + " microseconds" );
+#endif
 
 #ifdef WIN32
-	// increase process priority
-
-	CONSOLE_Print( "[GHOST] setting process priority to \"above normal\"" );
-	SetPriorityClass( GetCurrentProcess( ), ABOVE_NORMAL_PRIORITY_CLASS );
-
 	// initialize winsock
 
 	CONSOLE_Print( "[GHOST] starting winsock" );
@@ -214,6 +342,11 @@ int main( int argc, char **argv )
 		CONSOLE_Print( "[GHOST] error starting winsock" );
 		return 1;
 	}
+
+	// increase process priority
+
+	CONSOLE_Print( "[GHOST] setting process priority to \"above normal\"" );
+	SetPriorityClass( GetCurrentProcess( ), ABOVE_NORMAL_PRIORITY_CLASS );
 #endif
 
 	// initialize ghost
@@ -240,53 +373,21 @@ int main( int argc, char **argv )
 
 	CONSOLE_Print( "[GHOST] shutting down winsock" );
 	WSACleanup( );
+
+	// shutdown timer
+
+	timeEndPeriod( TimerResolution );
 #endif
 
-	return 0;
-}
-
-void CONSOLE_Print( string message )
-{
-	cout << message << endl;
-
-	// output to remote console
-	if( gGHost && gGHost->m_RConsole )
-		gGHost->m_RConsole->Send( message );
-
-	// logging
-
-	if( !gLogFile.empty( ) )
+	if( gLog )
 	{
-		ofstream Log;
-		Log.open( gLogFile.c_str( ), ios :: app );
+		if( !gLog->fail( ) )
+			gLog->close( );
 
-		if( !Log.fail( ) )
-		{
-			time_t Now = time( NULL );
-			string Time = asctime( localtime( &Now ) );
-
-			// erase the newline
-			
-			Time.erase( Time.size( ) - 1 );
-			Log << "[" << Time << "] " << message << endl;
-			Log.close( );
-		}
+		delete gLog;
 	}
-}
 
-void DEBUG_Print( string message )
-{
-	cout << message << endl;
-}
-
-void DEBUG_Print( BYTEARRAY b )
-{
-	cout << "{ ";
-
-	for( unsigned int i = 0; i < b.size( ); i++ )
-		cout << hex << (int)b[i] << " ";
-
-	cout << "}" << endl;
+	return 0;
 }
 
 //
@@ -300,6 +401,8 @@ CGHost :: CGHost( CConfig *CFG )
 	m_UDPSocket = new CUDPSocket( );
 	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
+	m_ReconnectSocket = NULL;
+	m_GPSProtocol = new CGPSProtocol( );
 	m_CRC = new CCRC32( );
 	m_CRC->Initialize( );
 	m_SHA = new CSHA1( );
@@ -388,7 +491,7 @@ CGHost :: CGHost( CConfig *CFG )
 	m_Exiting = false;
 	m_ExitingNice = false;
 	m_Enabled = true;
-	m_Version = "15.0";
+	m_Version = "17.0";
 	m_HostCounter = 1;
 	m_AutoHostMaximumGames = CFG->GetInt( "autohost_maxgames", 0 );
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
@@ -398,8 +501,18 @@ CGHost :: CGHost( CConfig *CFG )
 	m_AutoHostMatchMaking = false;
 	m_AutoHostMinimumScore = 0.0;
 	m_AutoHostMaximumScore = 0.0;
+	m_AllGamesFinished = false;
 	m_AllGamesFinishedTime = 0;
+	m_TFT = CFG->GetInt( "bot_tft", 1 ) == 0 ? false : true;
+
+	if( m_TFT )
+		CONSOLE_Print( "[GHOST] acting as Warcraft III: The Frozen Throne" );
+	else
+		CONSOLE_Print( "[GHOST] acting as Warcraft III: Reign of Chaos" );
+
 	m_HostPort = CFG->GetInt( "bot_hostport", 6112 );
+	m_Reconnect = CFG->GetInt( "bot_reconnect", 1 ) == 0 ? false : true;
+	m_ReconnectPort = CFG->GetInt( "bot_reconnectport", 6114 );
 	m_DefaultMap = CFG->GetString( "bot_defaultmap", "map" );
 	m_AdminGameCreate = CFG->GetInt( "admingame_create", 0 ) == 0 ? false : true;
 	m_AdminGamePort = CFG->GetInt( "admingame_port", 6113 );
@@ -428,6 +541,20 @@ CGHost :: CGHost( CConfig *CFG )
 		string CDKeyTFT = CFG->GetString( Prefix + "cdkeytft", string( ) );
 		string CountryAbbrev = CFG->GetString( Prefix + "countryabbrev", "USA" );
 		string Country = CFG->GetString( Prefix + "country", "United States" );
+		string Locale = CFG->GetString( Prefix + "locale", "system" );
+		uint32_t LocaleID;
+
+		if( Locale == "system" )
+		{
+#ifdef WIN32
+			LocaleID = GetUserDefaultLangID( );
+#else
+			LocaleID = 1033;
+#endif
+		}
+		else
+			LocaleID = UTIL_ToUInt32( Locale );
+
 		string UserName = CFG->GetString( Prefix + "username", string( ) );
 		string UserPassword = CFG->GetString( Prefix + "password", string( ) );
 		string FirstChannel = CFG->GetString( Prefix + "firstchannel", "The Void" );
@@ -459,7 +586,7 @@ CGHost :: CGHost( CConfig *CFG )
 			continue;
 		}
 
-		if( CDKeyTFT.empty( ) )
+		if( m_TFT && CDKeyTFT.empty( ) )
 		{
 			CONSOLE_Print( "[GHOST] missing " + Prefix + "cdkeytft, skipping this battle.net connection" );
 			continue;
@@ -478,7 +605,17 @@ CGHost :: CGHost( CConfig *CFG )
 		}
 
 		CONSOLE_Print( "[GHOST] found battle.net connection #" + UTIL_ToString( i ) + " for server [" + Server + "]" );
-		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger[0], HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
+
+		if( Locale == "system" )
+		{
+#ifdef WIN32
+			CONSOLE_Print( "[GHOST] using system locale of " + UTIL_ToString( LocaleID ) );
+#else
+			CONSOLE_Print( "[GHOST] unable to get system locale, using default locale of 1033" );
+#endif
+		}
+
+		m_BNETs.push_back( new CBNET( this, Server, ServerAlias, BNLSServer, (uint16_t)BNLSPort, (uint32_t)BNLSWardenCookie, CDKeyROC, CDKeyTFT, CountryAbbrev, Country, LocaleID, UserName, UserPassword, FirstChannel, RootAdmin, BNETCommandTrigger[0], HoldFriends, HoldClan, PublicCommands, War3Version, EXEVersion, EXEVersionHash, PasswordHashType, PVPGNRealmName, MaxMessageLength, i ) );
 	}
 
 	if( m_BNETs.empty( ) )
@@ -561,6 +698,12 @@ CGHost :: CGHost( CConfig *CFG )
 CGHost :: ~CGHost( )
 {
 	delete m_UDPSocket;
+	delete m_ReconnectSocket;
+
+	for( vector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
+		delete *i;
+
+	delete m_GPSProtocol;
 	delete m_CRC;
 	delete m_SHA;
 
@@ -620,6 +763,13 @@ bool CGHost :: Update( long usecBlock )
 			m_BNETs.clear( );
 		}
 
+		if( m_CurrentGame )
+		{
+			CONSOLE_Print( "[GHOST] deleting current game in preparation for exiting nicely" );
+			delete m_CurrentGame;
+			m_CurrentGame = NULL;
+		}
+
 		if( m_AdminGame )
 		{
 			CONSOLE_Print( "[GHOST] deleting admin game in preparation for exiting nicely" );
@@ -627,12 +777,13 @@ bool CGHost :: Update( long usecBlock )
 			m_AdminGame = NULL;
 		}
 
-		if( !m_CurrentGame && m_Games.empty( ) )
+		if( m_Games.empty( ) )
 		{
-			if( m_AllGamesFinishedTime == 0 )
+			if( !m_AllGamesFinished )
 			{
 				CONSOLE_Print( "[GHOST] all games finished, waiting 60 seconds for threads to finish" );
 				CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads in progress" );
+				m_AllGamesFinished = true;
 				m_AllGamesFinishedTime = GetTime( );
 			}
 			else
@@ -642,7 +793,7 @@ bool CGHost :: Update( long usecBlock )
 					CONSOLE_Print( "[GHOST] all threads finished, exiting nicely" );
 					m_Exiting = true;
 				}
-				else if( GetTime( ) >= m_AllGamesFinishedTime + 60 )
+				else if( GetTime( ) - m_AllGamesFinishedTime >= 60 )
 				{
 					CONSOLE_Print( "[GHOST] waited 60 seconds for threads to finish, exiting anyway" );
 					CONSOLE_Print( "[GHOST] there are " + UTIL_ToString( m_Callables.size( ) ) + " threads still in progress which will be terminated" );
@@ -664,6 +815,33 @@ bool CGHost :: Update( long usecBlock )
 		}
 		else
 			i++;
+	}
+
+	// create the GProxy++ reconnect listener
+
+	if( m_Reconnect )
+	{
+		if( !m_ReconnectSocket )
+		{
+			m_ReconnectSocket = new CTCPServer( );
+
+			if( m_ReconnectSocket->Listen( m_BindAddress, m_ReconnectPort ) )
+				CONSOLE_Print( "[GHOST] listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
+			else
+			{
+				CONSOLE_Print( "[GHOST] error listening for GProxy++ reconnects on port " + UTIL_ToString( m_ReconnectPort ) );
+				delete m_ReconnectSocket;
+				m_ReconnectSocket = NULL;
+				m_Reconnect = false;
+			}
+		}
+		else if( m_ReconnectSocket->HasError( ) )
+		{
+			CONSOLE_Print( "[GHOST] GProxy++ reconnect listener error (" + m_ReconnectSocket->GetErrorString( ) + ")" );
+			delete m_ReconnectSocket;
+			m_ReconnectSocket = NULL;
+			m_Reconnect = false;
+		}
 	}
 
 	unsigned int NumFDs = 0;
@@ -699,6 +877,39 @@ bool CGHost :: Update( long usecBlock )
 	// 5. the remote console
 	if ( m_RConsole )
 		NumFDs += m_RConsole->SetFD( &fd, &send_fd, &nfds );
+
+	// 5. the GProxy++ reconnect socket(s)
+
+	if( m_Reconnect && m_ReconnectSocket )
+	{
+		m_ReconnectSocket->SetFD( &fd, &send_fd, &nfds );
+		NumFDs++;
+	}
+
+	for( vector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
+	{
+		(*i)->SetFD( &fd, &send_fd, &nfds );
+		NumFDs++;
+	}
+
+	// before we call select we need to determine how long to block for
+	// previously we just blocked for a maximum of the passed usecBlock microseconds
+	// however, in an effort to make game updates happen closer to the desired latency setting we now use a dynamic block interval
+	// note: we still use the passed usecBlock as a hard maximum
+
+	for( vector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
+	{
+		if( (*i)->GetNextTimedActionTicks( ) * 1000 < usecBlock )
+			usecBlock = (*i)->GetNextTimedActionTicks( ) * 1000;
+	}
+
+	// always block for at least 1ms just in case something goes wrong
+	// this prevents the bot from sucking up all the available CPU if a game keeps asking for immediate updates
+	// it's a bit ridiculous to include this check since, in theory, the bot is programmed well enough to never make this mistake
+	// however, considering who programmed it, it's worthwhile to do it anyway
+
+	if( usecBlock < 1000 )
+		usecBlock = 1000;
 
 	struct timeval tv;
 	tv.tv_sec = 0;
@@ -792,14 +1003,126 @@ bool CGHost :: Update( long usecBlock )
 			BNETExit = true;
 	}
 
+	// update GProxy++ reliable reconnect sockets
+
+	if( m_Reconnect && m_ReconnectSocket )
+	{
+		CTCPSocket *NewSocket = m_ReconnectSocket->Accept( &fd );
+
+		if( NewSocket )
+			m_ReconnectSockets.push_back( NewSocket );
+	}
+
+	for( vector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); )
+	{
+		if( (*i)->HasError( ) || !(*i)->GetConnected( ) || GetTime( ) - (*i)->GetLastRecv( ) >= 10 )
+		{
+			delete *i;
+			i = m_ReconnectSockets.erase( i );
+			continue;
+		}
+
+		(*i)->DoRecv( &fd );
+		string *RecvBuffer = (*i)->GetBytes( );
+		BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
+
+		// a packet is at least 4 bytes
+
+		if( Bytes.size( ) >= 4 )
+		{
+			if( Bytes[0] == GPS_HEADER_CONSTANT )
+			{
+				// bytes 2 and 3 contain the length of the packet
+
+				uint16_t Length = UTIL_ByteArrayToUInt16( Bytes, false, 2 );
+
+				if( Length >= 4 )
+				{
+					if( Bytes.size( ) >= Length )
+					{
+						if( Bytes[1] == CGPSProtocol :: GPS_RECONNECT && Length == 13 )
+						{
+							unsigned char PID = Bytes[4];
+							uint32_t ReconnectKey = UTIL_ByteArrayToUInt32( Bytes, false, 5 );
+							uint32_t LastPacket = UTIL_ByteArrayToUInt32( Bytes, false, 9 );
+
+							// look for a matching player in a running game
+
+							CGamePlayer *Match = NULL;
+
+							for( vector<CBaseGame *> :: iterator j = m_Games.begin( ); j != m_Games.end( ); j++ )
+							{
+								if( (*j)->GetGameLoaded( ) )
+								{
+									CGamePlayer *Player = (*j)->GetPlayerFromPID( PID );
+
+									if( Player && Player->GetGProxy( ) && Player->GetGProxyReconnectKey( ) == ReconnectKey )
+									{
+										Match = Player;
+										break;
+									}
+								}
+							}
+
+							if( Match )
+							{
+								// reconnect successful!
+
+								*RecvBuffer = RecvBuffer->substr( Length );
+								Match->EventGProxyReconnect( *i, LastPacket );
+								i = m_ReconnectSockets.erase( i );
+								continue;
+							}
+							else
+							{
+								(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_NOTFOUND ) );
+								(*i)->DoSend( &send_fd );
+								delete *i;
+								i = m_ReconnectSockets.erase( i );
+								continue;
+							}
+						}
+						else
+						{
+							(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
+							(*i)->DoSend( &send_fd );
+							delete *i;
+							i = m_ReconnectSockets.erase( i );
+							continue;
+						}
+					}
+				}
+				else
+				{
+					(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
+					(*i)->DoSend( &send_fd );
+					delete *i;
+					i = m_ReconnectSockets.erase( i );
+					continue;
+				}
+			}
+			else
+			{
+				(*i)->PutBytes( m_GPSProtocol->SEND_GPSS_REJECT( REJECTGPS_INVALID ) );
+				(*i)->DoSend( &send_fd );
+				delete *i;
+				i = m_ReconnectSockets.erase( i );
+				continue;
+			}
+		}
+
+		(*i)->DoSend( &send_fd );
+		i++;
+	}
+
 	// autohost
 
-	if( !m_AutoHostGameName.empty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) >= m_LastAutoHostTime + 30 )
+	if( !m_AutoHostGameName.empty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) - m_LastAutoHostTime >= 30 )
 	{
 		// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
 		// instead we fail silently and try again soon
 
-		if( m_Enabled && !m_CurrentGame && m_Games.size( ) < m_MaxGames && m_Games.size( ) < m_AutoHostMaximumGames )
+		if( !m_ExitingNice && m_Enabled && !m_CurrentGame && m_Games.size( ) < m_MaxGames && m_Games.size( ) < m_AutoHostMaximumGames )
 		{
 			if( m_AutoHostMap->GetValid( ) )
 			{
@@ -817,8 +1140,8 @@ bool CGHost :: Update( long usecBlock )
 						{
 							if( !m_Map->GetMapMatchMakingCategory( ).empty( ) )
 							{
-								if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM )
-									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found but matchmaking can only be used with custom maps, matchmaking disabled" );
+								if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) )
+									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found but matchmaking can only be used with fixed player settings, matchmaking disabled" );
 								else
 								{
 									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found, matchmaking enabled" );
@@ -1004,6 +1327,7 @@ void CGHost :: EventGameDeleted( CBaseGame *game )
 void CGHost :: ReloadConfigs( )
 {
 	CConfig CFG;
+	CFG.Read( "default.cfg" );
 	CFG.Read( gCFGFile );
 	SetConfigs( &CFG );
 }
@@ -1018,6 +1342,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_Language = new CLanguage( m_LanguageFile );
 	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) );
 	m_BindAddress = CFG->GetString( "bot_bindaddress", string( ) );
+	m_ReconnectWaitTime = CFG->GetInt( "bot_reconnectwaittime", 3 );
 	m_MaxGames = CFG->GetInt( "bot_maxgames", 5 );
 	string BotCommandTrigger = CFG->GetString( "bot_commandtrigger", "!" );
 
@@ -1041,7 +1366,8 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	}
 
 	m_SpoofChecks = CFG->GetInt( "bot_spoofchecks", 2 );
-	m_RequireSpoofChecks = CFG->GetInt( "bot_requirespoofchecks", 1 ) == 0 ? false : true;
+	m_RequireSpoofChecks = CFG->GetInt( "bot_requirespoofchecks", 0 ) == 0 ? false : true;
+	m_ReserveAdmins = CFG->GetInt( "bot_reserveadmins", 1 ) == 0 ? false : true;
 	m_RefreshMessages = CFG->GetInt( "bot_refreshmessages", 0 ) == 0 ? false : true;
 	m_AutoLock = CFG->GetInt( "bot_autolock", 0 ) == 0 ? false : true;
 	m_AutoSave = CFG->GetInt( "bot_autosave", 0 ) == 0 ? false : true;
@@ -1068,7 +1394,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_MOTDFile = CFG->GetString( "bot_motdfile", "motd.txt" );
 	m_GameLoadedFile = CFG->GetString( "bot_gameloadedfile", "gameloaded.txt" );
 	m_GameOverFile = CFG->GetString( "bot_gameoverfile", "gameover.txt" );
-	m_UseRegexes = CFG->GetInt( "bot_useregexes", 0 ) == 0 ? false : true;
+	m_LocalAdminMessages = CFG->GetInt( "bot_localadminmessages", 1 ) == 0 ? false : true;
 	m_TCPNoDelay = CFG->GetInt( "tcp_nodelay", 0 ) == 0 ? false : true;
 	m_MatchMakingMethod = CFG->GetInt( "bot_matchmakingmethod", 1 );
 }
@@ -1078,7 +1404,7 @@ void CGHost :: ExtractScripts( )
 	string PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
 	HANDLE PatchMPQ;
 
-	if( SFileOpenArchive( PatchMPQFileName.c_str( ), 0, 0, &PatchMPQ ) )
+	if( SFileOpenArchive( PatchMPQFileName.c_str( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &PatchMPQ ) )
 	{
 		CONSOLE_Print( "[GHOST] loading MPQ file [" + PatchMPQFileName + "]" );
 		HANDLE SubFile;
@@ -1140,7 +1466,7 @@ void CGHost :: ExtractScripts( )
 		SFileCloseArchive( PatchMPQ );
 	}
 	else
-		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "]" );
+		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "] - error code " + UTIL_ToString( GetLastError( ) ) );
 }
 
 void CGHost :: LoadIPToCountryData( )
