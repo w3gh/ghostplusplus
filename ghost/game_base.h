@@ -68,6 +68,7 @@ protected:
 	unsigned char m_GameState;						// game state, public or private
 	unsigned char m_VirtualHostPID;					// virtual host's PID
 	unsigned char m_FakePlayerPID;					// the fake player's PID (if present)
+	unsigned char m_GProxyEmptyActions;
 	string m_GameName;								// game name
 	string m_LastGameName;							// last game name (the previous game name before it was rehosted)
 	string m_VirtualHostName;						// virtual host's name
@@ -82,12 +83,14 @@ protected:
 	uint32_t m_HostCounter;							// a unique game number
 	uint32_t m_Latency;								// the number of ms to wait between sending action packets (we queue any received during this time)
 	uint32_t m_SyncLimit;							// the maximum number of packets a player can fall out of sync before starting the lag screen
-	uint32_t m_MaxSyncCounter;						// the largest number of keepalives received from any one player (for determining if anyone is lagging)
+	uint32_t m_SyncCounter;							// the number of actions sent so far (for determining if anyone is lagging)
 	uint32_t m_GameTicks;							// ingame ticks
 	uint32_t m_CreationTime;						// GetTime when the game was created
 	uint32_t m_LastPingTime;						// GetTime when the last ping was sent
 	uint32_t m_LastRefreshTime;						// GetTime when the last game refresh was sent
 	uint32_t m_LastDownloadTicks;					// GetTicks when the last map download cycle was performed
+	uint32_t m_DownloadCounter;						// # of map bytes downloaded in the last second
+	uint32_t m_LastDownloadCounterResetTicks;		// GetTicks when the download counter was last reset
 	uint32_t m_LastAnnounceTime;					// GetTime when the last announce message was sent
 	uint32_t m_AnnounceInterval;					// how many seconds to wait between sending the m_AnnounceMessage
 	uint32_t m_LastAutoStartTime;					// the last time we tried to auto start the game
@@ -96,8 +99,9 @@ protected:
 	uint32_t m_CountDownCounter;					// the countdown is finished when this reaches zero
 	uint32_t m_StartedLoadingTicks;					// GetTicks when the game started loading
 	uint32_t m_StartPlayers;						// number of players when the game started
-	uint32_t m_LastLoadInGameResetTime;				// GetTime when the "lag" screen was last reset when using load-in-game
+	uint32_t m_LastLagScreenResetTime;				// GetTime when the "lag" screen was last reset
 	uint32_t m_LastActionSentTicks;					// GetTicks when the last action packet was sent
+	uint32_t m_LastActionLateBy;					// the number of ticks we were late sending the last action packet by
 	uint32_t m_StartedLaggingTime;					// GetTime when the last lag screen started
 	uint32_t m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
 	uint32_t m_LastReservedSeen;					// GetTime when the last reserved player was seen in the lobby
@@ -106,6 +110,7 @@ protected:
 	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode
 	double m_MaximumScore;							// the maximum allowed score for matchmaking mode
+	bool m_SlotInfoChanged;							// if the slot info has changed and hasn't been sent to the players yet (optimization)
 	bool m_Locked;									// if the game owner is the only one allowed to run game commands or not
 	bool m_RefreshMessages;							// if we should display "game refreshed..." messages or not
 	bool m_RefreshError;							// if there was an error refreshing the game
@@ -130,6 +135,7 @@ public:
 	virtual CSaveGame *GetSaveGame( )				{ return m_SaveGame; }
 	virtual uint16_t GetHostPort( )					{ return m_HostPort; }
 	virtual unsigned char GetGameState( )			{ return m_GameState; }
+	virtual unsigned char GetGProxyEmptyActions( )	{ return m_GProxyEmptyActions; }
 	virtual string GetGameName( )					{ return m_GameName; }
 	virtual string GetLastGameName( )				{ return m_LastGameName; }
 	virtual string GetVirtualHostName( )			{ return m_VirtualHostName; }
@@ -154,6 +160,7 @@ public:
 	virtual void SetRefreshError( bool nRefreshError )					{ m_RefreshError = nRefreshError; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
 
+	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );
 	virtual uint32_t GetSlotsOpen( );
 	virtual uint32_t GetNumPlayers( );
@@ -203,7 +210,7 @@ public:
 	virtual void EventPlayerDisconnectConnectionClosed( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
 	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score );
-	virtual void EventPlayerLeft( CGamePlayer *player );
+	virtual void EventPlayerLeft( CGamePlayer *player, uint32_t reason );
 	virtual void EventPlayerLoaded( CGamePlayer *player );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual void EventPlayerKeepAlive( CGamePlayer *player, uint32_t checkSum );

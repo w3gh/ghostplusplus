@@ -722,7 +722,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && Colour < 12 && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && Colour < 12 && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 									ColourSlot( SID, Colour );
@@ -763,7 +763,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && ( Handicap == 50 || Handicap == 60 || Handicap == 70 || Handicap == 80 || Handicap == 90 || Handicap == 100 ) && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && ( Handicap == 50 || Handicap == 60 || Handicap == 70 || Handicap == 80 || Handicap == 90 || Handicap == 100 ) && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 								{
@@ -808,33 +808,33 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						transform( Race.begin( ), Race.end( ), Race.begin( ), (int(*)(int))tolower );
 						unsigned char SID = (unsigned char)( Slot - 1 );
 
-						if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && !( m_Map->GetMapFlags( ) & MAPFLAG_RANDOMRACES ) && SID < m_Slots.size( ) )
+						if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && !( m_Map->GetMapFlags( ) & MAPFLAG_RANDOMRACES ) && SID < m_Slots.size( ) )
 						{
 							if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 							{
 								if( Race == "human" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_HUMAN );
+									m_Slots[SID].SetRace( SLOTRACE_HUMAN | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "orc" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_ORC );
+									m_Slots[SID].SetRace( SLOTRACE_ORC | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "night elf" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_NIGHTELF );
+									m_Slots[SID].SetRace( SLOTRACE_NIGHTELF | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "undead" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_UNDEAD );
+									m_Slots[SID].SetRace( SLOTRACE_UNDEAD | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "random" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_RANDOM );
+									m_Slots[SID].SetRace( SLOTRACE_RANDOM | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else
@@ -876,7 +876,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && Team < 12 && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && Team < 12 && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 								{
@@ -957,6 +957,30 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					CreateFakePlayer( );
 				else
 					DeleteFakePlayer( );
+			}
+
+			//
+			// !FPPAUSE
+			//
+
+			if( Command == "fppause" && m_FakePlayerPID != 255 && m_GameLoaded )
+			{
+				BYTEARRAY CRC;
+				BYTEARRAY Action;
+				Action.push_back( 1 );
+				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
+			}
+
+			//
+			// !FPRESUME
+			//
+
+			if( Command == "fpresume" && m_FakePlayerPID != 255 && m_GameLoaded )
+			{
+				BYTEARRAY CRC;
+				BYTEARRAY Action;
+				Action.push_back( 2 );
+				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
 			}
 
 			//
@@ -1088,10 +1112,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				{
 					m_Latency = UTIL_ToUInt32( Payload );
 
-					if( m_Latency <= 50 )
+					if( m_Latency <= 20 )
 					{
-						m_Latency = 50;
-						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "50" ) );
+						m_Latency = 20;
+						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "20" ) );
 					}
 					else if( m_Latency >= 500 )
 					{
@@ -1410,31 +1434,26 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					// so if we try to send accurate numbers it'll always be off by one and results in Warcraft 3 assuming the game is full when it still needs one more player
 					// the easiest solution is to simply send 12 for both so the game will always show up as (1/12) players
 
-					BYTEARRAY MapGameType;
-
-					// construct the correct W3GS_GAMEINFO packet
-
 					if( m_SaveGame )
 					{
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 2 );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
+						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
+
+						uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
 						BYTEARRAY MapWidth;
 						MapWidth.push_back( 0 );
 						MapWidth.push_back( 0 );
 						BYTEARRAY MapHeight;
 						MapHeight.push_back( 0 );
 						MapHeight.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
 					}
 					else
 					{
-						MapGameType.push_back( m_Map->GetMapGameType( ) );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
+						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
+
+						uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
 					}
 				}
 			}
@@ -1462,7 +1481,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					StartCountDown( true );
 				else
 				{
-					if( GetTicks( ) >= m_LastPlayerLeaveTicks + 2000 )
+					if( GetTicks( ) - m_LastPlayerLeaveTicks >= 2000 )
 						StartCountDown( false );
 					else
 						SendAllChat( m_GHost->m_Language->CountDownAbortedSomeoneLeftRecently( ) );
@@ -1648,7 +1667,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !STATS
 	//
 
-	if( Command == "stats" && GetTime( ) >= player->GetStatsSentTime( ) + 5 )
+	if( Command == "stats" && GetTime( ) - player->GetStatsSentTime( ) >= 5 )
 	{
 		string StatsUser = User;
 
@@ -1667,7 +1686,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !STATSDOTA
 	//
 
-	if( Command == "statsdota" && GetTime( ) >= player->GetStatsDotASentTime( ) + 5 )
+	if( Command == "statsdota" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
 	{
 		string StatsUser = User;
 

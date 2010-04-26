@@ -1469,3 +1469,67 @@ string CLanguage :: UnableToLoadReplayDoesntExist( string file )
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
+
+string CLanguage :: CommandTrigger( string trigger )
+{
+	string Out = m_CFG->GetString( "lang_0211", "lang_0211" );
+	UTIL_Replace( Out, "$TRIGGER$", trigger );
+	return Out;
+}
+
+string CLanguage :: CantEndGameOwnerIsStillPlaying( string owner )
+{
+	string Out = m_CFG->GetString( "lang_0212", "lang_0212" );
+	UTIL_Replace( Out, "$OWNER$", owner );
+	return Out;
+}
+
+string CLanguage :: CantUnhostGameOwnerIsPresent( string owner )
+{
+	string Out = m_CFG->GetString( "lang_0213", "lang_0213" );
+	UTIL_Replace( Out, "$OWNER$", owner );
+	return Out;
+}
+
+string CLanguage :: WasAutomaticallyDroppedAfterSeconds( string seconds )
+{
+	string Out = m_CFG->GetString( "lang_0214", "lang_0214" );
+	UTIL_Replace( Out, "$SECONDS$", seconds );
+	return Out;
+}
+
+string CLanguage :: HasLostConnectionTimedOutGProxy( )
+{
+	return m_CFG->GetString( "lang_0215", "lang_0215" );
+}
+
+string CLanguage :: HasLostConnectionSocketErrorGProxy( string error )
+{
+	string Out = m_CFG->GetString( "lang_0216", "lang_0216" );
+	UTIL_Replace( Out, "$ERROR$", error );
+	return Out;
+}
+
+string CLanguage :: HasLostConnectionClosedByRemoteHostGProxy( )
+{
+	return m_CFG->GetString( "lang_0217", "lang_0217" );
+}
+
+string CLanguage :: WaitForReconnectSecondsRemain( string seconds )
+{
+	string Out = m_CFG->GetString( "lang_0218", "lang_0218" );
+	UTIL_Replace( Out, "$SECONDS$", seconds );
+	return Out;
+}
+
+string CLanguage :: WasUnrecoverablyDroppedFromGProxy( )
+{
+	return m_CFG->GetString( "lang_0219", "lang_0219" );
+}
+
+string CLanguage :: PlayerReconnectedWithGProxy( string name )
+{
+	string Out = m_CFG->GetString( "lang_0220", "lang_0220" );
+	UTIL_Replace( Out, "$NAME$", name );
+	return Out;
+}

@@ -91,6 +91,7 @@ private:
 	string m_CDKeyTFT;								// TFT CD key
 	string m_CountryAbbrev;							// country abbreviation
 	string m_Country;								// country
+	uint32_t m_LocaleID;							// see: http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
 	string m_UserName;								// battle.net username
 	string m_UserPassword;							// battle.net password
 	string m_FirstChannel;							// the first chat channel to join upon entering chat (note: we hijack this to store the last channel when entering a game)
@@ -104,12 +105,14 @@ private:
 	string m_PVPGNRealmName;						// realm name for PvPGN users (for mutual friend spoofchecks)
 	uint32_t m_MaxMessageLength;					// maximum message length for PvPGN users
 	uint32_t m_HostCounterID;						// the host counter ID to identify players from this realm
-	uint32_t m_NextConnectTime;						// GetTime when we should try connecting to battle.net next (after we get disconnected)
+	uint32_t m_LastDisconnectedTime;				// GetTime when we were last disconnected from battle.net
+	uint32_t m_LastConnectionAttemptTime;			// GetTime when we last attempted to connect to battle.net
 	uint32_t m_LastNullTime;						// GetTime when the last null packet was sent for detecting disconnects
 	uint32_t m_LastOutPacketTicks;					// GetTicks when the last packet was sent for the m_OutPackets queue
 	uint32_t m_LastOutPacketSize;
 	uint32_t m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
 	uint32_t m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
+	bool m_FirstConnect;							// if we haven't tried to connect to battle.net yet
 	bool m_WaitingToConnect;						// if we're waiting to reconnect to battle.net after being disconnected
 	bool m_LoggedIn;								// if we've logged into battle.net or not
 	bool m_InChat;									// if we've entered chat or not (but we're not necessarily in a chat channel yet)
@@ -118,7 +121,7 @@ private:
 	bool m_PublicCommands;							// whether to allow public commands or not
 
 public:
-	CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
+	CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNLSServer, uint16_t nBNLSPort, uint32_t nBNLSWardenCookie, string nCDKeyROC, string nCDKeyTFT, string nCountryAbbrev, string nCountry, uint32_t nLocaleID, string nUserName, string nUserPassword, string nFirstChannel, string nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, BYTEARRAY nEXEVersion, BYTEARRAY nEXEVersionHash, string nPasswordHashType, string nPVPGNRealmName, uint32_t nMaxMessageLength, uint32_t nHostCounterID );
 	~CBNET( );
 
 	bool GetExiting( )					{ return m_Exiting; }

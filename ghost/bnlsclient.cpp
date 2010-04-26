@@ -89,7 +89,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 
 	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && m_WasConnected )
 	{
-		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server due to socket not connected" );
+		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server" );
 		return true;
 	}
 
@@ -99,7 +99,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 		ExtractPackets( );
 		ProcessPackets( );
 
-		if( GetTime( ) >= m_LastNullTime + 50 )
+		if( GetTime( ) - m_LastNullTime >= 50 )
 		{
 			m_Socket->PutBytes( m_Protocol->SEND_BNLS_NULL( ) );
 			m_LastNullTime = GetTime( );

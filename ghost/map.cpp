@@ -49,24 +49,28 @@ CMap :: CMap( CGHost *nGHost )
 	m_MapVisibility = MAPVIS_DEFAULT;
 	m_MapObservers = MAPOBS_NONE;
 	m_MapFlags = MAPFLAG_TEAMSTOGETHER | MAPFLAG_FIXEDTEAMS;
-	m_MapGameType = 9;
+	m_MapFilterMaker = MAPFILTER_MAKER_BLIZZARD;
+	m_MapFilterType = MAPFILTER_TYPE_MELEE;
+	m_MapFilterSize = MAPFILTER_SIZE_LARGE;
+	m_MapFilterObs = MAPFILTER_OBS_NONE;
+	m_MapOptions = MAPOPT_MELEE;
 	m_MapWidth = UTIL_ExtractNumbers( "172 0", 2 );
 	m_MapHeight = UTIL_ExtractNumbers( "172 0", 2 );
 	m_MapLoadInGame = false;
 	m_MapNumPlayers = 12;
 	m_MapNumTeams = 12;
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 0, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 1, 1, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 2, 2, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 3, 3, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 4, 4, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 5, 5, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 6, 6, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 7, 7, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 8, 8, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 9, 9, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 10, 10, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 0, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 1, 1, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 2, 2, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 3, 3, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 4, 4, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 5, 5, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 6, 6, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 7, 7, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 8, 8, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 9, 9, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 10, 10, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
 }
 
 CMap :: CMap( CGHost *nGHost, CConfig *CFG, string nCFGFile )
@@ -154,6 +158,97 @@ BYTEARRAY CMap :: GetMapGameFlags( )
 	return UTIL_CreateByteArray( GameFlags, false );
 }
 
+uint32_t CMap :: GetMapGameType( )
+{
+	/* spec stolen from Strilanc as follows:
+
+    Public Enum GameTypes As UInteger
+        None = 0
+        Unknown0 = 1 << 0 '[always seems to be set?]
+
+        '''<summary>Setting this bit causes wc3 to check the map and disc if it is not signed by Blizzard</summary>
+        AuthenticatedMakerBlizzard = 1 << 3
+        OfficialMeleeGame = 1 << 5
+
+		SavedGame = 1 << 9
+        PrivateGame = 1 << 11
+
+        MakerUser = 1 << 13
+        MakerBlizzard = 1 << 14
+        TypeMelee = 1 << 15
+        TypeScenario = 1 << 16
+        SizeSmall = 1 << 17
+        SizeMedium = 1 << 18
+        SizeLarge = 1 << 19
+        ObsFull = 1 << 20
+        ObsOnDeath = 1 << 21
+        ObsNone = 1 << 22
+
+        MaskObs = ObsFull Or ObsOnDeath Or ObsNone
+        MaskMaker = MakerBlizzard Or MakerUser
+        MaskType = TypeMelee Or TypeScenario
+        MaskSize = SizeLarge Or SizeMedium Or SizeSmall
+        MaskFilterable = MaskObs Or MaskMaker Or MaskType Or MaskSize
+    End Enum
+
+	*/
+
+	// note: we allow "conflicting" flags to be set at the same time (who knows if this is a good idea)
+	// we also don't set any flags this class is unaware of such as Unknown0, SavedGame, and PrivateGame
+
+	uint32_t GameType = 0;
+
+	// maker
+
+	if( m_MapFilterMaker & MAPFILTER_MAKER_USER )
+		GameType |= MAPGAMETYPE_MAKERUSER;
+	if( m_MapFilterMaker & MAPFILTER_MAKER_BLIZZARD )
+		GameType |= MAPGAMETYPE_MAKERBLIZZARD;
+
+	// type
+
+	if( m_MapFilterType & MAPFILTER_TYPE_MELEE )
+		GameType |= MAPGAMETYPE_TYPEMELEE;
+	if( m_MapFilterType & MAPFILTER_TYPE_SCENARIO )
+		GameType |= MAPGAMETYPE_TYPESCENARIO;
+
+	// size
+
+	if( m_MapFilterSize & MAPFILTER_SIZE_SMALL )
+		GameType |= MAPGAMETYPE_SIZESMALL;
+	if( m_MapFilterSize & MAPFILTER_SIZE_MEDIUM )
+		GameType |= MAPGAMETYPE_SIZEMEDIUM;
+	if( m_MapFilterSize & MAPFILTER_SIZE_LARGE )
+		GameType |= MAPGAMETYPE_SIZELARGE;
+
+	// obs
+
+	if( m_MapFilterObs & MAPFILTER_OBS_FULL )
+		GameType |= MAPGAMETYPE_OBSFULL;
+	if( m_MapFilterObs & MAPFILTER_OBS_ONDEATH )
+		GameType |= MAPGAMETYPE_OBSONDEATH;
+	if( m_MapFilterObs & MAPFILTER_OBS_NONE )
+		GameType |= MAPGAMETYPE_OBSNONE;
+
+	return GameType;
+}
+
+unsigned char CMap :: GetMapLayoutStyle( )
+{
+	// 0 = melee
+	// 1 = custom forces
+	// 2 = fixed player settings (not possible with the Warcraft III map editor)
+	// 3 = custom forces + fixed player settings
+
+	if( !( m_MapOptions & MAPOPT_CUSTOMFORCES ) )
+		return 0;
+
+	if( !( m_MapOptions & MAPOPT_FIXEDPLAYERSETTINGS ) )
+		return 1;
+
+	return 3;
+}
+
 void CMap :: Load( CConfig *CFG, string nCFGFile )
 {
 	m_Valid = true;
@@ -173,7 +268,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 	HANDLE MapMPQ;
 	bool MapMPQReady = false;
 
-	if( SFileOpenArchive( MapMPQFileName.c_str( ), 0, 0, &MapMPQ ) )
+	if( SFileOpenArchive( MapMPQFileName.c_str( ), 0, MPQ_OPEN_FORCE_MPQ_V1, &MapMPQ ) )
 	{
 		CONSOLE_Print( "[MAP] loading MPQ file [" + MapMPQFileName + "]" );
 		MapMPQReady = true;
@@ -378,6 +473,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	// try to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams
 
+	uint32_t MapOptions = 0;
 	BYTEARRAY MapWidth;
 	BYTEARRAY MapHeight;
 	uint32_t MapNumPlayers = 0;
@@ -552,6 +648,11 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 								getline( ISS, GarbageString, '\0' );	// team name
 							}
 
+							// the bot only cares about the following options: melee, fixed player settings, custom forces
+							// let's not confuse the user by displaying erroneous map options so zero them out now
+
+							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
+							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
 							MapWidth = UTIL_CreateByteArray( (uint16_t)RawMapWidth, false );
 							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_ByteArrayToDecString( MapWidth ) );
 							MapHeight = UTIL_CreateByteArray( (uint16_t)RawMapHeight, false );
@@ -569,9 +670,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 								SlotNum++;
 							}
 
-							// if it's a melee map...
-
-							if( RawMapFlags & 4 )
+							if( MapOptions & MAPOPT_MELEE )
 							{
 								CONSOLE_Print( "[MAP] found melee map, initializing slots" );
 
@@ -585,10 +684,18 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 									(*i).SetRace( SLOTRACE_RANDOM );
 								}
 							}
+
+							if( !( MapOptions & MAPOPT_FIXEDPLAYERSETTINGS ) )
+							{
+								// make races selectable
+
+								for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+									(*i).SetRace( (*i).GetRace( ) | SLOTRACE_SELECTABLE );
+							}
 						}
 					}
 					else
-						CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - unable to extract war3map.w3i from MPQ file" );
+						CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - unable to extract war3map.w3i from MPQ file" );
 
 					delete [] SubFileData;
 				}
@@ -596,13 +703,13 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 				SFileCloseFile( SubFile );
 			}
 			else
-				CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - couldn't find war3map.w3i in MPQ file" );
+				CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - couldn't find war3map.w3i in MPQ file" );
 		}
 		else
-			CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - map MPQ file not loaded" );
+			CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - map MPQ file not loaded" );
 	}
 	else
-		CONSOLE_Print( "[MAP] no map data available, using config file for map_width, map_height, map_slot<x>, map_numplayers, map_numteams" );
+		CONSOLE_Print( "[MAP] no map data available, using config file for map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams" );
 
 	// close the map MPQ
 
@@ -654,7 +761,22 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 	m_MapVisibility = CFG->GetInt( "map_visibility", MAPVIS_DEFAULT );
 	m_MapObservers = CFG->GetInt( "map_observers", MAPOBS_NONE );
 	m_MapFlags = CFG->GetInt( "map_flags", MAPFLAG_TEAMSTOGETHER | MAPFLAG_FIXEDTEAMS );
-	m_MapGameType = CFG->GetInt( "map_gametype", 1 );
+	m_MapFilterMaker = CFG->GetInt( "map_filter_maker", MAPFILTER_MAKER_USER );
+	m_MapFilterType = CFG->GetInt( "map_filter_type", 0 );
+	m_MapFilterSize = CFG->GetInt( "map_filter_size", MAPFILTER_SIZE_LARGE );
+	m_MapFilterObs = CFG->GetInt( "map_filter_obs", MAPFILTER_OBS_NONE );
+
+	// todotodo: it might be possible for MapOptions to legitimately be zero so this is not a valid way of checking if it wasn't parsed out earlier
+
+	if( MapOptions == 0 )
+		MapOptions = CFG->GetInt( "map_options", 0 );
+	else if( CFG->Exists( "map_options" ) )
+	{
+		CONSOLE_Print( "[MAP] overriding calculated map_options with config value map_options = " + CFG->GetString( "map_options", string( ) ) );
+		MapOptions = CFG->GetInt( "map_options", 0 );
+	}
+
+	m_MapOptions = MapOptions;
 
 	if( MapWidth.empty( ) )
 		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", string( ) ), 2 );
@@ -734,14 +856,14 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	m_Slots = Slots;
 
-	// if random races is set force every slot's race to random + fixed
+	// if random races is set force every slot's race to random
 
 	if( m_MapFlags & MAPFLAG_RANDOMRACES )
 	{
 		CONSOLE_Print( "[MAP] forcing races to random" );
 
 		for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
-			(*i).SetRace( SLOTRACE_RANDOM | SLOTRACE_FIXED );
+			(*i).SetRace( SLOTRACE_RANDOM );
 	}
 
 	// add observer slots
@@ -759,6 +881,8 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 void CMap :: CheckValid( )
 {
+	// todotodo: should this code fix any errors it sees rather than just warning the user?
+
 	if( m_MapPath.empty( ) )
 	{
 		m_Valid = false;
@@ -767,21 +891,19 @@ void CMap :: CheckValid( )
 	else if( m_MapPath[0] == '\\' )
 		CONSOLE_Print( "[MAP] warning - map_path starts with '\\', any replays saved by GHost++ will not be playable in Warcraft III" );
 
+	if( m_MapPath.find( '/' ) != string :: npos )
+		CONSOLE_Print( "[MAP] warning - map_path contains forward slashes '/' but it must use Windows style back slashes '\\'" );
+
 	if( m_MapSize.size( ) != 4 )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_size detected" );
 	}
-
-	/*
-
 	else if( !m_MapData.empty( ) && m_MapData.size( ) != UTIL_ByteArrayToUInt32( m_MapSize, false ) )
 	{
 		m_Valid = false;
-		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with map data" );
+		CONSOLE_Print( "[MAP] invalid map_size detected - size mismatch with actual map data" );
 	}
-
-	*/
 
 	if( m_MapInfo.size( ) != 4 )
 	{
@@ -820,12 +942,7 @@ void CMap :: CheckValid( )
 	}
 
 	// todotodo: m_MapFlags
-
-	if( m_MapGameType != 1 && m_MapGameType != 2 && m_MapGameType != 9 )
-	{
-		m_Valid = false;
-		CONSOLE_Print( "[MAP] invalid map_gametype detected" );
-	}
+	// todotodo: m_MapFilterMaker, m_MapFilterType, m_MapFilterSize, m_MapFilterObs
 
 	if( m_MapWidth.size( ) != 2 )
 	{
