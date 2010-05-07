@@ -85,7 +85,7 @@ public:
 
 	// other functions
 
-	virtual void Send( QByteArray data );
+	virtual void Send( const QByteArray &data );
 };
 
 
@@ -239,7 +239,7 @@ public:
 	QString GetNameTerminated( );
 	quint32 GetPing( bool LCPing );
 
-	void AddLoadInGameData( QByteArray nLoadInGameData )							{ m_LoadInGameData.enqueue( nLoadInGameData ); }
+	void AddLoadInGameData( const QByteArray &nLoadInGameData )							{ m_LoadInGameData.enqueue( nLoadInGameData ); }
 
 	// processing functions
 
@@ -248,7 +248,7 @@ public:
 
 	// other functions
 
-	virtual void Send( QByteArray data );
+	virtual void Send( const QByteArray &data );
 	virtual void EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPacket );
 };
 

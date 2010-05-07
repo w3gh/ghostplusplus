@@ -45,6 +45,7 @@ class CGHost;
 #include <QTcpServer>
 #include <QTimer>
 #include <QSet>
+#include <QStringList>
 
 class CBaseGame : public QObject
 {
@@ -100,7 +101,7 @@ protected:
 	QList<CGamePlayer *> m_Players;				// vector of players
 	QList<CCallableScoreCheck *> m_ScoreChecks;
 	QQueue<CIncomingAction *> m_Actions;				// queue of actions to be sent
-	QList<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
+	QStringList m_Reserved;						// vector of player names with reserved slots (from the !hold command)
 	QSet<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
 	QSet<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
 	QList<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
@@ -200,24 +201,24 @@ public:
 	quint32 GetSyncCounter() { return m_SyncCounter; }
 	quint32 GetSyncLimit() { return m_SyncLimit; }
 
-	virtual void SetAnnounce( quint32 interval, QString message );
+	virtual void SetAnnounce( quint32 interval, const QString &message );
 
 	// generic functions to send packets to players
 
-	virtual void Send( CGamePlayer *player, QByteArray data );
-	virtual void Send( unsigned char PID, QByteArray data );
-	virtual void Send( QByteArray PIDs, QByteArray data );
-	virtual void SendAll( QByteArray data );
+	virtual void Send( CGamePlayer *player, const QByteArray &data );
+	virtual void Send( unsigned char PID, const QByteArray &data );
+	virtual void Send( const QByteArray &PIDs, const QByteArray &data );
+	virtual void SendAll( const QByteArray &data );
 
 	// functions to send packets to players
 
-	virtual void SendChat( unsigned char fromPID, CGamePlayer *player, QString message );
-	virtual void SendChat( unsigned char fromPID, unsigned char toPID, QString message );
-	virtual void SendChat( CGamePlayer *player, QString message );
-	virtual void SendChat( unsigned char toPID, QString message );
-	virtual void SendAllChat( unsigned char fromPID, QString message );
-	virtual void SendAllChat( QString message );
-	virtual void SendLocalAdminChat( QString message );
+	virtual void SendChat( unsigned char fromPID, CGamePlayer *player, const QString &message );
+	virtual void SendChat( unsigned char fromPID, unsigned char toPID, const QString &message );
+	virtual void SendChat( CGamePlayer *player, const QString &message );
+	virtual void SendChat( unsigned char toPID, const QString &message );
+	virtual void SendAllChat( unsigned char fromPID, const QString &message );
+	virtual void SendAllChat( const QString &message );
+	virtual void SendLocalAdminChat( const QString &message );
 	virtual void SendVirtualHostPlayerInfo( CGamePlayer *player );
 	virtual void SendFakePlayerInfo( CGamePlayer *player );
 	virtual void SendAllActions( );
@@ -238,7 +239,7 @@ public:
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual void EventPlayerKeepAlive( CGamePlayer *player, quint32 checkSum );
 	virtual void EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlayer *chatPlayer );
-	virtual bool EventPlayerBotCommand( CGamePlayer *player, QString command, QString payload );
+	virtual bool EventPlayerBotCommand( CGamePlayer *player, const QString &command, const QString &payload );
 	virtual void EventPlayerChangeTeam( CGamePlayer *player, unsigned char team );
 	virtual void EventPlayerChangeColour( CGamePlayer *player, unsigned char colour );
 	virtual void EventPlayerChangeRace( CGamePlayer *player, unsigned char race );
@@ -249,15 +250,15 @@ public:
 
 	// these events are called outside of any iterations
 
-	virtual void EventGameRefreshed( QString server );
+	virtual void EventGameRefreshed( const QString &server );
 
 	// other functions
 
 	virtual unsigned char GetSIDFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromSID( unsigned char SID );
-	virtual CGamePlayer *GetPlayerFromName( QString name, bool sensitive );
-	virtual quint32 GetPlayerFromNamePartial( QString name, CGamePlayer **player );
+	virtual CGamePlayer *GetPlayerFromName( const QString &name, bool sensitive );
+	virtual quint32 GetPlayerFromNamePartial( const QString &name, CGamePlayer **player );
 	virtual CGamePlayer *GetPlayerFromColour( unsigned char colour );
 	virtual unsigned char GetNewPID( );
 	virtual unsigned char GetNewColour( );
@@ -276,17 +277,17 @@ public:
 	virtual void ShuffleSlots( );
 	virtual QList<unsigned char> BalanceSlotsRecursive( QList<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
 	virtual void BalanceSlots( );
-	virtual void AddToSpoofed( QString server, QString name, bool sendMessage );
-	virtual void AddToReserved( QString name );
-	virtual bool IsOwner( QString name );
-	virtual bool IsReserved( QString name );
+	virtual void AddToSpoofed( const QString &server, const QString &name, bool sendMessage );
+	virtual void AddToReserved( const QString &name );
+	virtual bool IsOwner( const QString &name );
+	virtual bool IsReserved( const QString &name );
 	virtual bool IsDownloading( );
 	virtual bool IsGameDataSaved( );
 	virtual void SaveGameData( );
 	virtual void StartCountDown( bool force );
 	virtual void StartCountDownAuto( bool requireSpoofChecks );
-	virtual void StopPlayers( QString reason );
-	virtual void StopLaggers( QString reason );
+	virtual void StopPlayers( const QString &reason );
+	virtual void StopLaggers( const QString &reason );
 	virtual void CreateVirtualHost( );
 	virtual void DeleteVirtualHost( );
 	virtual void CreateFakePlayer( );
