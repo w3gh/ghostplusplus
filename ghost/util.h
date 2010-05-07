@@ -50,7 +50,7 @@ QByteArray UTIL_ExtractNumbers( QString s, unsigned int count );
 QByteArray UTIL_FileRead( QString file );
 bool UTIL_FileWrite( QString file, const QByteArray &data );
 QString UTIL_FileSafeName( QString fileName );
-QString UTIL_AddPathSeperator( QString path );
+QString UTIL_AddPathSeparator( QString path );
 
 // stat strings
 

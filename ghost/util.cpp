@@ -24,6 +24,7 @@
 #include <QFile>
 #include <QRegExp>
 #include <QtEndian>
+#include <QDir>
 
 quint16 Util::extractUInt16(const QByteArray& data, int offset)
 {
@@ -149,21 +150,15 @@ QString UTIL_FileSafeName( QString fileName )
 	return fileName.replace(QRegExp("\\\\\\/\\:\\*\\?\\<\\>\\|"), "_");
 }
 
-QString UTIL_AddPathSeperator( QString path )
+QString UTIL_AddPathSeparator( QString path )
 {
 	if( path.isEmpty( ) )
 		return path;
 
-#ifdef WIN32
-	QString Seperator = "\\";
-#else
-	QString Seperator = "/";
-#endif
-
-	if( path.right(1) == Seperator )
+	if( path.right(1) == QDir::separator() )
 		return path;
 	else
-		return path + Seperator;
+		return path + QDir::separator();
 }
 
 QByteArray UTIL_EncodeStatString( QByteArray &data )
