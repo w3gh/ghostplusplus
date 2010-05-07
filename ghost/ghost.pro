@@ -59,6 +59,11 @@ LIBS += -L../StormLib/stormlib \
     LIBS += -lStorm
 }
 
+macx {
+	LIBS += -framework CoreFoundation -framework CoreServices
+	LIBS += -L/usr/lib -lbz2 -lz
+}
+
 HEADERS += util.h \
 	statsw3mmd.h \
 	statsdota.h \
