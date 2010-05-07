@@ -840,7 +840,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_LanguageFile = CFG->GetString( "bot_language", "language.cfg" );
 	delete m_Language;
 	m_Language = new CLanguage( m_LanguageFile );
-	m_Warcraft3Path = UTIL_AddPathSeperator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) ).toAscii();
+	m_Warcraft3Path = UTIL_AddPathSeparator( CFG->GetString( "bot_war3path", "C:\\Program Files\\Warcraft III\\" ) ).toAscii();
 	m_BindAddress = CFG->GetString( "bot_bindaddress", QString( ) );
 	m_ReconnectWaitTime = CFG->GetInt( "bot_reconnectwaittime", 3 );
 	m_MaxGames = CFG->GetInt( "bot_maxgames", 5 );
@@ -850,11 +850,11 @@ void CGHost :: SetConfigs( CConfig *CFG )
 		BotCommandTrigger = "!";
 
 	m_CommandTrigger = BotCommandTrigger[0].toAscii();
-	m_MapCFGPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mapcfgpath", QString( ) ) );
-	m_SaveGamePath = UTIL_AddPathSeperator( CFG->GetString( "bot_savegamepath", QString( ) ) );
-	m_MapPath = UTIL_AddPathSeperator( CFG->GetString( "bot_mappath", QString( ) ) );
+	m_MapCFGPath = UTIL_AddPathSeparator( CFG->GetString( "bot_mapcfgpath", QString( ) ) );
+	m_SaveGamePath = UTIL_AddPathSeparator( CFG->GetString( "bot_savegamepath", QString( ) ) );
+	m_MapPath = UTIL_AddPathSeparator( CFG->GetString( "bot_mappath", QString( ) ) );
 	m_SaveReplays = CFG->GetInt( "bot_savereplays", 0 ) == 0 ? false : true;
-	m_ReplayPath = UTIL_AddPathSeperator( CFG->GetString( "bot_replaypath", QString( ) ) );
+	m_ReplayPath = UTIL_AddPathSeparator( CFG->GetString( "bot_replaypath", QString( ) ) );
 	m_VirtualHostName = CFG->GetString( "bot_virtualhostname", "|cFF4080C0GHost" );
 	m_HideIPAddresses = CFG->GetInt( "bot_hideipaddresses", 0 ) == 0 ? false : true;
 	m_CheckMultipleIPUsage = CFG->GetInt( "bot_checkmultipleipusage", 1 ) == 0 ? false : true;
