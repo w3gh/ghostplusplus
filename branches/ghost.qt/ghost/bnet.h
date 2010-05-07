@@ -51,6 +51,7 @@ class CMap;
 #include "includes.h"
 #include <QTcpSocket>
 #include <QTimer>
+#include <QStringList>
 
 typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
 typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
@@ -107,7 +108,8 @@ private:
 	QList<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
 	CCallableAdminList *m_CallableAdminList;		// threaded database admin list in progress
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
-	QList<QString> m_Admins;						// vector of cached admins
+	QStringList m_Admins;						// vector of cached admins
+	QStringList m_RootAdmins;						// vector of rootadmins
 	QList<CDBBan *> m_Bans;						// vector of cached bans
 	QString m_Server;								// battle.net server to connect to
 	QString m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
@@ -165,7 +167,7 @@ public slots:
 	void SendPacket();
 
 public:
-	CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );
+	CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAlias, const QString &nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, const QString &nCDKeyROC, const QString &nCDKeyTFT, const QString &nCountryAbbrev, const QString &nCountry, quint32 nLocaleID, const QString &nUserName, const QString &nUserPassword, const QString &nFirstChannel, const QString &nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, const QByteArray &nEXEVersion, const QByteArray &nEXEVersionHash, const QString &nPasswordHashType, const QString &nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );
 	virtual ~CBNET( );
 
 	QString GetServer( )					{ return m_Server; }
@@ -199,30 +201,30 @@ public:
 
 	// functions to send packets to battle.net
 
-	void SendJoinChannel( QString channel );
+	void SendJoinChannel( const QString &channel );
 	void SendGetFriendsList( );
 	void SendGetClanList( );
 	void QueueEnterChat( );
-	void QueueChatCommand( QString chatCommand );
-	void QueueChatCommand( QString chatCommand, QString user, bool whisper );
-	void QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 hostCounter );
-	void QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter );
+	void QueueChatCommand( const QString &chatCommand );
+	void QueueChatCommand( const QString &chatCommand, const QString &user, bool whisper );
+	void QueueGameCreate( unsigned char state, const QString &gameName, const QString &hostName, CMap *map, CSaveGame *saveGame, quint32 hostCounter );
+	void QueueGameRefresh( unsigned char state, const QString &gameName, const QString &hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter );
 	void QueueGameUncreate( );
 
 	void UnqueuePackets( unsigned char type );
-	void UnqueueChatCommand( QString chatCommand );
+	void UnqueueChatCommand( const QString &chatCommand );
 	void UnqueueGameRefreshes( );
 
 	// other functions
 
-	bool IsAdmin( QString name );
-	bool IsRootAdmin( QString name );
-	CDBBan *IsBannedName( QString name );
-	CDBBan *IsBannedIP( QString ip );
-	void AddAdmin( QString name );
-	void AddBan( QString name, QString ip, QString gamename, QString admin, QString reason );
-	void RemoveAdmin( QString name );
-	void RemoveBan( QString name );
+	bool IsAdmin( const QString &name );
+	bool IsRootAdmin( const QString &name );
+	CDBBan *IsBannedName( const QString &name );
+	CDBBan *IsBannedIP( const QString &ip );
+	void AddAdmin( const QString &name );
+	void AddBan( const QString &name, const QString &ip, const QString &gamename, const QString &admin, const QString &reason );
+	void RemoveAdmin( const QString &name );
+	void RemoveBan( const QString &name );
 	void HoldFriends( CBaseGame *game );
 	void HoldClan( CBaseGame *game );
 };

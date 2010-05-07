@@ -374,7 +374,7 @@ QString CBaseGame :: GetDescription( )
 	return Description;
 }
 
-void CBaseGame :: SetAnnounce( quint32 interval, QString message )
+void CBaseGame :: SetAnnounce( quint32 interval, const QString &message )
 {
 	m_AnnounceTimer.start(1000 * interval);
 	m_AnnounceMessage = message;
@@ -837,30 +837,30 @@ void CBaseGame::EventNewConnection()
 	new CPotentialPlayer( m_Protocol, this, NewSocket );
 }
 
-void CBaseGame :: Send( CGamePlayer *player, QByteArray data )
+void CBaseGame :: Send( CGamePlayer *player, const QByteArray &data )
 {
 	if( player )
 		player->Send( data );
 }
 
-void CBaseGame :: Send( unsigned char PID, QByteArray data )
+void CBaseGame :: Send( unsigned char PID, const QByteArray &data )
 {
 	Send( GetPlayerFromPID( PID ), data );
 }
 
-void CBaseGame :: Send( QByteArray PIDs, QByteArray data )
+void CBaseGame :: Send( const QByteArray &PIDs, const QByteArray &data )
 {
 	for( int i = 0; i < PIDs.size( ); i++ )
 		Send( PIDs[i], data );
 }
 
-void CBaseGame :: SendAll( QByteArray data )
+void CBaseGame :: SendAll( const QByteArray &data )
 {
 	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		(*i)->Send( data );
 }
 
-void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString message )
+void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, const QString &message )
 {
 	// send a private message to one player - it'll be marked [Private] in Warcraft 3
 
@@ -868,10 +868,8 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 	{
 		if( !m_GameLoading && !m_GameLoaded )
 		{
-			if( message.size( ) > 254 )
-				message = message.mid( 0, 254 );
-
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray(1, player->GetPID( ) ), 16, QByteArray( ), message ) );
+			// limit text length to 254
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray(1, player->GetPID( ) ), 16, QByteArray( ), message.mid( 0, 254 ) ) );
 		}
 		else
 		{
@@ -883,31 +881,29 @@ void CBaseGame :: SendChat( unsigned char fromPID, CGamePlayer *player, QString 
 
 			if( SID < m_Slots.size( ) )
 				ExtraFlags[0] = 3 + m_Slots[SID].GetColour( );
-
-			if( message.size( ) > 127 )
-				message = message.mid( 0, 127 );
-
-			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray( 1, player->GetPID( ) ), 32, QByteArray( (char*)ExtraFlags, 4 ), message ) );
+			
+			// limit text length to 127
+			Send( player, m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, QByteArray( 1, player->GetPID( ) ), 32, QByteArray( (char*)ExtraFlags, 4 ), message.mid( 0, 127 ) ) );
 		}
 	}
 }
 
-void CBaseGame :: SendChat( unsigned char fromPID, unsigned char toPID, QString message )
+void CBaseGame :: SendChat( unsigned char fromPID, unsigned char toPID, const QString &message )
 {
 	SendChat( fromPID, GetPlayerFromPID( toPID ), message );
 }
 
-void CBaseGame :: SendChat( CGamePlayer *player, QString message )
+void CBaseGame :: SendChat( CGamePlayer *player, const QString &message )
 {
 	SendChat( GetHostPID( ), player, message );
 }
 
-void CBaseGame :: SendChat( unsigned char toPID, QString message )
+void CBaseGame :: SendChat( unsigned char toPID, const QString &message )
 {
 	SendChat( GetHostPID( ), toPID, message );
 }
 
-void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
+void CBaseGame :: SendAllChat( unsigned char fromPID, const QString &message )
 {
 	// send a public message to all players - it'll be marked [All] in Warcraft 3
 
@@ -917,17 +913,13 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 
 		if( !m_GameLoading && !m_GameLoaded )
 		{
-			if( message.size( ) > 254 )
-				message = message.mid( 0, 254 );
-
-			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 16, QByteArray( ), message ) );
+			// limit text length to 254
+			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 16, QByteArray( ), message.mid( 0, 254 ) ) );
 		}
 		else
 		{
-			if( message.size( ) > 127 )
-				message = message.mid( 0, 127 );
-
-			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, Util::fromUInt32( 0), message ) );
+			// limit text length to 127
+			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, Util::fromUInt32( 0), message.mid( 0, 127 ) ) );
 
 			if( m_Replay )
 				m_Replay->AddChatMessage( fromPID, 32, 0, message );
@@ -935,12 +927,12 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, QString message )
 	}
 }
 
-void CBaseGame :: SendAllChat( QString message )
+void CBaseGame :: SendAllChat( const QString &message )
 {
 	SendAllChat( GetHostPID( ), message );
 }
 
-void CBaseGame :: SendLocalAdminChat( QString message )
+void CBaseGame :: SendLocalAdminChat( const QString &message )
 {
 	if( !m_LocalAdminMessages )
 		return;
@@ -2812,7 +2804,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 	}
 }
 
-bool CBaseGame :: EventPlayerBotCommand( CGamePlayer */*player*/, QString /*command*/, QString /*payload*/ )
+bool CBaseGame :: EventPlayerBotCommand( CGamePlayer */*player*/, const QString &/*command*/, const QString &/*payload*/ )
 {
 	// return true if the command itself should be hidden from other players
 
@@ -3119,7 +3111,7 @@ void CBaseGame :: EventPlayerPongToHost( CGamePlayer *player, quint32 /*pong*/ )
 	}
 }
 
-void CBaseGame :: EventGameRefreshed( QString /*server*/ )
+void CBaseGame :: EventGameRefreshed( const QString &/*server*/ )
 {
 	if( m_RefreshRehosted )
 	{
@@ -3395,31 +3387,22 @@ CGamePlayer *CBaseGame :: GetPlayerFromSID( unsigned char SID )
 	return NULL;
 }
 
-CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
+CGamePlayer *CBaseGame :: GetPlayerFromName( const QString &name, bool sensitive )
 {
-	if( !sensitive )
-		name = name.toLower();
-
 	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
-			QString TestName = (*i)->GetName( );
-
-			if( !sensitive )
-				TestName = TestName.toLower();
-
-			if( TestName == name )
-				return *i;
+			if( name.compare( (*i)->GetName( ), sensitive ? Qt::CaseSensitive : Qt::CaseInsensitive ) == 0 )
+			   return *i;
 		}
 	}
 
 	return NULL;
 }
 
-quint32 CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **player )
+quint32 CBaseGame :: GetPlayerFromNamePartial( const QString &name, CGamePlayer **player )
 {
-	name = name.toLower();
 	quint32 Matches = 0;
 	*player = NULL;
 
@@ -3429,16 +3412,16 @@ quint32 CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **playe
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
-			QString TestName = (*i)->GetName( ).toLower();
+			QString TestName = (*i)->GetName( );
 
-			if( TestName.indexOf( name ) != -1 )
+			if( TestName.contains( name, Qt::CaseInsensitive ) )
 			{
 				Matches++;
 				*player = *i;
 
 				// if the name matches exactly stop any further matching
 
-				if( TestName == name )
+				if( TestName.compare( name, Qt::CaseInsensitive ) == 0 )
 				{
 					Matches = 1;
 					break;
@@ -4194,7 +4177,7 @@ void CBaseGame :: BalanceSlots( )
 	}
 }
 
-void CBaseGame :: AddToSpoofed( QString server, QString name, bool sendMessage )
+void CBaseGame :: AddToSpoofed( const QString &server, const QString &name, bool sendMessage )
 {
 	CGamePlayer *Player = GetPlayerFromName( name, true );
 
@@ -4208,47 +4191,38 @@ void CBaseGame :: AddToSpoofed( QString server, QString name, bool sendMessage )
 	}
 }
 
-void CBaseGame :: AddToReserved( QString name )
+void CBaseGame :: AddToReserved( const QString &name )
 {
-	name = name.toLower();
+	QString nameLower = name.toLower();
 
 	// check that the user is not already reserved
 
-	for( QList<QString> :: const_iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
-	{
-		if( *i == name )
-			return;
-	}
+	if ( m_Reserved.contains( nameLower ) )
+		return;
 
-	m_Reserved.push_back( name );
+	m_Reserved.push_back( nameLower );
 
 	// upgrade the user if they're already in the game
 
 	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		QString NameLower = (*i)->GetName( ).toLower();
-
-		if( NameLower == name )
+		if( name.compare( (*i)->GetName( ), Qt::CaseInsensitive ) == 0 )
 			(*i)->SetReserved( true );
 	}
 }
 
-bool CBaseGame :: IsOwner( QString name )
+bool CBaseGame :: IsOwner( const QString &name )
 {
 	QString OwnerLower = m_OwnerName.toLower();
 	return name.toLower() == OwnerLower;
 }
 
-bool CBaseGame :: IsReserved( QString name )
+bool CBaseGame :: IsReserved( const QString &name )
 {
-	name = name.toLower();
-
-	for( QList<QString> :: const_iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
-	{
-		if( *i == name )
-			return true;
+	if( m_Reserved.contains( name, Qt::CaseInsensitive ) ) {
+		return true;
 	}
-
+	
 	return false;
 }
 
@@ -4462,7 +4436,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 	}
 }
 
-void CBaseGame :: StopPlayers( QString reason )
+void CBaseGame :: StopPlayers( const QString &reason )
 {
 	// disconnect every player and set their left reason to the passed QString
 	// we use this function when we want the code in the Update function to run before the destructor (e.g. saving players to the database)
@@ -4480,7 +4454,7 @@ void CBaseGame :: StopPlayers( QString reason )
 	}
 }
 
-void CBaseGame :: StopLaggers( QString reason )
+void CBaseGame :: StopLaggers( const QString &reason )
 {
 	for( QList<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{

@@ -165,9 +165,9 @@ public:
 	void EventBNETGameRefreshed( CBNET *bnet );
 	void EventBNETGameRefreshFailed( CBNET *bnet );
 	void EventBNETConnectTimedOut( CBNET *bnet );
-	void EventBNETWhisper( CBNET *bnet, QString user, QString message );
-	void EventBNETChat( CBNET *bnet, QString user, QString message );
-	void EventBNETEmote( CBNET *bnet, QString user, QString message );
+	void EventBNETWhisper( CBNET *bnet, const QString &user, const QString &message );
+	void EventBNETChat( CBNET *bnet, const QString &user, const QString &message );
+	void EventBNETEmote( CBNET *bnet, const QString &user, const QString &message );
 //	void EventGameDeleted( CBaseGame *game );
 
 	// other functions
@@ -176,7 +176,7 @@ public:
 	void SetConfigs( CConfig *CFG );
 	void ExtractScripts( );
 	void LoadIPToCountryData( );
-	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, QString gameName, QString ownerName, QString creatorName, QString creatorServer, bool whisper );
+	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, const QString &gameName, const QString &ownerName, const QString &creatorName, const QString &creatorServer, bool whisper );
 };
 
 #endif

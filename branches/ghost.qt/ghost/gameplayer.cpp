@@ -255,7 +255,7 @@ void CPotentialPlayer :: ProcessPackets( )
 	}
 }
 
-void CPotentialPlayer :: Send( QByteArray data )
+void CPotentialPlayer :: Send( const QByteArray &data )
 {
 	if( m_Socket && m_Socket->isValid() )
 		m_Socket->write(data);
@@ -684,7 +684,7 @@ void CGamePlayer :: ProcessPackets( )
 	}
 }
 
-void CGamePlayer :: Send( QByteArray data )
+void CGamePlayer :: Send( const QByteArray &data )
 {
 	// must start counting packet total from beginning of connection
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts

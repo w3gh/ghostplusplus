@@ -44,7 +44,11 @@
 // CBNET
 //
 
-CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, QString nCDKeyROC, QString nCDKeyTFT, QString nCountryAbbrev, QString nCountry, quint32 nLocaleID, QString nUserName, QString nUserPassword, QString nFirstChannel, QString nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, QByteArray nEXEVersion, QByteArray nEXEVersionHash, QString nPasswordHashType, QString nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID )
+CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAlias, const QString &nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie,
+			   const QString &nCDKeyROC, const QString &nCDKeyTFT, const QString &nCountryAbbrev, const QString &nCountry, quint32 nLocaleID, const QString &nUserName, const QString &nUserPassword,
+			   const QString &nFirstChannel, const QString &nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands,
+			   unsigned char nWar3Version, const QByteArray &nEXEVersion, const QByteArray &nEXEVersionHash, const QString &nPasswordHashType, const QString &nPVPGNRealmName,
+			   quint32 nMaxMessageLength, quint32 nHostCounterID )
 	: QObject(NULL)
 {
 	// todotodo: append path seperator to Warcraft3Path if needed
@@ -95,12 +99,12 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	if( nPasswordHashType == "pvpgn" && !nBNLSServer.isEmpty( ) )
 	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] pvpgn connection found with a configured BNLS server, ignoring BNLS server" );
-		nBNLSServer.clear( );
 		nBNLSPort = 0;
 		nBNLSWardenCookie = 0;
 	}
-
-	m_BNLSServer = nBNLSServer;
+	else
+		m_BNLSServer = nBNLSServer;
+	
 	m_BNLSPort = nBNLSPort;
 	m_BNLSWardenCookie = nBNLSWardenCookie;
 	m_CDKeyROC = nCDKeyROC.toAscii();
@@ -124,6 +128,7 @@ CBNET :: CBNET( CGHost *nGHost, QString nServer, QString nServerAlias, QString n
 	m_UserPassword = nUserPassword;
 	m_FirstChannel = nFirstChannel;
 	m_RootAdmin = nRootAdmin;
+	m_RootAdmins = nRootAdmin.split( QRegExp("\\s+") );
 	m_RootAdmin = m_RootAdmin.toLower();
 	m_CommandTrigger = nCommandTrigger;
 	m_War3Version = nWar3Version;
@@ -2182,7 +2187,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 	}
 }
 
-void CBNET :: SendJoinChannel( QString channel )
+void CBNET :: SendJoinChannel( const QString &channel )
 {
 	if( m_LoggedIn && m_InChat )
 		m_Socket->write( m_Protocol->SEND_SID_JOINCHANNEL( channel ) );
@@ -2206,30 +2211,29 @@ void CBNET :: QueueEnterChat( )
 		EnqueuePacket( m_Protocol->SEND_SID_ENTERCHAT( ) );
 }
 
-void CBNET :: QueueChatCommand( QString chatCommand )
+void CBNET :: QueueChatCommand( const QString &chatCommand )
 {
 	if( chatCommand.isEmpty( ) )
 		return;
 
 	if( m_LoggedIn )
 	{
-		if( m_PasswordHashType == "pvpgn" && chatCommand.size( ) > m_MaxMessageLength )
-			chatCommand = chatCommand.mid( 0, m_MaxMessageLength );
-
-		if( chatCommand.size( ) > 255 )
-			chatCommand = chatCommand.mid( 0, 255 );
+		int maxTextLen = 255;
+		if( m_PasswordHashType == "pvpgn" )
+			maxTextLen = m_MaxMessageLength;
+		QString cutCommand = chatCommand.mid( 0, maxTextLen );
 
 		if( m_OutPackets.size( ) > 10 )
-			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempted to queue chat command [" + chatCommand + "] but there are too many (" + QString::number( m_OutPackets.size( ) ) + ") packets queued, discarding" );
+			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempted to queue chat command [" + cutCommand + "] but there are too many (" + QString::number( m_OutPackets.size( ) ) + ") packets queued, discarding" );
 		else
 		{
-			CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
-			EnqueuePacket( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );
+			CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + cutCommand );
+			EnqueuePacket( m_Protocol->SEND_SID_CHATCOMMAND( cutCommand ) );
 		}
 	}
 }
 
-void CBNET :: QueueChatCommand( QString chatCommand, QString user, bool whisper )
+void CBNET :: QueueChatCommand( const QString &chatCommand, const QString &user, bool whisper )
 {
 	if( chatCommand.isEmpty( ) )
 		return;
@@ -2242,7 +2246,7 @@ void CBNET :: QueueChatCommand( QString chatCommand, QString user, bool whisper 
 		QueueChatCommand( chatCommand );
 }
 
-void CBNET :: QueueGameCreate( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *savegame, quint32 hostCounter )
+void CBNET :: QueueGameCreate( unsigned char state, const QString &gameName, const QString &hostName, CMap *map, CSaveGame *savegame, quint32 hostCounter )
 {
 	if( m_LoggedIn && map )
 	{
@@ -2257,13 +2261,15 @@ void CBNET :: QueueGameCreate( unsigned char state, QString gameName, QString ho
 	}
 }
 
-void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter )
+void CBNET :: QueueGameRefresh( unsigned char state, const QString &gameName, const QString &hostName, CMap *map, CSaveGame *saveGame, quint32 upTime, quint32 hostCounter )
 {
+	QString newHostName;
+	
 	if( hostName.isEmpty( ) )
-	{
-		QByteArray UniqueName = m_Protocol->GetUniqueName( );
-		hostName = UniqueName;
-	}
+		newHostName = m_Protocol->GetUniqueName( );
+	else
+		newHostName = hostName;
+
 
 	if( m_LoggedIn && map )
 	{
@@ -2275,6 +2281,15 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 		// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
 		quint32 FixedHostCounter = ( hostCounter & 0x0FFFFFFF ) | ( m_HostCounterID << 28 );
+		
+		// use an invalid map width/height to indicate reconnectable games
+		
+		QByteArray FakeMapWidth;
+		FakeMapWidth.push_back( 192 );
+		FakeMapWidth.push_back( 7 );
+		QByteArray FakeMapHeight;
+		FakeMapHeight.push_back( 192 );
+		FakeMapHeight.push_back( 7 );
 
 		if( saveGame )
 		{
@@ -2285,43 +2300,21 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			if( state == GAME_PRIVATE )
 				MapGameType |= MAPGAMETYPE_PRIVATEGAME;
 
-			// use an invalid map width/height to indicate reconnectable games
-
-			QByteArray MapWidth;
-			MapWidth.push_back( 192 );
-			MapWidth.push_back( 7 );
-			QByteArray MapHeight;
-			MapHeight.push_back( 192 );
-			MapHeight.push_back( 7 );
-
-			if( m_GHost->m_Reconnect )
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
-						state,
-						Util::fromUInt32( MapGameType),
-						map->GetMapGameFlags( ),
-						MapWidth,
-						MapHeight,
-						gameName,
-						hostName,
-						upTime,
-						"Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ),
-						saveGame->GetMagicNumber( ),
-						map->GetMapSHA1( ),
-						FixedHostCounter ) );
-			else
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
-						state,
-						Util::fromUInt32( MapGameType),
-						map->GetMapGameFlags( ),
-						Util::fromUInt16( (quint16)0),
-						Util::fromUInt16( (quint16)0),
-						gameName,
-						hostName,
-						upTime,
-						"Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ),
-						saveGame->GetMagicNumber( ),
-						map->GetMapSHA1( ),
-						FixedHostCounter ) );
+			
+			
+			EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3(
+															state,
+															Util::fromUInt32( MapGameType),
+															map->GetMapGameFlags( ),
+															m_GHost->m_Reconnect ? FakeMapWidth : Util::EmptyData16(),
+															m_GHost->m_Reconnect ? FakeMapHeight : Util::EmptyData16(),
+															gameName,
+															newHostName,
+															upTime,
+															"Save\\Multiplayer\\" + saveGame->GetFileNameNoPath( ),
+															saveGame->GetMagicNumber( ),
+															map->GetMapSHA1( ),
+															FixedHostCounter ) );
 		}
 		else
 		{
@@ -2331,19 +2324,10 @@ void CBNET :: QueueGameRefresh( unsigned char state, QString gameName, QString h
 			if( state == GAME_PRIVATE )
 				MapGameType |= MAPGAMETYPE_PRIVATEGAME;
 
-			// use an invalid map width/height to indicate reconnectable games
-
-			QByteArray MapWidth;
-			MapWidth.push_back( 192 );
-			MapWidth.push_back( 7 );
-			QByteArray MapHeight;
-			MapHeight.push_back( 192 );
-			MapHeight.push_back( 7 );
-
 			if( m_GHost->m_Reconnect )
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), MapWidth, MapHeight, gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), FakeMapWidth, FakeMapHeight, gameName, newHostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 			else
-				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, hostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
+				EnqueuePacket( m_Protocol->SEND_SID_STARTADVEX3( state, Util::fromUInt32( MapGameType), map->GetMapGameFlags( ), map->GetMapWidth( ), map->GetMapHeight( ), gameName, newHostName, upTime, map->GetMapPath( ), map->GetMapCRC( ), map->GetMapSHA1( ), FixedHostCounter ) );
 		}
 	}
 }
@@ -2378,7 +2362,7 @@ void CBNET :: UnqueuePackets( unsigned char type )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + QString::number( Unqueued ) + " packets of type " + QString::number( type ) );
 }
 
-void CBNET :: UnqueueChatCommand( QString chatCommand )
+void CBNET :: UnqueueChatCommand( const QString &chatCommand )
 {
 	// hackhack: this is ugly code
 	// generate the packet that would be sent for this chat command
@@ -2412,60 +2396,36 @@ void CBNET :: UnqueueGameRefreshes( )
 	UnqueuePackets( CBNETProtocol :: SID_STARTADVEX3 );
 }
 
-bool CBNET :: IsAdmin( QString name )
+bool CBNET :: IsAdmin( const QString &name )
 {
-	name = name.toLower();
+	if( m_Admins.contains( name, Qt :: CaseInsensitive ) )
+		return true;
+	return false;
+}
 
-	for( QList<QString> :: const_iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
-	{
-		if( *i == name )
-			return true;
+bool CBNET :: IsRootAdmin( const QString &name )
+{
+	if ( m_RootAdmins.contains(name, Qt :: CaseInsensitive ) ) {
+		return true;
 	}
 
 	return false;
 }
 
-bool CBNET :: IsRootAdmin( QString name )
+CDBBan *CBNET :: IsBannedName( const QString &name )
 {
-	// m_RootAdmin was already transformed to lower case in the constructor
-
-	name = name.toLower();
-
-	// updated to permit multiple root admins seperated by a space, e.g. "Varlock Kilranin Instinct121"
-	// note: this function gets called frequently so it would be better to parse the root admins just once and store them in a list somewhere
-	// however, it's hardly worth optimizing at this point since the code's already written
-
-	QTextStream SS(&m_RootAdmin);
-
-	QString s;
-
-	while( !SS.atEnd( ) )
-	{
-		SS >> s;
-
-		if( name == s )
-			return true;
-	}
-
-	return false;
-}
-
-CDBBan *CBNET :: IsBannedName( QString name )
-{
-	name = name.toLower();
-
 	// todotodo: optimize this - maybe use a map?
 
 	for( QList<CDBBan *> :: const_iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 	{
-		if( (*i)->GetName( ) == name )
+		if( name.compare( (*i)->GetName( ), Qt :: CaseInsensitive ) == 0)
 			return *i;
 	}
 
 	return NULL;
 }
 
-CDBBan *CBNET :: IsBannedIP( QString ip )
+CDBBan *CBNET :: IsBannedIP( const QString &ip )
 {
 	// todotodo: optimize this - maybe use a map?
 
@@ -2478,38 +2438,26 @@ CDBBan *CBNET :: IsBannedIP( QString ip )
 	return NULL;
 }
 
-void CBNET :: AddAdmin( QString name )
+void CBNET :: AddAdmin( const QString &name )
 {
-	name = name.toLower();
-	m_Admins.push_back( name );
+	m_Admins.push_back( name.toLower() );
 }
 
-void CBNET :: AddBan( QString name, QString ip, QString gamename, QString admin, QString reason )
+void CBNET :: AddBan( const QString &name, const QString &ip, const QString &gamename, const QString &admin, const QString &reason )
 {
-	name = name.toLower();
-	m_Bans.push_back( new CDBBan( m_Server, name, ip, "N/A", gamename, admin, reason ) );
+	m_Bans.push_back( new CDBBan( m_Server, name.toLower(), ip, "N/A", gamename, admin, reason ) );
 }
 
-void CBNET :: RemoveAdmin( QString name )
+void CBNET :: RemoveAdmin( const QString &name )
 {
-	name = name.toLower();
-
-	for( QList<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); )
-	{
-		if( *i == name )
-			i = m_Admins.erase( i );
-		else
-			i++;
-	}
+	m_Admins.removeOne( name.toLower( ) );
 }
 
-void CBNET :: RemoveBan( QString name )
+void CBNET :: RemoveBan( const QString &name )
 {
-	name = name.toLower();
-
 	for( QList<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); )
 	{
-		if( (*i)->GetName( ) == name )
+		if( name.compare( (*i)->GetName( ), Qt :: CaseInsensitive ) == 0 )
 			i = m_Bans.erase( i );
 		else
 			i++;

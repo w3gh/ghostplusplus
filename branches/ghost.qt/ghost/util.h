@@ -34,33 +34,38 @@ public:
 
 	static QByteArray fromUInt16(const quint16 &value);
 	static QByteArray fromUInt32(const quint32 &value);
+	static const QByteArray &EmptyData16( ) {  return emptyByteArray16; }
+	static const QByteArray &EmptyData32( ) {  return emptyByteArray32; }
 
 	static QByteArray reverse(const QByteArray &b);
+private:
+	static const QByteArray emptyByteArray16;
+	static const QByteArray emptyByteArray32;
 };
 
 // byte arrays
 
-QString UTIL_QByteArrayToDecString( QByteArray b );
-QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start );
-unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse );
+QString UTIL_QByteArrayToDecString( const QByteArray &b );
+QByteArray UTIL_ExtractCString( const QByteArray &b, unsigned int start );
+unsigned char UTIL_ExtractHex( const QByteArray &b, unsigned int start, bool reverse );
 QByteArray UTIL_ExtractNumbers( QString s, unsigned int count );
 
 // files
 
-QByteArray UTIL_FileRead( QString file );
-bool UTIL_FileWrite( QString file, const QByteArray &data );
+QByteArray UTIL_FileRead( const QString &file );
+bool UTIL_FileWrite( const QString &file, const QByteArray &data );
 QString UTIL_FileSafeName( QString fileName );
-QString UTIL_AddPathSeparator( QString path );
+QString UTIL_AddPathSeparator( const QString &path );
 
 // stat strings
 
-QByteArray UTIL_EncodeStatString( QByteArray &data );
+QByteArray UTIL_EncodeStatString( const QByteArray &data );
 
 // other
 
-bool UTIL_IsLanIP( QByteArray ip );
-bool UTIL_IsLocalIP( QByteArray ip, QList<QByteArray> &localIPs );
-QList<QString> UTIL_Tokenize( QString s, char delim );
+bool UTIL_IsLanIP( const QByteArray &ip );
+bool UTIL_IsLocalIP( const QByteArray &ip, QList<QByteArray> &localIPs );
+QList<QString> UTIL_Tokenize( const QString &s, char delim );
 
 // math
 

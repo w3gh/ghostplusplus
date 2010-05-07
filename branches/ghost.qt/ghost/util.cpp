@@ -26,6 +26,9 @@
 #include <QtEndian>
 #include <QDir>
 
+const QByteArray Util :: emptyByteArray16( 2, 0 );
+const QByteArray Util :: emptyByteArray32( 4, 0 );
+
 quint16 Util::extractUInt16(const QByteArray& data, int offset)
 {
 	return qFromLittleEndian<quint16>((uchar*)data.mid(offset, 2).data());
@@ -60,7 +63,7 @@ QByteArray Util::reverse(const QByteArray &b)
 	return res;
 }
 
-QString UTIL_QByteArrayToDecString( QByteArray b )
+QString UTIL_QByteArrayToDecString( const QByteArray &b )
 {
 	if( b.isEmpty( ) )
 		return QString( );
@@ -73,7 +76,7 @@ QString UTIL_QByteArrayToDecString( QByteArray b )
 	return result;
 }
 
-QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start )
+QByteArray UTIL_ExtractCString( const QByteArray &b, unsigned int start )
 {
 	// start searching the byte array at position 'start' for the first null value
 	// if found, return the subarray from 'start' to the null value but not including the null value
@@ -82,7 +85,7 @@ QByteArray UTIL_ExtractCString( QByteArray &b, unsigned int start )
 	return s.toUtf8();
 }
 
-unsigned char UTIL_ExtractHex( QByteArray &b, unsigned int start, bool reverse )
+unsigned char UTIL_ExtractHex( const QByteArray &b, unsigned int start, bool reverse )
 {
 	// consider the byte array to contain a 2 character ASCII encoded hex value at b[start] and b[start + 1] e.g. "FF"
 	// extract it as a single decoded byte
@@ -99,7 +102,7 @@ QByteArray UTIL_ExtractNumbers( QString s, unsigned int count )
 
 	QByteArray result;
 	unsigned int c;
-	QTextStream SS(&s);
+	QTextStream SS( &s, QIODevice::ReadOnly );
 
 	for( unsigned int i = 0; i < count; i++ )
 	{
@@ -116,7 +119,7 @@ QByteArray UTIL_ExtractNumbers( QString s, unsigned int count )
 	return result;
 }
 
-QByteArray UTIL_FileRead( QString file )
+QByteArray UTIL_FileRead( const QString &file )
 {
 	QFile f(file);
 	f.open(QFile::ReadOnly);
@@ -130,7 +133,7 @@ QByteArray UTIL_FileRead( QString file )
 	return f.readAll();
 }
 
-bool UTIL_FileWrite( QString file, const QByteArray &data )
+bool UTIL_FileWrite( const QString &file, const QByteArray &data )
 {
 	QFile f(file);
 	f.open(QFile::Truncate | QFile::WriteOnly);
@@ -150,7 +153,7 @@ QString UTIL_FileSafeName( QString fileName )
 	return fileName.replace(QRegExp("\\\\\\/\\:\\*\\?\\<\\>\\|"), "_");
 }
 
-QString UTIL_AddPathSeparator( QString path )
+QString UTIL_AddPathSeparator( const QString &path )
 {
 	if( path.isEmpty( ) )
 		return path;
@@ -161,7 +164,7 @@ QString UTIL_AddPathSeparator( QString path )
 		return path + QDir::separator();
 }
 
-QByteArray UTIL_EncodeStatString( QByteArray &data )
+QByteArray UTIL_EncodeStatString( const QByteArray &data )
 {
 	unsigned char Mask = 1;
 	QByteArray Result;
@@ -186,7 +189,7 @@ QByteArray UTIL_EncodeStatString( QByteArray &data )
 	return Result;
 }
 
-bool UTIL_IsLanIP( QByteArray ip )
+bool UTIL_IsLanIP( const QByteArray &ip )
 {
 	if( ip.size( ) != 4 )
 		return false;
@@ -216,7 +219,7 @@ bool UTIL_IsLanIP( QByteArray ip )
 	return false;
 }
 
-bool UTIL_IsLocalIP( QByteArray ip, QList<QByteArray> &localIPs )
+bool UTIL_IsLocalIP( const QByteArray &ip, QList<QByteArray> &localIPs )
 {
 	if( ip.size( ) != 4 )
 		return false;
@@ -233,7 +236,7 @@ bool UTIL_IsLocalIP( QByteArray ip, QList<QByteArray> &localIPs )
 	return false;
 }
 
-QList<QString> UTIL_Tokenize( QString s, char delim )
+QList<QString> UTIL_Tokenize( const QString &s, char delim )
 {
 	QList<QString> Tokens;
 	QString Token;

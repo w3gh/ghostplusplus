@@ -364,13 +364,13 @@ CGHost :: ~CGHost( )
 	delete m_CRC;
 	delete m_SHA;
 
-	qDeleteAll( m_BNETs );
+	//qDeleteAll( m_BNETs );
 	m_BNETs.clear( );
 
 	delete m_CurrentGame;
 	delete m_AdminGame;
 
-	qDeleteAll( m_Games );
+	//qDeleteAll( m_Games );
 	m_Games.clear( );
 
 	delete m_DB;
@@ -767,7 +767,7 @@ void CGHost :: EventBNETConnectTimedOut( CBNET *bnet )
 		m_CurrentGame->SendAllChat( m_Language->ConnectingToBNETTimedOut( bnet->GetServer( ) ) );
 }
 
-void CGHost :: EventBNETWhisper( CBNET *bnet, QString user, QString message )
+void CGHost :: EventBNETWhisper( CBNET *bnet, const QString &user, const QString &message )
 {
 	if( m_AdminGame )
 	{
@@ -781,7 +781,7 @@ void CGHost :: EventBNETWhisper( CBNET *bnet, QString user, QString message )
 	}
 }
 
-void CGHost :: EventBNETChat( CBNET *bnet, QString user, QString message )
+void CGHost :: EventBNETChat( CBNET *bnet, const QString &user, const QString &message )
 {
 	if( m_AdminGame )
 	{
@@ -795,7 +795,7 @@ void CGHost :: EventBNETChat( CBNET *bnet, QString user, QString message )
 	}
 }
 
-void CGHost :: EventBNETEmote( CBNET *bnet, QString user, QString message )
+void CGHost :: EventBNETEmote( CBNET *bnet, const QString &user, const QString &message )
 {
 	if( m_AdminGame )
 	{
@@ -1032,7 +1032,7 @@ void CGHost :: LoadIPToCountryData( )
 	}
 }
 
-void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QString gameName, QString ownerName, QString creatorName, QString creatorServer, bool whisper )
+void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, const QString &gameName, const QString &ownerName, const QString &creatorName, const QString &creatorServer, bool whisper )
 {
 	if( !m_Enabled )
 	{
