@@ -85,7 +85,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 						{
 							//QByteArray ValueIDString = MissionKey.mid( 4 );
 							//quint32 ValueID = UTIL_ToUInt32( ValueIDString );
-							QVector<QByteArray> Tokens = TokenizeKey( Key );
+							QList<QByteArray> Tokens = TokenizeKey( Key );
 
 							if( !Tokens.isEmpty( ) )
 							{
@@ -264,7 +264,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 										CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] Event [" + Key + "] found without a corresponding DefEvent, ignoring" );
 									else
 									{
-										QVector<QByteArray> DefEvent = m_DefEvents[Tokens[1]];
+										QList<QByteArray> DefEvent = m_DefEvents[Tokens[1]];
 
 										if( !DefEvent.isEmpty( ) )
 										{
@@ -355,7 +355,7 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 		// todotodo: there's no reason to create a new callable for each entry in this map
 		// rewrite ThreadedW3MMDPlayerAdd to act more like ThreadedW3MMDVarAdd
 
-		for( QMap<quint32,QByteArray> :: iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
+		for( QMap<quint32,QByteArray> :: const_iterator i = m_PIDToName.begin( ); i != m_PIDToName.end( ); i++ )
 		{
 			QString Flags = m_Flags[i.key()];
 			quint32 Leaver = 0;
@@ -403,9 +403,9 @@ void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, quint32 GameID )
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
 }
 
-QVector<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
+QList<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
 {
-	QVector<QByteArray> Tokens;
+	QList<QByteArray> Tokens;
 	QByteArray Token;
 	bool Escaping = false;
 
@@ -422,7 +422,7 @@ QVector<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
 			else
 			{
 				CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], invalid escape sequence found, ignoring" );
-				return QVector<QByteArray>( );
+				return QList<QByteArray>( );
 			}
 
 			Escaping = false;
@@ -434,7 +434,7 @@ QVector<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
 				if( Token.isEmpty( ) )
 				{
 					CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-					return QVector<QByteArray>( );
+					return QList<QByteArray>( );
 				}
 
 				Tokens.push_back( Token );
@@ -450,7 +450,7 @@ QVector<QByteArray> CStatsW3MMD :: TokenizeKey( const QByteArray& key )
 	if( Token.isEmpty( ) )
 	{
 		CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] error tokenizing key [" + key + "], empty token found, ignoring" );
-		return QVector<QByteArray>( );
+		return QList<QByteArray>( );
 	}
 
 	Tokens.push_back( Token );

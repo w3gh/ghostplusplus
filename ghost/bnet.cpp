@@ -160,34 +160,34 @@ CBNET :: ~CBNET( )
 
 	delete m_BNCSUtil;
 
-	for( QVector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
+	for( QList<CIncomingFriendList *> :: const_iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
 		delete *i;
 
-	for( QVector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
+	for( QList<CIncomingClanList *> :: const_iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
 		delete *i;
 
-	for( QVector<PairedAdminCount> :: iterator i = m_PairedAdminCounts.begin( ); i != m_PairedAdminCounts.end( ); i++ )
+	for( QList<PairedAdminCount> :: const_iterator i = m_PairedAdminCounts.begin( ); i != m_PairedAdminCounts.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedAdminAdd> :: iterator i = m_PairedAdminAdds.begin( ); i != m_PairedAdminAdds.end( ); i++ )
+	for( QList<PairedAdminAdd> :: const_iterator i = m_PairedAdminAdds.begin( ); i != m_PairedAdminAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedAdminRemove> :: iterator i = m_PairedAdminRemoves.begin( ); i != m_PairedAdminRemoves.end( ); i++ )
+	for( QList<PairedAdminRemove> :: const_iterator i = m_PairedAdminRemoves.begin( ); i != m_PairedAdminRemoves.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedBanCount> :: iterator i = m_PairedBanCounts.begin( ); i != m_PairedBanCounts.end( ); i++ )
+	for( QList<PairedBanCount> :: const_iterator i = m_PairedBanCounts.begin( ); i != m_PairedBanCounts.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
+	for( QList<PairedBanAdd> :: const_iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedBanRemove> :: iterator i = m_PairedBanRemoves.begin( ); i != m_PairedBanRemoves.end( ); i++ )
+	for( QList<PairedBanRemove> :: const_iterator i = m_PairedBanRemoves.begin( ); i != m_PairedBanRemoves.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
+	for( QList<PairedGPSCheck> :: const_iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
+	for( QList<PairedDPSCheck> :: const_iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
 	if( m_CallableAdminList )
@@ -196,7 +196,7 @@ CBNET :: ~CBNET( )
 	if( m_CallableBanList )
 		m_GHost->m_Callables.push_back( m_CallableBanList );
 
-	for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
+	for( QList<CDBBan *> :: const_iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 		delete *i;
 }
 
@@ -388,7 +388,7 @@ void CBNET::EventCallableUpdateTimeout()
 	// update callables
 	//
 
-	for( QVector<PairedAdminCount> :: iterator i = m_PairedAdminCounts.begin( ); i != m_PairedAdminCounts.end( ); )
+	for( QList<PairedAdminCount> :: iterator i = m_PairedAdminCounts.begin( ); i != m_PairedAdminCounts.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -409,7 +409,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedAdminAdd> :: iterator i = m_PairedAdminAdds.begin( ); i != m_PairedAdminAdds.end( ); )
+	for( QList<PairedAdminAdd> :: iterator i = m_PairedAdminAdds.begin( ); i != m_PairedAdminAdds.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -429,7 +429,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedAdminRemove> :: iterator i = m_PairedAdminRemoves.begin( ); i != m_PairedAdminRemoves.end( ); )
+	for( QList<PairedAdminRemove> :: iterator i = m_PairedAdminRemoves.begin( ); i != m_PairedAdminRemoves.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -449,7 +449,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedBanCount> :: iterator i = m_PairedBanCounts.begin( ); i != m_PairedBanCounts.end( ); )
+	for( QList<PairedBanCount> :: iterator i = m_PairedBanCounts.begin( ); i != m_PairedBanCounts.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -470,7 +470,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
+	for( QList<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -490,7 +490,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedBanRemove> :: iterator i = m_PairedBanRemoves.begin( ); i != m_PairedBanRemoves.end( ); )
+	for( QList<PairedBanRemove> :: iterator i = m_PairedBanRemoves.begin( ); i != m_PairedBanRemoves.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -510,7 +510,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
+	for( QList<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -529,7 +529,7 @@ void CBNET::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
+	for( QList<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -587,7 +587,7 @@ void CBNET::EventCallableUpdateTimeout()
 	{
 		// CONSOLE_Print( "[BNET: " + m_ServerAlias + "] refreshed ban list (" + QString::number( m_Bans.size( ) ) + " -> " + QString::number( m_CallableBanList->GetResult( ).size( ) ) + " bans)" );
 
-		for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
+		for( QList<CDBBan *> :: const_iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 			delete *i;
 
 		m_Bans = m_CallableBanList->GetResult( );
@@ -654,8 +654,8 @@ void CBNET :: ProcessPackets( )
 	CIncomingGameHost *GameHost = NULL;
 	CIncomingChatEvent *ChatEvent = NULL;
 	QByteArray WardenData;
-	QVector<CIncomingFriendList *> Friends;
-	QVector<CIncomingClanList *> Clans;
+	QList<CIncomingFriendList *> Friends;
+	QList<CIncomingClanList *> Clans;
 
 	// process all the received packets in the m_Packets queue
 	// this normally means sending some kind of response
@@ -902,16 +902,16 @@ void CBNET :: ProcessPackets( )
 			case CBNETProtocol :: SID_FRIENDSLIST:
 				Friends = m_Protocol->RECEIVE_SID_FRIENDSLIST( Packet->GetData( ) );
 
-				for( QVector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
+				for( QList<CIncomingFriendList *> :: const_iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
 					delete *i;
 
 				m_Friends = Friends;
 				break;
 
 			case CBNETProtocol :: SID_CLANMEMBERLIST:
-				QVector<CIncomingClanList *> Clans = m_Protocol->RECEIVE_SID_CLANMEMBERLIST( Packet->GetData( ) );
+				QList<CIncomingClanList *> Clans = m_Protocol->RECEIVE_SID_CLANMEMBERLIST( Packet->GetData( ) );
 
-				for( QVector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
+				for( QList<CIncomingClanList *> :: const_iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
 					delete *i;
 
 				m_Clans = Clans;
@@ -961,7 +961,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				{
 					// the equivalent pvpgn message is: [PvPGN Realm] Your friend abc has entered a Warcraft III Frozen Throne game named "xyz".
 
-					QVector<QString> Tokens = UTIL_Tokenize( Message, ' ' );
+					QList<QString> Tokens = UTIL_Tokenize( Message, ' ' );
 
 					if( Tokens.size( ) >= 3 )
 						m_GHost->m_CurrentGame->AddToSpoofed( m_Server, Tokens[2], false );
@@ -1943,7 +1943,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						if( m_GHost->m_CurrentGame )
 							m_GHost->m_CurrentGame->SendAllChat( Payload );
 
-						for( QVector<CBaseGame *> :: iterator i = m_GHost->m_Games.begin( ); i != m_GHost->m_Games.end( ); i++ )
+						for( QList<CBaseGame *> :: const_iterator i = m_GHost->m_Games.begin( ); i != m_GHost->m_Games.end( ); i++ )
 							(*i)->SendAllChat( "ADMIN: " + Payload );
 					}
 					else
@@ -2416,7 +2416,7 @@ bool CBNET :: IsAdmin( QString name )
 {
 	name = name.toLower();
 
-	for( QVector<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
+	for( QList<QString> :: const_iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
 	{
 		if( *i == name )
 			return true;
@@ -2456,7 +2456,7 @@ CDBBan *CBNET :: IsBannedName( QString name )
 
 	// todotodo: optimize this - maybe use a map?
 
-	for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
+	for( QList<CDBBan *> :: const_iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 	{
 		if( (*i)->GetName( ) == name )
 			return *i;
@@ -2469,7 +2469,7 @@ CDBBan *CBNET :: IsBannedIP( QString ip )
 {
 	// todotodo: optimize this - maybe use a map?
 
-	for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
+	for( QList<CDBBan *> :: const_iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
 	{
 		if( (*i)->GetIP( ) == ip )
 			return *i;
@@ -2494,7 +2494,7 @@ void CBNET :: RemoveAdmin( QString name )
 {
 	name = name.toLower();
 
-	for( QVector<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); )
+	for( QList<QString> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); )
 	{
 		if( *i == name )
 			i = m_Admins.erase( i );
@@ -2507,7 +2507,7 @@ void CBNET :: RemoveBan( QString name )
 {
 	name = name.toLower();
 
-	for( QVector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); )
+	for( QList<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); )
 	{
 		if( (*i)->GetName( ) == name )
 			i = m_Bans.erase( i );
@@ -2520,7 +2520,7 @@ void CBNET :: HoldFriends( CBaseGame *game )
 {
 	if( game )
 	{
-		for( QVector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
+		for( QList<CIncomingFriendList *> :: const_iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
 			game->AddToReserved( (*i)->GetAccount( ) );
 	}
 }
@@ -2529,7 +2529,7 @@ void CBNET :: HoldClan( CBaseGame *game )
 {
 	if( game )
 	{
-		for( QVector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
+		for( QList<CIncomingClanList *> :: const_iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
 			game->AddToReserved( (*i)->GetName( ) );
 	}
 }

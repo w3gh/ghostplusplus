@@ -94,7 +94,7 @@ void CGame::EventGameDataSaved()
 
 		// store the CDBGamePlayers in the database
 
-		for( QVector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
+		for( QList<CDBGamePlayer *> :: const_iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
 			m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedGamePlayerAdd( m_CallableGameAdd->GetResult( ), (*i)->GetName( ), (*i)->GetIP( ), (*i)->GetSpoofed( ), (*i)->GetSpoofedRealm( ), (*i)->GetReserved( ), (*i)->GetLoadingTime( ), (*i)->GetLeft( ), (*i)->GetLeftReason( ), (*i)->GetTeam( ), (*i)->GetColour( ) ) );
 
 		// store the stats in the database
@@ -119,24 +119,24 @@ CGame :: ~CGame( )
 		m_CallableGameAdd = NULL;
 	}
 
-	for( QVector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); i++ )
+	for( QList<PairedBanCheck> :: const_iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
+	for( QList<PairedBanAdd> :: const_iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
+	for( QList<PairedGPSCheck> :: const_iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
+	for( QList<PairedDPSCheck> :: const_iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
-	for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+	for( QList<CDBBan *> :: const_iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 		delete *i;
 
 	delete m_DBGame;
 
-	for( QVector<CDBGamePlayer *> :: iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
+	for( QList<CDBGamePlayer *> :: const_iterator i = m_DBGamePlayers.begin( ); i != m_DBGamePlayers.end( ); i++ )
 		delete *i;
 
 	delete m_Stats;
@@ -157,7 +157,7 @@ void CGame::EventCallableUpdateTimeout()
 {
 	// update callables
 
-	for( QVector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); )
+	for( QList<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -176,13 +176,13 @@ void CGame::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
+	for( QList<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
 			if( i->second->GetResult( ) )
 			{
-				for( QVector<CBNET *> :: iterator j = m_GHost->m_BNETs.begin( ); j != m_GHost->m_BNETs.end( ); j++ )
+				for( QList<CBNET *> :: iterator j = m_GHost->m_BNETs.begin( ); j != m_GHost->m_BNETs.end( ); j++ )
 				{
 					if( (*j)->GetServer( ) == i->second->GetServer( ) )
 						(*j)->AddBan( i->second->GetUser( ), i->second->GetIP( ), i->second->GetGameName( ), i->second->GetAdmin( ), i->second->GetReason( ) );
@@ -199,7 +199,7 @@ void CGame::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
+	for( QList<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -238,7 +238,7 @@ void CGame::EventCallableUpdateTimeout()
 			i++;
 	}
 
-	for( QVector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
+	for( QList<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
@@ -332,7 +332,7 @@ void CGame :: EventPlayerDeleted()
 
 		// also keep track of the last player to leave for the !banlast command
 
-		for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+		for( QList<CDBBan *> :: const_iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 		{
 			if( (*i)->GetName( ) == player->GetName( ) )
 				m_DBBanLast = *i;
@@ -366,7 +366,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 	bool AdminCheck = false;
 
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetServer( ) == player->GetSpoofedRealm( ) && (*i)->IsAdmin( User ) )
 		{
@@ -377,7 +377,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 	bool RootAdminCheck = false;
 
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetServer( ) == player->GetSpoofedRealm( ) && (*i)->IsRootAdmin( User ) )
 		{
@@ -444,7 +444,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
 					// we use the m_DBBans vector for this in case the player already left and thus isn't in the m_Players vector anymore
 
-					for( QVector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+					for( QList<CDBBan *> :: const_iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
 					{
 						QString TestName = (*i)->GetName( ).toLower();
 
@@ -592,7 +592,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					{
 						bool LastMatchAdminCheck = false;
 
-						for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+						for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						{
 							if( (*i)->GetServer( ) == LastMatch->GetSpoofedRealm( ) && (*i)->IsAdmin( LastMatch->GetName( ) ) )
 							{
@@ -603,7 +603,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 						bool LastMatchRootAdminCheck = false;
 
-						for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+						for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						{
 							if( (*i)->GetServer( ) == LastMatch->GetSpoofedRealm( ) && (*i)->IsRootAdmin( LastMatch->GetName( ) ) )
 							{
@@ -627,7 +627,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "checkban" && !Payload.isEmpty( ) && !m_GHost->m_BNETs.isEmpty( ) )
 			{
-				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, QString( ) ) ) );
 			}
 
@@ -1003,7 +1003,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 			{
 				QString Froms;
 
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 				{
 					// we reverse the byte order on the IP because it's stored in network byte order
 
@@ -1272,11 +1272,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 				// copy the m_Players vector so we can sort by descending ping so it's easier to find players with high pings
 
-				QVector<CGamePlayer *> SortedPlayers = m_Players;
+				QList<CGamePlayer *> SortedPlayers = m_Players;
 				qSort(SortedPlayers);
 				QString Pings;
 
-				for( QVector<CGamePlayer *> :: iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )
+				for( QList<CGamePlayer *> :: const_iterator i = SortedPlayers.begin( ); i != SortedPlayers.end( ); i++ )
 				{
 					Pings += (*i)->GetNameTerminated( );
 					Pings += ": ";
@@ -1333,7 +1333,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
-				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 				{
 					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
 					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
@@ -1369,7 +1369,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
-				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 				{
 					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
 					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
@@ -1409,7 +1409,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 
 			if( Command == "say" && !Payload.isEmpty( ) )
 			{
-				for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					(*i)->QueueChatCommand( Payload );
 
 				HideCommand = true;
@@ -1646,7 +1646,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					Name = Payload.mid( 0, MessageStart );
 					Message = Payload.mid( MessageStart + 1 );
 
-					for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+					for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 						(*i)->QueueChatCommand( Message, Name, true );
 				}
 
@@ -1754,7 +1754,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 					m_KickVotePlayer = LastMatch->GetName( );
 					m_VotekickTimer.start();
 
-					for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+					for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 						(*i)->SetKickVote( false );
 
 					player->SetKickVote( true );
@@ -1778,7 +1778,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 		quint32 VotesNeeded = (quint32)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
 		quint32 Votes = 0;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( (*i)->GetKickVote( ) )
 				Votes++;
@@ -1827,7 +1827,7 @@ void CGame :: EventGameStarted( )
 	// but since the player has already left the game we don't have access to their information anymore
 	// so we create a "potential ban" for each player and only store it in the database if requested to by an admin
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), QString( ), QString( ), QString( ), QString( ) ) );
 }
 

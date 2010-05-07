@@ -54,13 +54,13 @@ public slots:
 
 protected:
 	QString m_Password;
-	QVector<TempBan> m_TempBans;
-	QVector<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
-	QVector<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
-	QVector<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
-	QVector<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
-	// QVector<PairedBanAdd> m_PairedBanAdds;		// vector of paired threaded database ban adds in progress
-	QVector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
+	QList<TempBan> m_TempBans;
+	QList<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
+	QList<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
+	QList<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
+	QList<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
+	// QList<PairedBanAdd> m_PairedBanAdds;		// vector of paired threaded database ban adds in progress
+	QList<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
 
 public:
 	CAdminGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nPassword );

@@ -309,7 +309,7 @@ QByteArray CGameProtocol :: SEND_W3GS_PING_FROM_HOST( )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	char Zeros[] = { 0, 0, 0, 0 };
 
@@ -443,7 +443,7 @@ QByteArray CGameProtocol :: SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID )
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: SEND_W3GS_SLOTINFO( QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	QByteArray SlotInfo = EncodeSlotInfo( lslots, randomSeed, layoutStyle, playerSlots );
 	QByteArray packet;
@@ -556,13 +556,13 @@ QByteArray CGameProtocol :: SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QBy
 	return packet;
 }
 
-QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QVector<CGamePlayer *> players, bool loadInGame )
+QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QList<CGamePlayer *> players, bool loadInGame )
 {
 	QByteArray packet;
 
 	unsigned char NumLaggers = 0;
 
-	for( QVector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = players.begin( ); i != players.end( ); i++ )
 	{
 		if( loadInGame )
 		{
@@ -584,7 +584,7 @@ QByteArray CGameProtocol :: SEND_W3GS_START_LAG( QVector<CGamePlayer *> players,
 		packet.push_back( (char)0 );						// packet length will be assigned later
 		packet.push_back( NumLaggers );
 
-		for( QVector<CGamePlayer *> :: iterator i = players.begin( ); i != players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = players.begin( ); i != players.end( ); i++ )
 		{
 			if( loadInGame )
 			{
@@ -954,7 +954,7 @@ bool CGameProtocol :: ValidateLength( QByteArray &content )
 	return false;
 }
 
-QByteArray CGameProtocol :: EncodeSlotInfo( QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
+QByteArray CGameProtocol :: EncodeSlotInfo( QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	QByteArray SlotInfo;
 	SlotInfo.push_back( (unsigned char)lslots.size( ) );		// number of slots

@@ -30,7 +30,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QPair>
-#include <QVector>
+#include <QList>
 
 using namespace std;
 

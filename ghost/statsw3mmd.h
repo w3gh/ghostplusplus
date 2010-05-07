@@ -42,7 +42,7 @@ private:
 	QMap<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
 	QMap<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
 	QMap<VarP,QByteArray> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
-	QMap<QByteArray, QVector<QByteArray> > m_DefEvents;	// event -> vector of arguments + format
+	QMap<QByteArray, QList<QByteArray> > m_DefEvents;	// event -> vector of arguments + format
 
 public:
 	CStatsW3MMD( CBaseGame *nGame, QString nCategory );
@@ -50,7 +50,7 @@ public:
 
 	virtual bool ProcessAction( CIncomingAction *Action );
 	virtual void Save( CGHost *GHost, CGHostDB *DB, quint32 GameID );
-	virtual QVector<QByteArray> TokenizeKey( const QByteArray& key );
+	virtual QList<QByteArray> TokenizeKey( const QByteArray& key );
 };
 
 #endif

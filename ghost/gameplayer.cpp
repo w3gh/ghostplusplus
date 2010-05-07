@@ -108,7 +108,7 @@ void CGamePlayer::EventWhoisTimeout()
 	{
 		// todotodo: we could get kicked from battle.net for sending a command with invalid characters, do some basic checking
 
-		for( QVector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == m_JoinedRealm )
 			{

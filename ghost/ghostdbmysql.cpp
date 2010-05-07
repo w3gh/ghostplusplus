@@ -472,9 +472,9 @@ QString MySQLEscapeString( void *conn, QString str )
 	return result;
 }
 
-QVector<QString> MySQLFetchRow( MYSQL_RES *res )
+QList<QString> MySQLFetchRow( MYSQL_RES *res )
 {
-	QVector<QString> Result;
+	QList<QString> Result;
 
 	MYSQL_ROW Row = mysql_fetch_row( res );
 
@@ -513,7 +513,7 @@ quint32 MySQLAdminCount( void *conn, QString *error, quint32 botid, QString serv
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -545,7 +545,7 @@ bool MySQLAdminCheck( void *conn, QString *error, quint32 botid, QString server,
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( !Row.isEmpty( ) )
 				IsAdmin = true;
@@ -591,10 +591,10 @@ bool MySQLAdminRemove( void *conn, QString *error, quint32 botid, QString server
 	return Success;
 }
 
-QVector<QString> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server )
+QList<QString> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	QVector<QString> AdminList;
+	QList<QString> AdminList;
 	QString Query = "SELECT name FROM admins WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -605,7 +605,7 @@ QVector<QString> MySQLAdminList( void *conn, QString *error, quint32 botid, QStr
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			while( !Row.isEmpty( ) )
 			{
@@ -636,7 +636,7 @@ quint32 MySQLBanCount( void *conn, QString *error, quint32 botid, QString server
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Count = UTIL_ToUInt32( Row[0] );
@@ -674,7 +674,7 @@ CDBBan *MySQLBanCheck( void *conn, QString *error, quint32 botid, QString server
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 6 )
 				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5] );
@@ -741,10 +741,10 @@ bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString user )
 	return Success;
 }
 
-QVector<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server )
+QList<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server )
 {
 	QString EscServer = MySQLEscapeString( conn, server );
-	QVector<CDBBan *> BanList;
+	QList<CDBBan *> BanList;
 	QString Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -755,7 +755,7 @@ QVector<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QStri
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			while( Row.size( ) == 6 )
 			{
@@ -824,7 +824,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, q
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 12 )
 			{
@@ -902,7 +902,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, q
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 10 )
 			{
@@ -934,7 +934,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, q
 
 						if( Result2 )
 						{
-							QVector<QString> Row2 = MySQLFetchRow( Result2 );
+							QList<QString> Row2 = MySQLFetchRow( Result2 );
 
 							if( Row2.size( ) == 1 )
 								TotalWins = UTIL_ToUInt32( Row2[0] );
@@ -959,7 +959,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, QString *error, q
 
 						if( Result3 )
 						{
-							QVector<QString> Row3 = MySQLFetchRow( Result3 );
+							QList<QString> Row3 = MySQLFetchRow( Result3 );
 
 							if( Row3.size( ) == 1 )
 								TotalLosses = UTIL_ToUInt32( Row3[0] );
@@ -1023,7 +1023,7 @@ double MySQLScoreCheck( void *conn, QString *error, quint32 botid, QString categ
 
 		if( Result )
 		{
-			QVector<QString> Row = MySQLFetchRow( Result );
+			QList<QString> Row = MySQLFetchRow( Result );
 
 			if( Row.size( ) == 1 )
 				Score = UTIL_ToDouble( Row[0] );
@@ -1064,7 +1064,7 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid
 	bool Success = false;
 	QString Query;
 
-	for( QMap<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
+	for( QMap<VarP,int32_t> :: const_iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
@@ -1090,7 +1090,7 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid
 	bool Success = false;
 	QString Query;
 
-	for( QMap<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
+	for( QMap<VarP,double> :: const_iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 
@@ -1116,7 +1116,7 @@ bool MySQLW3MMDVarAdd( void *conn, QString *error, quint32 botid, quint32 gameid
 	bool Success = false;
 	QString Query;
 
-	for( QMap<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
+	for( QMap<VarP,QString> :: const_iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
 	{
 		QString EscVarName = MySQLEscapeString( conn, i->first.second );
 		QString EscValueString = MySQLEscapeString( conn, i->second );

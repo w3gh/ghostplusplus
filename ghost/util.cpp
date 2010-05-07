@@ -67,7 +67,7 @@ QString UTIL_QByteArrayToDecString( QByteArray b )
 
 	QString result = QString::number( (unsigned char)b[0] );
 
-	for( QByteArray :: iterator i = b.begin( ) + 1; i != b.end( ); i++ )
+	for( QByteArray :: const_iterator i = b.begin( ) + 1; i != b.end( ); i++ )
 		result += " " + QString::number( (unsigned char)*i );
 
 	return result;
@@ -216,12 +216,12 @@ bool UTIL_IsLanIP( QByteArray ip )
 	return false;
 }
 
-bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs )
+bool UTIL_IsLocalIP( QByteArray ip, QList<QByteArray> &localIPs )
 {
 	if( ip.size( ) != 4 )
 		return false;
 
-	for( QVector<QByteArray> :: iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
+	for( QList<QByteArray> :: const_iterator i = localIPs.begin( ); i != localIPs.end( ); i++ )
 	{
 		if( (*i).size( ) != 4 )
 			continue;
@@ -233,12 +233,12 @@ bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs )
 	return false;
 }
 
-QVector<QString> UTIL_Tokenize( QString s, char delim )
+QList<QString> UTIL_Tokenize( QString s, char delim )
 {
-	QVector<QString> Tokens;
+	QList<QString> Tokens;
 	QString Token;
 
-	for( QString :: iterator i = s.begin( ); i != s.end( ); i++ )
+	for( QString :: const_iterator i = s.begin( ); i != s.end( ); i++ )
 	{
 		if( *i == delim )
 		{

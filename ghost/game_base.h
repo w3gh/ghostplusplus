@@ -95,16 +95,16 @@ protected:
 protected:
 	QTcpServer *m_Socket;							// listening socket
 	CGameProtocol *m_Protocol;						// game protocol
-	QVector<CGameSlot> m_Slots;						// vector of slots
-	QVector<CPotentialPlayer *> m_Potentials;		// vector of potential players (connections that haven't sent a W3GS_REQJOIN packet yet)
-	QVector<CGamePlayer *> m_Players;				// vector of players
-	QVector<CCallableScoreCheck *> m_ScoreChecks;
+	QList<CGameSlot> m_Slots;						// vector of slots
+	QList<CPotentialPlayer *> m_Potentials;		// vector of potential players (connections that haven't sent a W3GS_REQJOIN packet yet)
+	QList<CGamePlayer *> m_Players;				// vector of players
+	QList<CCallableScoreCheck *> m_ScoreChecks;
 	QQueue<CIncomingAction *> m_Actions;				// queue of actions to be sent
-	QVector<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
+	QList<QString> m_Reserved;						// vector of player names with reserved slots (from the !hold command)
 	QSet<QString> m_IgnoredNames;						// set of player names to NOT print ban messages for when joining because they've already been printed
 	QSet<QString> m_IPBlackList;						// set of IP addresses to blacklist from joining (todotodo: convert to uint32's for efficiency)
-	QVector<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
-	QVector<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
+	QList<CGameSlot> m_EnforceSlots;				// vector of slots to force players to use (used with saved games)
+	QList<PIDPlayer> m_EnforcePlayers;				// vector of pids to force players to use (used with saved games)
 	CMap *m_Map;									// map data
 	CSaveGame *m_SaveGame;							// savegame data (this is a pointer to global data)
 	CReplay *m_Replay;								// replay
@@ -163,8 +163,8 @@ public:
 	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CBaseGame( );
 
-	virtual QVector<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
-	virtual QVector<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
+	virtual QList<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
+	virtual QList<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
 	virtual CSaveGame *GetSaveGame( )				{ return m_SaveGame; }
 	virtual quint16 GetHostPort( )					{ return m_HostPort; }
 	virtual unsigned char GetGameState( )			{ return m_GameState; }
@@ -185,8 +185,8 @@ public:
 	virtual bool GetGameLoaded( )					{ return m_GameLoaded; }
 	virtual bool GetLagging( )						{ return m_Lagging; }
 
-	virtual void SetEnforceSlots( QVector<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
-	virtual void SetEnforcePlayers( QVector<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
+	virtual void SetEnforceSlots( QList<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
+	virtual void SetEnforcePlayers( QList<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
 	virtual void SetAutoStartPlayers( quint32 nAutoStartPlayers )		{ m_AutoStartPlayers = nAutoStartPlayers; }
 	virtual void SetMinimumScore( double nMinimumScore )				{ m_MinimumScore = nMinimumScore; }
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
@@ -274,7 +274,7 @@ public:
 	virtual void OpenAllSlots( );
 	virtual void CloseAllSlots( );
 	virtual void ShuffleSlots( );
-	virtual QVector<unsigned char> BalanceSlotsRecursive( QVector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
+	virtual QList<unsigned char> BalanceSlotsRecursive( QList<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
 	virtual void BalanceSlots( );
 	virtual void AddToSpoofed( QString server, QString name, bool sendMessage );
 	virtual void AddToReserved( QString name );

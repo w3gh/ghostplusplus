@@ -189,7 +189,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 		// we really just want the open/closed/computer entries
 		// so open all the player slots
 
-		for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+		for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 		{
 			if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 )
 			{
@@ -262,7 +262,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 
 CBaseGame :: ~CBaseGame( )
 {
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		(*i)->QueueChatCommand( m_GHost->m_Language->GameIsOver( GetDescription( ) ) );
 
@@ -297,13 +297,13 @@ CBaseGame :: ~CBaseGame( )
 	delete m_Map;
 	delete m_Replay;
 
-	for( QVector<CPotentialPlayer *> :: iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
+	for( QList<CPotentialPlayer *> :: const_iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
 		delete *i;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		delete *i;
 
-	for( QVector<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); i++ )
+	for( QList<CCallableScoreCheck *> :: const_iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( *i );
 
 	while( !m_Actions.isEmpty( ) )
@@ -317,7 +317,7 @@ quint32 CBaseGame :: GetSlotsOccupied( )
 {
 	quint32 NumSlotsOccupied = 0;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED )
 			NumSlotsOccupied++;
@@ -330,7 +330,7 @@ quint32 CBaseGame :: GetSlotsOpen( )
 {
 	quint32 NumSlotsOpen = 0;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OPEN )
 			NumSlotsOpen++;
@@ -353,7 +353,7 @@ quint32 CBaseGame :: GetNumHumanPlayers( )
 {
 	quint32 NumHumanPlayers = 0;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 			NumHumanPlayers++;
@@ -384,7 +384,7 @@ void CBaseGame::CheckGameLoaded()
 {
 	bool FinishedLoading = true;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		FinishedLoading = (*i)->GetFinishedLoading( );
 
@@ -408,19 +408,19 @@ void CBaseGame::EventLoadInGameTimeout()
 
 	bool UsingGProxy = false;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetGProxy( ) )
 			UsingGProxy = true;
 	}
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetFinishedLoading( ) )
 		{
 			// stop the lag screen
 
-			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+			for( QList<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 			{
 				if( !(*j)->GetFinishedLoading( ) )
 					Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j, true ) );
@@ -598,7 +598,7 @@ void CBaseGame::EventTryAutoRehost()
 	m_HostCounter = m_GHost->m_HostCounter++;
 	m_RefreshError = false;
 
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		(*i)->QueueGameUncreate( );
 		(*i)->QueueEnterChat( );
@@ -647,7 +647,7 @@ void CBaseGame::EventRefreshTimeout()
 
 		bool Refreshed = false;
 
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			// don't queue a game refresh message if the queue contains more than 1 packet because they're very low priority
 
@@ -703,7 +703,7 @@ void CBaseGame::EventMapDataTimeout()
 
 	quint32 Downloaders = 0;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetDownloadStarted( ) && !(*i)->GetDownloadFinished( ) )
 		{
@@ -856,7 +856,7 @@ void CBaseGame :: Send( QByteArray PIDs, QByteArray data )
 
 void CBaseGame :: SendAll( QByteArray data )
 {
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		(*i)->Send( data );
 }
 
@@ -949,7 +949,7 @@ void CBaseGame :: SendLocalAdminChat( QString message )
 	// at the time of this writing it is only possible for the game owner to meet this criteria because being an admin requires spoof checking
 	// this is mainly used for relaying battle.net whispers, chat messages, and emotes to these players
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetSpoofed( ) && IsOwner( (*i)->GetName( ) ) && ( UTIL_IsLanIP( (*i)->GetExternalIP( ) ) || UTIL_IsLocalIP( (*i)->GetExternalIP( ), m_GHost->m_LocalAddresses ) ) )
 		{
@@ -1001,7 +1001,7 @@ void CBaseGame :: SendAllActions( )
 {
 	bool UsingGProxy = false;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetGProxy( ) )
 			UsingGProxy = true;
@@ -1023,7 +1023,7 @@ void CBaseGame :: SendAllActions( )
 		// GProxy++ will insert these itself so we don't need to send them to GProxy++ players
 		// empty actions are used to extend the time a player can use when reconnecting
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( !(*i)->GetGProxy( ) )
 			{
@@ -1185,7 +1185,7 @@ void CBaseGame::CheckPlayersStartedLaggging()
 
 	m_WaitTime = 60;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetGProxy( ) )
 		{
@@ -1197,7 +1197,7 @@ void CBaseGame::CheckPlayersStartedLaggging()
 	}
 
 	QString LaggingString;
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( m_SyncCounter - (*i)->GetSyncCounter( ) > m_SyncLimit )
 		{
@@ -1224,7 +1224,7 @@ void CBaseGame::CheckPlayersStartedLaggging()
 
 		// reset everyone's drop vote
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			(*i)->SetDropVote( false );
 
 		m_ResetLagscreenTimer.start();
@@ -1247,7 +1247,7 @@ void CBaseGame::EventResetLagscreenTimeout()
 
 	bool UsingGProxy = false;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetGProxy( ) )
 			UsingGProxy = true;
@@ -1258,11 +1258,11 @@ void CBaseGame::EventResetLagscreenTimeout()
 	// another solution is to reset the lag screen the same way we reset it when using load-in-game
 	// this is required in order to give GProxy++ clients more time to reconnect
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		// stop the lag screen
 
-		for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+		for( QList<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 		{
 			if( (*j)->GetLagging( ) )
 				Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( *j ) );
@@ -1328,7 +1328,7 @@ void CBaseGame::EventPlayerStoppedLagging()
 
 	bool Lagging = false;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetLagging( ) )
 			Lagging = true;
@@ -1350,12 +1350,8 @@ void CBaseGame :: EventPlayerDeleted()
 	CGamePlayer *player = (CGamePlayer*)QObject::sender();
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
 
-	int ind = m_Players.indexOf(player);
-
-	if (ind == -1)
+	if( !m_Players.removeOne(player) )
 		return;
-
-	m_Players.remove(ind);
 
 	// create the virtual host player if there is room
 	if( !m_GameLoading && !m_GameLoaded && GetNumPlayers( ) < 12 )
@@ -1363,7 +1359,7 @@ void CBaseGame :: EventPlayerDeleted()
 
 	bool res = false;
 	// check if there's another player with reserved status in the game
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		if( (*i)->GetReserved( ) )
 			res = true;
 
@@ -1395,7 +1391,7 @@ void CBaseGame :: EventPlayerDeleted()
 
 	if( player->GetWhoisSent( ) && !player->GetJoinedRealm( ).isEmpty( ) && player->GetSpoofedRealm( ).isEmpty( ) )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == player->GetJoinedRealm( ) )
 			{
@@ -1446,7 +1442,7 @@ void CBaseGame :: EventPlayerDeleted()
 		// we must buffer player leave messages when using "load in game" to prevent desyncs
 		// this ensures the player leave messages are correctly interleaved with the empty updates sent to each player
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( (*i)->GetFinishedLoading( ) )
 			{
@@ -1648,7 +1644,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( HostCounterID != 0 )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetHostCounterID( ) == HostCounterID )
 				JoinedRealm = (*i)->GetServer( );
@@ -1661,7 +1657,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( m_GHost->m_BanMethod != 0 )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == JoinedRealm )
 			{
@@ -1683,7 +1679,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 						// let banned players "join" the game with an arbitrary PID then immediately close the connection
 						// this causes them to be kicked back to the chat channel on battle.net
 
-						QVector<CGameSlot> Slots = m_Map->GetSlots( );
+						QList<CGameSlot> Slots = m_Map->GetSlots( );
 						potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, Util::fromUInt16(potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 						potential->deleteLater();
 						return;
@@ -1711,7 +1707,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 					// let banned players "join" the game with an arbitrary PID then immediately close the connection
 					// this causes them to be kicked back to the chat channel on battle.net
 
-					QVector<CGameSlot> Slots = m_Map->GetSlots( );
+					QList<CGameSlot> Slots = m_Map->GetSlots( );
 					potential->Send( m_Protocol->SEND_W3GS_SLOTINFOJOIN( 1, Util::fromUInt16((quint16)potential->GetSocket( )->localPort()), potential->GetExternalIP( ), Slots, 0, m_Map->GetMapLayoutStyle( ), m_Map->GetMapNumPlayers( ) ) );
 					potential->deleteLater();
 					return;
@@ -1737,7 +1733,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	bool AnyAdminCheck = false;
 
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->IsAdmin( joinPlayer->GetName( ) ) || (*i)->IsRootAdmin( joinPlayer->GetName( ) ) )
 		{
@@ -1765,13 +1761,13 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		// unfortunately we don't know how to extract the player layout from the saved game so we use the data from a replay instead
 		// the !enforcesg command defines the player layout by parsing a replay
 
-		for( QVector<PIDPlayer> :: iterator i = m_EnforcePlayers.begin( ); i != m_EnforcePlayers.end( ); i++ )
+		for( QList<PIDPlayer> :: const_iterator i = m_EnforcePlayers.begin( ); i != m_EnforcePlayers.end( ); i++ )
 		{
 			if( (*i).second == joinPlayer->GetName( ) )
 				EnforcePID = (*i).first;
 		}
 
-		for( QVector<CGameSlot> :: iterator i = m_EnforceSlots.begin( ); i != m_EnforceSlots.end( ); i++ )
+		for( QList<CGameSlot> :: iterator i = m_EnforceSlots.begin( ); i != m_EnforceSlots.end( ); i++ )
 		{
 			if( (*i).GetPID( ) == EnforcePID )
 			{
@@ -1869,7 +1865,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( m_GHost->m_BanMethod == 0 )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == JoinedRealm )
 			{
@@ -1972,7 +1968,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	BlankIP.push_back( (char)0 );
 	BlankIP.push_back( (char)0 );
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) && *i != Player )
 		{
@@ -2012,7 +2008,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	if( m_GHost->m_RequireSpoofChecks && !Player->GetWhoisShouldBeSent( ) )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			// note: the following (commented out) line of code will crash because calling GetUniqueName( ) twice will result in two different return values
 			// and unfortunately iterators are not valid if compared against different containers
@@ -2032,7 +2028,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	{
 		QString Others;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( Player != *i && Player->GetExternalIPString( ) == (*i)->GetExternalIPString( ) )
 			{
@@ -2111,7 +2107,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	bool AnyAdminCheck = false;
 
-	for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->IsAdmin( joinPlayer->GetName( ) ) || (*i)->IsRootAdmin( joinPlayer->GetName( ) ) )
 		{
@@ -2152,7 +2148,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 				PlayersScored = 1;
 			}
 
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
 				if( (*i)->GetScore( ) > -99999.0 )
 				{
@@ -2168,7 +2164,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 			CGamePlayer *FurthestPlayer = NULL;
 
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
 				if( !FurthestPlayer || (*i)->GetScore( ) < -99999.0 || abs( (*i)->GetScore( ) - AverageScore ) > abs( FurthestPlayer->GetScore( ) - AverageScore ) )
 					FurthestPlayer = *i;
@@ -2228,7 +2224,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 			CGamePlayer *LowestPlayer = NULL;
 
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
 				if( !LowestPlayer || (*i)->GetScore( ) < -99999.0 || (*i)->GetScore( ) < LowestPlayer->GetScore( ) )
 					LowestPlayer = *i;
@@ -2308,7 +2304,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if( HostCounterID != 0 )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetHostCounterID( ) == HostCounterID )
 				JoinedRealm = (*i)->GetServer( );
@@ -2351,7 +2347,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	BlankIP.push_back( (char)0 );
 	BlankIP.push_back( (char)0 );
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) && *i != Player )
 		{
@@ -2391,7 +2387,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if( m_GHost->m_RequireSpoofChecks && !Player->GetWhoisShouldBeSent( ) )
 	{
-		for( QVector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 		{
 			// note: the following (commented out) line of code will crash because calling GetUniqueName( ) twice will result in two different return values
 			// and unfortunately iterators are not valid if compared against different containers
@@ -2417,7 +2413,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	double MaxScore = 0.0;
 	bool Found = false;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
@@ -2448,7 +2444,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	{
 		QString Others;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( Player != *i && Player->GetExternalIPString( ) == (*i)->GetExternalIPString( ) )
 			{
@@ -2523,7 +2519,7 @@ void CBaseGame :: EventPlayerLoaded()
 
 		bool FinishedLoading = true;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			FinishedLoading = (*i)->GetFinishedLoading( );
 
@@ -2536,7 +2532,7 @@ void CBaseGame :: EventPlayerLoaded()
 
 		// remove the new player from previously loaded players' lag screens
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( *i != player && (*i)->GetFinishedLoading( ) )
 				Send( *i, m_Protocol->SEND_W3GS_STOP_LAG( player ) );
@@ -2544,7 +2540,7 @@ void CBaseGame :: EventPlayerLoaded()
 
 		// send a chat message to previously loaded players
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( *i != player && (*i)->GetFinishedLoading( ) )
 				SendChat( *i, m_GHost->m_Language->PlayerFinishedLoading( player->GetName( ) ) );
@@ -2578,7 +2574,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 	// however, it's possible that not every player has sent a checksum for this frame yet
 	// first we verify that we have enough checksums to work with otherwise we won't know exactly who desynced
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetCheckSums( )->empty( ) )
 			return;
@@ -2589,7 +2585,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 	bool FoundPlayer = false;
 	quint32 FirstCheckSum = 0;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		FoundPlayer = true;
 		FirstCheckSum = (*i)->GetCheckSums( )->front( );
@@ -2601,7 +2597,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 	bool AddToReplay = true;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetCheckSums( )->front( ) != FirstCheckSum )
 		{
@@ -2612,16 +2608,16 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 			// this is complicated by the fact that we don't know what the correct game state is so we let the players vote
 			// put the players into bins based on their game state
 
-			QMap<quint32, QVector<unsigned char> > Bins;
+			QMap<quint32, QList<unsigned char> > Bins;
 
-			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+			for( QList<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 				Bins[(*j)->GetCheckSums( )->front( )].push_back( (*j)->GetPID( ) );
 
 			quint32 StateNumber = 1;
-			QMap<quint32, QVector<unsigned char> > :: iterator LargestBin = Bins.begin( );
+			QMap<quint32, QList<unsigned char> > :: iterator LargestBin = Bins.begin( );
 			bool Tied = false;
 
-			for( QMap<quint32, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
+			for( QMap<quint32, QList<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
 			{
 				if( j.value().size( ) > LargestBin.value().size( ) )
 				{
@@ -2633,7 +2629,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 				QString Players;
 
-				for( QVector<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
+				for( QList<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
 				{
 					CGamePlayer *Player = GetPlayerFromPID( *k );
 
@@ -2669,7 +2665,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] kicking desynced players" );
 
-				for( QMap<quint32, QVector<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
+				for( QMap<quint32, QList<unsigned char> > :: iterator j = Bins.begin( ); j != Bins.end( ); j++ )
 				{
 					// kick players who are NOT in the largest bin
 					// examples: suppose there are 10 players
@@ -2678,7 +2674,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 
 					if( j.key() != LargestBin.key() )
 					{
-						for( QVector<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
+						for( QList<unsigned char> :: iterator k = j.value().begin( ); k != j.value().end( ); k++ )
 						{
 							CGamePlayer *Player = GetPlayerFromPID( *k );
 
@@ -2699,7 +2695,7 @@ void CBaseGame :: EventPlayerKeepAlive( CGamePlayer */*player*/, quint32 /*check
 		}
 	}
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		(*i)->GetCheckSums( )->dequeue( );
 
 	// add checksum to replay
@@ -2975,7 +2971,7 @@ void CBaseGame :: EventPlayerDropRequest( CGamePlayer *player )
 
 		quint32 Votes = 0;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( (*i)->GetDropVote( ) )
 				Votes++;
@@ -3084,13 +3080,13 @@ void CBaseGame::EventCallableUpdateTimeout()
 {
 	// update callables
 
-	for( QVector<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); )
+	for( QList<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); )
 	{
 		if( (*i)->GetReady( ) )
 		{
 			double Score = (*i)->GetResult( );
 
-			for( QVector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
+			for( QList<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
 			{
 				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
 					EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score );
@@ -3238,7 +3234,7 @@ void CBaseGame :: EventGameStarted( )
 
 	// delete any potential players that are still hanging around
 
-	for( QVector<CPotentialPlayer *> :: iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
+	for( QList<CPotentialPlayer *> :: const_iterator i = m_Potentials.begin( ); i != m_Potentials.end( ); i++ )
 		delete *i;
 
 	m_Potentials.clear( );
@@ -3247,7 +3243,7 @@ void CBaseGame :: EventGameStarted( )
 
 	if( m_Replay )
 	{
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			m_Replay->AddPlayer( (*i)->GetPID( ), (*i)->GetName( ) );
 
 		if( m_FakePlayerPID != 255 )
@@ -3316,9 +3312,9 @@ void CBaseGame :: EventGameStarted( )
 		// this ensures that every player receives the same set of player loaded messages in the same order, even if someone leaves during loading
 		// if someone leaves during loading we buffer the leave message to ensure it gets sent in the correct position but the player loaded message wouldn't get sent if we didn't buffer it now
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
-			for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+			for( QList<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 				(*j)->AddLoadInGameData( m_Protocol->SEND_W3GS_GAMELOADED_OTHERS( (*i)->GetPID( ) ) );
 		}
 	}
@@ -3334,7 +3330,7 @@ void CBaseGame :: EventGameLoaded( )
 	CGamePlayer *Longest = NULL;
 	m_LoadInGameTimer.stop();
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !Shortest || (*i)->GetFinishedLoadingTicks( ) < Shortest->GetFinishedLoadingTicks( ) )
 			Shortest = *i;
@@ -3349,7 +3345,7 @@ void CBaseGame :: EventGameLoaded( )
 		SendAllChat( m_GHost->m_Language->LongestLoadByPlayer( Longest->GetName( ), QString::number( (float)( Longest->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 'g', 2 ) ) );
 	}
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		SendChat( *i, m_GHost->m_Language->YourLoadingTimeWas( QString::number( (float)( (*i)->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 'g', 2 ) ) );
 
 	// read from gameloaded.txt if available
@@ -3382,7 +3378,7 @@ unsigned char CBaseGame :: GetSIDFromPID( unsigned char PID )
 
 CGamePlayer *CBaseGame :: GetPlayerFromPID( unsigned char PID )
 {
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) && (*i)->GetPID( ) == PID )
 			return *i;
@@ -3404,7 +3400,7 @@ CGamePlayer *CBaseGame :: GetPlayerFromName( QString name, bool sensitive )
 	if( !sensitive )
 		name = name.toLower();
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
@@ -3429,7 +3425,7 @@ quint32 CBaseGame :: GetPlayerFromNamePartial( QString name, CGamePlayer **playe
 
 	// try to match each player with the passed QString (e.g. "Varlock" would be matched with "lock")
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 		{
@@ -3476,7 +3472,7 @@ unsigned char CBaseGame :: GetNewPID( )
 
 		bool InUse = false;
 
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( !(*i)->GetLeftMessageSent( ) && (*i)->GetPID( ) == TestPID )
 			{
@@ -3524,7 +3520,7 @@ QByteArray CBaseGame :: GetPIDs( )
 {
 	QByteArray result;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 			result.push_back( (*i)->GetPID( ) );
@@ -3537,7 +3533,7 @@ QByteArray CBaseGame :: GetPIDs( unsigned char excludePID )
 {
 	QByteArray result;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) && (*i)->GetPID( ) != excludePID )
 			result.push_back( (*i)->GetPID( ) );
@@ -3561,7 +3557,7 @@ unsigned char CBaseGame :: GetHostPID( )
 
 	// try to find the owner player next
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) && IsOwner( (*i)->GetName( ) ) )
 			return (*i)->GetPID( );
@@ -3569,7 +3565,7 @@ unsigned char CBaseGame :: GetHostPID( )
 
 	// okay then, just use the first available player
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetLeftMessageSent( ) )
 			return (*i)->GetPID( );
@@ -3588,7 +3584,7 @@ unsigned char CBaseGame :: GetEmptySlot( bool reserved )
 		// unfortunately we don't know which slot each player was assigned in the savegame
 		// but we do know which slots were occupied and which weren't so let's at least force players to use previously occupied slots
 
-		QVector<CGameSlot> SaveGameSlots = m_SaveGame->GetSlots( );
+		QList<CGameSlot> SaveGameSlots = m_SaveGame->GetSlots( );
 
 		for( unsigned char i = 0; i < m_Slots.size( ); i++ )
 		{
@@ -3675,7 +3671,7 @@ unsigned char CBaseGame :: GetEmptySlot( unsigned char team, unsigned char PID )
 
 		if( m_SaveGame )
 		{
-			QVector<CGameSlot> SaveGameSlots = m_SaveGame->GetSlots( );
+			QList<CGameSlot> SaveGameSlots = m_SaveGame->GetSlots( );
 
 			for( unsigned char i = StartSlot; i < m_Slots.size( ); i++ )
 			{
@@ -3848,7 +3844,7 @@ void CBaseGame :: OpenAllSlots( )
 {
 	bool Changed = false;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_CLOSED )
 		{
@@ -3865,7 +3861,7 @@ void CBaseGame :: CloseAllSlots( )
 {
 	bool Changed = false;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OPEN )
 		{
@@ -3884,9 +3880,9 @@ void CBaseGame :: ShuffleSlots( )
 	// that means we need to prevent this function from shuffling the open/closed/computer slots too
 	// so we start by copying the player slots to a temporary vector
 
-	QVector<CGameSlot> PlayerSlots;
+	QList<CGameSlot> PlayerSlots;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 )
 			PlayerSlots.push_back( *i );
@@ -3901,7 +3897,7 @@ void CBaseGame :: ShuffleSlots( )
 		// unfortunately we can't just use PlayerSlots because the team/colour/race shouldn't be modified
 		// so make a vector we can use
 
-		QVector<unsigned char> SIDs;
+		QList<unsigned char> SIDs;
 
 		for( unsigned char i = 0; i < PlayerSlots.size( ); i++ )
 			SIDs.push_back( i );
@@ -3910,7 +3906,7 @@ void CBaseGame :: ShuffleSlots( )
 
 		// now put the PlayerSlots vector in the same order as the SIDs vector
 
-		QVector<CGameSlot> Slots;
+		QList<CGameSlot> Slots;
 
 		// as usual don't modify the team/colour/race
 
@@ -3929,10 +3925,10 @@ void CBaseGame :: ShuffleSlots( )
 
 	// now we put m_Slots back together again
 
-	QVector<CGameSlot> :: iterator CurrentPlayer = PlayerSlots.begin( );
-	QVector<CGameSlot> Slots;
+	QList<CGameSlot> :: iterator CurrentPlayer = PlayerSlots.begin( );
+	QList<CGameSlot> Slots;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 )
 		{
@@ -3950,7 +3946,7 @@ void CBaseGame :: ShuffleSlots( )
 	SendAllSlotInfo( );
 }
 
-QVector<unsigned char> CBaseGame :: BalanceSlotsRecursive( QVector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam )
+QList<unsigned char> CBaseGame :: BalanceSlotsRecursive( QList<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam )
 {
 	// take a brute force approach to finding the best balance by iterating through every possible combination of players
 	// 1.) since the number of teams is arbitrary this algorithm must be recursive
@@ -3959,7 +3955,7 @@ QVector<unsigned char> CBaseGame :: BalanceSlotsRecursive( QVector<unsigned char
 	// 4.) for every possible combination, check the largest difference in total scores between any two actual teams
 	// 5.) minimize this value by choosing the combination of players with the smallest difference
 
-	QVector<unsigned char> BestOrdering = PlayerIDs;
+	QList<unsigned char> BestOrdering = PlayerIDs;
 	double BestDifference = -1.0;
 
 	for( unsigned char i = StartTeam; i < 12; i++ )
@@ -3978,18 +3974,18 @@ QVector<unsigned char> CBaseGame :: BalanceSlotsRecursive( QVector<unsigned char
 				// for example, it could contain one, two, or more actual teams worth of players
 				// so recurse using the second "team" as the full set of players to perform the balancing on
 
-				QVector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( PlayerIDs.mid(Mid), TeamSizes, PlayerScores, i + 1 );
+				QList<unsigned char> BestSubOrdering = BalanceSlotsRecursive( PlayerIDs.mid(Mid), TeamSizes, PlayerScores, i + 1 );
 
 				// BestSubOrdering now contains the best ordering of all the remaining players (the "right team") given this particular combination of players into two "teams"
 				// in order to calculate the largest difference in total scores we need to recombine the subordering with the first team
 
-				QVector<unsigned char> TestOrdering = PlayerIDs.mid(0, Mid);
+				QList<unsigned char> TestOrdering = PlayerIDs.mid(0, Mid);
 				for (int k = 0; k < BestSubOrdering.size(); k++)
 					TestOrdering.push_back(BestSubOrdering.at(k));
 
 				// now calculate the team scores for all the teams that we know about (e.g. on subsequent recursion steps this will NOT be every possible team)
 
-				QVector<unsigned char> :: iterator CurrentPID = TestOrdering.begin( );
+				QList<unsigned char> :: iterator CurrentPID = TestOrdering.begin( );
 				double TeamScores[12];
 
 				for( unsigned char j = StartTeam; j < 12; j++ )
@@ -4049,12 +4045,12 @@ void CBaseGame :: BalanceSlots( )
 	// setup the necessary variables for the balancing algorithm
 	// use an array of 13 elements for 12 players because GHost++ allocates PID's from 1-12 (i.e. excluding 0) and we use the PID to index the array
 
-	QVector<unsigned char> PlayerIDs;
+	QList<unsigned char> PlayerIDs;
 	unsigned char TeamSizes[12];
 	double PlayerScores[13];
 	memset( TeamSizes, 0, sizeof( unsigned char ) * 12 );
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		unsigned char PID = (*i)->GetPID( );
 
@@ -4126,13 +4122,13 @@ void CBaseGame :: BalanceSlots( )
 	}
 
 	quint32 StartTicks = GetTicks( );
-	QVector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
+	QList<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
 	quint32 EndTicks = GetTicks( );
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
 
-	QVector<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
+	QList<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
 
 	for( unsigned char i = 0; i < 12; i++ )
 	{
@@ -4177,7 +4173,7 @@ void CBaseGame :: BalanceSlots( )
 		bool TeamHasPlayers = false;
 		double TeamScore = 0.0;
 
-		for( QVector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+		for( QList<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 		{
 			unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
 
@@ -4218,7 +4214,7 @@ void CBaseGame :: AddToReserved( QString name )
 
 	// check that the user is not already reserved
 
-	for( QVector<QString> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
+	for( QList<QString> :: const_iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
 	{
 		if( *i == name )
 			return;
@@ -4228,7 +4224,7 @@ void CBaseGame :: AddToReserved( QString name )
 
 	// upgrade the user if they're already in the game
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		QString NameLower = (*i)->GetName( ).toLower();
 
@@ -4247,7 +4243,7 @@ bool CBaseGame :: IsReserved( QString name )
 {
 	name = name.toLower();
 
-	for( QVector<QString> :: iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
+	for( QList<QString> :: const_iterator i = m_Reserved.begin( ); i != m_Reserved.end( ); i++ )
 	{
 		if( *i == name )
 			return true;
@@ -4260,7 +4256,7 @@ bool CBaseGame :: IsDownloading( )
 {
 	// returns true if at least one player is downloading the map
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetDownloadStarted( ) && !(*i)->GetDownloadFinished( ) )
 			return true;
@@ -4303,7 +4299,7 @@ void CBaseGame :: StartCountDown( bool force )
 
 			QString StillDownloading;
 
-			for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+			for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 			{
 				if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetDownloadStatus( ) != 100 )
 				{
@@ -4328,7 +4324,7 @@ void CBaseGame :: StartCountDown( bool force )
 
 			if( m_GHost->m_RequireSpoofChecks )
 			{
-				for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 				{
 					if( !(*i)->GetSpoofed( ) )
 					{
@@ -4348,7 +4344,7 @@ void CBaseGame :: StartCountDown( bool force )
 
 			QString NotPinged;
 
-			for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
 				if( !(*i)->GetReserved( ) && (*i)->GetNumPings( ) < 3 )
 				{
@@ -4391,7 +4387,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 	QString StillDownloading;
 
-	for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetDownloadStatus( ) != 100 )
 		{
@@ -4419,7 +4415,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 	if( requireSpoofChecks )
 	{
-		for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
 			if( !(*i)->GetSpoofed( ) )
 			{
@@ -4439,7 +4435,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 	QString NotPinged;
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( !(*i)->GetReserved( ) && (*i)->GetNumPings( ) < 3 )
 		{
@@ -4473,7 +4469,7 @@ void CBaseGame :: StopPlayers( QString reason )
 	// therefore calling this function when m_GameLoading || m_GameLoaded is roughly equivalent to setting m_Exiting = true
 	// the only difference is whether the code in the Update function is executed or not
 
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); )
+	for( QList<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); )
 	{
 		CGamePlayer *p = *i;
 		i = m_Players.erase(i);
@@ -4486,7 +4482,7 @@ void CBaseGame :: StopPlayers( QString reason )
 
 void CBaseGame :: StopLaggers( QString reason )
 {
-	for( QVector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i)->GetLagging( ) )
 		{

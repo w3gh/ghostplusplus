@@ -23,7 +23,7 @@
 
 #include <QString>
 #include <QByteArray>
-#include <QVector>
+#include <QList>
 #include <QtEndian>
 
 class Util
@@ -59,8 +59,8 @@ QByteArray UTIL_EncodeStatString( QByteArray &data );
 // other
 
 bool UTIL_IsLanIP( QByteArray ip );
-bool UTIL_IsLocalIP( QByteArray ip, QVector<QByteArray> &localIPs );
-QVector<QString> UTIL_Tokenize( QString s, char delim );
+bool UTIL_IsLocalIP( QByteArray ip, QList<QByteArray> &localIPs );
+QList<QString> UTIL_Tokenize( QString s, char delim );
 
 // math
 

@@ -336,7 +336,7 @@ QByteArray CBNETProtocol :: RECEIVE_SID_WARDEN( QByteArray data )
 	return QByteArray( );
 }
 
-QVector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteArray data )
+QList<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_FRIENDSLIST" );
 	// DEBUG_Print( data );
@@ -351,7 +351,7 @@ QVector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteAr
 	//		4 bytes				-> ???
 	//		null term QString	-> Location
 
-	QVector<CIncomingFriendList *> Friends;
+	QList<CIncomingFriendList *> Friends;
 
 	if( ValidateLength( data ) && data.size( ) >= 5 )
 	{
@@ -386,7 +386,7 @@ QVector<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteAr
 	return Friends;
 }
 
-QVector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteArray data )
+QList<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteArray data )
 {
 	// DEBUG_Print( "RECEIVED SID_CLANMEMBERLIST" );
 	// DEBUG_Print( data );
@@ -401,7 +401,7 @@ QVector<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteA
 	//		1 byte				-> Status
 	//		null term QString	-> Location
 
-	QVector<CIncomingClanList *> ClanList;
+	QList<CIncomingClanList *> ClanList;
 
 	if( ValidateLength( data ) && data.size( ) >= 9 )
 	{

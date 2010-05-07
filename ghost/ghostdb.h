@@ -91,13 +91,13 @@ public:
 	virtual bool AdminCheck( QString server, QString user );
 	virtual bool AdminAdd( QString server, QString user );
 	virtual bool AdminRemove( QString server, QString user );
-	virtual QVector<QString> AdminList( QString server );
+	virtual QList<QString> AdminList( QString server );
 	virtual quint32 BanCount( QString server );
 	virtual CDBBan *BanCheck( QString server, QString user, QString ip );
 	virtual bool BanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
 	virtual bool BanRemove( QString server, QString user );
 	virtual bool BanRemove( QString user );
-	virtual QVector<CDBBan *> BanList( QString server );
+	virtual QList<CDBBan *> BanList( QString server );
 	virtual quint32 GameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
 	virtual quint32 GamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
 	virtual quint32 GamePlayerCount( QString name );
@@ -265,14 +265,14 @@ class CCallableAdminList : public CBaseCallable
 {
 protected:
 	QString m_Server;
-	QVector<QString> m_Result;
+	QList<QString> m_Result;
 
 public:
 	CCallableAdminList( QString nServer ) : CBaseCallable( ), m_Server( nServer ) { }
 	virtual ~CCallableAdminList( );
 
-	virtual QVector<QString> GetResult( )					{ return m_Result; }
-	virtual void SetResult( QVector<QString> nResult )	{ m_Result = nResult; }
+	virtual QList<QString> GetResult( )					{ return m_Result; }
+	virtual void SetResult( QList<QString> nResult )	{ m_Result = nResult; }
 };
 
 class CCallableBanCount : public CBaseCallable
@@ -355,14 +355,14 @@ class CCallableBanList : public CBaseCallable
 {
 protected:
 	QString m_Server;
-	QVector<CDBBan *> m_Result;
+	QList<CDBBan *> m_Result;
 
 public:
 	CCallableBanList( QString nServer ) : CBaseCallable( ), m_Server( nServer ) { }
 	virtual ~CCallableBanList( );
 
-	virtual QVector<CDBBan *> GetResult( )				{ return m_Result; }
-	virtual void SetResult( QVector<CDBBan *> nResult )	{ m_Result = nResult; }
+	virtual QList<CDBBan *> GetResult( )				{ return m_Result; }
+	virtual void SetResult( QList<CDBBan *> nResult )	{ m_Result = nResult; }
 };
 
 class CCallableGameAdd : public CBaseCallable

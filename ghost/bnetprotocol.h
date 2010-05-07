@@ -134,8 +134,8 @@ public:
 	bool RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data );
 	bool RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data );
 	QByteArray RECEIVE_SID_WARDEN( QByteArray data );
-	QVector<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( QByteArray data );
-	QVector<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( QByteArray data );
+	QList<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( QByteArray data );
+	QList<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( QByteArray data );
 	CIncomingClanList *RECEIVE_SID_CLANMEMBERSTATUSCHANGE( QByteArray data );
 
 	// send functions

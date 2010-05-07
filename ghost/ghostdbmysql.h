@@ -225,13 +225,13 @@ quint32 MySQLAdminCount( void *conn, QString *error, quint32 botid, QString serv
 bool MySQLAdminCheck( void *conn, QString *error, quint32 botid, QString server, QString user );
 bool MySQLAdminAdd( void *conn, QString *error, quint32 botid, QString server, QString user );
 bool MySQLAdminRemove( void *conn, QString *error, quint32 botid, QString server, QString user );
-QVector<string> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server );
+QList<string> MySQLAdminList( void *conn, QString *error, quint32 botid, QString server );
 quint32 MySQLBanCount( void *conn, QString *error, quint32 botid, QString server );
 CDBBan *MySQLBanCheck( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip );
 bool MySQLBanAdd( void *conn, QString *error, quint32 botid, QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
 bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString server, QString user );
 bool MySQLBanRemove( void *conn, QString *error, quint32 botid, QString user );
-QVector<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server );
+QList<CDBBan *> MySQLBanList( void *conn, QString *error, quint32 botid, QString server );
 quint32 MySQLGameAdd( void *conn, QString *error, quint32 botid, QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
 quint32 MySQLGamePlayerAdd( void *conn, QString *error, quint32 botid, quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
 CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, QString *error, quint32 botid, QString name );

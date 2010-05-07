@@ -167,7 +167,7 @@ void CReplay :: BuildReplay( QString gameName, QString statString, quint32 war3V
 
 	// PlayerList (4.9)
 
-	for( QVector<PIDPlayer> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+	for( QList<PIDPlayer> :: const_iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		if( (*i).first != m_HostPID )
 		{

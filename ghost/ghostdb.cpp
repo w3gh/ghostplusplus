@@ -81,9 +81,9 @@ bool CGHostDB :: AdminRemove( QString /*server*/, QString /*user*/ )
 	return false;
 }
 
-QVector<QString> CGHostDB :: AdminList( QString /*server*/ )
+QList<QString> CGHostDB :: AdminList( QString /*server*/ )
 {
-	return QVector<QString>( );
+	return QList<QString>( );
 }
 
 quint32 CGHostDB :: BanCount( QString /*server*/ )
@@ -111,9 +111,9 @@ bool CGHostDB :: BanRemove( QString /*user*/ )
 	return false;
 }
 
-QVector<CDBBan *> CGHostDB :: BanList( QString /*server*/ )
+QList<CDBBan *> CGHostDB :: BanList( QString /*server*/ )
 {
-	return QVector<CDBBan *>( );
+	return QList<CDBBan *>( );
 }
 
 quint32 CGHostDB :: GameAdd( QString /*server*/, QString /*map*/, QString /*gamename*/, QString /*ownername*/, quint32 /*duration*/, quint32 /*gamestate*/, QString /*creatorname*/, QString /*creatorserver*/ )
