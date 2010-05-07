@@ -123,7 +123,7 @@ private:
 	QByteArray m_MapData;							// the map data itself, for sending the map to players
 	quint32 m_MapNumPlayers;
 	quint32 m_MapNumTeams;
-	QVector<CGameSlot> m_Slots;
+	QList<CGameSlot> m_Slots;
 
 public:
 	CMap( CGHost *nGHost );
@@ -157,7 +157,7 @@ public:
 	QByteArray *GetMapData( )					{ return &m_MapData; }
 	quint32 GetMapNumPlayers( )			{ return m_MapNumPlayers; }
 	quint32 GetMapNumTeams( )				{ return m_MapNumTeams; }
-	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }
+	QList<CGameSlot> GetSlots( )			{ return m_Slots; }
 
 	void Load( CConfig *CFG, QString nCFGFile );
 	void CheckValid( );

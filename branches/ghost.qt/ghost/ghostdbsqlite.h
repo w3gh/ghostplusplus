@@ -163,14 +163,14 @@ class CSQLITE3
 private:
 	void *m_DB;
 	bool m_Ready;
-	QVector<QString> m_Row;
+	QList<QString> m_Row;
 
 public:
 	CSQLITE3( QString filename );
 	~CSQLITE3( );
 
 	bool GetReady( )			{ return m_Ready; }
-	QVector<QString> *GetRow( )	{ return &m_Row; }
+	QList<QString> *GetRow( )	{ return &m_Row; }
 	QString GetError( );
 
 	int Prepare( QString query, void **Statement );
@@ -218,13 +218,13 @@ public:
 	virtual bool AdminCheck( QString server, QString user );
 	virtual bool AdminAdd( QString server, QString user );
 	virtual bool AdminRemove( QString server, QString user );
-	virtual QVector<QString> AdminList( QString server );
+	virtual QList<QString> AdminList( QString server );
 	virtual quint32 BanCount( QString server );
 	virtual CDBBan *BanCheck( QString server, QString user, QString ip );
 	virtual bool BanAdd( QString server, QString user, QString ip, QString gamename, QString admin, QString reason );
 	virtual bool BanRemove( QString server, QString user );
 	virtual bool BanRemove( QString user );
-	virtual QVector<CDBBan *> BanList( QString server );
+	virtual QList<CDBBan *> BanList( QString server );
 	virtual quint32 GameAdd( QString server, QString map, QString gamename, QString ownername, quint32 duration, quint32 gamestate, QString creatorname, QString creatorserver );
 	virtual quint32 GamePlayerAdd( quint32 gameid, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 reserved, quint32 loadingtime, quint32 left, QString leftreason, quint32 team, quint32 colour );
 	virtual quint32 GamePlayerCount( QString name );

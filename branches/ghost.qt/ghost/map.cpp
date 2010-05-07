@@ -401,7 +401,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 				if( MapMPQReady )
 				{
-					QVector<QString> FileList;
+					QList<QString> FileList;
 					FileList.push_back( "war3map.j" );
 					FileList.push_back( "scripts\\war3map.j" );
 					FileList.push_back( "war3map.w3e" );
@@ -414,7 +414,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 					FileList.push_back( "war3map.w3q" );
 					bool FoundScript = false;
 
-					for( QVector<QString> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
+					for( QList<QString> :: const_iterator i = FileList.begin( ); i != FileList.end( ); i++ )
 					{
 						// don't use scripts\war3map.j if we've already used war3map.j (yes, some maps have both but only war3map.j is used)
 
@@ -481,7 +481,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	QByteArray MapHeight;
 	quint32 MapNumPlayers = 0;
 	quint32 MapNumTeams = 0;
-	QVector<CGameSlot> Slots;
+	QList<CGameSlot> Slots;
 
 	if( !m_MapData.isEmpty( ) )
 	{
@@ -638,7 +638,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 								{
 									if( PlayerMask & 1 )
 									{
-										for( QVector<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); k++ )
+										for( QList<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); k++ )
 										{
 											if( (*k).GetColour( ) == j )
 												(*k).SetTeam( i );
@@ -667,7 +667,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 							quint32 SlotNum = 1;
 
-							for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+							for( QList<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 							{
 								CONSOLE_Print( "[MAP] calculated map_slot" + QString::number( SlotNum ) + " = " + UTIL_QByteArrayToDecString( (*i).GetQByteArray( ) ) );
 								SlotNum++;
@@ -681,7 +681,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 								unsigned char Team = 0;
 
-								for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+								for( QList<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 								{
 									(*i).SetTeam( Team++ );
 									(*i).SetRace( SLOTRACE_RANDOM );
@@ -692,7 +692,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 							{
 								// make races selectable
 
-								for( QVector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+								for( QList<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
 									(*i).SetRace( (*i).GetRace( ) | SLOTRACE_SELECTABLE );
 							}
 						}
@@ -865,7 +865,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 	{
 		CONSOLE_Print( "[MAP] forcing races to random" );
 
-		for( QVector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+		for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 			(*i).SetRace( SLOTRACE_RANDOM );
 	}
 

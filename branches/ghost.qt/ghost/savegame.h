@@ -35,7 +35,7 @@ private:
 	QString m_MapPath;
 	QString m_GameName;
 	unsigned char m_NumSlots;
-	QVector<CGameSlot> m_Slots;
+	QList<CGameSlot> m_Slots;
 	quint32 m_RandomSeed;
 	QByteArray m_MagicNumber;
 
@@ -48,7 +48,7 @@ public:
 	QString GetMapPath( )				{ return m_MapPath; }
 	QString GetGameName( )				{ return m_GameName; }
 	unsigned char GetNumSlots( )		{ return m_NumSlots; }
-	QVector<CGameSlot> GetSlots( )		{ return m_Slots; }
+	QList<CGameSlot> GetSlots( )		{ return m_Slots; }
 	quint32 GetRandomSeed( )			{ return m_RandomSeed; }
 	QByteArray GetMagicNumber( )			{ return m_MagicNumber; }
 

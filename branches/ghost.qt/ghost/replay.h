@@ -52,8 +52,8 @@ private:
 	QString m_StatString;
 	quint32 m_PlayerCount;
 	quint32 m_MapGameType;
-	QVector<PIDPlayer> m_Players;
-	QVector<CGameSlot> m_Slots;
+	QList<PIDPlayer> m_Players;
+	QList<CGameSlot> m_Slots;
 	quint32 m_RandomSeed;
 	unsigned char m_SelectMode;				// also known as the "layout style" elsewhere in this project
 	unsigned char m_StartSpotCount;
@@ -72,8 +72,8 @@ public:
 	QString GetStatString( )					{ return m_StatString; }
 	quint32 GetPlayerCount( )				{ return m_PlayerCount; }
 	quint32 GetMapGameType( )				{ return m_MapGameType; }
-	QVector<PIDPlayer> GetPlayers( )			{ return m_Players; }
-	QVector<CGameSlot> GetSlots( )			{ return m_Slots; }
+	QList<PIDPlayer> GetPlayers( )			{ return m_Players; }
+	QList<CGameSlot> GetSlots( )			{ return m_Slots; }
 	quint32 GetRandomSeed( )				{ return m_RandomSeed; }
 	unsigned char GetSelectMode( )			{ return m_SelectMode; }
 	unsigned char GetStartSpotCount( )		{ return m_StartSpotCount; }
@@ -82,7 +82,7 @@ public:
 	QQueue<quint32> *GetCheckSums( )		{ return &m_CheckSums; }
 
 	void AddPlayer( unsigned char nPID, QString nName )		{ m_Players.push_back( PIDPlayer( nPID, nName ) ); }
-	void SetSlots( QVector<CGameSlot> nSlots )				{ m_Slots = nSlots; }
+	void SetSlots( QList<CGameSlot> nSlots )				{ m_Slots = nSlots; }
 	void SetRandomSeed( quint32 nRandomSeed )				{ m_RandomSeed = nRandomSeed; }
 	void SetSelectMode( unsigned char nSelectMode )			{ m_SelectMode = nSelectMode; }
 	void SetStartSpotCount( unsigned char nStartSpotCount )	{ m_StartSpotCount = nStartSpotCount; }

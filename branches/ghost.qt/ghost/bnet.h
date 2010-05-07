@@ -95,20 +95,20 @@ private:
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	CBNCSUtilInterface *m_BNCSUtil;					// the interface to the bncsutil library (used for logging into battle.net)
 	QQueue<QByteArray> m_OutPackets;					// queue of outgoing packets to be sent (to prevent getting kicked for flooding)
-	QVector<CIncomingFriendList *> m_Friends;		// vector of friends
-	QVector<CIncomingClanList *> m_Clans;			// vector of clan members
-	QVector<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
-	QVector<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
-	QVector<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
-	QVector<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
-	QVector<PairedBanAdd> m_PairedBanAdds;			// vector of paired threaded database ban adds in progress
-	QVector<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
-	QVector<PairedGPSCheck> m_PairedGPSChecks;		// vector of paired threaded database game player summary checks in progress
-	QVector<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
+	QList<CIncomingFriendList *> m_Friends;		// vector of friends
+	QList<CIncomingClanList *> m_Clans;			// vector of clan members
+	QList<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
+	QList<PairedAdminAdd> m_PairedAdminAdds;		// vector of paired threaded database admin adds in progress
+	QList<PairedAdminRemove> m_PairedAdminRemoves;	// vector of paired threaded database admin removes in progress
+	QList<PairedBanCount> m_PairedBanCounts;		// vector of paired threaded database ban counts in progress
+	QList<PairedBanAdd> m_PairedBanAdds;			// vector of paired threaded database ban adds in progress
+	QList<PairedBanRemove> m_PairedBanRemoves;		// vector of paired threaded database ban removes in progress
+	QList<PairedGPSCheck> m_PairedGPSChecks;		// vector of paired threaded database game player summary checks in progress
+	QList<PairedDPSCheck> m_PairedDPSChecks;		// vector of paired threaded database DotA player summary checks in progress
 	CCallableAdminList *m_CallableAdminList;		// threaded database admin list in progress
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
-	QVector<QString> m_Admins;						// vector of cached admins
-	QVector<CDBBan *> m_Bans;						// vector of cached bans
+	QList<QString> m_Admins;						// vector of cached admins
+	QList<CDBBan *> m_Bans;						// vector of cached bans
 	QString m_Server;								// battle.net server to connect to
 	QString m_ServerIP;								// battle.net server to connect to (the IP address so we don't have to resolve it every time we connect)
 	QString m_ServerAlias;							// battle.net server alias (short name, e.g. "USEast")

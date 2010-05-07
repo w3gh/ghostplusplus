@@ -119,7 +119,7 @@ private:
 	unsigned char m_PID;
 	QString m_Name;								// the player's name
 	QByteArray m_InternalIP;						// the player's internal IP address as reported by the player when connecting
-	QVector<quint32> m_Pings;					// store the last few (20) pings received so we can take an average
+	QList<quint32> m_Pings;					// store the last few (20) pings received so we can take an average
 	QQueue<quint32> m_CheckSums;				// the last few checksums the player has sent (for detecting desyncs)
 	QString m_LeftReason;						// the reason the player left the game
 	QString m_SpoofedRealm;						// the realm the player last spoof checked on

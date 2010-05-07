@@ -344,11 +344,10 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 	if( m_BNETs.isEmpty( ) )
 		m_AutoHostTimer.start(0);
-
 	else
 	{
-		for (int i = 0; i < m_BNETs.size(); i++)
-			m_BNETs.at(i)->socketConnect();
+		for (QList<CBNET *>::const_iterator i = m_BNETs.begin(); i != m_BNETs.end(); ++i)
+			(*i)->socketConnect();
 	}
 }
 
@@ -365,14 +364,14 @@ CGHost :: ~CGHost( )
 	delete m_CRC;
 	delete m_SHA;
 
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
-		delete *i;
+	qDeleteAll( m_BNETs );
+	m_BNETs.clear( );
 
 	delete m_CurrentGame;
 	delete m_AdminGame;
 
-	for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
-		delete *i;
+	qDeleteAll( m_Games );
+	m_Games.clear( );
 
 	delete m_DB;
 	delete m_DBLocal;
@@ -402,7 +401,7 @@ void CGHost::EventGameStarted()
 
 	// and finally reenter battle.net chat
 
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
 		(*i)->QueueGameUncreate( );
 		(*i)->QueueEnterChat( );
@@ -455,7 +454,7 @@ void CGHost::EventReconnectionSocketReadyRead()
 
 			CGamePlayer *Match = NULL;
 
-			for( QVector<CBaseGame *> :: iterator j = m_Games.begin( ); j != m_Games.end( ); j++ )
+			for( QList<CBaseGame *> :: iterator j = m_Games.begin( ); j != m_Games.end( ); j++ )
 			{
 				if( (*j)->GetGameLoaded( ) )
 				{
@@ -495,7 +494,7 @@ void CGHost::EventCallableUpdateTimeout()
 {
 	// update callables
 
-	for( QVector<CBaseCallable *> :: iterator i = m_Callables.begin( ); i != m_Callables.end( ); )
+	for( QList<CBaseCallable *> :: iterator i = m_Callables.begin( ); i != m_Callables.end( ); )
 	{
 		if( (*i)->GetReady( ) )
 		{
@@ -528,7 +527,7 @@ void CGHost::EventExitNice()
 	{
 		CONSOLE_Print( "[GHOST] deleting all battle.net connections in preparation for exiting nicely" );
 
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 			delete *i;
 
 		m_BNETs.clear( );
@@ -736,7 +735,7 @@ void CGHost :: EventBNETGameRefreshFailed( CBNET *bnet )
 	if( !m_CurrentGame )
 		return;
 
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
 		(*i)->QueueChatCommand( m_Language->UnableToCreateGameTryAnotherName( bnet->GetServer( ), m_CurrentGame->GetGameName( ) ) );
 
@@ -777,7 +776,7 @@ void CGHost :: EventBNETWhisper( CBNET *bnet, QString user, QString message )
 		if( m_CurrentGame )
 			m_CurrentGame->SendLocalAdminChat( "[W: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 
-		for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
+		for( QList<CBaseGame *> :: const_iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
 			(*i)->SendLocalAdminChat( "[W: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 	}
 }
@@ -791,7 +790,7 @@ void CGHost :: EventBNETChat( CBNET *bnet, QString user, QString message )
 		if( m_CurrentGame )
 			m_CurrentGame->SendLocalAdminChat( "[L: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 
-		for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
+		for( QList<CBaseGame *> :: const_iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
 			(*i)->SendLocalAdminChat( "[L: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 	}
 }
@@ -805,7 +804,7 @@ void CGHost :: EventBNETEmote( CBNET *bnet, QString user, QString message )
 		if( m_CurrentGame )
 			m_CurrentGame->SendLocalAdminChat( "[E: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 
-		for( QVector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
+		for( QList<CBaseGame *> :: const_iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
 			(*i)->SendLocalAdminChat( "[E: " + bnet->GetServerAlias( ) + "] [" + user + "] " + message );
 	}
 }
@@ -817,9 +816,7 @@ void CGHost::EventGameDeleted()
 	if (game == m_CurrentGame)
 		m_CurrentGame = NULL;
 
-	int ind = m_Games.indexOf(game);
-	if (ind != -1)
-		m_Games.remove(ind);
+	m_Games.removeOne(game);
 
 	m_AutoHostTimer.start();
 }
@@ -1039,7 +1036,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 {
 	if( !m_Enabled )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
 				(*i)->QueueChatCommand( m_Language->UnableToCreateGameDisabled( gameName ), creatorName, whisper );
@@ -1053,7 +1050,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	if( gameName.size( ) > 31 )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
 				(*i)->QueueChatCommand( m_Language->UnableToCreateGameNameTooLong( gameName ), creatorName, whisper );
@@ -1067,7 +1064,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	if( !map->GetValid( ) )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
 				(*i)->QueueChatCommand( m_Language->UnableToCreateGameInvalidMap( gameName ), creatorName, whisper );
@@ -1083,7 +1080,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 	{
 		if( !m_SaveGame->GetValid( ) )
 		{
-			for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+			for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 			{
 				if( (*i)->GetServer( ) == creatorServer )
 					(*i)->QueueChatCommand( m_Language->UnableToCreateGameInvalidSaveGame( gameName ), creatorName, whisper );
@@ -1103,7 +1100,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 		{
 			CONSOLE_Print( "[GHOST] path mismatch, saved game path is [" + MapPath1 + "] but map path is [" + MapPath2 + "]" );
 
-			for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+			for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 			{
 				if( (*i)->GetServer( ) == creatorServer )
 					(*i)->QueueChatCommand( m_Language->UnableToCreateGameSaveGameMapMismatch( gameName ), creatorName, whisper );
@@ -1117,7 +1114,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 		if( m_EnforcePlayers.isEmpty( ) )
 		{
-			for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+			for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 			{
 				if( (*i)->GetServer( ) == creatorServer )
 					(*i)->QueueChatCommand( m_Language->UnableToCreateGameMustEnforceFirst( gameName ), creatorName, whisper );
@@ -1132,7 +1129,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	if( m_CurrentGame )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
 				(*i)->QueueChatCommand( m_Language->UnableToCreateGameAnotherGameInLobby( gameName, m_CurrentGame->GetDescription( ) ), creatorName, whisper );
@@ -1146,7 +1143,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	if( m_Games.size( ) >= m_MaxGames )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetServer( ) == creatorServer )
 				(*i)->QueueChatCommand( m_Language->UnableToCreateGameMaxGamesReached( gameName, QString::number( m_MaxGames ) ), creatorName, whisper );
@@ -1176,7 +1173,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 		m_EnforcePlayers.clear( );
 	}
 
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
 		if( whisper && (*i)->GetServer( ) == creatorServer )
 		{
@@ -1217,7 +1214,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	if( gameState == GAME_PRIVATE )
 	{
-		for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+		for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 		{
 			if( (*i)->GetPasswordHashType( ) != "pvpgn" )
 				(*i)->QueueEnterChat( );
@@ -1226,7 +1223,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, QS
 
 	// hold friends and/or clan members
 
-	for( QVector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
+	for( QList<CBNET *> :: const_iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetHoldFriends( ) )
 			(*i)->HoldFriends( m_CurrentGame );

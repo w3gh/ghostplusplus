@@ -123,17 +123,17 @@ public:
 	// send functions
 
 	QByteArray SEND_W3GS_PING_FROM_HOST( );
-	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_REJECTJOIN( quint32 reason );
 	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, QString name, QByteArray externalIP, QByteArray internalIP );
 	QByteArray SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, quint32 leftCode );
 	QByteArray SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
-	QByteArray SEND_W3GS_SLOTINFO( QVector<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFO( QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_COUNTDOWN_START( );
 	QByteArray SEND_W3GS_COUNTDOWN_END( );
 	QByteArray SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, quint16 sendInterval );
 	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QByteArray toPIDs, unsigned char flag, QByteArray flagExtra, QString message );
-	QByteArray SEND_W3GS_START_LAG( QVector<CGamePlayer *> players, bool loadInGame = false );
+	QByteArray SEND_W3GS_START_LAG( QList<CGamePlayer *> players, bool loadInGame = false );
 	QByteArray SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadInGame = false );
 	QByteArray SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Version );
 	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, quint32 slotsTotal, quint32 slotsOpen, quint16 port, quint32 hostCounter );
@@ -150,7 +150,7 @@ public:
 private:
 	bool AssignLength( QByteArray &content );
 	bool ValidateLength( QByteArray &content );
-	QByteArray EncodeSlotInfo( QVector<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray EncodeSlotInfo( QList<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 };
 
 //

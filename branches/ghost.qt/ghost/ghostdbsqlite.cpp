@@ -132,7 +132,7 @@ CGHostDBSQLite :: CGHostDBSQLite( CConfig *CFG ) : CGHostDB( CFG )
 
 		if( RC == SQLITE_ROW )
 		{
-			QVector<QString> *Row = m_DB->GetRow( );
+			QList<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				SchemaNumber = (*Row)[0];
@@ -658,9 +658,9 @@ bool CGHostDBSQLite :: AdminRemove( QString server, QString user )
 	return Success;
 }
 
-QVector<QString> CGHostDBSQLite :: AdminList( QString server )
+QList<QString> CGHostDBSQLite :: AdminList( QString server )
 {
-	QVector<QString> AdminList;
+	QList<QString> AdminList;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT name FROM admins WHERE server=?", (void **)&Statement );
 
@@ -671,7 +671,7 @@ QVector<QString> CGHostDBSQLite :: AdminList( QString server )
 
 		while( RC == SQLITE_ROW )
 		{
-			QVector<QString> *Row = m_DB->GetRow( );
+			QList<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				AdminList.push_back( (*Row)[0] );
@@ -737,7 +737,7 @@ CDBBan *CGHostDBSQLite :: BanCheck( QString server, QString user, QString ip )
 
 		if( RC == SQLITE_ROW )
 		{
-			QVector<QString> *Row = m_DB->GetRow( );
+			QList<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 6 )
 				Ban = new CDBBan( server, (*Row)[0], (*Row)[1], (*Row)[2], (*Row)[3], (*Row)[4], (*Row)[5] );
@@ -837,9 +837,9 @@ bool CGHostDBSQLite :: BanRemove( QString user )
 	return Success;
 }
 
-QVector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
+QList<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 {
-	QVector<CDBBan *> BanList;
+	QList<CDBBan *> BanList;
 	sqlite3_stmt *Statement;
 	m_DB->Prepare( "SELECT name, ip, date, gamename, admin, reason FROM bans WHERE server=?", (void **)&Statement );
 
@@ -850,7 +850,7 @@ QVector<CDBBan *> CGHostDBSQLite :: BanList( QString server )
 
 		while( RC == SQLITE_ROW )
 		{
-			QVector<QString> *Row = m_DB->GetRow( );
+			QList<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 6 )
 				BanList.push_back( new CDBBan( server, (*Row)[0], (*Row)[1], (*Row)[2], (*Row)[3], (*Row)[4], (*Row)[5] ) );
@@ -1223,7 +1223,7 @@ QString CGHostDBSQLite :: FromCheck( quint32 ip )
 
 		if( RC == SQLITE_ROW )
 		{
-			QVector<QString> *Row = m_DB->GetRow( );
+			QList<QString> *Row = m_DB->GetRow( );
 
 			if( Row->size( ) == 1 )
 				From = (*Row)[0];
@@ -1343,7 +1343,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( QMap<VarP,int32_t> :: iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
+	for( QMap<VarP,int32_t> :: const_iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_int ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1388,7 +1388,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( QMap<VarP,double> :: iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
+	for( QMap<VarP,double> :: const_iterator i = var_reals.begin( ); i != var_reals.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_real ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1433,7 +1433,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strin
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( QMap<VarP,QString> :: iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
+	for( QMap<VarP,QString> :: const_iterator i = var_strings.begin( ); i != var_strings.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_QString ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );

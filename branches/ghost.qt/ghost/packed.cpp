@@ -295,7 +295,7 @@ void CPacked :: Compress( bool TFT )
 	quint32 CompressedSize = 0;
 	string Padded = QString(m_Decompressed).toStdString();
 	Padded.append( 8192 - ( Padded.size( ) % 8192 ), 0 );
-	QVector<string> CompressedBlocks;
+	QList<string> CompressedBlocks;
 	string :: size_type Position = 0;
 	unsigned char *CompressedData = new unsigned char[8213];
 
@@ -372,7 +372,7 @@ void CPacked :: Compress( bool TFT )
 
 	// append blocks
 
-	for( QVector<string> :: const_iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
+	for( QList<string> :: const_iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
 	{
 		QByteArray BlockHeader;
 		BlockHeader.append(Util::fromUInt16((*i).size( )));
