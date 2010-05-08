@@ -44,13 +44,6 @@
 #include <QFile>
 #include <QTextStream>
 
-#ifdef WIN32
- #include <ws2tcpip.h>		// for WSAIoctl
-#endif
-
-#define __STORMLIB_SELF__
-#include <stormlib/StormLib.h>
-
 #include <QHostInfo>
 #include <QCoreApplication>
 
@@ -897,7 +890,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 }
 
 void CGHost :: ExtractScripts( )
-{
+{/*
 	QString PatchMPQFileName = m_Warcraft3Path + "War3Patch.mpq";
 	HANDLE PatchMPQ;
 
@@ -963,7 +956,7 @@ void CGHost :: ExtractScripts( )
 		SFileCloseArchive( PatchMPQ );
 	}
 	else
-		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "] - error code " + QString::number( GetLastError( ) ) );
+		CONSOLE_Print( "[GHOST] warning - unable to load MPQ file [" + PatchMPQFileName + "] - error code " + QString::number( GetLastError( ) ) );*/
 }
 
 void CGHost :: LoadIPToCountryData( )

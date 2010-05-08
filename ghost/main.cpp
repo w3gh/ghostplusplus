@@ -90,28 +90,37 @@ void DEBUG_Print( QString message )
 // main
 //
 
-#include "crc32.h"
+#include "mpqarchive.h"
+#include "mpqfile.h"
+
 int main( int argc, char **argv )
 {
 	QCoreApplication a(argc, argv);
 
-	/*DEBUG_Print(Util::fromUInt32(1111).toHex());
-	return 0;*/
+	MPQArchive arch("/mnt/disk/Programme/Warcraft III/War3Patch.mpq");
+	if (!arch.open() && arch.m_Error != MPQArchive::NO_FILE_LIST)
+	{
+		DEBUG_Print("Failed to open, error " + QString::number(arch.m_Error));
+		exit(1);
+	}
 
-/*
-	QByteArray data = QByteArray::fromHex("0224001b019a0700009a070000160101009a0700009a0700001a19303030559a0700009a070000");
-	CCRC32 *crc = new CCRC32();
-	crc->Initialize();
-	DEBUG_Print("Expected: 868c6fa1");
-	QByteArray crc32 = UTIL_CreateBYTEARRAY( crc->FullCRC( data ), false );
-	// expected: bb76fe69
-	DEBUG_Print(crc32.toHex());
-	crc32.resize( 2 );
-	DEBUG_Print(crc32.toHex());
 
-	quint16 crc16 = qChecksum("ABCDEF", 6);
-	DEBUG_Print(UTIL_CreateBYTEARRAY(crc16, false).toHex()); // 5e6f
-	return 0;*/
+
+	/*if (!arch.m_ListFile->read())
+	{
+		DEBUG_Print("Failed to read file list, error " + QString::number(arch.m_ListFile->m_Error));
+	}*/
+
+
+	DEBUG_Print("Successfully open MPQ file");
+
+	MPQFile* common_j = arch.getFile("Scripts\\common.j");
+
+	if (!common_j->read())
+	{
+		DEBUG_Print("Failed to read common.j, error " + QString::number(common_j->m_Error));
+	}
+	exit(0);
 
 	gCFGFile = "ghost.cfg";
 

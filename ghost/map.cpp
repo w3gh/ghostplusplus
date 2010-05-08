@@ -28,9 +28,6 @@ using std::istringstream;
 #include "config.h"
 #include "map.h"
 
-#define __STORMLIB_SELF__
-#include <stormlib/StormLib.h>
-
 #define ROTL(x,n) ((x)<<(n))|((x)>>(32-(n)))	// this won't work with signed types
 #define ROTR(x,n) ((x)>>(n))|((x)<<(32-(n)))	// this won't work with signed types
 
@@ -266,7 +263,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 		m_MapData = UTIL_FileRead( m_GHost->m_MapPath + m_MapLocalPath );
 
 	// load the map MPQ
-
+/*
 	QString MapMPQFileName = m_GHost->m_MapPath + m_MapLocalPath;
 	HANDLE MapMPQ;
 	bool MapMPQReady = false;
@@ -877,7 +874,7 @@ void CMap :: Load( CConfig *CFG, QString nCFGFile )
 
 		while( m_Slots.size( ) < 12 )
 			m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 12, 12, SLOTRACE_RANDOM ) );
-	}
+	}*/
 
 	CheckValid( );
 }
