@@ -53,7 +53,7 @@ LIBS += -L../bncsutil/src/bncsutil \
 	-lbncsutil
 macx {
 	LIBS += -framework CoreFoundation -framework CoreServices
-	LIBS += -L/usr/lib -lbz2 -lz
+	LIBS += -L. -L/usr/lib -lbz2 -lz
 }
 
 HEADERS += util.h \
@@ -90,6 +90,5 @@ HEADERS += util.h \
 	bnetprotocol.h \
 	bnet.h \
 	bncsutilinterface.h \
-	mpgarchive.h \
 	mpqarchive.h \
 	mpqfile.h
