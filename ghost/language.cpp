@@ -27,7 +27,7 @@
 // CLanguage
 //
 
-CLanguage :: CLanguage( QString nCFGFile )
+CLanguage :: CLanguage( const QString &nCFGFile )
 {
 	m_CFG = new CConfig( );
 	m_CFG->Read( nCFGFile );
@@ -38,7 +38,7 @@ CLanguage :: ~CLanguage( )
 	delete m_CFG;
 }
 
-QString CLanguage :: UnableToCreateGameTryAnotherName( QString server, QString gamename )
+QString CLanguage :: UnableToCreateGameTryAnotherName( const QString &server, const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0001", "lang_0001" );
 	Out.replace("$SERVER$", server);
@@ -46,7 +46,7 @@ QString CLanguage :: UnableToCreateGameTryAnotherName( QString server, QString g
 	return Out;
 }
 
-QString CLanguage :: UserIsAlreadyAnAdmin( QString server, QString user )
+QString CLanguage :: UserIsAlreadyAnAdmin( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0002", "lang_0002" );
 	Out.replace("$SERVER$", server);
@@ -54,7 +54,7 @@ QString CLanguage :: UserIsAlreadyAnAdmin( QString server, QString user )
 	return Out;
 }
 
-QString CLanguage :: AddedUserToAdminDatabase( QString server, QString user )
+QString CLanguage :: AddedUserToAdminDatabase( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0003", "lang_0003" );
 	Out.replace("$SERVER$", server);
@@ -62,7 +62,7 @@ QString CLanguage :: AddedUserToAdminDatabase( QString server, QString user )
 	return Out;
 }
 
-QString CLanguage :: ErrorAddingUserToAdminDatabase( QString server, QString user )
+QString CLanguage :: ErrorAddingUserToAdminDatabase( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0004", "lang_0004" );
 	Out.replace("$SERVER$", server);
@@ -75,7 +75,7 @@ QString CLanguage :: YouDontHaveAccessToThatCommand( )
 	return m_CFG->GetString( "lang_0005", "lang_0005" );
 }
 
-QString CLanguage :: UserIsAlreadyBanned( QString server, QString victim )
+QString CLanguage :: UserIsAlreadyBanned( const QString &server, const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0006", "lang_0006" );
 	Out.replace("$SERVER$", server);
@@ -83,7 +83,7 @@ QString CLanguage :: UserIsAlreadyBanned( QString server, QString victim )
 	return Out;
 }
 
-QString CLanguage :: BannedUser( QString server, QString victim )
+QString CLanguage :: BannedUser( const QString &server, const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0007", "lang_0007" );
 	Out.replace("$SERVER$", server);
@@ -91,7 +91,7 @@ QString CLanguage :: BannedUser( QString server, QString victim )
 	return Out;
 }
 
-QString CLanguage :: ErrorBanningUser( QString server, QString victim )
+QString CLanguage :: ErrorBanningUser( const QString &server, const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0008", "lang_0008" );
 	Out.replace("$SERVER$", server);
@@ -99,7 +99,7 @@ QString CLanguage :: ErrorBanningUser( QString server, QString victim )
 	return Out;
 }
 
-QString CLanguage :: UserIsAnAdmin( QString server, QString user )
+QString CLanguage :: UserIsAnAdmin( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0009", "lang_0009" );
 	Out.replace("$SERVER$", server);
@@ -107,7 +107,7 @@ QString CLanguage :: UserIsAnAdmin( QString server, QString user )
 	return Out;
 }
 
-QString CLanguage :: UserIsNotAnAdmin( QString server, QString user )
+QString CLanguage :: UserIsNotAnAdmin( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0010", "lang_0010" );
 	Out.replace("$SERVER$", server);
@@ -115,7 +115,7 @@ QString CLanguage :: UserIsNotAnAdmin( QString server, QString user )
 	return Out;
 }
 
-QString CLanguage :: UserWasBannedOnByBecause( QString server, QString victim, QString date, QString admin, QString reason )
+QString CLanguage :: UserWasBannedOnByBecause( const QString &server, const QString &victim, const QString &date, const QString &admin, const QString &reason )
 {
 	QString Out = m_CFG->GetString( "lang_0011", "lang_0011" );
 	Out.replace("$SERVER$", server);
@@ -126,7 +126,7 @@ QString CLanguage :: UserWasBannedOnByBecause( QString server, QString victim, Q
 	return Out;
 }
 
-QString CLanguage :: UserIsNotBanned( QString server, QString victim )
+QString CLanguage :: UserIsNotBanned( const QString &server, const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0012", "lang_0012" );
 	Out.replace("$SERVER$", server);
@@ -134,21 +134,21 @@ QString CLanguage :: UserIsNotBanned( QString server, QString victim )
 	return Out;
 }
 
-QString CLanguage :: ThereAreNoAdmins( QString server )
+QString CLanguage :: ThereAreNoAdmins( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0013", "lang_0013" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: ThereIsAdmin( QString server )
+QString CLanguage :: ThereIsAdmin( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0014", "lang_0014" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: ThereAreAdmins( QString server, QString count )
+QString CLanguage :: ThereAreAdmins( const QString &server, const QString &count )
 {
 	QString Out = m_CFG->GetString( "lang_0015", "lang_0015" );
 	Out.replace("$SERVER$", server);
@@ -156,21 +156,21 @@ QString CLanguage :: ThereAreAdmins( QString server, QString count )
 	return Out;
 }
 
-QString CLanguage :: ThereAreNoBannedUsers( QString server )
+QString CLanguage :: ThereAreNoBannedUsers( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0016", "lang_0016" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: ThereIsBannedUser( QString server )
+QString CLanguage :: ThereIsBannedUser( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0017", "lang_0017" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: ThereAreBannedUsers( QString server, QString count )
+QString CLanguage :: ThereAreBannedUsers( const QString &server, const QString &count )
 {
 	QString Out = m_CFG->GetString( "lang_0018", "lang_0018" );
 	Out.replace("$SERVER$", server);
@@ -183,7 +183,7 @@ QString CLanguage :: YouCantDeleteTheRootAdmin( )
 	return m_CFG->GetString( "lang_0019", "lang_0019" );
 }
 
-QString CLanguage :: DeletedUserFromAdminDatabase( QString server, QString user )
+QString CLanguage :: DeletedUserFromAdminDatabase( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0020", "lang_0020" );
 	Out.replace("$SERVER$", server);
@@ -191,7 +191,7 @@ QString CLanguage :: DeletedUserFromAdminDatabase( QString server, QString user 
 	return Out;
 }
 
-QString CLanguage :: ErrorDeletingUserFromAdminDatabase( QString server, QString user )
+QString CLanguage :: ErrorDeletingUserFromAdminDatabase( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0021", "lang_0021" );
 	Out.replace("$SERVER$", server);
@@ -199,21 +199,21 @@ QString CLanguage :: ErrorDeletingUserFromAdminDatabase( QString server, QString
 	return Out;
 }
 
-QString CLanguage :: UnbannedUser( QString victim )
+QString CLanguage :: UnbannedUser( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0022", "lang_0022" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: ErrorUnbanningUser( QString victim )
+QString CLanguage :: ErrorUnbanningUser( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0023", "lang_0023" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: GameNumberIs( QString number, QString description )
+QString CLanguage :: GameNumberIs( const QString &number, const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0024", "lang_0024" );
 	Out.replace("$NUMBER$", number);
@@ -221,14 +221,14 @@ QString CLanguage :: GameNumberIs( QString number, QString description )
 	return Out;
 }
 
-QString CLanguage :: GameNumberDoesntExist( QString number )
+QString CLanguage :: GameNumberDoesntExist( const QString &number )
 {
 	QString Out = m_CFG->GetString( "lang_0025", "lang_0025" );
 	Out.replace("$NUMBER$", number);
 	return Out;
 }
 
-QString CLanguage :: GameIsInTheLobby( QString description, QString current, QString max )
+QString CLanguage :: GameIsInTheLobby( const QString &description, const QString &current, const QString &max )
 {
 	QString Out = m_CFG->GetString( "lang_0026", "lang_0026" );
 	Out.replace("$DESCRIPTION$", description);
@@ -237,7 +237,7 @@ QString CLanguage :: GameIsInTheLobby( QString description, QString current, QSt
 	return Out;
 }
 
-QString CLanguage :: ThereIsNoGameInTheLobby( QString current, QString max )
+QString CLanguage :: ThereIsNoGameInTheLobby( const QString &current, const QString &max )
 {
 	QString Out = m_CFG->GetString( "lang_0027", "lang_0027" );
 	Out.replace("$CURRENT$", current);
@@ -250,21 +250,21 @@ QString CLanguage :: UnableToLoadConfigFilesOutside( )
 	return m_CFG->GetString( "lang_0028", "lang_0028" );
 }
 
-QString CLanguage :: LoadingConfigFile( QString file )
+QString CLanguage :: LoadingConfigFile( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0029", "lang_0029" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: UnableToLoadConfigFileDoesntExist( QString file )
+QString CLanguage :: UnableToLoadConfigFileDoesntExist( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0030", "lang_0030" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: CreatingPrivateGame( QString gamename, QString user )
+QString CLanguage :: CreatingPrivateGame( const QString &gamename, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0031", "lang_0031" );
 	Out.replace("$GAMENAME$", gamename);
@@ -272,7 +272,7 @@ QString CLanguage :: CreatingPrivateGame( QString gamename, QString user )
 	return Out;
 }
 
-QString CLanguage :: CreatingPublicGame( QString gamename, QString user )
+QString CLanguage :: CreatingPublicGame( const QString &gamename, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0032", "lang_0032" );
 	Out.replace("$GAMENAME$", gamename);
@@ -280,14 +280,14 @@ QString CLanguage :: CreatingPublicGame( QString gamename, QString user )
 	return Out;
 }
 
-QString CLanguage :: UnableToUnhostGameCountdownStarted( QString description )
+QString CLanguage :: UnableToUnhostGameCountdownStarted( const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0033", "lang_0033" );
 	Out.replace("$DESCRIPTION$", description);
 	return Out;
 }
 
-QString CLanguage :: UnhostingGame( QString description )
+QString CLanguage :: UnhostingGame( const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0034", "lang_0034" );
 	Out.replace("$DESCRIPTION$", description);
@@ -299,21 +299,21 @@ QString CLanguage :: UnableToUnhostGameNoGameInLobby( )
 	return m_CFG->GetString( "lang_0035", "lang_0035" );
 }
 
-QString CLanguage :: VersionAdmin( QString version )
+QString CLanguage :: VersionAdmin( const QString &version )
 {
 	QString Out = m_CFG->GetString( "lang_0036", "lang_0036" );
 	Out.replace("$VERSION$", version);
 	return Out;
 }
 
-QString CLanguage :: VersionNotAdmin( QString version )
+QString CLanguage :: VersionNotAdmin( const QString &version )
 {
 	QString Out = m_CFG->GetString( "lang_0037", "lang_0037" );
 	Out.replace("$VERSION$", version);
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameAnotherGameInLobby( QString gamename, QString description )
+QString CLanguage :: UnableToCreateGameAnotherGameInLobby( const QString &gamename, const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0038", "lang_0038" );
 	Out.replace("$GAMENAME$", gamename);
@@ -321,7 +321,7 @@ QString CLanguage :: UnableToCreateGameAnotherGameInLobby( QString gamename, QSt
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameMaxGamesReached( QString gamename, QString max )
+QString CLanguage :: UnableToCreateGameMaxGamesReached( const QString &gamename, const QString &max )
 {
 	QString Out = m_CFG->GetString( "lang_0039", "lang_0039" );
 	Out.replace("$GAMENAME$", gamename);
@@ -329,7 +329,7 @@ QString CLanguage :: UnableToCreateGameMaxGamesReached( QString gamename, QStrin
 	return Out;
 }
 
-QString CLanguage :: GameIsOver( QString description )
+QString CLanguage :: GameIsOver( const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0040", "lang_0040" );
 	Out.replace("$DESCRIPTION$", description);
@@ -346,42 +346,42 @@ QString CLanguage :: GameRefreshed( )
 	return m_CFG->GetString( "lang_0042", "lang_0042" );
 }
 
-QString CLanguage :: SpoofPossibleIsAway( QString user )
+QString CLanguage :: SpoofPossibleIsAway( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0043", "lang_0043" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: SpoofPossibleIsUnavailable( QString user )
+QString CLanguage :: SpoofPossibleIsUnavailable( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0044", "lang_0044" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: SpoofPossibleIsRefusingMessages( QString user )
+QString CLanguage :: SpoofPossibleIsRefusingMessages( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0045", "lang_0045" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: SpoofDetectedIsNotInGame( QString user )
+QString CLanguage :: SpoofDetectedIsNotInGame( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0046", "lang_0046" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: SpoofDetectedIsInPrivateChannel( QString user )
+QString CLanguage :: SpoofDetectedIsInPrivateChannel( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0047", "lang_0047" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: SpoofDetectedIsInAnotherGame( QString user )
+QString CLanguage :: SpoofDetectedIsInAnotherGame( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0048", "lang_0048" );
 	Out.replace("$USER$", user);
@@ -393,21 +393,21 @@ QString CLanguage :: CountDownAborted( )
 	return m_CFG->GetString( "lang_0049", "lang_0049" );
 }
 
-QString CLanguage :: TryingToJoinTheGameButBanned( QString victim )
+QString CLanguage :: TryingToJoinTheGameButBanned( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0050", "lang_0050" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: UnableToBanNoMatchesFound( QString victim )
+QString CLanguage :: UnableToBanNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0051", "lang_0051" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: PlayerWasBannedByPlayer( QString server, QString victim, QString user )
+QString CLanguage :: PlayerWasBannedByPlayer( const QString &server, const QString &victim, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0052", "lang_0052" );
 	Out.replace("$SERVER$", server);
@@ -416,56 +416,56 @@ QString CLanguage :: PlayerWasBannedByPlayer( QString server, QString victim, QS
 	return Out;
 }
 
-QString CLanguage :: UnableToBanFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToBanFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0053", "lang_0053" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: AddedPlayerToTheHoldList( QString user )
+QString CLanguage :: AddedPlayerToTheHoldList( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0054", "lang_0054" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: UnableToKickNoMatchesFound( QString victim )
+QString CLanguage :: UnableToKickNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0055", "lang_0055" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: UnableToKickFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToKickFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0056", "lang_0056" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: SettingLatencyToMinimum( QString min )
+QString CLanguage :: SettingLatencyToMinimum( const QString &min )
 {
 	QString Out = m_CFG->GetString( "lang_0057", "lang_0057" );
 	Out.replace("$MIN$", min);
 	return Out;
 }
 
-QString CLanguage :: SettingLatencyToMaximum( QString max )
+QString CLanguage :: SettingLatencyToMaximum( const QString &max )
 {
 	QString Out = m_CFG->GetString( "lang_0058", "lang_0058" );
 	Out.replace("$MAX$", max);
 	return Out;
 }
 
-QString CLanguage :: SettingLatencyTo( QString latency )
+QString CLanguage :: SettingLatencyTo( const QString &latency )
 {
 	QString Out = m_CFG->GetString( "lang_0059", "lang_0059" );
 	Out.replace("$LATENCY$", latency);
 	return Out;
 }
 
-QString CLanguage :: KickingPlayersWithPingsGreaterThan( QString total, QString ping )
+QString CLanguage :: KickingPlayersWithPingsGreaterThan( const QString &total, const QString &ping )
 {
 	QString Out = m_CFG->GetString( "lang_0060", "lang_0060" );
 	Out.replace("$TOTAL$", total);
@@ -473,7 +473,7 @@ QString CLanguage :: KickingPlayersWithPingsGreaterThan( QString total, QString 
 	return Out;
 }
 
-QString CLanguage :: HasPlayedGamesWithThisBot( QString user, QString firstgame, QString lastgame, QString totalgames, QString avgloadingtime, QString avgstay )
+QString CLanguage :: HasPlayedGamesWithThisBot( const QString &user, const QString &firstgame, const QString &lastgame, const QString &totalgames, const QString &avgloadingtime, const QString &avgstay )
 {
 	QString Out = m_CFG->GetString( "lang_0061", "lang_0061" );
 	Out.replace("$USER$", user);
@@ -485,14 +485,14 @@ QString CLanguage :: HasPlayedGamesWithThisBot( QString user, QString firstgame,
 	return Out;
 }
 
-QString CLanguage :: HasntPlayedGamesWithThisBot( QString user )
+QString CLanguage :: HasntPlayedGamesWithThisBot( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0062", "lang_0062" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: AutokickingPlayerForExcessivePing( QString victim, QString ping )
+QString CLanguage :: AutokickingPlayerForExcessivePing( const QString &victim, const QString &ping )
 {
 	QString Out = m_CFG->GetString( "lang_0063", "lang_0063" );
 	Out.replace("$VICTIM$", victim);
@@ -500,7 +500,7 @@ QString CLanguage :: AutokickingPlayerForExcessivePing( QString victim, QString 
 	return Out;
 }
 
-QString CLanguage :: SpoofCheckAcceptedFor( QString server, QString user )
+QString CLanguage :: SpoofCheckAcceptedFor( const QString &server, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0064", "lang_0064" );
 	Out.replace("$SERVER$", server);
@@ -508,21 +508,21 @@ QString CLanguage :: SpoofCheckAcceptedFor( QString server, QString user )
 	return Out;
 }
 
-QString CLanguage :: PlayersNotYetSpoofChecked( QString notspoofchecked )
+QString CLanguage :: PlayersNotYetSpoofChecked( const QString &notspoofchecked )
 {
 	QString Out = m_CFG->GetString( "lang_0065", "lang_0065" );
 	Out.replace("$NOTSPOOFCHECKED$", notspoofchecked);
 	return Out;
 }
 
-QString CLanguage :: ManuallySpoofCheckByWhispering( QString hostname )
+QString CLanguage :: ManuallySpoofCheckByWhispering( const QString &hostname )
 {
 	QString Out = m_CFG->GetString( "lang_0066", "lang_0066" );
 	Out.replace("$HOSTNAME$", hostname);
 	return Out;
 }
 
-QString CLanguage :: SpoofCheckByWhispering( QString hostname )
+QString CLanguage :: SpoofCheckByWhispering( const QString &hostname )
 {
 	QString Out = m_CFG->GetString( "lang_0067", "lang_0067" );
 	Out.replace("$HOSTNAME$", hostname);
@@ -534,7 +534,7 @@ QString CLanguage :: EveryoneHasBeenSpoofChecked( )
 	return m_CFG->GetString( "lang_0068", "lang_0068" );
 }
 
-QString CLanguage :: PlayersNotYetPinged( QString notpinged )
+QString CLanguage :: PlayersNotYetPinged( const QString &notpinged )
 {
 	QString Out = m_CFG->GetString( "lang_0069", "lang_0069" );
 	Out.replace("$NOTPINGED$", notpinged);
@@ -546,7 +546,7 @@ QString CLanguage :: EveryoneHasBeenPinged( )
 	return m_CFG->GetString( "lang_0070", "lang_0070" );
 }
 
-QString CLanguage :: ShortestLoadByPlayer( QString user, QString loadingtime )
+QString CLanguage :: ShortestLoadByPlayer( const QString &user, const QString &loadingtime )
 {
 	QString Out = m_CFG->GetString( "lang_0071", "lang_0071" );
 	Out.replace("$USER$", user);
@@ -554,7 +554,7 @@ QString CLanguage :: ShortestLoadByPlayer( QString user, QString loadingtime )
 	return Out;
 }
 
-QString CLanguage :: LongestLoadByPlayer( QString user, QString loadingtime )
+QString CLanguage :: LongestLoadByPlayer( const QString &user, const QString &loadingtime )
 {
 	QString Out = m_CFG->GetString( "lang_0072", "lang_0072" );
 	Out.replace("$USER$", user);
@@ -562,14 +562,14 @@ QString CLanguage :: LongestLoadByPlayer( QString user, QString loadingtime )
 	return Out;
 }
 
-QString CLanguage :: YourLoadingTimeWas( QString loadingtime )
+QString CLanguage :: YourLoadingTimeWas( const QString &loadingtime )
 {
 	QString Out = m_CFG->GetString( "lang_0073", "lang_0073" );
 	Out.replace("$LOADINGTIME$", loadingtime);
 	return Out;
 }
 
-QString CLanguage :: HasPlayedDotAGamesWithThisBot( QString user, QString totalgames, QString totalwins, QString totallosses, QString totalkills, QString totaldeaths, QString totalcreepkills, QString totalcreepdenies, QString totalassists, QString totalneutralkills, QString totaltowerkills, QString totalraxkills, QString totalcourierkills, QString avgkills, QString avgdeaths, QString avgcreepkills, QString avgcreepdenies, QString avgassists, QString avgneutralkills, QString avgtowerkills, QString avgraxkills, QString avgcourierkills )
+QString CLanguage :: HasPlayedDotAGamesWithThisBot( const QString &user, const QString &totalgames, const QString &totalwins, const QString &totallosses, const QString &totalkills, const QString &totaldeaths, const QString &totalcreepkills, const QString &totalcreepdenies, const QString &totalassists, const QString &totalneutralkills, const QString &totaltowerkills, const QString &totalraxkills, const QString &totalcourierkills, const QString &avgkills, const QString &avgdeaths, const QString &avgcreepkills, const QString &avgcreepdenies, const QString &avgassists, const QString &avgneutralkills, const QString &avgtowerkills, const QString &avgraxkills, const QString &avgcourierkills )
 {
 	QString Out = m_CFG->GetString( "lang_0074", "lang_0074" );
 	Out.replace("$USER$", user);
@@ -597,42 +597,42 @@ QString CLanguage :: HasPlayedDotAGamesWithThisBot( QString user, QString totalg
 	return Out;
 }
 
-QString CLanguage :: HasntPlayedDotAGamesWithThisBot( QString user )
+QString CLanguage :: HasntPlayedDotAGamesWithThisBot( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0075", "lang_0075" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: WasKickedForReservedPlayer( QString reserved )
+QString CLanguage :: WasKickedForReservedPlayer( const QString &reserved )
 {
 	QString Out = m_CFG->GetString( "lang_0076", "lang_0076" );
 	Out.replace("$RESERVED$", reserved);
 	return Out;
 }
 
-QString CLanguage :: WasKickedForOwnerPlayer( QString owner )
+QString CLanguage :: WasKickedForOwnerPlayer( const QString &owner )
 {
 	QString Out = m_CFG->GetString( "lang_0077", "lang_0077" );
 	Out.replace("$OWNER$", owner);
 	return Out;
 }
 
-QString CLanguage :: WasKickedByPlayer( QString user )
+QString CLanguage :: WasKickedByPlayer( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0078", "lang_0078" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: HasLostConnectionPlayerError( QString error )
+QString CLanguage :: HasLostConnectionPlayerError( const QString &error )
 {
 	QString Out = m_CFG->GetString( "lang_0079", "lang_0079" );
 	Out.replace("$ERROR$", error);
 	return Out;
 }
 
-QString CLanguage :: HasLostConnectionSocketError( QString error )
+QString CLanguage :: HasLostConnectionSocketError( const QString &error )
 {
 	QString Out = m_CFG->GetString( "lang_0080", "lang_0080" );
 	Out.replace("$ERROR$", error);
@@ -649,7 +649,7 @@ QString CLanguage :: HasLeftVoluntarily( )
 	return m_CFG->GetString( "lang_0082", "lang_0082" );
 }
 
-QString CLanguage :: EndingGame( QString description )
+QString CLanguage :: EndingGame( const QString &description )
 {
 	QString Out = m_CFG->GetString( "lang_0083", "lang_0083" );
 	Out.replace("$DESCRIPTION$", description);
@@ -681,7 +681,7 @@ QString CLanguage :: UnableToLoadConfigFileGameInLobby( )
 	return m_CFG->GetString( "lang_0088", "lang_0088" );
 }
 
-QString CLanguage :: PlayersStillDownloading( QString stilldownloading )
+QString CLanguage :: PlayersStillDownloading( const QString &stilldownloading )
 {
 	QString Out = m_CFG->GetString( "lang_0089", "lang_0089" );
 	Out.replace("$STILLDOWNLOADING$", stilldownloading);
@@ -703,7 +703,7 @@ QString CLanguage :: AtLeastOneGameActiveUseForceToShutdown( )
 	return m_CFG->GetString( "lang_0092", "lang_0092" );
 }
 
-QString CLanguage :: CurrentlyLoadedMapCFGIs( QString mapcfg )
+QString CLanguage :: CurrentlyLoadedMapCFGIs( const QString &mapcfg )
 {
 	QString Out = m_CFG->GetString( "lang_0093", "lang_0093" );
 	Out.replace("$MAPCFG$", mapcfg);
@@ -720,49 +720,49 @@ QString CLanguage :: LaggedOutDroppedByVote( )
 	return m_CFG->GetString( "lang_0095", "lang_0095" );
 }
 
-QString CLanguage :: PlayerVotedToDropLaggers( QString user )
+QString CLanguage :: PlayerVotedToDropLaggers( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0096", "lang_0096" );
 	Out.replace("$USER$", user);
 	return Out;
 }
 
-QString CLanguage :: LatencyIs( QString latency )
+QString CLanguage :: LatencyIs( const QString &latency )
 {
 	QString Out = m_CFG->GetString( "lang_0097", "lang_0097" );
 	Out.replace("$LATENCY$", latency);
 	return Out;
 }
 
-QString CLanguage :: SyncLimitIs( QString synclimit )
+QString CLanguage :: SyncLimitIs( const QString &synclimit )
 {
 	QString Out = m_CFG->GetString( "lang_0098", "lang_0098" );
 	Out.replace("$SYNCLIMIT$", synclimit);
 	return Out;
 }
 
-QString CLanguage :: SettingSyncLimitToMinimum( QString min )
+QString CLanguage :: SettingSyncLimitToMinimum( const QString &min )
 {
 	QString Out = m_CFG->GetString( "lang_0099", "lang_0099" );
 	Out.replace("$MIN$", min);
 	return Out;
 }
 
-QString CLanguage :: SettingSyncLimitToMaximum( QString max )
+QString CLanguage :: SettingSyncLimitToMaximum( const QString &max )
 {
 	QString Out = m_CFG->GetString( "lang_0100", "lang_0100" );
 	Out.replace("$MAX$", max);
 	return Out;
 }
 
-QString CLanguage :: SettingSyncLimitTo( QString synclimit )
+QString CLanguage :: SettingSyncLimitTo( const QString &synclimit )
 {
 	QString Out = m_CFG->GetString( "lang_0101", "lang_0101" );
 	Out.replace("$SYNCLIMIT$", synclimit);
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameNotLoggedIn( QString gamename )
+QString CLanguage :: UnableToCreateGameNotLoggedIn( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0102", "lang_0102" );
 	Out.replace("$GAMENAME$", gamename);
@@ -774,49 +774,49 @@ QString CLanguage :: AdminLoggedIn( )
 	return m_CFG->GetString( "lang_0103", "lang_0103" );
 }
 
-QString CLanguage :: AdminInvalidPassword( QString attempt )
+QString CLanguage :: AdminInvalidPassword( const QString &attempt )
 {
 	QString Out = m_CFG->GetString( "lang_0104", "lang_0104" );
 	Out.replace("$ATTEMPT$", attempt);
 	return Out;
 }
 
-QString CLanguage :: ConnectingToBNET( QString server )
+QString CLanguage :: ConnectingToBNET( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0105", "lang_0105" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: ConnectedToBNET( QString server )
+QString CLanguage :: ConnectedToBNET( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0106", "lang_0106" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: DisconnectedFromBNET( QString server )
+QString CLanguage :: DisconnectedFromBNET( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0107", "lang_0107" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: LoggedInToBNET( QString server )
+QString CLanguage :: LoggedInToBNET( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0108", "lang_0108" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: BNETGameHostingSucceeded( QString server )
+QString CLanguage :: BNETGameHostingSucceeded( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0109", "lang_0109" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: BNETGameHostingFailed( QString server, QString gamename )
+QString CLanguage :: BNETGameHostingFailed( const QString &server, const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0110", "lang_0110" );
 	Out.replace("$SERVER$", server);
@@ -824,14 +824,14 @@ QString CLanguage :: BNETGameHostingFailed( QString server, QString gamename )
 	return Out;
 }
 
-QString CLanguage :: ConnectingToBNETTimedOut( QString server )
+QString CLanguage :: ConnectingToBNETTimedOut( const QString &server )
 {
 	QString Out = m_CFG->GetString( "lang_0111", "lang_0111" );
 	Out.replace("$SERVER$", server);
 	return Out;
 }
 
-QString CLanguage :: PlayerDownloadedTheMap( QString user, QString seconds, QString rate )
+QString CLanguage :: PlayerDownloadedTheMap( const QString &user, const QString &seconds, const QString &rate )
 {
 	QString Out = m_CFG->GetString( "lang_0112", "lang_0112" );
 	Out.replace("$USER$", user);
@@ -840,14 +840,14 @@ QString CLanguage :: PlayerDownloadedTheMap( QString user, QString seconds, QStr
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameNameTooLong( QString gamename )
+QString CLanguage :: UnableToCreateGameNameTooLong( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0113", "lang_0113" );
 	Out.replace("$GAMENAME$", gamename);
 	return Out;
 }
 
-QString CLanguage :: SettingGameOwnerTo( QString owner )
+QString CLanguage :: SettingGameOwnerTo( const QString &owner )
 {
 	QString Out = m_CFG->GetString( "lang_0114", "lang_0114" );
 	Out.replace("$OWNER$", owner);
@@ -869,35 +869,35 @@ QString CLanguage :: GameUnlocked( )
 	return m_CFG->GetString( "lang_0117", "lang_0117" );
 }
 
-QString CLanguage :: UnableToStartDownloadNoMatchesFound( QString victim )
+QString CLanguage :: UnableToStartDownloadNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0118", "lang_0118" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: UnableToStartDownloadFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToStartDownloadFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0119", "lang_0119" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: UnableToSetGameOwner( QString owner )
+QString CLanguage :: UnableToSetGameOwner( const QString &owner )
 {
 	QString Out = m_CFG->GetString( "lang_0120", "lang_0120" );
 	Out.replace("$OWNER$", owner);
 	return Out;
 }
 
-QString CLanguage :: UnableToCheckPlayerNoMatchesFound( QString victim )
+QString CLanguage :: UnableToCheckPlayerNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0121", "lang_0121" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: CheckedPlayer( QString victim, QString ping, QString from, QString admin, QString owner, QString spoofed, QString spoofedrealm, QString reserved )
+QString CLanguage :: CheckedPlayer( const QString &victim, const QString &ping, const QString &from, const QString &admin, const QString &owner, const QString &spoofed, const QString &spoofedrealm, const QString &reserved )
 {
 	QString Out = m_CFG->GetString( "lang_0122", "lang_0122" );
 	Out.replace("$VICTIM$", victim);
@@ -911,7 +911,7 @@ QString CLanguage :: CheckedPlayer( QString victim, QString ping, QString from, 
 	return Out;
 }
 
-QString CLanguage :: UnableToCheckPlayerFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToCheckPlayerFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0123", "lang_0123" );
 	Out.replace("$VICTIM$", victim);
@@ -923,7 +923,7 @@ QString CLanguage :: TheGameIsLockedBNET( )
 	return m_CFG->GetString( "lang_0124", "lang_0124" );
 }
 
-QString CLanguage :: UnableToCreateGameDisabled( QString gamename )
+QString CLanguage :: UnableToCreateGameDisabled( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0125", "lang_0125" );
 	Out.replace("$GAMENAME$", gamename);
@@ -940,14 +940,14 @@ QString CLanguage :: BotEnabled( )
 	return m_CFG->GetString( "lang_0127", "lang_0127" );
 }
 
-QString CLanguage :: UnableToCreateGameInvalidMap( QString gamename )
+QString CLanguage :: UnableToCreateGameInvalidMap( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0128", "lang_0128" );
 	Out.replace("$GAMENAME$", gamename);
 	return Out;
 }
 
-QString CLanguage :: WaitingForPlayersBeforeAutoStart( QString players, QString playersleft )
+QString CLanguage :: WaitingForPlayersBeforeAutoStart( const QString &players, const QString &playersleft )
 {
 	QString Out = m_CFG->GetString( "lang_0129", "lang_0129" );
 	Out.replace("$PLAYERS$", players);
@@ -960,7 +960,7 @@ QString CLanguage :: AutoStartDisabled( )
 	return m_CFG->GetString( "lang_0130", "lang_0130" );
 }
 
-QString CLanguage :: AutoStartEnabled( QString players )
+QString CLanguage :: AutoStartEnabled( const QString &players )
 {
 	QString Out = m_CFG->GetString( "lang_0131", "lang_0131" );
 	Out.replace("$PLAYERS$", players);
@@ -997,28 +997,28 @@ QString CLanguage :: UnableToLoadSaveGameGameInLobby( )
 	return m_CFG->GetString( "lang_0137", "lang_0137" );
 }
 
-QString CLanguage :: LoadingSaveGame( QString file )
+QString CLanguage :: LoadingSaveGame( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0138", "lang_0138" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: UnableToLoadSaveGameDoesntExist( QString file )
+QString CLanguage :: UnableToLoadSaveGameDoesntExist( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0139", "lang_0139" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameInvalidSaveGame( QString gamename )
+QString CLanguage :: UnableToCreateGameInvalidSaveGame( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0140", "lang_0140" );
 	Out.replace("$GAMENAME$", gamename);
 	return Out;
 }
 
-QString CLanguage :: UnableToCreateGameSaveGameMapMismatch( QString gamename )
+QString CLanguage :: UnableToCreateGameSaveGameMapMismatch( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0141", "lang_0141" );
 	Out.replace("$GAMENAME$", gamename);
@@ -1040,14 +1040,14 @@ QString CLanguage :: DesyncDetected( )
 	return m_CFG->GetString( "lang_0144", "lang_0144" );
 }
 
-QString CLanguage :: UnableToMuteNoMatchesFound( QString victim )
+QString CLanguage :: UnableToMuteNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0145", "lang_0145" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: MutedPlayer( QString victim, QString user )
+QString CLanguage :: MutedPlayer( const QString &victim, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0146", "lang_0146" );
 	Out.replace("$VICTIM$", victim);
@@ -1055,7 +1055,7 @@ QString CLanguage :: MutedPlayer( QString victim, QString user )
 	return Out;
 }
 
-QString CLanguage :: UnmutedPlayer( QString victim, QString user )
+QString CLanguage :: UnmutedPlayer( const QString &victim, const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0147", "lang_0147" );
 	Out.replace("$VICTIM$", victim);
@@ -1063,14 +1063,14 @@ QString CLanguage :: UnmutedPlayer( QString victim, QString user )
 	return Out;
 }
 
-QString CLanguage :: UnableToMuteFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToMuteFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0148", "lang_0148" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: PlayerIsSavingTheGame( QString player )
+QString CLanguage :: PlayerIsSavingTheGame( const QString &player )
 {
 	QString Out = m_CFG->GetString( "lang_0149", "lang_0149" );
 	Out.replace("$PLAYER$", player);
@@ -1087,7 +1087,7 @@ QString CLanguage :: UpdatingFriendsList( )
 	return m_CFG->GetString( "lang_0151", "lang_0151" );
 }
 
-QString CLanguage :: MultipleIPAddressUsageDetected( QString player, QString others )
+QString CLanguage :: MultipleIPAddressUsageDetected( const QString &player, const QString &others )
 {
 	QString Out = m_CFG->GetString( "lang_0152", "lang_0152" );
 	Out.replace("$PLAYER$", player);
@@ -1105,21 +1105,21 @@ QString CLanguage :: UnableToVoteKickNotEnoughPlayers( )
 	return m_CFG->GetString( "lang_0154", "lang_0154" );
 }
 
-QString CLanguage :: UnableToVoteKickNoMatchesFound( QString victim )
+QString CLanguage :: UnableToVoteKickNoMatchesFound( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0155", "lang_0155" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: UnableToVoteKickPlayerIsReserved( QString victim )
+QString CLanguage :: UnableToVoteKickPlayerIsReserved( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0156", "lang_0156" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: StartedVoteKick( QString victim, QString user, QString votesneeded )
+QString CLanguage :: StartedVoteKick( const QString &victim, const QString &user, const QString &votesneeded )
 {
 	QString Out = m_CFG->GetString( "lang_0157", "lang_0157" );
 	Out.replace("$VICTIM$", victim);
@@ -1128,28 +1128,28 @@ QString CLanguage :: StartedVoteKick( QString victim, QString user, QString vote
 	return Out;
 }
 
-QString CLanguage :: UnableToVoteKickFoundMoreThanOneMatch( QString victim )
+QString CLanguage :: UnableToVoteKickFoundMoreThanOneMatch( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0158", "lang_0158" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: VoteKickPassed( QString victim )
+QString CLanguage :: VoteKickPassed( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0159", "lang_0159" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: ErrorVoteKickingPlayer( QString victim )
+QString CLanguage :: ErrorVoteKickingPlayer( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0160", "lang_0160" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: VoteKickAcceptedNeedMoreVotes( QString victim, QString user, QString votes )
+QString CLanguage :: VoteKickAcceptedNeedMoreVotes( const QString &victim, const QString &user, const QString &votes )
 {
 	QString Out = m_CFG->GetString( "lang_0161", "lang_0161" );
 	Out.replace("$VICTIM$", victim);
@@ -1158,14 +1158,14 @@ QString CLanguage :: VoteKickAcceptedNeedMoreVotes( QString victim, QString user
 	return Out;
 }
 
-QString CLanguage :: VoteKickCancelled( QString victim )
+QString CLanguage :: VoteKickCancelled( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0162", "lang_0162" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: VoteKickExpired( QString victim )
+QString CLanguage :: VoteKickExpired( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0163", "lang_0163" );
 	Out.replace("$VICTIM$", victim);
@@ -1177,14 +1177,14 @@ QString CLanguage :: WasKickedByVote( )
 	return m_CFG->GetString( "lang_0164", "lang_0164" );
 }
 
-QString CLanguage :: TypeYesToVote( QString commandtrigger )
+QString CLanguage :: TypeYesToVote( const QString &commandtrigger )
 {
 	QString Out = m_CFG->GetString( "lang_0165", "lang_0165" );
 	Out.replace("$COMMANDTRIGGER$", commandtrigger);
 	return Out;
 }
 
-QString CLanguage :: PlayersNotYetPingedAutoStart( QString notpinged )
+QString CLanguage :: PlayersNotYetPingedAutoStart( const QString &notpinged )
 {
 	QString Out = m_CFG->GetString( "lang_0166", "lang_0166" );
 	Out.replace("$NOTPINGED$", notpinged);
@@ -1196,7 +1196,7 @@ QString CLanguage :: WasKickedForNotSpoofChecking( )
 	return m_CFG->GetString( "lang_0167", "lang_0167" );
 }
 
-QString CLanguage :: WasKickedForHavingFurthestScore( QString score, QString average )
+QString CLanguage :: WasKickedForHavingFurthestScore( const QString &score, const QString &average )
 {
 	QString Out = m_CFG->GetString( "lang_0168", "lang_0168" );
 	Out.replace("$SCORE$", score);
@@ -1204,7 +1204,7 @@ QString CLanguage :: WasKickedForHavingFurthestScore( QString score, QString ave
 	return Out;
 }
 
-QString CLanguage :: PlayerHasScore( QString player, QString score )
+QString CLanguage :: PlayerHasScore( const QString &player, const QString &score )
 {
 	QString Out = m_CFG->GetString( "lang_0169", "lang_0169" );
 	Out.replace("$PLAYER$", player);
@@ -1212,7 +1212,7 @@ QString CLanguage :: PlayerHasScore( QString player, QString score )
 	return Out;
 }
 
-QString CLanguage :: RatedPlayersSpread( QString rated, QString total, QString spread )
+QString CLanguage :: RatedPlayersSpread( const QString &rated, const QString &total, const QString &spread )
 {
 	QString Out = m_CFG->GetString( "lang_0170", "lang_0170" );
 	Out.replace("$RATED$", rated);
@@ -1226,7 +1226,7 @@ QString CLanguage :: ErrorListingMaps( )
 	return m_CFG->GetString( "lang_0171", "lang_0171" );
 }
 
-QString CLanguage :: FoundMaps( QString maps )
+QString CLanguage :: FoundMaps( const QString &maps )
 {
 	QString Out = m_CFG->GetString( "lang_0172", "lang_0172" );
 	Out.replace("$MAPS$", maps);
@@ -1243,7 +1243,7 @@ QString CLanguage :: ErrorListingMapConfigs( )
 	return m_CFG->GetString( "lang_0174", "lang_0174" );
 }
 
-QString CLanguage :: FoundMapConfigs( QString mapconfigs )
+QString CLanguage :: FoundMapConfigs( const QString &mapconfigs )
 {
 	QString Out = m_CFG->GetString( "lang_0175", "lang_0175" );
 	Out.replace("$MAPCONFIGS$", mapconfigs);
@@ -1255,7 +1255,7 @@ QString CLanguage :: NoMapConfigsFound( )
 	return m_CFG->GetString( "lang_0176", "lang_0176" );
 }
 
-QString CLanguage :: PlayerFinishedLoading( QString user )
+QString CLanguage :: PlayerFinishedLoading( const QString &user )
 {
 	QString Out = m_CFG->GetString( "lang_0177", "lang_0177" );
 	Out.replace("$USER$", user);
@@ -1282,7 +1282,7 @@ QString CLanguage :: MapDownloadsConditional( )
 	return m_CFG->GetString( "lang_0181", "lang_0181" );
 }
 
-QString CLanguage :: SettingHCL( QString HCL )
+QString CLanguage :: SettingHCL( const QString &HCL )
 {
 	QString Out = m_CFG->GetString( "lang_0182", "lang_0182" );
 	Out.replace("$HCL$", HCL);
@@ -1299,7 +1299,7 @@ QString CLanguage :: UnableToSetHCLTooLong( )
 	return m_CFG->GetString( "lang_0184", "lang_0184" );
 }
 
-QString CLanguage :: TheHCLIs( QString HCL )
+QString CLanguage :: TheHCLIs( const QString &HCL )
 {
 	QString Out = m_CFG->GetString( "lang_0185", "lang_0185" );
 	Out.replace("$HCL$", HCL);
@@ -1316,14 +1316,14 @@ QString CLanguage :: ClearingHCL( )
 	return m_CFG->GetString( "lang_0187", "lang_0187" );
 }
 
-QString CLanguage :: TryingToRehostAsPrivateGame( QString gamename )
+QString CLanguage :: TryingToRehostAsPrivateGame( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0188", "lang_0188" );
 	Out.replace("$GAMENAME$", gamename);
 	return Out;
 }
 
-QString CLanguage :: TryingToRehostAsPublicGame( QString gamename )
+QString CLanguage :: TryingToRehostAsPublicGame( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0189", "lang_0189" );
 	Out.replace("$GAMENAME$", gamename);
@@ -1335,14 +1335,14 @@ QString CLanguage :: RehostWasSuccessful( )
 	return m_CFG->GetString( "lang_0190", "lang_0190" );
 }
 
-QString CLanguage :: TryingToJoinTheGameButBannedByName( QString victim )
+QString CLanguage :: TryingToJoinTheGameButBannedByName( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0191", "lang_0191" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: TryingToJoinTheGameButBannedByIP( QString victim, QString ip, QString bannedname )
+QString CLanguage :: TryingToJoinTheGameButBannedByIP( const QString &victim, const QString &ip, const QString &bannedname )
 {
 	QString Out = m_CFG->GetString( "lang_0192", "lang_0192" );
 	Out.replace("$VICTIM$", victim);
@@ -1351,14 +1351,14 @@ QString CLanguage :: TryingToJoinTheGameButBannedByIP( QString victim, QString i
 	return Out;
 }
 
-QString CLanguage :: HasBannedName( QString victim )
+QString CLanguage :: HasBannedName( const QString &victim )
 {
 	QString Out = m_CFG->GetString( "lang_0193", "lang_0193" );
 	Out.replace("$VICTIM$", victim);
 	return Out;
 }
 
-QString CLanguage :: HasBannedIP( QString victim, QString ip, QString bannedname )
+QString CLanguage :: HasBannedIP( const QString &victim, const QString &ip, const QString &bannedname )
 {
 	QString Out = m_CFG->GetString( "lang_0194", "lang_0194" );
 	Out.replace("$VICTIM$", victim);
@@ -1367,7 +1367,7 @@ QString CLanguage :: HasBannedIP( QString victim, QString ip, QString bannedname
 	return Out;
 }
 
-QString CLanguage :: PlayersInGameState( QString number, QString players )
+QString CLanguage :: PlayersInGameState( const QString &number, const QString &players )
 {
 	QString Out = m_CFG->GetString( "lang_0195", "lang_0195" );
 	Out.replace("$NUMBER$", number);
@@ -1375,14 +1375,14 @@ QString CLanguage :: PlayersInGameState( QString number, QString players )
 	return Out;
 }
 
-QString CLanguage :: ValidServers( QString servers )
+QString CLanguage :: ValidServers( const QString &servers )
 {
 	QString Out = m_CFG->GetString( "lang_0196", "lang_0196" );
 	Out.replace("$SERVERS$", servers);
 	return Out;
 }
 
-QString CLanguage :: TeamCombinedScore( QString team, QString score )
+QString CLanguage :: TeamCombinedScore( const QString &team, const QString &score )
 {
 	QString Out = m_CFG->GetString( "lang_0197", "lang_0197" );
 	Out.replace("$TEAM$", team);
@@ -1395,7 +1395,7 @@ QString CLanguage :: BalancingSlotsCompleted( )
 	return m_CFG->GetString( "lang_0198", "lang_0198" );
 }
 
-QString CLanguage :: PlayerWasKickedForFurthestScore( QString name, QString score, QString average )
+QString CLanguage :: PlayerWasKickedForFurthestScore( const QString &name, const QString &score, const QString &average )
 {
 	QString Out = m_CFG->GetString( "lang_0199", "lang_0199" );
 	Out.replace("$NAME$", name);
@@ -1419,14 +1419,14 @@ QString CLanguage :: WasDroppedDesync( )
 	return m_CFG->GetString( "lang_0202", "lang_0202" );
 }
 
-QString CLanguage :: WasKickedForHavingLowestScore( QString score )
+QString CLanguage :: WasKickedForHavingLowestScore( const QString &score )
 {
 	QString Out = m_CFG->GetString( "lang_0203", "lang_0203" );
 	Out.replace("$SCORE$", score);
 	return Out;
 }
 
-QString CLanguage :: PlayerWasKickedForLowestScore( QString name, QString score )
+QString CLanguage :: PlayerWasKickedForLowestScore( const QString &name, const QString &score )
 {
 	QString Out = m_CFG->GetString( "lang_0204", "lang_0204" );
 	Out.replace("$NAME$", name);
@@ -1444,7 +1444,7 @@ QString CLanguage :: CountDownAbortedSomeoneLeftRecently( )
 	return m_CFG->GetString( "lang_0206", "lang_0206" );
 }
 
-QString CLanguage :: UnableToCreateGameMustEnforceFirst( QString gamename )
+QString CLanguage :: UnableToCreateGameMustEnforceFirst( const QString &gamename )
 {
 	QString Out = m_CFG->GetString( "lang_0207", "lang_0207" );
 	Out.replace("$GAMENAME$", gamename);
@@ -1456,42 +1456,42 @@ QString CLanguage :: UnableToLoadReplaysOutside( )
 	return m_CFG->GetString( "lang_0208", "lang_0208" );
 }
 
-QString CLanguage :: LoadingReplay( QString file )
+QString CLanguage :: LoadingReplay( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0209", "lang_0209" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: UnableToLoadReplayDoesntExist( QString file )
+QString CLanguage :: UnableToLoadReplayDoesntExist( const QString &file )
 {
 	QString Out = m_CFG->GetString( "lang_0210", "lang_0210" );
 	Out.replace("$FILE$", file);
 	return Out;
 }
 
-QString CLanguage :: CommandTrigger( QString trigger )
+QString CLanguage :: CommandTrigger( const QString &trigger )
 {
 	QString Out = m_CFG->GetString( "lang_0211", "lang_0211" );
 	Out.replace("$TRIGGER$", trigger);
 	return Out;
 }
 
-QString CLanguage :: CantEndGameOwnerIsStillPlaying( QString owner )
+QString CLanguage :: CantEndGameOwnerIsStillPlaying( const QString &owner )
 {
 	QString Out = m_CFG->GetString( "lang_0212", "lang_0212" );
 	Out.replace("$OWNER$", owner);
 	return Out;
 }
 
-QString CLanguage :: CantUnhostGameOwnerIsPresent( QString owner )
+QString CLanguage :: CantUnhostGameOwnerIsPresent( const QString &owner )
 {
 	QString Out = m_CFG->GetString( "lang_0213", "lang_0213" );
 	Out.replace("$OWNER$", owner);
 	return Out;
 }
 
-QString CLanguage :: WasAutomaticallyDroppedAfterSeconds( QString seconds )
+QString CLanguage :: WasAutomaticallyDroppedAfterSeconds( const QString &seconds )
 {
 	QString Out = m_CFG->GetString( "lang_0214", "lang_0214" );
 	Out.replace("$SECONDS$", seconds);
@@ -1503,7 +1503,7 @@ QString CLanguage :: HasLostConnectionTimedOutGProxy( )
 	return m_CFG->GetString( "lang_0215", "lang_0215" );
 }
 
-QString CLanguage :: HasLostConnectionSocketErrorGProxy( QString error )
+QString CLanguage :: HasLostConnectionSocketErrorGProxy( const QString &error )
 {
 	QString Out = m_CFG->GetString( "lang_0216", "lang_0216" );
 	Out.replace("$ERROR$", error);
@@ -1515,7 +1515,7 @@ QString CLanguage :: HasLostConnectionClosedByRemoteHostGProxy( )
 	return m_CFG->GetString( "lang_0217", "lang_0217" );
 }
 
-QString CLanguage :: WaitForReconnectSecondsRemain( QString seconds )
+QString CLanguage :: WaitForReconnectSecondsRemain( const QString &seconds )
 {
 	QString Out = m_CFG->GetString( "lang_0218", "lang_0218" );
 	Out.replace("$SECONDS$", seconds);
@@ -1527,7 +1527,7 @@ QString CLanguage :: WasUnrecoverablyDroppedFromGProxy( )
 	return m_CFG->GetString( "lang_0219", "lang_0219" );
 }
 
-QString CLanguage :: PlayerReconnectedWithGProxy( QString name )
+QString CLanguage :: PlayerReconnectedWithGProxy( const QString &name )
 {
 	QString Out = m_CFG->GetString( "lang_0220", "lang_0220" );
 	Out.replace("$NAME$", name);
