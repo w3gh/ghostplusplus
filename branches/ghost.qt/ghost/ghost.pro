@@ -5,7 +5,8 @@ QT += network \
 	sql
 QT -= gui
 TARGET = ghost
-CONFIG += console debug
+CONFIG += console \
+	debug
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += util.cpp \
@@ -39,26 +40,17 @@ SOURCES += util.cpp \
 	bnetprotocol.cpp \
 	bnet.cpp \
 	bncsutilinterface.cpp \
-	main.cpp
+	main.cpp \
+	mpqarchive.cpp \
+	mpqfile.cpp
 OTHER_FILES += w3g_format.txt \
 	w3g_actions.txt \
 	ghost.vcproj
-INCLUDEPATH += ../StormLib \
-        ../bncsutil/src \
-        ../zlib/include
-LIBS += -L../StormLib/stormlib \
-        -L../bncsutil/src/bncsutil \
-        -L. \
-        -L"../bncsutil/vc8_build/Release MySQL" \
-        -lbncsutil
- win32 {
-    LIBS += -lStormLibRAS
-}
-
-!win32 {
-    LIBS += -lStorm
-}
-
+INCLUDEPATH += ../bncsutil/src \
+	../zlib/include
+LIBS += -L../bncsutil/src/bncsutil \
+	-L"../bncsutil/vc8_build/Release MySQL" \
+	-lbncsutil
 macx {
 	LIBS += -framework CoreFoundation -framework CoreServices
 	LIBS += -L/usr/lib -lbz2 -lz
@@ -75,7 +67,6 @@ HEADERS += util.h \
 	replay.h \
 	packed.h \
 	next_combination.h \
-	ms_stdint.h \
 	map.h \
 	language.h \
 	includes.h \
@@ -98,4 +89,7 @@ HEADERS += util.h \
 	bnlsclient.h \
 	bnetprotocol.h \
 	bnet.h \
-	bncsutilinterface.h
+	bncsutilinterface.h \
+	mpgarchive.h \
+	mpqarchive.h \
+	mpqfile.h
