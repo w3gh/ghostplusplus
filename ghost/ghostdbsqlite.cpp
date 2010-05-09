@@ -1335,7 +1335,7 @@ quint32 CGHostDBSQLite :: W3MMDPlayerAdd( QString category, quint32 gameid, quin
 	return RowID;
 }
 
-bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints )
+bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints )
 {
 	if( var_ints.isEmpty( ) )
 		return false;
@@ -1343,7 +1343,7 @@ bool CGHostDBSQLite :: W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints 
 	bool Success = true;
 	sqlite3_stmt *Statement = NULL;
 
-	for( QMap<VarP,int32_t> :: const_iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
+	for( QMap<VarP,quint32> :: const_iterator i = var_ints.begin( ); i != var_ints.end( ); i++ )
 	{
 		if( !Statement )
 			m_DB->Prepare( "INSERT INTO w3mmdvars ( gameid, pid, varname, value_int ) VALUES ( ?, ?, ?, ? )", (void **)&Statement );
@@ -1622,7 +1622,7 @@ CCallableW3MMDPlayerAdd *CGHostDBSQLite :: ThreadedW3MMDPlayerAdd( QString categ
 	return Callable;
 }
 
-CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints )
+CCallableW3MMDVarAdd *CGHostDBSQLite :: ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints )
 {
 	CCallableW3MMDVarAdd *Callable = new CCallableW3MMDVarAdd( gameid, var_ints );
 	Callable->SetResult( W3MMDVarAdd( gameid, var_ints ) );

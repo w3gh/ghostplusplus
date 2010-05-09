@@ -39,7 +39,7 @@ private:
 	QMap<quint32,bool> m_FlagsLeaver;			// pid -> leaver flag (e.g. 0 -> true) --- note: will only be present if true
 	QMap<quint32,bool> m_FlagsPracticing;		// pid -> practice flag (e.g. 0 -> true) --- note: will only be present if true
 	QMap<QByteArray,QByteArray> m_DefVarPs;				// varname -> value type (e.g. "kills" -> "int")
-	QMap<VarP,int32_t> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
+	QMap<VarP,quint32> m_VarPInts;				// pid,varname -> value (e.g. 0,"kills" -> 5)
 	QMap<VarP,double> m_VarPReals;				// pid,varname -> value (e.g. 0,"x" -> 0.8)
 	QMap<VarP,QByteArray> m_VarPStrings;				// pid,varname -> value (e.g. 0,"hero" -> "heroname")
 	QMap<QByteArray, QList<QByteArray> > m_DefEvents;	// event -> vector of arguments + format

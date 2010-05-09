@@ -237,7 +237,7 @@ public:
 	virtual bool FromAdd( quint32 ip1, quint32 ip2, QString country );
 	virtual bool DownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual quint32 W3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
-	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints );
 	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
 	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
 
@@ -264,7 +264,7 @@ public:
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( QString name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
 };

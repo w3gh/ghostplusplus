@@ -176,7 +176,7 @@ quint32 CGHostDB :: W3MMDPlayerAdd( QString /*category*/, quint32 /*gameid*/, qu
 	return 0;
 }
 
-bool CGHostDB :: W3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
+bool CGHostDB :: W3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,quint32> /*var_ints*/ )
 {
 	return false;
 }
@@ -296,7 +296,7 @@ CCallableW3MMDPlayerAdd *CGHostDB :: ThreadedW3MMDPlayerAdd( QString /*category*
 	return NULL;
 }
 
-CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,int32_t> /*var_ints*/ )
+CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( quint32 /*gameid*/, QMap<VarP,quint32> /*var_ints*/ )
 {
 	return NULL;
 }

@@ -110,7 +110,7 @@ public:
 	virtual bool FromAdd( quint32 ip1, quint32 ip2, QString country );
 	virtual bool DownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual quint32 W3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
-	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints );
 	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
 	virtual bool W3MMDVarAdd( quint32 gameid, QMap<VarP,QString> var_strings );
 
@@ -137,7 +137,7 @@ public:
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( QString map, quint32 mapsize, QString name, QString ip, quint32 spoofed, QString spoofedrealm, quint32 downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( QString category, QString name, QString server );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( QString category, quint32 gameid, quint32 pid, QString name, QString flag, quint32 leaver, quint32 practicing );
-	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,int32_t> var_ints );
+	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,quint32> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,double> var_reals );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( quint32 gameid, QMap<VarP,QByteArray> var_strings );
 };
@@ -551,7 +551,7 @@ class CCallableW3MMDVarAdd : public CBaseCallable
 {
 protected:
 	quint32 m_GameID;
-	QMap<VarP,int32_t> m_VarInts;
+	QMap<VarP,quint32> m_VarInts;
 	QMap<VarP,double> m_VarReals;
 	QMap<VarP,QString> m_VarStrings;
 
@@ -565,7 +565,7 @@ protected:
 	bool m_Result;
 
 public:
-	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,int32_t> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
+	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,quint32> nVarInts ) : CBaseCallable( ), m_GameID( nGameID ), m_VarInts( nVarInts ), m_ValueType( VALUETYPE_INT ), m_Result( false ) { }
 	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,double> nVarReals ) : CBaseCallable( ), m_GameID( nGameID ), m_VarReals( nVarReals ), m_ValueType( VALUETYPE_REAL ), m_Result( false ) { }
 	CCallableW3MMDVarAdd( quint32 nGameID, QMap<VarP,QString> nVarStrings ) : CBaseCallable( ), m_GameID( nGameID ), m_VarStrings( nVarStrings ), m_ValueType( VALUETYPE_STRING ), m_Result( false ) { }
 	virtual ~CCallableW3MMDVarAdd( );
