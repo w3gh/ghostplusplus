@@ -41,8 +41,8 @@ class CIncomingChatPlayer;
 class CIncomingMapSize;
 class CCallableScoreCheck;
 class CGHost;
+QT_FORWARD_DECLARE_CLASS(QTcpServer)
 
-#include <QTcpServer>
 #include <QTimer>
 #include <QSet>
 #include <QStringList>

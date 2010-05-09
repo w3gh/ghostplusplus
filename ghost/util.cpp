@@ -25,6 +25,7 @@
 #include <QRegExp>
 #include <QtEndian>
 #include <QDir>
+#include <QTextStream>
 
 const QByteArray Util :: emptyByteArray16( 2, 0 );
 const QByteArray Util :: emptyByteArray32( 4, 0 );

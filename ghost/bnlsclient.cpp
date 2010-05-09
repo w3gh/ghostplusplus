@@ -24,6 +24,8 @@
 #include "bnlsprotocol.h"
 #include "bnlsclient.h"
 
+#include <QHostAddress>
+
 //
 // CBNLSClient
 //

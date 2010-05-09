@@ -22,8 +22,10 @@
 #define GHOST_H
 
 #include "includes.h"
-#include <QTcpServer>
-#include <QUdpSocket>
+
+#include <QTimer>
+#include <QTime>
+#include <QList>
 
 //
 // CGHost
@@ -41,10 +43,10 @@ class CLanguage;
 class CMap;
 class CSaveGame;
 class CConfig;
-
-#include <QTimer>
-#include <QTime>
-#include <QList>
+class ICommandProvider;
+QT_FORWARD_DECLARE_CLASS(QDir)
+QT_FORWARD_DECLARE_CLASS(QUdpSocket)
+QT_FORWARD_DECLARE_CLASS(QTcpServer)
 
 class CGHost : public QObject
 {
@@ -62,7 +64,9 @@ public slots:
 	void EventGameDeleted();
 	void EventAdminGameDeleted();
 	void CreateReconnectServer();
-
+private:
+	void LoadPlugin( QObject *plugin );
+	void LoadPlugins( QDir path );
 public:
 	QTime m_LastAutoHostTime;
 	QTimer m_CallableUpdateTimer, m_AutoHostTimer;
@@ -71,6 +75,7 @@ public:
 	CGPSProtocol *m_GPSProtocol;
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's
+	QList<ICommandProvider *> m_Commands;		// list of plugins providing commands
 	QList<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
 	CBaseGame *m_CurrentGame;				// this game is still in the lobby state
 	CAdminGame *m_AdminGame;				// this "fake game" allows an admin who knows the password to control the bot from the local network

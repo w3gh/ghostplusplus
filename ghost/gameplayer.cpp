@@ -33,6 +33,8 @@
 // CPotentialPlayer
 //
 
+#include <QHostAddress>
+#include <QTcpSocket>
 #include <QAbstractSocket>
 
 CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket )

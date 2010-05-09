@@ -34,8 +34,8 @@ public:
 
 	static QByteArray fromUInt16(const quint16 &value);
 	static QByteArray fromUInt32(const quint32 &value);
-	static const QByteArray &EmptyData16( ) {  return emptyByteArray16; }
-	static const QByteArray &EmptyData32( ) {  return emptyByteArray32; }
+	static const QByteArray *EmptyData16( ) {  return &emptyByteArray16; }
+	static const QByteArray *EmptyData32( ) {  return &emptyByteArray32; }
 
 	static QByteArray reverse(const QByteArray &b);
 private:

@@ -39,6 +39,8 @@
 #include <QFile>
 #include <QStringList>
 #include <QRegExp>
+#include <QUdpSocket>
+#include <QTcpServer>
 
 #include "next_combination.h"
 
