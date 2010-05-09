@@ -44,6 +44,7 @@
 #include <QFile>
 #include <QDir>
 #include <QStringList>
+#include <QUdpSocket>
 
 //
 // sorting classes

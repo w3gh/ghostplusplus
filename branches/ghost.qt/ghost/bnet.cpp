@@ -39,6 +39,7 @@
 #include <QRegExp>
 #include <QDir>
 #include <QStringList>
+#include <QHostAddress>
 
 //
 // CBNET
@@ -2306,8 +2307,8 @@ void CBNET :: QueueGameRefresh( unsigned char state, const QString &gameName, co
 															state,
 															Util::fromUInt32( MapGameType),
 															map->GetMapGameFlags( ),
-															m_GHost->m_Reconnect ? FakeMapWidth : Util::EmptyData16(),
-															m_GHost->m_Reconnect ? FakeMapHeight : Util::EmptyData16(),
+															m_GHost->m_Reconnect ? FakeMapWidth : *Util::EmptyData16(),
+															m_GHost->m_Reconnect ? FakeMapHeight : *Util::EmptyData16(),
 															gameName,
 															newHostName,
 															upTime,

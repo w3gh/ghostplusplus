@@ -56,7 +56,8 @@ macx {
 	LIBS += -L. -L/usr/lib -lbz2 -lz
 }
 
-HEADERS += util.h \
+HEADERS += interfaces.h \
+	util.h \
 	statsw3mmd.h \
 	statsdota.h \
 	stats.h \

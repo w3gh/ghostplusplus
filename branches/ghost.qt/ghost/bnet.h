@@ -21,9 +21,12 @@
 #ifndef BNET_H
 #define BNET_H
 
-//
-// CBNET
-//
+#include "includes.h"
+#include <QTimer>
+#include <QStringList>
+#include <QTime>
+
+class QTcpSocket;
 
 class CCommandPacket;
 class CBNCSUtilInterface;
@@ -48,11 +51,6 @@ class CSaveGame;
 class CBaseGame;
 class CMap;
 
-#include "includes.h"
-#include <QTcpSocket>
-#include <QTimer>
-#include <QStringList>
-
 typedef pair<QString,CCallableAdminCount *> PairedAdminCount;
 typedef pair<QString,CCallableAdminAdd *> PairedAdminAdd;
 typedef pair<QString,CCallableAdminRemove *> PairedAdminRemove;
@@ -62,8 +60,9 @@ typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
 typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
-
-#include <QTime>
+//
+// CBNET
+//
 
 class CBNET : public QObject
 {

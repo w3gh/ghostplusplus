@@ -38,6 +38,7 @@
 #include "game_base.h"
 #include "game.h"
 #include "game_admin.h"
+#include "interfaces.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -46,6 +47,10 @@
 
 #include <QHostInfo>
 #include <QCoreApplication>
+#include <QPluginLoader>
+#include <QDir>
+#include <QUdpSocket>
+#include <QTcpServer>
 
 
 //
@@ -55,6 +60,16 @@
 CGHost :: CGHost( CConfig *CFG, QString configFile )
 	: m_ConfigFile(configFile)
 {
+	foreach( QObject *plugin, QPluginLoader::staticInstances() )
+	{
+		LoadPlugin( plugin );
+	}
+	QDir pluginsDir = QDir( qApp->applicationDirPath() );
+	QString cfgPluginDir = CFG->GetString( "bot_plugindir", "plugins" );
+
+	pluginsDir.cd( cfgPluginDir );
+	LoadPlugins( pluginsDir );
+
 	m_UDPSocket = new QUdpSocket(this);
 	m_UDPSocket->setProperty("target", CFG->GetString( "udp_broadcasttarget", QString( ) ) );
 	m_UDPSocket->setProperty("dontroute", CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
@@ -342,6 +357,46 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 		for (QList<CBNET *>::const_iterator i = m_BNETs.begin(); i != m_BNETs.end(); ++i)
 			(*i)->socketConnect();
 	}
+}
+
+void CGHost :: LoadPlugin( QObject *plugin )
+{
+	bool validPlugin = false;
+	
+	/*IGHostPlugin *iPlugin = qobject_cast<IGHostPlugin *>( plugin );
+	if( !iPlugin )
+	{
+		CONSOLE_Print( "[PLUGIN] ERROR: Plugin does not implement IGHostPlugin" );
+		return;
+	}*/
+	
+	ICommandProvider *iCmd = qobject_cast<ICommandProvider *>( plugin );
+	if( iCmd )
+	{
+		CONSOLE_Print( "[PLUGIN] Found CommandProvider" );
+		validPlugin = true;
+		m_Commands.append( iCmd );
+	}
+	
+	if( !validPlugin )
+		CONSOLE_Print( "[PLUGIN] WARNING: plugin did not contain valid interfaces!" );
+}
+
+void CGHost :: LoadPlugins( QDir path )
+{
+	CONSOLE_Print( "[PLUGIN] Loading plugins from [" + path.absolutePath() + "]" );
+	
+	foreach( QString fileName, path.entryList( QDir::Files ) ) {
+        QPluginLoader loader( path.absoluteFilePath( fileName ) );
+        QObject *plugin = loader.instance();
+        if( plugin )
+		{
+			CONSOLE_Print( "[PLUGIN] Loading plugin [" + fileName + "]" );
+			LoadPlugin( plugin );
+		}
+		else
+			CONSOLE_Print( "[PLUGIN] Ignoring non-plugin file [" + fileName + "]" );
+    }
 }
 
 void CGHost::EventAdminGameDeleted()
