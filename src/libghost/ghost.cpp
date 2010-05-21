@@ -314,7 +314,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 		if( Locale == "system" )
 		{
-#ifdef WIN32
+#ifdef _MSC_VER
 			LocaleID = GetUserDefaultLangID( );
 #else
 			LocaleID = 1033;
