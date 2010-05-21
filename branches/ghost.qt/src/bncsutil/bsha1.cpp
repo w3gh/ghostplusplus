@@ -139,7 +139,7 @@ MEXP(void) calcHashBuf(const char* input, unsigned int length, char* result) {
 
 #else
 
-MEXP(void) calcHashBuf(const char* input, size_t length, char* result) {
+void calcHashBuf(const char* input, size_t length, char* result) {
     int i;
     uint32_t a, b, c, d, e, g;
 	uint32_t* ldata;

@@ -8,7 +8,7 @@
 #define BWIN 1
 #include <windows.h>
 
-typedef std::map<const void*, HANDLE> mapping_map;
+typedef std::map<LPVOID, HANDLE> mapping_map;
 #else
 #define BWIN 0
 #include <stdio.h>
@@ -57,7 +57,7 @@ file_t file_open(const char* filename, unsigned int mode)
 		open_mode = CREATE_ALWAYS;
 	}
 	
-	file = CreateFile(filename, access, share_mode, NULL, open_mode,
+        file = CreateFileA(filename, access, share_mode, NULL, open_mode,
 		FILE_ATTRIBUTE_NORMAL, NULL);
 	
 	if (file == INVALID_HANDLE_VALUE) {
@@ -83,7 +83,11 @@ file_t file_open(const char* filename, unsigned int mode)
 		delete data;
 		return (file_t) 0;
 	}
+#ifdef _MSC_VER
 	strcpy_s((char*) data->filename, filename_buf_len, filename);
+#else
+        strncpy((char*) data->filename, filename, filename_buf_len);
+#endif
 	
 	data->f = file;
 	
@@ -164,7 +168,7 @@ void* file_map(file_t file, size_t len, off_t offset)
 	return base;
 }
 
-void file_unmap(file_t file, const void* base)
+void file_unmap(file_t file, void* base)
 {
 	mapping_map::iterator item = file->mappings.find(base);
 	HANDLE mapping;

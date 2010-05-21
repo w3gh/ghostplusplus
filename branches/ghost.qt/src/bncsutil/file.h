@@ -53,7 +53,7 @@ size_t file_write(file_t file, const void* ptr, size_t size,
 size_t file_size(file_t file);
 
 void* file_map(file_t file, size_t len, off_t offset);
-void file_unmap(file_t file, const void* mapping);
+void file_unmap(file_t file, void* mapping);
 
 #ifdef __cplusplus
 }

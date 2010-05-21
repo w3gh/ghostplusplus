@@ -16,8 +16,7 @@ INCLUDEPATH +=	.. \
 				../../include \
 				../../include/mysql
 LIBS += -L../../src/lib
-LIBS += -lbncsutil \
-		-lgmp
+LIBS += -lbncsutil -lgmp
 		
 macx {
 	LIBS += -framework CoreFoundation -framework CoreServices

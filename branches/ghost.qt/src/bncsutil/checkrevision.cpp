@@ -358,16 +358,16 @@ MEXP(int) getExeInfo(const char* file_name, char* exe_info,
 	switch (platform) {
 		case BNCSUTIL_PLATFORM_X86:
 #ifdef MOS_WINDOWS				
-			infoSize = GetFileVersionInfoSize(file_name, &bytesRead);
+                        infoSize = GetFileVersionInfoSizeA(file_name, &bytesRead);
 			if (infoSize == 0)
 				return 0;
 			buf = (LPBYTE) VirtualAlloc(NULL, infoSize, MEM_COMMIT,
 										PAGE_READWRITE);
 			if (buf == NULL)
 				return 0;
-			if (GetFileVersionInfo(file_name, NULL, infoSize, buf) == FALSE)
+                        if (GetFileVersionInfoA(file_name, NULL, infoSize, buf) == FALSE)
 				return 0;
-			if (!VerQueryValue(buf, "\\", (LPVOID*) &ffi, (PUINT) &infoSize))
+                        if (!VerQueryValueA(buf, "\\", (LPVOID*) &ffi, (PUINT) &infoSize))
 				return 0;
 			
 			*version =
@@ -444,7 +444,7 @@ MEXP(int) getExeInfo(const char* file_name, char* exe_info,
 	}
 	
 #ifdef MOS_WINDOWS
-	hFile = CreateFile(file_name, GENERIC_READ, FILE_SHARE_READ, NULL,
+        hFile = CreateFileA(file_name, GENERIC_READ, FILE_SHARE_READ, NULL,
 					   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		return 0;

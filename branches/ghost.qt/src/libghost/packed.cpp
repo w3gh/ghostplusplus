@@ -23,7 +23,7 @@
 #include "crc32.h"
 #include "packed.h"
 
-#include <zlib.h>
+#include <zlib/zlib.h>
 
 // we can't use zlib's uncompress function because it expects a complete compressed buffer
 // however, we're going to be passing it chunks of incomplete data

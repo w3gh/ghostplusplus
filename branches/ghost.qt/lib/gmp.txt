@@ -1,0 +1,2 @@
+beware, old version 4.1.2 of libgmp (found it precompiled online, should be replaced with a more recent one)
+Remember to replace the header in ../include too!

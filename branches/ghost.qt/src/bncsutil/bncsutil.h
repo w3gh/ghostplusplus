@@ -25,6 +25,8 @@
 
 #ifndef BNCSUTIL_BNCSUTIL_H_INCLUDED
 #define BNCSUTIL_BNCSUTIL_H_INCLUDED
+#define uint32_t quint32
+#include <QtGlobal>
 
 #include <bncsutil/mutil.h> /* Myriad Utility Header */
 #include <bncsutil/checkrevision.h> /* CheckRevision / EXE info */
