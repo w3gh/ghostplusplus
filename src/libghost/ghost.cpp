@@ -53,6 +53,7 @@
 #include <QUdpSocket>
 #include <QTcpServer>
 #include <QThreadStorage>
+#include <QNetworkInterface>
 
 // TODOTODO: remove this crappy implementation and replace it with something monotonic :)
 static bool timerStarted=FALSE;
@@ -75,8 +76,6 @@ quint32 GetTicks()
 
 void CONSOLE_Print( QString message )
 {
-	cout << message.toStdString() << endl;
-	
 	if( currentGHost.hasLocalData( ) )
 		currentGHost.localData()->LogInfo( message );
 
@@ -191,7 +190,7 @@ void CGHost :: LoadSavegame( const QString &path )
 void CGHost :: Log( const QString &message, int level )
 {
 	// TODO: handle logging level
-	CONSOLE_Print( message );
+	cout << message.toStdString() << endl;
 }
 
 void CGHost :: LogInfo( const QString &message )
@@ -317,22 +316,28 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	QObject::connect(m_DBLocal, SIGNAL(error(QString)), this, SLOT(EventDatabaseError(QString)));
 	QObject::connect(m_DB, SIGNAL(error(QString)), this, SLOT(EventDatabaseError(QString)));
 
+	QString HostName = QHostInfo::localHostName();
+
+	CONSOLE_Print( "[GHOST] local hostname is [" + HostName + "]" );
+
 	// get a list of local IP addresses
 	// this list is used elsewhere to determine if a player connecting to the bot is local or not
 
 	CONSOLE_Print( "[GHOST] attempting to find local IP addresses" );
 
-	QString HostName = QHostInfo::localHostName();
-
-	CONSOLE_Print( "[GHOST] local hostname is [" + HostName + "]" );
-
-	QHostInfo info = QHostInfo::fromName(HostName);
-
-	for (int i = 0; i < info.addresses().size(); i++)
-	{
-		CONSOLE_Print( "[GHOST] local IP address #" + QString::number( i + 1 ) + " is [" + info.addresses().at(i).toString() + "]" );
-		m_LocalAddresses.push_back( Util::fromUInt32(info.addresses().at(i).toIPv4Address() ) );
-	}
+	 QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+	 // use non-localhost IPv4 addresses
+	 // TODO: check if address is LAN-address?
+	 for (int i = 0; i < ipAddressesList.size(); ++i) {
+		 if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
+			 ipAddressesList.at(i).toIPv4Address()) {
+			 CONSOLE_Print( "[GHOST] local IP address found: " + ipAddressesList.at( i ).toString() );
+			 m_LocalAddresses.push_back( Util::fromUInt32( ipAddressesList.at( i ).toIPv4Address( ) ) );
+		 }
+	 }
+	 // if we did not find one, use IPv4 localhost
+	 if (m_LocalAddresses.isEmpty())
+		 m_LocalAddresses.push_back( Util::fromUInt32( QHostAddress(QHostAddress::LocalHost).toIPv4Address( ) ) );
 
 	m_Language = NULL;
 	m_Exiting = false;

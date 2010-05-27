@@ -55,12 +55,8 @@ CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAl
 	// todotodo: append path seperator to Warcraft3Path if needed
 	m_Retries = 0;
 	m_GHost = nGHost;
-	m_Socket = new QTcpSocket( );
-
-	QObject::connect(m_Socket, SIGNAL(connected()), this, SLOT(socketConnected()));
-	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
-	QObject::connect(m_Socket, SIGNAL(readyRead()), this, SLOT(socketDataReady()));
-	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
+	m_Socket = NULL;
+	ResetSocket( );
 
 	m_CallableUpdateTimer.setInterval(200);
 	m_CallableUpdateTimer.start();
@@ -69,7 +65,7 @@ CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAl
 	m_BanListRefreshTimer.setInterval(3600000);
 	m_BanListRefreshTimer.start();
 	m_NULLTimer.setInterval(60000);
-	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(timeout_NULL()));
+	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePacket()));
 
 	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
 	QObject::connect(&m_AdminListUpdateTimer, SIGNAL(timeout()), this, SLOT(EventUpdateAdminList()));
@@ -228,45 +224,47 @@ void CBNET::socketConnect()
 	m_FirstConnect = false;
 	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
 	m_GHost->EventBNETConnecting( this );
+	// connecting is not blocking anymore when using Qt sockets
+	m_Socket->connectToHost( m_Server, 6112 );
 
-	if( m_ServerIP.isEmpty( ) )
-		m_Socket->connectToHost( m_Server, 6112 );
 
-	else
-	{
-		// use cached server IP address since resolving takes time and is blocking
-
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using cached server IP address " + m_ServerIP );
-		m_Socket->connectToHost( m_ServerIP, 6112 );
-	}
-
-	if (m_Socket->waitForConnected(15000))
-	{
-		m_ServerIP = m_Socket->peerAddress().toString();
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] resolved and cached server IP address " + m_ServerIP );
-	}
-
-	else
-	{
-		// the connection attempt timed out (15 seconds)
-
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connect timed out" );
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
-		m_GHost->EventBNETConnectTimedOut( this );
-		m_Socket->abort();
-		m_Socket->reset();
-		m_Socket->deleteLater();
-		m_Socket = NULL;
-		m_LastDisconnectedTime = GetTime( );
-		QTimer::singleShot(90000, this, SLOT(socketConnect()));
-		m_NULLTimer.stop();
-	}
+//	if( m_ServerIP.isEmpty( ) )
+//		m_Socket->connectToHost( m_Server, 6112 );
+//	else
+//	{
+//		// use cached server IP address since resolving takes time and is blocking
+//
+//		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using cached server IP address " + m_ServerIP );
+//		m_Socket->connectToHost( m_ServerIP, 6112 );
+//	}
+//
+//	if (m_Socket->waitForConnected(15000))
+//	{
+//		m_ServerIP = m_Socket->peerAddress().toString();
+//		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] resolved and cached server IP address " + m_ServerIP );
+//	}
+//
+//	else
+//	{
+//		// the connection attempt timed out (15 seconds)
+//
+//		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connect timed out" );
+//		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+//		m_GHost->EventBNETConnectTimedOut( this );
+//		m_Socket->abort();
+//		m_Socket->reset();
+//		m_Socket->deleteLater();
+//		m_Socket = NULL;
+//		m_LastDisconnectedTime = GetTime( );
+//		QTimer::singleShot(90000, this, SLOT(socketConnect()));
+//		m_NULLTimer.stop();
+//	}
 
 	m_LastConnectionAttemptTime = GetTime( );
 	m_Retries++;
 }
 
-void CBNET::timeout_NULL()
+void CBNET::sendKeepAlivePacket()
 {
 	m_Socket->write( m_Protocol->SEND_SID_NULL( ) );
 }
@@ -298,8 +296,8 @@ void CBNET::socketDisconnected()
 	m_BNLSClient = NULL;
 	m_BNCSUtil->Reset( m_UserName, m_UserPassword );
 	m_Socket->abort();
-	m_Socket->deleteLater();
-	m_Socket = NULL;
+	//m_Socket->deleteLater();
+	//m_Socket = NULL;
 	m_LastDisconnectedTime = GetTime( );
 	m_LoggedIn = false;
 	m_InChat = false;
@@ -312,7 +310,7 @@ void CBNET::socketDisconnected()
 		m_Retries = 0;
 		return;
 	}
-	ResetSocket( );
+	//ResetSocket( );
 	QTimer::singleShot(90000, this, SLOT(socketConnect()));
 }
 

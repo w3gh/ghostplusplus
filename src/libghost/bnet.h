@@ -79,7 +79,7 @@ public slots:
 	void socketConnect();
 	void socketError();
 	void sendWardenResponse(const QByteArray & response);
-	void timeout_NULL();
+	void sendKeepAlivePacket();
 
 	void EventCallableUpdateTimeout();
 	void EventUpdateAdminList();
