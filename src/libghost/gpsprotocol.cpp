@@ -42,7 +42,7 @@ CGPSProtocol :: ~CGPSProtocol( )
 // SEND FUNCTIONS //
 ////////////////////
 
-QByteArray CGPSProtocol :: SEND_GPSC_INIT( quint32 version )
+QByteArray CGPSProtocol :: SEND_GPSC_INIT( quint32 version ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -54,7 +54,7 @@ QByteArray CGPSProtocol :: SEND_GPSC_INIT( quint32 version )
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSC_RECONNECT( unsigned char PID, quint32 reconnectKey, quint32 lastPacket )
+QByteArray CGPSProtocol :: SEND_GPSC_RECONNECT( unsigned char PID, quint32 reconnectKey, quint32 lastPacket ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -68,7 +68,7 @@ QByteArray CGPSProtocol :: SEND_GPSC_RECONNECT( unsigned char PID, quint32 recon
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSC_ACK( quint32 lastPacket )
+QByteArray CGPSProtocol :: SEND_GPSC_ACK( quint32 lastPacket ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -80,7 +80,7 @@ QByteArray CGPSProtocol :: SEND_GPSC_ACK( quint32 lastPacket )
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSS_INIT( quint16 reconnectPort, unsigned char PID, quint32 reconnectKey, unsigned char numEmptyActions )
+QByteArray CGPSProtocol :: SEND_GPSS_INIT( quint16 reconnectPort, unsigned char PID, quint32 reconnectKey, unsigned char numEmptyActions ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -95,7 +95,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_INIT( quint16 reconnectPort, unsigned char 
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSS_RECONNECT( quint32 lastPacket )
+QByteArray CGPSProtocol :: SEND_GPSS_RECONNECT( quint32 lastPacket ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -107,7 +107,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_RECONNECT( quint32 lastPacket )
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSS_ACK( quint32 lastPacket )
+QByteArray CGPSProtocol :: SEND_GPSS_ACK( quint32 lastPacket ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -119,7 +119,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_ACK( quint32 lastPacket )
 	return packet;
 }
 
-QByteArray CGPSProtocol :: SEND_GPSS_REJECT( quint32 reason )
+QByteArray CGPSProtocol :: SEND_GPSS_REJECT( quint32 reason ) const
 {
 	QByteArray packet;
 	packet.push_back( GPS_HEADER_CONSTANT );
@@ -135,7 +135,7 @@ QByteArray CGPSProtocol :: SEND_GPSS_REJECT( quint32 reason )
 // OTHER FUNCTIONS //
 /////////////////////
 
-bool CGPSProtocol :: AssignLength( QByteArray &content )
+bool CGPSProtocol :: AssignLength( QByteArray &content ) const
 {
 	// insert the actual length of the content array into bytes 3 and 4 (indices 2 and 3)
 
@@ -152,7 +152,7 @@ bool CGPSProtocol :: AssignLength( QByteArray &content )
 	return false;
 }
 
-bool CGPSProtocol :: ValidateLength( QByteArray &content )
+bool CGPSProtocol :: ValidateLength( QByteArray &content ) const
 {
 	// verify that bytes 3 and 4 (indices 2 and 3) of the content array describe the length
 

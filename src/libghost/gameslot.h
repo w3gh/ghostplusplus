@@ -59,15 +59,15 @@ public:
 	CGameSlot( unsigned char nPID, unsigned char nDownloadStatus, unsigned char nSlotStatus, unsigned char nComputer, unsigned char nTeam, unsigned char nColour, unsigned char nRace, unsigned char nComputerType = 1, unsigned char nHandicap = 100 );
 	~CGameSlot( );
 
-	unsigned char GetPID( )				{ return m_PID; }
-	unsigned char GetDownloadStatus( )	{ return m_DownloadStatus; }
-	unsigned char GetSlotStatus( )		{ return m_SlotStatus; }
-	unsigned char GetComputer( )		{ return m_Computer; }
-	unsigned char GetTeam( )			{ return m_Team; }
-	unsigned char GetColour( )			{ return m_Colour; }
-	unsigned char GetRace( )			{ return m_Race; }
-	unsigned char GetComputerType( )	{ return m_ComputerType; }
-	unsigned char GetHandicap( )		{ return m_Handicap; }
+	unsigned char GetPID( ) const				{ return m_PID; }
+	unsigned char GetDownloadStatus( ) const	{ return m_DownloadStatus; }
+	unsigned char GetSlotStatus( ) const		{ return m_SlotStatus; }
+	unsigned char GetComputer( ) const		{ return m_Computer; }
+	unsigned char GetTeam( ) const			{ return m_Team; }
+	unsigned char GetColour( ) const			{ return m_Colour; }
+	unsigned char GetRace( ) const			{ return m_Race; }
+	unsigned char GetComputerType( ) const	{ return m_ComputerType; }
+	unsigned char GetHandicap( ) const		{ return m_Handicap; }
 
 	void SetPID( unsigned char nPID )							{ m_PID = nPID; }
 	void SetDownloadStatus( unsigned char nDownloadStatus )		{ m_DownloadStatus = nDownloadStatus; }

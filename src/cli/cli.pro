@@ -15,7 +15,13 @@ INCLUDEPATH +=	../ \
 				../libghost
 #	../zlib/include
 LIBS +=	-L../../lib \
-		-lghost -lbncsutil
+		-lghost -lbncsutil -lgmp
+
+macx {
+	LIBS += -framework CoreFoundation -framework CoreServices
+	QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.5.sdk
+	LIBS += -L/usr/lib -lbz2 -lz
+}
 
 #HEADERS += ghost.h
 

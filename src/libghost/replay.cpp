@@ -78,8 +78,8 @@ void CReplay :: AddTimeSlot2( QQueue<CIncomingAction *> actions )
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		Block.append(Util::fromUInt16(Action->GetAction( )->size( )));
-		Block.append(*Action->GetAction( ));
+		Block.append(Util::fromUInt16(Action->GetAction( ).size( )));
+		Block.append(Action->GetAction( ));
 	}
 
 	// assign length
@@ -102,8 +102,8 @@ void CReplay :: AddTimeSlot( quint16 timeIncrement, QQueue<CIncomingAction *> ac
 		CIncomingAction *Action = actions.front( );
 		actions.dequeue( );
 		Block.push_back( Action->GetPID( ) );
-		Block.append(Util::fromUInt16(Action->GetAction( )->size( )));
-		Block.append(*Action->GetAction( ));
+		Block.append(Util::fromUInt16(Action->GetAction( ).size( )));
+		Block.append(Action->GetAction( ));
 	}
 
 	// assign length

@@ -39,7 +39,7 @@ CConfig :: ~CConfig( )
 
 #include <QFile>
 #include <QStringList>
-void CConfig :: Read( QString file )
+void CConfig :: Read( const QString &file )
 {
 	QFile f(file);
 
@@ -73,28 +73,25 @@ void CConfig :: Read( QString file )
 	}
 }
 
-bool CConfig :: Exists( QString key )
+bool CConfig :: Exists( const QString &key ) const
 {
 	return m_CFG.contains(key);
 }
 
-int CConfig :: GetInt( QString key, int x )
+int CConfig :: GetInt( const QString &key, int x ) const
 {
-	if( m_CFG.find( key ) == m_CFG.end( ) )
+	if( !m_CFG.contains( key ) )
 		return x;
 	else
 		return m_CFG[key].toInt();
 }
 
-QString CConfig :: GetString( QString key, QString x )
+QString CConfig :: GetString( const QString &key, const QString &x ) const
 {
-	if( m_CFG.find( key ) == m_CFG.end( ) )
-		return x;
-	else
-		return m_CFG[key];
+	return m_CFG.value(key, x);
 }
 
-void CConfig :: Set( QString key, QString x )
+void CConfig :: Set( const QString &key, const QString &x )
 {
 	m_CFG[key] = x;
 }

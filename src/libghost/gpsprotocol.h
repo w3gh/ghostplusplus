@@ -45,20 +45,20 @@ public:
 
 	// send functions
 
-	QByteArray SEND_GPSC_INIT( quint32 version );
-	QByteArray SEND_GPSC_RECONNECT( unsigned char PID, quint32 reconnectKey, quint32 lastPacket );
-	QByteArray SEND_GPSC_ACK( quint32 lastPacket );
+	QByteArray SEND_GPSC_INIT( quint32 version ) const;
+	QByteArray SEND_GPSC_RECONNECT( unsigned char PID, quint32 reconnectKey, quint32 lastPacket ) const;
+	QByteArray SEND_GPSC_ACK( quint32 lastPacket ) const;
 
-	QByteArray SEND_GPSS_INIT( quint16 reconnectPort, unsigned char PID, quint32 reconnectKey, unsigned char numEmptyActions );
-	QByteArray SEND_GPSS_RECONNECT( quint32 lastPacket );
-	QByteArray SEND_GPSS_ACK( quint32 lastPacket );
-	QByteArray SEND_GPSS_REJECT( quint32 reason );
+	QByteArray SEND_GPSS_INIT( quint16 reconnectPort, unsigned char PID, quint32 reconnectKey, unsigned char numEmptyActions ) const;
+	QByteArray SEND_GPSS_RECONNECT( quint32 lastPacket ) const;
+	QByteArray SEND_GPSS_ACK( quint32 lastPacket ) const;
+	QByteArray SEND_GPSS_REJECT( quint32 reason ) const;
 
 	// other functions
 
 private:
-	bool AssignLength( QByteArray &content );
-	bool ValidateLength( QByteArray &content );
+	bool AssignLength( QByteArray &content ) const;
+	bool ValidateLength( QByteArray &content ) const;
 };
 
 #endif

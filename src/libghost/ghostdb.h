@@ -189,10 +189,10 @@ public:
 	virtual void Init( );
 	virtual void Close( );
 
-	virtual QString GetError( )				{ return m_Error; }
-	virtual bool GetReady( )				{ return m_Ready; }
+	virtual const QString &GetError( ) const		{ return m_Error; }
+	virtual bool GetReady( ) const			{ return m_Ready; }
 	virtual void SetReady( bool nReady )	{ m_Ready = nReady; if (nReady) emit finished(); }
-	virtual quint32 GetElapsed( )			{ return m_Ready ? m_EndTicks - m_StartTicks : 0; }
+	virtual quint32 GetElapsed( ) const		{ return m_Ready ? m_EndTicks - m_StartTicks : 0; }
 };
 
 class CCallableAdminCount : public CBaseCallable
@@ -205,8 +205,8 @@ public:
 	CCallableAdminCount( QString nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
 	virtual ~CCallableAdminCount( );
 
-	virtual QString GetServer( )					{ return m_Server; }
-	virtual quint32 GetResult( )				{ return m_Result; }
+	virtual const QString &GetServer( ) const	{ return m_Server; }
+	virtual quint32 GetResult( ) const			{ return m_Result; }
 	virtual void SetResult( quint32 nResult )	{ m_Result = nResult; }
 };
 

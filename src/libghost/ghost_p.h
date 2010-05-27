@@ -24,7 +24,6 @@ class ICommandProvider;
 class CGHostPrivate
 {
 public:
-    QList<ICommandProvider *> m_CommandProviders;
 };
 
 #endif

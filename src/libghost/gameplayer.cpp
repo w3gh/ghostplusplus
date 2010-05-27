@@ -98,7 +98,7 @@ void CGamePlayer::EventACKTimeout()
 	DEBUG_Print("EventACKTimeout()");
 	// GProxy++ acks
 
-	Send( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_ACK( m_TotalPacketsReceived ) );
+	Send( m_Game->m_GHost->GetGPSProtocol().SEND_GPSS_ACK( m_TotalPacketsReceived ) );
 }
 
 void CGamePlayer::EventWhoisTimeout()
@@ -159,7 +159,7 @@ void CGamePlayer::EventConnectionClosed()
 	deleteLater();
 }
 
-QByteArray CPotentialPlayer :: GetExternalIP( )
+QByteArray CPotentialPlayer :: GetExternalIP( ) const
 {
 	if( m_Socket )
 		return Util::fromUInt32(m_Socket->peerAddress().toIPv4Address());
@@ -168,7 +168,7 @@ QByteArray CPotentialPlayer :: GetExternalIP( )
 	return QByteArray( (char*)Zeros, 4 );
 }
 
-QString CPotentialPlayer :: GetExternalIPString( )
+QString CPotentialPlayer :: GetExternalIPString( ) const
 {
 	if( m_Socket )
 		return m_Socket->peerAddress().toString();
@@ -647,7 +647,7 @@ void CGamePlayer :: ProcessPackets( )
 				if( m_Game->m_GHost->m_Reconnect )
 				{
 					m_GProxy = true;
-					m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_INIT( m_Game->m_GHost->m_ReconnectPort, m_PID, m_GProxyReconnectKey, m_Game->GetGProxyEmptyActions( ) ) );
+					m_Socket->write( m_Game->m_GHost->GetGPSProtocol().SEND_GPSS_INIT( m_Game->m_GHost->m_ReconnectPort, m_PID, m_GProxyReconnectKey, m_Game->GetGProxyEmptyActions( ) ) );
 					CONSOLE_Print( "[GAME: " + m_Game->GetGameName( ) + "] player [" + m_Name + "] is using GProxy++" );
 				}
 				else
@@ -711,7 +711,7 @@ void CGamePlayer :: EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPac
 	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(EventConnectionClosed()));
 	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
 
-	m_Socket->write( m_Game->m_GHost->m_GPSProtocol->SEND_GPSS_RECONNECT( m_TotalPacketsReceived ) );
+	m_Socket->write( m_Game->m_GHost->GetGPSProtocol().SEND_GPSS_RECONNECT( m_TotalPacketsReceived ) );
 
 	quint32 PacketsAlreadyUnqueued = m_TotalPacketsSent - m_GProxyBuffer.size( );
 

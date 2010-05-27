@@ -16,11 +16,14 @@
 #include <QTextStream>
 #include <iostream>
 
+CCommands :: CCommands()
+{
+	m_SupportedCommands << "close";
+}
+
 QStringList CCommands :: GetCommands() const
 {
-	QStringList bla;
-	//bla << "bla";
-	return bla;
+	return m_SupportedCommands;
 }
 
 void CCommands :: PluginLoaded( CGHost *ghost, CConfig *cfg )
@@ -40,7 +43,7 @@ QString CCommands :: GetName( ) const
 
 void CCommands :: OnBNETCommand( CBNET *bnet, const QString &user, bool whisper, const CommandData &data )
 {
-	if( *data.GetCommand() == "close" && !data.GetCommand()->isEmpty( ) && m_GHost->GetCurrentGame() )
+	if( data.GetCommand() == "close" && !data.GetCommand().isEmpty( ) && m_GHost->GetCurrentGame() )
 	{
 		if( !m_GHost->GetCurrentGame()->GetLocked( ) )
 		{

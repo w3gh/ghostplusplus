@@ -52,10 +52,13 @@
 #include <QDir>
 #include <QUdpSocket>
 #include <QTcpServer>
+#include <QThreadStorage>
 
 // TODOTODO: remove this crappy implementation and replace it with something monotonic :)
 static bool timerStarted=FALSE;
 static QTime gBasicTime;
+
+QThreadStorage<CGHost *> currentGHost;
 
 
 quint32 GetTime()
@@ -74,6 +77,9 @@ void CONSOLE_Print( QString message )
 {
 	cout << message.toStdString() << endl;
 	
+	if( currentGHost.hasLocalData( ) )
+		currentGHost.localData()->LogInfo( message );
+
 	// logging
 	
 	/*if (!gLogFile.fileName().isEmpty())
@@ -148,11 +154,79 @@ void CGHost :: SetAutoHostMap( CMap *map)
 	m_AutoHostMap = map;
 }
 
+void CGHost :: ExitNice( )
+{
+	m_ExitingNice = true;
+}
+
+void CGHost :: Exit( )
+{
+	m_Exiting = true;
+}
+
+void CGHost :: SendUdpBroadcast( const QByteArray &data, const quint16 &port, const QHostAddress& target)
+{
+	m_UDPSocket->writeDatagram( data, target, port );
+}
+
+void CGHost :: SendUdpBroadcast( const QByteArray &data, const quint16 &port)
+{
+	SendUdpBroadcast( data, port, m_BroadcastTarget );
+}
+
+void CGHost :: SendUdpBroadcast( const QByteArray &data)
+{
+	SendUdpBroadcast( data, 6112, m_BroadcastTarget );
+}
+
+void CGHost :: LoadSavegame( const QString &path )
+{
+	QFileInfo info( path );
+	m_SaveGame->Load( path, false );
+	m_SaveGame->ParseSaveGame( );
+	m_SaveGame->SetFileName( path );
+	m_SaveGame->SetFileNameNoPath( info.fileName( ) );
+}
+
+void CGHost :: Log( const QString &message, int level )
+{
+	// TODO: handle logging level
+	CONSOLE_Print( message );
+}
+
+void CGHost :: LogInfo( const QString &message )
+{
+	Log( message, 0 );
+	for( QList<ILogPlugin *> :: const_iterator i = m_LogPlugins.begin( ); i != m_LogPlugins.end( ); i++ )
+	{
+		(*i)->LogInfo( message );
+	}
+}
+
+void CGHost :: LogWarning( const QString &message )
+{
+	Log( message, 1 );
+	for( QList<ILogPlugin *> :: const_iterator i = m_LogPlugins.begin( ); i != m_LogPlugins.end( ); i++ )
+	{
+		(*i)->LogWarning( message );
+	}
+}
+
+void CGHost :: LogError( const QString &message )
+{
+	Log( message, 2 );
+	for( QList<ILogPlugin *> :: const_iterator i = m_LogPlugins.begin( ); i != m_LogPlugins.end( ); i++ )
+	{
+		(*i)->LogError( message );
+	}
+}
+
 void CGHost :: EventGameCommand( CBaseGame *game, CGamePlayer *player, const QString &command, const QString &payload )
 {
-	CommandData data( command, payload );
+	ICommandProvider::CommandData data( command, payload );
 	// TODO: what do we do with IsAdmin and IsRootAdmin?
-	for( QList<ICommandProvider *> :: const_iterator i = d_ptr->m_CommandProviders.begin( ); i != d_ptr->m_CommandProviders.end( ); i++ )
+	//player->GetSpoofedRealm()
+	for( QList<ICommandProvider *> :: const_iterator i = m_CommandProviders.begin( ); i != m_CommandProviders.end( ); i++ )
 	{
 		(*i)->OnGameCommand( game, player, data );
 	}
@@ -160,10 +234,10 @@ void CGHost :: EventGameCommand( CBaseGame *game, CGamePlayer *player, const QSt
 
 void CGHost :: EventBnetCommand( CBNET *bnet, const QString &user, const QString &command, const QString &payload, bool whisper )
 {
-	CommandData data( command, payload );
+	ICommandProvider::CommandData data( command, payload );
 	data.SetAdmin( bnet->IsAdmin( user ) );
 	data.SetRootAdmin( bnet->IsRootAdmin( user ) );
-	for( QList<ICommandProvider *> :: const_iterator i = d_ptr->m_CommandProviders.begin( ); i != d_ptr->m_CommandProviders.end( ); i++ )
+	for( QList<ICommandProvider *> :: const_iterator i = m_CommandProviders.begin( ); i != m_CommandProviders.end( ); i++ )
 	{
 		(*i)->OnBNETCommand( bnet, user, whisper, data );
 	}
@@ -173,6 +247,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	: d_ptr(new CGHostPrivate()),
 		m_ConfigFile(configFile)
 {
+	currentGHost.setLocalData( this );
 	foreach( QObject *plugin, QPluginLoader::staticInstances() )
 	{
 		LoadPlugin( plugin, CFG );
@@ -184,7 +259,13 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	LoadPlugins( pluginsDir, CFG );
 
 	m_UDPSocket = new QUdpSocket(this);
-	m_UDPSocket->setProperty("target", CFG->GetString( "udp_broadcasttarget", QString( ) ) );
+	QString broadcastTarget = CFG->GetString( "udp_broadcasttarget", QString( ) );
+	if( broadcastTarget.isEmpty( ) )
+		m_BroadcastTarget = QHostAddress :: Broadcast;
+	else
+		m_BroadcastTarget = QHostAddress( broadcastTarget );
+
+	//m_UDPSocket->setProperty("target",  );
 	m_UDPSocket->setProperty("dontroute", CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
 	m_ReconnectSocket = NULL;
 	m_GPSProtocol = new CGPSProtocol( );
@@ -258,7 +339,6 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 	m_ExitingNice = false;
 	m_Enabled = true;
 	m_Version = "17.0";
-	m_HostCounter = 1;
 	m_AutoHostMaximumGames = CFG->GetInt( "autohost_maxgames", 0 );
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
 	m_AutoHostGameName = CFG->GetString( "autohost_gamename", QString( ) );
@@ -491,6 +571,8 @@ void CGHost :: LoadPlugin( QObject *plugin, CConfig *cfg )
 		return;
 	}
 	
+	m_Plugins.append( iPlugin );
+	
 	iPlugin->PluginLoaded(this, cfg);
 	
 	ICommandProvider *iCmd = qobject_cast<ICommandProvider *>( plugin );
@@ -498,11 +580,21 @@ void CGHost :: LoadPlugin( QObject *plugin, CConfig *cfg )
 	{
 		CONSOLE_Print( "[PLUGIN] Found CommandProvider [" + iCmd->GetName() + "]" );
 		validPlugin = true;
-		d_ptr->m_CommandProviders.append( iCmd );
+		m_CommandProviders.append( iCmd );
 	}
+
+	ILogPlugin *iLogger = qobject_cast<ILogPlugin *>( plugin );
+	if( iLogger )
+	{
+		CONSOLE_Print( "[PLUGIN] Found Log plugin [" + iLogger->GetName() + "]" );
+		validPlugin = true;
+		m_LogPlugins.append( iLogger );
+	}
+
+	iPlugin->AllPluginsLoaded( this, m_Plugins );
 	
 	if( !validPlugin )
-		CONSOLE_Print( "[PLUGIN] WARNING: plugin did not contain valid interfaces!" );
+		CONSOLE_Print( "[PLUGIN] INFO: plugin did not contain any special interfaces" );
 }
 
 void CGHost :: LoadPlugins( QDir path, CConfig *cfg )
@@ -783,7 +875,7 @@ void CGHost::EventAutoHost()
 		return;
 	}
 
-	QString GameName = m_AutoHostGameName + " #" + QString::number( m_HostCounter );
+	QString GameName = m_AutoHostGameName + " #" + QString::number( CBaseGame::GetCurrentHostCounter( ) );
 
 	if( GameName.size( ) >= 31 )
 	{

@@ -2,7 +2,7 @@
     error( Couldn't find plugin.pri! )
 }
 
-QT += network sql
+QT += network #sql
 
 HEADERS       = commands.h
 SOURCES       = commands.cpp

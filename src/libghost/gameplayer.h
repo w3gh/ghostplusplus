@@ -68,13 +68,13 @@ public:
 	CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket );
 	virtual ~CPotentialPlayer( );
 
-	virtual QTcpSocket *GetSocket( )				{ return m_Socket; }
-	virtual QByteArray GetExternalIP( );
-	virtual QString GetExternalIPString( );
-	virtual QQueue<CCommandPacket *> GetPackets( )	{ return m_Packets; }
-	virtual bool GetError( )						{ return m_Error; }
-	virtual QString GetErrorString( )				{ return m_ErrorString; }
-	virtual CIncomingJoinPlayer *GetJoinPlayer( )	{ return m_IncomingJoinPlayer; }
+	virtual QTcpSocket *GetSocket( ) const				{ return m_Socket; }
+	virtual QByteArray GetExternalIP( ) const;
+	virtual QString GetExternalIPString( ) const;
+	virtual const QQueue<CCommandPacket *> &GetPackets( ) const	{ return m_Packets; }
+	virtual bool GetError( ) const						{ return m_Error; }
+	virtual const QString &GetErrorString( ) const				{ return m_ErrorString; }
+	virtual CIncomingJoinPlayer *GetJoinPlayer( ) const	{ return m_IncomingJoinPlayer; }
 
 	virtual void SetSocket( QTcpSocket *nSocket )	{ m_Socket = nSocket; }
 

@@ -49,34 +49,34 @@ CStatsW3MMD :: ~CStatsW3MMD( )
 bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 {
 	unsigned int i = 0;
-	QByteArray *ActionData = Action->GetAction( );
+	const QByteArray &ActionData = Action->GetAction( );
 	QByteArray MissionKey;
 	QByteArray Key;
 	QByteArray Value;
 
-	while( (unsigned int)ActionData->size( ) >= i + 9 )
+	while( (unsigned int)ActionData.size( ) >= i + 9 )
 	{
-		if( (*ActionData).at(i) == 'k' &&
-			(*ActionData).at(i + 1) == 'M' &&
-			(*ActionData).at(i + 2) == 'M' &&
-			(*ActionData).at(i + 3) == 'D' &&
-			(*ActionData).at(i + 4) == '.' &&
-			(*ActionData).at(i + 5) == 'D' &&
-			(*ActionData).at(i + 6) == 'a' &&
-			(*ActionData).at(i + 7) == 't' &&
-			(*ActionData).at(i + 8) == 0x00 )
+		if( ActionData.at(i) == 'k' &&
+			ActionData.at(i + 1) == 'M' &&
+			ActionData.at(i + 2) == 'M' &&
+			ActionData.at(i + 3) == 'D' &&
+			ActionData.at(i + 4) == '.' &&
+			ActionData.at(i + 5) == 'D' &&
+			ActionData.at(i + 6) == 'a' &&
+			ActionData.at(i + 7) == 't' &&
+			ActionData.at(i + 8) == 0x00 )
 		{
-			if( (unsigned int)ActionData->size( ) >= i + 10 )
+			if( (unsigned int)ActionData.size( ) >= i + 10 )
 			{
-				MissionKey = UTIL_ExtractCString( *ActionData, i + 9 );
+				MissionKey = UTIL_ExtractCString( ActionData, i + 9 );
 
-				if( (unsigned int)ActionData->size( ) >= i + 11 + MissionKey.size( ) )
+				if( (unsigned int)ActionData.size( ) >= i + 11 + MissionKey.size( ) )
 				{
-					Key = UTIL_ExtractCString( *ActionData, i + 10 + MissionKey.size( ) );
+					Key = UTIL_ExtractCString( ActionData, i + 10 + MissionKey.size( ) );
 
-					if( (unsigned int)ActionData->size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
+					if( (unsigned int)ActionData.size( ) >= i + 15 + MissionKey.size( ) + Key.size( ) )
 					{
-						Value = ActionData->mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
+						Value = ActionData.mid(i + 11 + MissionKey.size( ) + Key.size( ), 4 );
 						//quint32 ValueInt = UTIL_QByteArrayToUInt32( Value, false );
 
 						// CONSOLE_Print( "[STATSW3MMD] DEBUG: mkey [" + MissionKey + "], key [" + Key + "], value [" + QString::number(ValueInt) + "]" );
