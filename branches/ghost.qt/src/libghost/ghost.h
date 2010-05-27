@@ -22,12 +22,12 @@
 #define GHOST_H
 
 #include "includes.h"
-#include "interfaces.h"
 
 #include <QTimer>
 #include <QTime>
 #include <QList>
 #include <QScopedPointer>
+#include <QHostAddress>
 
 //
 // CGHost
@@ -47,6 +47,11 @@ class CMap;
 class CSaveGame;
 class CConfig;
 class CGHostPrivate;
+class CGamePlayer;
+class IGHostPlugin;
+class ICommandProvider;
+class ILogPlugin;
+
 QT_FORWARD_DECLARE_CLASS(QDir)
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 QT_FORWARD_DECLARE_CLASS(QTcpServer)
@@ -63,6 +68,39 @@ public:
 	CMap *GetAdminMap( ) const;
 	CMap *GetAutoHostMap( ) const;
 	void SetAutoHostMap( CMap *map );
+	bool GetExiting( ) const { return m_Exiting; }
+	bool GetExitingNice( ) const { return m_ExitingNice; }
+	void ExitNice( );
+	void Exit( );
+	
+	bool IsGameCreationEnabled( ) const { return m_Enabled; }
+	void EnableGameCreation( ) { m_Enabled = true; }
+	void DisableGameCreation( ) { m_Enabled = false; }
+	
+	void SendUdpBroadcast( const QByteArray &data, const quint16 &port, const QHostAddress& target);
+	void SendUdpBroadcast( const QByteArray &data, const quint16 &port);
+	void SendUdpBroadcast( const QByteArray &data);
+
+	void LoadSavegame( const QString& path );
+	
+	const CGPSProtocol &GetGPSProtocol( ) { return *m_GPSProtocol; }
+	
+	const QString &GetVersion( ) { return m_Version; }
+
+private: /*** Plugins ***/
+	QList<IGHostPlugin *> m_Plugins;
+	QList<ICommandProvider *> m_CommandProviders;
+	QList<ILogPlugin *> m_LogPlugins;
+	void LoadPlugins( QDir path, CConfig *cfg );
+public:
+	void LoadPlugin( QObject *plugin, CConfig *cfg );
+
+private: /*** Logging ***/
+	void Log( const QString &message, int level );
+public:
+	void LogInfo( const QString &message );
+	void LogWarning( const QString &message );
+	void LogError( const QString &message );
 
 // slots for game events
 public slots:
@@ -79,7 +117,9 @@ private:
 	CLanguage *m_Language;					// language
 	CMap *m_Map;							// the currently loaded map
 	CMap *m_AdminMap;						// the map to use in the admin game
-	CMap *m_AutoHostMap;					// the map to use when autohosting	
+	CMap *m_AutoHostMap;					// the map to use when autohosting
+	
+
 	
 public slots:
 	void EventIncomingReconnection();
@@ -91,15 +131,21 @@ public slots:
 	void EventAutoHost();
 	void EventAdminGameDeleted();
 	void CreateReconnectServer();
+	
 private:
-	void LoadPlugin( QObject *plugin, CConfig *cfg );
-	void LoadPlugins( QDir path, CConfig *cfg );
-public:
 	QTime m_LastAutoHostTime;
-	QTimer m_CallableUpdateTimer, m_AutoHostTimer;
 	QUdpSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
+	QHostAddress m_BroadcastTarget;
 	QTcpServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
 	CGPSProtocol *m_GPSProtocol;
+	bool m_Exiting;							// set to true to force ghost to shutdown next update (used by SignalCatcher)
+	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
+	bool m_Enabled;							// set to false to prevent new games from being created
+	QString m_Version;						// GHost++ version QString
+	QTimer m_CallableUpdateTimer, m_AutoHostTimer;
+	CSaveGame *m_SaveGame;					// the save game to use
+
+public:
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's
 	QList<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
@@ -108,13 +154,9 @@ public:
 	CGHostDB *m_DBLocal;					// local database (for temporary data)
 	QList<CBaseCallable *> m_Callables;	// vector of orphaned callables waiting to die
 	QList<QByteArray> m_LocalAddresses;		// vector of local IP addresses
-	CSaveGame *m_SaveGame;					// the save game to use
 	QList<PIDPlayer> m_EnforcePlayers;		// vector of pids to force players to use in the next game (used with saved games)
-	bool m_Exiting;							// set to true to force ghost to shutdown next update (used by SignalCatcher)
-	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
-	bool m_Enabled;							// set to false to prevent new games from being created
-	QString m_Version;						// GHost++ version QString
-	quint32 m_HostCounter;					// the current host counter (a unique number to identify a game, incremented each time a game is created)
+	
+
 	QString m_AutoHostGameName;				// the base game name to auto host with
 	QString m_AutoHostOwner;
 	QString m_AutoHostServer;

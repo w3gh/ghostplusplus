@@ -1,6 +1,6 @@
 TEMPLATE         = subdirs
 CONFIG          += ordered
-SUBDIRS          = bncsutil libghost plugins cli
+SUBDIRS          = bncsutil libghost cli plugins
 
 # set up correct paths
 libghost.subdir  = src/libghost

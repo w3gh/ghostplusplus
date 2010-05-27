@@ -165,12 +165,12 @@ private:
 	QByteArray m_InternalIP;
 
 public:
-	CIncomingJoinPlayer( quint32 nHostCounter, QString nName, QByteArray &nInternalIP );
+	CIncomingJoinPlayer( quint32 nHostCounter, const QString &nName, const QByteArray &nInternalIP );
 	~CIncomingJoinPlayer( );
 
-	quint32 GetHostCounter( )	{ return m_HostCounter; }
-	QString GetName( )			{ return m_Name; }
-	QByteArray GetInternalIP( )	{ return m_InternalIP; }
+	quint32 GetHostCounter( ) const	{ return m_HostCounter; }
+	const QString &GetName( ) const		{ return m_Name; }
+	const QByteArray &GetInternalIP( )	const { return m_InternalIP; }
 };
 
 //
@@ -188,10 +188,10 @@ public:
 	CIncomingAction( unsigned char nPID, QByteArray &nCRC, QByteArray &nAction );
 	~CIncomingAction( );
 
-	unsigned char GetPID( )	{ return m_PID; }
-	QByteArray GetCRC( )		{ return m_CRC; }
-	QByteArray *GetAction( )	{ return &m_Action; }
-	quint32 GetLength( )	{ return m_Action.size( ) + 3; }
+	unsigned char GetPID( ) const	{ return m_PID; }
+	const QByteArray &GetCRC( )	const	{ return m_CRC; }
+	const QByteArray &GetAction( ) const	{ return m_Action; }
+	quint32 GetLength( ) const	{ return m_Action.size( ) + 3; }
 };
 
 //

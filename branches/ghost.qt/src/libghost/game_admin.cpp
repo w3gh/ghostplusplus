@@ -748,7 +748,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		if( Command == "disable" )
 		{
 			SendChat( player, m_GHost->GetLanguage( )->BotDisabled( ) );
-			m_GHost->m_Enabled = false;
+			m_GHost->DisableGameCreation( );
 		}
 
 		//
@@ -783,7 +783,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		if( Command == "enable" )
 		{
 			SendChat( player, m_GHost->GetLanguage( )->BotEnabled( ) );
-			m_GHost->m_Enabled = true;
+			m_GHost->EnableGameCreation( );
 		}
 
 		//
@@ -842,7 +842,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 		if( Command == "exit" || Command == "quit" )
 		{
 			if( Payload == "nice" )
-				m_GHost->m_ExitingNice = true;
+				m_GHost->ExitNice( );
 			else if( Payload == "force" )
 				deleteLater();
 			else
@@ -954,7 +954,6 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 			else
 			{
 				QString File = m_GHost->m_SaveGamePath + Payload + ".w3z";
-				QString FileNoPath = Payload + ".w3z";
 
 				if( QFile::exists( File ) )
 				{
@@ -963,10 +962,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 					else
 					{
 						SendChat( player, m_GHost->GetLanguage( )->LoadingSaveGame( File ) );
-						m_GHost->m_SaveGame->Load( File, false );
-						m_GHost->m_SaveGame->ParseSaveGame( );
-						m_GHost->m_SaveGame->SetFileName( File );
-						m_GHost->m_SaveGame->SetFileNameNoPath( FileNoPath );
+						m_GHost->LoadSavegame( File );
 					}
 				}
 				else

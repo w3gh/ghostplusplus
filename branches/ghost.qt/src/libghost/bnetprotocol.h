@@ -105,19 +105,19 @@ public:
 	CBNETProtocol( );
 	~CBNETProtocol( );
 
-	QByteArray GetClientToken( )				{ return m_ClientToken; }
-	QByteArray GetLogonType( )					{ return m_LogonType; }
-	QByteArray GetServerToken( )				{ return m_ServerToken; }
-	QByteArray GetMPQFileTime( )				{ return m_MPQFileTime; }
-	QByteArray GetIX86VerFileName( )			{ return m_IX86VerFileName; }
-	QByteArray GetIX86VerFileNameString( )		{ return m_IX86VerFileName; }
-	QByteArray GetValueStringFormula( )			{ return m_ValueStringFormula; }
-	QByteArray GetValueStringFormulaString( )	{ return m_ValueStringFormula; }
-	QByteArray GetKeyState( )					{ return m_KeyState; }
-	QByteArray GetKeyStateDescription( )		{ return m_KeyStateDescription; }
-	QByteArray GetSalt( )						{ return m_Salt; }
-	QByteArray GetServerPublicKey( )			{ return m_ServerPublicKey; }
-	QByteArray GetUniqueName( )					{ return m_UniqueName; }
+	const QByteArray &GetClientToken( )				{ return m_ClientToken; }
+	const QByteArray &GetLogonType( )					{ return m_LogonType; }
+	const QByteArray &GetServerToken( )				{ return m_ServerToken; }
+	const QByteArray &GetMPQFileTime( )				{ return m_MPQFileTime; }
+	const QByteArray &GetIX86VerFileName( )			{ return m_IX86VerFileName; }
+	const QByteArray &GetIX86VerFileNameString( )		{ return m_IX86VerFileName; }
+	const QByteArray &GetValueStringFormula( )			{ return m_ValueStringFormula; }
+	const QByteArray &GetValueStringFormulaString( )	{ return m_ValueStringFormula; }
+	const QByteArray &GetKeyState( )					{ return m_KeyState; }
+	const QByteArray &GetKeyStateDescription( )		{ return m_KeyStateDescription; }
+	const QByteArray &GetSalt( )						{ return m_Salt; }
+	const QByteArray &GetServerPublicKey( )			{ return m_ServerPublicKey; }
+	const QByteArray &GetUniqueName( )					{ return m_UniqueName; }
 
 	// receive functions
 

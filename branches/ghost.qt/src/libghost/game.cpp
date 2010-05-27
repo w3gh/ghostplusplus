@@ -1330,7 +1330,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_GameState = GAME_PRIVATE;
 				m_LastGameName = m_GameName;
 				m_GameName = Payload;
-				m_HostCounter = m_GHost->m_HostCounter++;
+				m_HostCounter = GetNewHostCounter( );
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
@@ -1366,7 +1366,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 				m_GameState = GAME_PUBLIC;
 				m_LastGameName = m_GameName;
 				m_GameName = Payload;
-				m_HostCounter = m_GHost->m_HostCounter++;
+				m_HostCounter = GetNewHostCounter( );
 				m_RefreshError = false;
 				m_RefreshRehosted = true;
 
@@ -1458,8 +1458,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						QByteArray MapHeight;
 						MapHeight.push_back( (char)0 );
 						MapHeight.push_back( (char)0 );
-						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ),
-								QHostAddress(IP), Port);
+						m_GHost->SendUdpBroadcast( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ),
+								Port, QHostAddress(IP) );
 					}
 					else
 					{
@@ -1467,8 +1467,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 						quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
-						m_GHost->m_UDPSocket->writeDatagram( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
-								QHostAddress(IP), Port);
+						m_GHost->SendUdpBroadcast( m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, Util::fromUInt32( MapGameType), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ),
+												  Port, QHostAddress(IP) );
 					}
 				}
 			}
@@ -1724,9 +1724,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, QStri
 	if( Command == "version" )
 	{
 		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			SendChat( player, m_GHost->GetLanguage( )->VersionAdmin( m_GHost->m_Version ) );
+			SendChat( player, m_GHost->GetLanguage( )->VersionAdmin( m_GHost->GetVersion( ) ) );
 		else
-			SendChat( player, m_GHost->GetLanguage( )->VersionNotAdmin( m_GHost->m_Version ) );
+			SendChat( player, m_GHost->GetLanguage( )->VersionNotAdmin( m_GHost->GetVersion( ) ) );
 	}
 
 	//

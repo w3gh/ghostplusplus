@@ -508,8 +508,8 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *>
 			CIncomingAction *Action = actions.dequeue( );
 
 			subpacket.push_back( Action->GetPID( ) );
-			subpacket.append(Util::fromUInt16(Action->GetAction( )->size( )));
-			subpacket.append(*Action->GetAction( ));
+			subpacket.append(Util::fromUInt16(Action->GetAction( ).size( )));
+			subpacket.append(Action->GetAction( ));
 		}
 
 		// calculate crc (we only care about the first 2 bytes though)
@@ -892,7 +892,7 @@ QByteArray CGameProtocol :: SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *
 			CIncomingAction *Action = actions.front( );
 			actions.dequeue( );
 			subpacket.push_back( Action->GetPID( ) );
-			subpacket.append(Util::fromUInt16(Action->GetAction( )->size( )));
+			subpacket.append(Util::fromUInt16(Action->GetAction( ).size( )));
 			subpacket.append(*Action->GetAction( ));
 		}
 
@@ -972,7 +972,7 @@ QByteArray CGameProtocol :: EncodeSlotInfo( QList<CGameSlot> &lslots, quint32 ra
 // CIncomingJoinPlayer
 //
 
-CIncomingJoinPlayer :: CIncomingJoinPlayer( quint32 nHostCounter, QString nName, QByteArray &nInternalIP )
+CIncomingJoinPlayer :: CIncomingJoinPlayer( quint32 nHostCounter, const QString &nName, const QByteArray &nInternalIP )
 {
 	m_HostCounter = nHostCounter;
 	m_Name = nName;

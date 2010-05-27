@@ -9,9 +9,6 @@ QT += network sql
 QT -= gui
 TARGET = ghost
 CONFIG += debug_and_release
-QMAKE_CXXFLAGS += -fvisibility=hidden
-LFLAGS += -fvisibility=hidden
-#CONFIG -= app_bundle
 INCLUDEPATH +=	.. \
 				../../include \
 				../../include/mysql
@@ -22,6 +19,8 @@ macx {
 	LIBS += -framework CoreFoundation -framework CoreServices
 	LIBS += -L. -L/usr/lib -lbz2 -lz
 	CONFIG += x86_64 x86
+#	CXXFLAGS += -fvisibility=hidden
+#	QMAKE_CXXFLAGS += -fvisibility=hidden
 }
 
 #!isEmpty( $$MY_LIBRARY_DEST_PATH ) {

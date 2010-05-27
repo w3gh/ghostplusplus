@@ -130,30 +130,30 @@ public:
 	CMap( CGHost *nGHost, CConfig *CFG, QString nCFGFile );
 	~CMap( );
 
-	bool GetValid( )						{ return m_Valid; }
-	QString GetCFGFile( )					{ return m_CFGFile; }
-	QString GetMapPath( )					{ return m_MapPath; }
-	QByteArray GetMapSize( )					{ return m_MapSize; }
-	QByteArray GetMapInfo( )					{ return m_MapInfo; }
-	QByteArray GetMapCRC( )					{ return m_MapCRC; }
-	QByteArray GetMapSHA1( )					{ return m_MapSHA1; }
-	unsigned char GetMapSpeed( )			{ return m_MapSpeed; }
-	unsigned char GetMapVisibility( )		{ return m_MapVisibility; }
-	unsigned char GetMapObservers( )		{ return m_MapObservers; }
-	unsigned char GetMapFlags( )			{ return m_MapFlags; }
+	bool GetValid( ) const					{ return m_Valid; }
+	QString GetCFGFile( ) const				{ return m_CFGFile; }
+	QString GetMapPath( ) const				{ return m_MapPath; }
+	QByteArray GetMapSize( ) const			{ return m_MapSize; }
+	QByteArray GetMapInfo( ) const			{ return m_MapInfo; }
+	QByteArray GetMapCRC( )	const			{ return m_MapCRC; }
+	QByteArray GetMapSHA1( ) const			{ return m_MapSHA1; }
+	unsigned char GetMapSpeed( ) const		{ return m_MapSpeed; }
+	unsigned char GetMapVisibility( ) const	{ return m_MapVisibility; }
+	unsigned char GetMapObservers( ) const	{ return m_MapObservers; }
+	unsigned char GetMapFlags( ) const		{ return m_MapFlags; }
 	QByteArray GetMapGameFlags( );
 	quint32 GetMapGameType( );
-	quint32 GetMapOptions( )				{ return m_MapOptions; }
+	quint32 GetMapOptions( ) const			{ return m_MapOptions; }
 	unsigned char GetMapLayoutStyle( );
-	QByteArray GetMapWidth( )				{ return m_MapWidth; }
-	QByteArray GetMapHeight( )				{ return m_MapHeight; }
-	QString GetMapType( )					{ return m_MapType; }
-	QString GetMapMatchMakingCategory( )		{ return m_MapMatchMakingCategory; }
-	QString GetMapStatsW3MMDCategory( )		{ return m_MapStatsW3MMDCategory; }
-	QString GetMapDefaultHCL( )				{ return m_MapDefaultHCL; }
+	QByteArray GetMapWidth( ) const			{ return m_MapWidth; }
+	QByteArray GetMapHeight( ) const		{ return m_MapHeight; }
+	const QString &GetMapType( ) const				{ return m_MapType; }
+	const QString &GetMapMatchMakingCategory( ) const	{ return m_MapMatchMakingCategory; }
+	const QString &GetMapStatsW3MMDCategory( ) const	{ return m_MapStatsW3MMDCategory; }
+	const QString &GetMapDefaultHCL( )	const			{ return m_MapDefaultHCL; }
 	quint32 GetMapDefaultPlayerScore( )	{ return m_MapDefaultPlayerScore; }
-	QString GetMapLocalPath( )				{ return m_MapLocalPath; }
-	bool GetMapLoadInGame( )				{ return m_MapLoadInGame; }
+	const QString &GetMapLocalPath( ) const			{ return m_MapLocalPath; }
+	bool GetMapLoadInGame( ) const			{ return m_MapLoadInGame; }
 	QByteArray *GetMapData( )					{ return &m_MapData; }
 	quint32 GetMapNumPlayers( )			{ return m_MapNumPlayers; }
 	quint32 GetMapNumTeams( )				{ return m_MapNumTeams; }

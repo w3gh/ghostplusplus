@@ -34,11 +34,11 @@ public:
 	CConfig( );
 	~CConfig( );
 
-	void Read( QString file );
-	bool Exists( QString key );
-	int GetInt( QString key, int x );
-	QString GetString( QString key, QString x );
-	void Set( QString key, QString x );
+	void Read( const QString &file );
+	bool Exists( const QString &key ) const;
+	int GetInt( const QString &key, int x ) const;
+	QString GetString( const QString &key, const QString &x ) const;
+	void Set( const QString &key, const QString &x );
 };
 
 #endif

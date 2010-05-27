@@ -144,6 +144,7 @@ protected:
 	quint32 m_LastActionSentTicks;					// GetTicks when the last action packet was sent
 	quint32 m_StartedLaggingTime;					// GetTime when the last lag screen started
 	quint32 m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
+	static quint32 m_GlobalHostCounter;					// the current host counter (a unique number to identify a game, incremented each time a game is created)
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode
 	double m_MaximumScore;							// the maximum allowed score for matchmaking mode
 	bool m_Locked;									// if the game owner is the only one allowed to run game commands or not
@@ -161,31 +162,36 @@ protected:
 	bool m_MatchMaking;								// if matchmaking mode is enabled
 	bool m_LocalAdminMessages;						// if local admin messages should be relayed or not
 
+	quint32 GetNewHostCounter( ) { return m_GlobalHostCounter++; }
+
 public:
 	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer );
 	virtual ~CBaseGame( );
 
-	virtual QList<CGameSlot> GetEnforceSlots( )	{ return m_EnforceSlots; }
-	virtual QList<PIDPlayer> GetEnforcePlayers( )	{ return m_EnforcePlayers; }
-	virtual CSaveGame *GetSaveGame( )				{ return m_SaveGame; }
-	virtual quint16 GetHostPort( )					{ return m_HostPort; }
-	virtual unsigned char GetGameState( )			{ return m_GameState; }
-	virtual unsigned char GetGProxyEmptyActions( )	{ return m_GProxyEmptyActions; }
-	virtual QString GetGameName( )					{ return m_GameName; }
-	virtual QString GetLastGameName( )				{ return m_LastGameName; }
-	virtual QString GetVirtualHostName( )			{ return m_VirtualHostName; }
-	virtual QString GetOwnerName( )					{ return m_OwnerName; }
-	virtual QString GetCreatorName( )				{ return m_CreatorName; }
-	virtual QString GetCreatorServer( )				{ return m_CreatorServer; }
-	virtual quint32 GetHostCounter( )				{ return m_HostCounter; }
-	virtual quint32 GetStartedLaggingTime( )		{ return m_StartedLaggingTime; }
-	virtual quint32 GetAutoStartPlayers( )			{ return m_AutoStartPlayers; }
-	virtual bool GetLocked( )						{ return m_Locked; }
-	virtual bool GetRefreshMessages( )				{ return m_RefreshMessages; }
-	virtual bool GetCountDownStarted( )				{ return m_CountDownStarted; }
-	virtual bool GetGameLoading( )					{ return m_GameLoading; }
-	virtual bool GetGameLoaded( )					{ return m_GameLoaded; }
-	virtual bool GetLagging( )						{ return m_Lagging; }
+	static quint32 GetCurrentHostCounter( ) { return m_GlobalHostCounter; }
+
+
+	virtual const QList<CGameSlot> &GetEnforceSlots( )	{ return m_EnforceSlots; }
+	virtual const QList<PIDPlayer> &GetEnforcePlayers( )	{ return m_EnforcePlayers; }
+	virtual CSaveGame *GetSaveGame( ) const				{ return m_SaveGame; }
+	virtual quint16 GetHostPort( ) const					{ return m_HostPort; }
+	virtual unsigned char GetGameState( ) const			{ return m_GameState; }
+	virtual unsigned char GetGProxyEmptyActions( ) const	{ return m_GProxyEmptyActions; }
+	virtual const QString &GetGameName( ) const					{ return m_GameName; }
+	virtual const QString &GetLastGameName( ) const				{ return m_LastGameName; }
+	virtual const QString &GetVirtualHostName( ) const			{ return m_VirtualHostName; }
+	virtual const QString &GetOwnerName( ) const					{ return m_OwnerName; }
+	virtual const QString &GetCreatorName( ) const				{ return m_CreatorName; }
+	virtual const QString &GetCreatorServer( ) const				{ return m_CreatorServer; }
+	virtual quint32 GetHostCounter( ) const				{ return m_HostCounter; }
+	virtual quint32 GetStartedLaggingTime( ) const		{ return m_StartedLaggingTime; }
+	virtual quint32 GetAutoStartPlayers( ) const			{ return m_AutoStartPlayers; }
+	virtual bool GetLocked( ) const						{ return m_Locked; }
+	virtual bool GetRefreshMessages( ) const				{ return m_RefreshMessages; }
+	virtual bool GetCountDownStarted( ) const				{ return m_CountDownStarted; }
+	virtual bool GetGameLoading( ) const					{ return m_GameLoading; }
+	virtual bool GetGameLoaded( ) const					{ return m_GameLoaded; }
+	virtual bool GetLagging( ) const						{ return m_Lagging; }
 
 	virtual void SetEnforceSlots( QList<CGameSlot> nEnforceSlots )		{ m_EnforceSlots = nEnforceSlots; }
 	virtual void SetEnforcePlayers( QList<PIDPlayer> nEnforcePlayers )	{ m_EnforcePlayers = nEnforcePlayers; }
@@ -194,11 +200,11 @@ public:
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
 
-	virtual quint32 GetSlotsOccupied( );
-	virtual quint32 GetSlotsOpen( );
-	virtual quint32 GetNumPlayers( );
-	virtual quint32 GetNumHumanPlayers( );
-	virtual QString GetDescription( );
+	virtual quint32 GetSlotsOccupied( ) const;
+	virtual quint32 GetSlotsOpen( ) const;
+	virtual quint32 GetNumPlayers( ) const;
+	virtual quint32 GetNumHumanPlayers( ) const;
+	virtual QString GetDescription( ) const;
 	quint32 GetSyncCounter() { return m_SyncCounter; }
 	quint32 GetSyncLimit() { return m_SyncLimit; }
 

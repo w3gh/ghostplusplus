@@ -206,6 +206,21 @@ CBNET :: ~CBNET( )
 		delete *i;
 }
 
+void CBNET :: ResetSocket( )
+{
+	if (m_Socket)
+	{
+		m_Socket->abort();
+		m_Socket->deleteLater();
+	}
+	m_Socket = new QTcpSocket( );
+
+	QObject::connect(m_Socket, SIGNAL(connected()), this, SLOT(socketConnected()));
+	QObject::connect(m_Socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+	QObject::connect(m_Socket, SIGNAL(readyRead()), this, SLOT(socketDataReady()));
+	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
+}
+
 void CBNET::socketConnect()
 {
 	// attempt to connect to battle.net
@@ -297,9 +312,8 @@ void CBNET::socketDisconnected()
 		m_Retries = 0;
 		return;
 	}
-
+	ResetSocket( );
 	QTimer::singleShot(90000, this, SLOT(socketConnect()));
-
 }
 
 void CBNET::sendWardenResponse(const QByteArray & response)
@@ -321,7 +335,7 @@ void CBNET::socketDataReady()
 void CBNET::EnqueuePacket(const QByteArray &pkg)
 {
 	int ticks = getWaitTicks();
-	int pkgs = m_OutPackets.empty();
+	int pkgs = m_OutPackets.size();
 
 	m_OutPackets.enqueue(pkg);
 
@@ -382,7 +396,7 @@ void CBNET::socketError()
 	QTimer::singleShot(90000, this, SLOT(socketConnect()));
 }
 
-QByteArray CBNET :: GetUniqueName( ) const
+const QByteArray &CBNET :: GetUniqueName( ) const
 {
 	return m_Protocol->GetUniqueName( );
 }
@@ -1420,7 +1434,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					if( IsRootAdmin( User ) )
 					{
 						QueueChatCommand( m_GHost->GetLanguage( )->BotDisabled( ), User, Whisper );
-						m_GHost->m_Enabled = false;
+						m_GHost->DisableGameCreation( );
 					}
 					else
 						QueueChatCommand( m_GHost->GetLanguage( )->YouDontHaveAccessToThatCommand( ), User, Whisper );
@@ -1460,8 +1474,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					if( IsRootAdmin( User ) )
 					{
 						QueueChatCommand( m_GHost->GetLanguage( )->BotEnabled( ), User, Whisper );
-						m_GHost->m_Enabled = true;
-					}
+						m_GHost->EnableGameCreation( );					}
 					else
 						QueueChatCommand( m_GHost->GetLanguage( )->YouDontHaveAccessToThatCommand( ), User, Whisper );
 				}
@@ -1531,7 +1544,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					if( IsRootAdmin( User ) )
 					{
 						if( Payload == "nice" )
-							m_GHost->m_ExitingNice = true;
+							m_GHost->ExitNice( );
 						else if( Payload == "force" )
 							m_GHost->deleteLater();
 						else
@@ -1694,7 +1707,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					else
 					{
 						QString File = m_GHost->m_SaveGamePath + Payload + ".w3z";
-						QString FileNoPath = Payload + ".w3z";
 
 						if( QFile::exists( File ) )
 						{
@@ -1703,10 +1715,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							else
 							{
 								QueueChatCommand( m_GHost->GetLanguage( )->LoadingSaveGame( File ), User, Whisper );
-								m_GHost->m_SaveGame->Load( File, false );
-								m_GHost->m_SaveGame->ParseSaveGame( );
-								m_GHost->m_SaveGame->SetFileName( File );
-								m_GHost->m_SaveGame->SetFileNameNoPath( FileNoPath );
+								m_GHost->LoadSavegame( File );
 							}
 						}
 						else
@@ -2120,9 +2129,9 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				if( Command == "version" )
 				{
 					if( IsAdmin( User ) || IsRootAdmin( User ) )
-						QueueChatCommand( m_GHost->GetLanguage( )->VersionAdmin( m_GHost->m_Version ), User, Whisper );
+						QueueChatCommand( m_GHost->GetLanguage( )->VersionAdmin( m_GHost->GetVersion( ) ), User, Whisper );
 					else
-						QueueChatCommand( m_GHost->GetLanguage( )->VersionNotAdmin( m_GHost->m_Version ), User, Whisper );
+						QueueChatCommand( m_GHost->GetLanguage( )->VersionNotAdmin( m_GHost->GetVersion( ) ), User, Whisper );
 				}
 			}
 		}
@@ -2309,8 +2318,8 @@ void CBNET :: QueueGameRefresh( unsigned char state, const QString &gameName, co
 															state,
 															Util::fromUInt32( MapGameType),
 															map->GetMapGameFlags( ),
-															m_GHost->m_Reconnect ? FakeMapWidth : *Util::EmptyData16(),
-															m_GHost->m_Reconnect ? FakeMapHeight : *Util::EmptyData16(),
+															m_GHost->m_Reconnect ? FakeMapWidth : Util::EmptyData16(),
+															m_GHost->m_Reconnect ? FakeMapHeight : Util::EmptyData16(),
 															gameName,
 															newHostName,
 															upTime,
@@ -2399,14 +2408,14 @@ void CBNET :: UnqueueGameRefreshes( )
 	UnqueuePackets( CBNETProtocol :: SID_STARTADVEX3 );
 }
 
-bool CBNET :: IsAdmin( const QString &name )
+bool CBNET :: IsAdmin( const QString &name ) const
 {
 	if( m_Admins.contains( name, Qt :: CaseInsensitive ) )
 		return true;
 	return false;
 }
 
-bool CBNET :: IsRootAdmin( const QString &name )
+bool CBNET :: IsRootAdmin( const QString &name ) const
 {
 	if ( m_RootAdmins.contains(name, Qt :: CaseInsensitive ) ) {
 		return true;
@@ -2415,7 +2424,7 @@ bool CBNET :: IsRootAdmin( const QString &name )
 	return false;
 }
 
-CDBBan *CBNET :: IsBannedName( const QString &name )
+CDBBan *CBNET :: IsBannedName( const QString &name ) const
 {
 	// todotodo: optimize this - maybe use a map?
 
@@ -2428,7 +2437,7 @@ CDBBan *CBNET :: IsBannedName( const QString &name )
 	return NULL;
 }
 
-CDBBan *CBNET :: IsBannedIP( const QString &ip )
+CDBBan *CBNET :: IsBannedIP( const QString &ip ) const
 {
 	// todotodo: optimize this - maybe use a map?
 

@@ -57,7 +57,7 @@ CStatsDOTA :: ~CStatsDOTA( )
 bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 {
 	unsigned int i = 0;
-	QByteArray *ActionData = Action->GetAction( );
+	const QByteArray &ActionData = Action->GetAction( );
 	QByteArray Data;
 	QByteArray Key;
 	QByteArray Value;
@@ -68,30 +68,35 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 	// parsing the actions would be more correct but would be a lot more difficult to write for relatively little gain
 	// so we take the easy route (which isn't always guaranteed to work) and search the data for the sequence "6b 64 72 2e 78 00" and hope it identifies an action
 
-	while( (unsigned int)ActionData->size( ) >= i + 6 )
+	while( (unsigned int)ActionData.size( ) >= i + 6 )
 	{
-		if( (*ActionData).at(i) == 0x6b && (*ActionData).at(i + 1) == 0x64 && (*ActionData).at(i + 2) == 0x72 && (*ActionData).at(i + 3) == 0x2e && (*ActionData).at(i + 4) == 0x78 && (*ActionData).at(i + 5) == 0x00 )
+		if( ActionData.at(i) == 0x6b &&
+			ActionData.at(i + 1) == 0x64 &&
+			ActionData.at(i + 2) == 0x72 &&
+			ActionData.at(i + 3) == 0x2e &&
+			ActionData.at(i + 4) == 0x78 &&
+			ActionData.at(i + 5) == 0x00 )
 		{
 			// we think we've found an action with real time replay data (but we can't be 100% sure)
 			// next we parse out two null terminated strings and a 4 byte integer
 
-			if( (unsigned int)ActionData->size( ) >= i + 7 )
+			if( (unsigned int)ActionData.size( ) >= i + 7 )
 			{
 				// the first null terminated QString should either be the strings "Data" or "Global" or a player id in ASCII representation, e.g. "1" or "2"
 
-				Data = UTIL_ExtractCString( *ActionData, i + 6 );
+				Data = UTIL_ExtractCString( ActionData, i + 6 );
 
-				if( (unsigned int)ActionData->size( ) >= i + 8 + Data.size( ) )
+				if( (unsigned int)ActionData.size( ) >= i + 8 + Data.size( ) )
 				{
 					// the second null terminated QString should be the key
 
-					Key = UTIL_ExtractCString( *ActionData, i + 7 + Data.size( ) );
+					Key = UTIL_ExtractCString( ActionData, i + 7 + Data.size( ) );
 
-					if( (unsigned int)ActionData->size( ) >= i + 12 + Data.size( ) + Key.size( ) )
+					if( (unsigned int)ActionData.size( ) >= i + 12 + Data.size( ) + Key.size( ) )
 					{
 						// the 4 byte integer should be the value
 
-						Value = ActionData->mid(i + 8 + Data.size( ) + Key.size( ), 4 );
+						Value = ActionData.mid(i + 8 + Data.size( ) + Key.size( ), 4 );
 						QString DataString = Data;
 						QString KeyString = Key;
 						quint32 ValueInt = Util::extractUInt32( Value );

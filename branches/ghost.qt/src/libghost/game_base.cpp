@@ -48,6 +48,8 @@
 // CBaseGame
 //
 
+quint32 CBaseGame::m_GlobalHostCounter = 1;
+
 CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint16 nHostPort, unsigned char nGameState, QString nGameName, QString nOwnerName, QString nCreatorName, QString nCreatorServer )
 {
 	m_GHost = nGHost;
@@ -151,7 +153,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, quint1
 	m_CreatorServer = nCreatorServer;
 	m_HCLCommandString = m_Map->GetMapDefaultHCL( );
 	m_RandomSeed = GetTicks( );
-	m_HostCounter = m_GHost->m_HostCounter++;
+	m_HostCounter = GetNewHostCounter( );
 	m_SyncLimit = m_GHost->m_SyncLimit;
 	m_SyncCounter = 0;
 	m_GameTicks = 0;
@@ -315,11 +317,11 @@ CBaseGame :: ~CBaseGame( )
 	}
 }
 
-quint32 CBaseGame :: GetSlotsOccupied( )
+quint32 CBaseGame :: GetSlotsOccupied( ) const
 {
 	quint32 NumSlotsOccupied = 0;
 
-	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: const_iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED )
 			NumSlotsOccupied++;
@@ -328,11 +330,11 @@ quint32 CBaseGame :: GetSlotsOccupied( )
 	return NumSlotsOccupied;
 }
 
-quint32 CBaseGame :: GetSlotsOpen( )
+quint32 CBaseGame :: GetSlotsOpen( ) const
 {
 	quint32 NumSlotsOpen = 0;
 
-	for( QList<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+	for( QList<CGameSlot> :: const_iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
 	{
 		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OPEN )
 			NumSlotsOpen++;
@@ -341,7 +343,7 @@ quint32 CBaseGame :: GetSlotsOpen( )
 	return NumSlotsOpen;
 }
 
-quint32 CBaseGame :: GetNumPlayers( )
+quint32 CBaseGame :: GetNumPlayers( ) const
 {
 	quint32 NumPlayers = GetNumHumanPlayers( );
 
@@ -351,7 +353,7 @@ quint32 CBaseGame :: GetNumPlayers( )
 	return NumPlayers;
 }
 
-quint32 CBaseGame :: GetNumHumanPlayers( )
+quint32 CBaseGame :: GetNumHumanPlayers( ) const
 {
 	quint32 NumHumanPlayers = 0;
 
@@ -364,7 +366,7 @@ quint32 CBaseGame :: GetNumHumanPlayers( )
 	return NumHumanPlayers;
 }
 
-QString CBaseGame :: GetDescription( )
+QString CBaseGame :: GetDescription( ) const
 {
 	QString Description = m_GameName + " : " + m_OwnerName + " : " + QString::number( GetNumHumanPlayers( ) ) + "/" + QString::number( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) );
 
@@ -525,8 +527,6 @@ void CBaseGame::EventBroadcastTimeout()
 	// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
 
 	quint32 FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
-	QString target = m_GHost->m_UDPSocket->property("target").toString();
-	QHostAddress hostAddr = target == "" ? QHostAddress::LocalHost : QHostAddress(m_GHost->m_UDPSocket->property("target").toString());
 
 	if( m_SaveGame )
 	{
@@ -539,7 +539,7 @@ void CBaseGame::EventBroadcastTimeout()
 		QByteArray MapHeight;
 		MapHeight.push_back( (char)0 );
 		MapHeight.push_back( (char)0 );
-		m_GHost->m_UDPSocket->writeDatagram(
+		m_GHost->SendUdpBroadcast(
 			m_Protocol->SEND_W3GS_GAMEINFO(
 						m_GHost->m_TFT,
 						m_GHost->m_LANWar3Version,
@@ -556,7 +556,6 @@ void CBaseGame::EventBroadcastTimeout()
 						12,
 						m_HostPort,
 						FixedHostCounter ),
-			hostAddr,
 			6112);
 	}
 	else
@@ -565,7 +564,7 @@ void CBaseGame::EventBroadcastTimeout()
 		// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
 
 		quint32 MapGameType = MAPGAMETYPE_UNKNOWN0;
-		m_GHost->m_UDPSocket->writeDatagram(
+		m_GHost->SendUdpBroadcast(
 				m_Protocol->SEND_W3GS_GAMEINFO(
 						m_GHost->m_TFT,
 						m_GHost->m_LANWar3Version,
@@ -582,7 +581,6 @@ void CBaseGame::EventBroadcastTimeout()
 						12,
 						m_HostPort,
 						FixedHostCounter ),
-				 hostAddr,
 				 6112 );
 	}
 }
@@ -593,11 +591,12 @@ void CBaseGame::EventTryAutoRehost()
 	// however, if autohosting is enabled and this game is public and this game is set to autostart, it's probably autohosted
 	// so rehost it using the current autohost game name
 
-	QString GameName = m_GHost->m_AutoHostGameName + " #" + QString::number( m_GHost->m_HostCounter );
+	m_HostCounter = GetNewHostCounter( );
+	QString GameName = m_GHost->m_AutoHostGameName + " #" + QString::number( m_HostCounter );
 	CONSOLE_Print( "[GAME: " + m_GameName + "] automatically trying to rehost as public game [" + GameName + "] due to refresh failure" );
 	m_LastGameName = m_GameName;
 	m_GameName = GameName;
-	m_HostCounter = m_GHost->m_HostCounter++;
+
 	m_RefreshError = false;
 
 	for( QList<CBNET *> :: const_iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
@@ -2555,7 +2554,7 @@ void CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *actio
 
 	// check for players saving the game and notify everyone
 
-	if( !action->GetAction( )->isEmpty( ) && (*action->GetAction( )).at(0) == 6 )
+	if( !action->GetAction( ).isEmpty( ) && action->GetAction( ).at(0) == 6 )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + player->GetName( ) + "] is saving the game" );
 		SendAllChat( m_GHost->GetLanguage( )->PlayerIsSavingTheGame( player->GetName( ) ) );

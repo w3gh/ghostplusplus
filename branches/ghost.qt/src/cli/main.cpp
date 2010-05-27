@@ -25,10 +25,10 @@ void SignalCatcher2( int s )
 	
 	if( gGHost )
 	{
-		if( gGHost->m_Exiting )
+		if( gGHost->GetExiting( ) )
 			exit( 1 );
 		else
-			gGHost->m_Exiting = true;
+			gGHost->Exit( );
 	}
 	else
 		exit( 1 );

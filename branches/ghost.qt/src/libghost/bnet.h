@@ -22,7 +22,6 @@
 #define BNET_H
 
 #include "includes.h"
-#include "interfaces.h"
 #include <QTimer>
 #include <QStringList>
 #include <QTime>
@@ -167,6 +166,8 @@ private:
 
 	QTime m_LastPacketSent;
 
+	void ResetSocket();
+
 public slots:
 	void EnqueuePacket(const QByteArray &pkg);
 	void SendPacket();
@@ -175,20 +176,20 @@ public:
 	CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAlias, const QString &nBNLSServer, quint16 nBNLSPort, quint32 nBNLSWardenCookie, const QString &nCDKeyROC, const QString &nCDKeyTFT, const QString &nCountryAbbrev, const QString &nCountry, quint32 nLocaleID, const QString &nUserName, const QString &nUserPassword, const QString &nFirstChannel, const QString &nRootAdmin, char nCommandTrigger, bool nHoldFriends, bool nHoldClan, bool nPublicCommands, unsigned char nWar3Version, const QByteArray &nEXEVersion, const QByteArray &nEXEVersionHash, const QString &nPasswordHashType, const QString &nPVPGNRealmName, quint32 nMaxMessageLength, quint32 nHostCounterID );
 	virtual ~CBNET( );
 
-	QString GetServer( ) const					{ return m_Server; }
-	QString GetServerAlias( ) const				{ return m_ServerAlias; }
+	const QString &GetServer( ) const					{ return m_Server; }
+	const QString &GetServerAlias( ) const				{ return m_ServerAlias; }
 	QString GetCDKeyROC( ) const				{ return m_CDKeyROC; }
 	QString GetCDKeyTFT( ) const				{ return m_CDKeyTFT; }
-	QString GetUserName( ) const				{ return m_UserName; }
-	QString GetUserPassword( ) const			{ return m_UserPassword; }
-	QString GetFirstChannel( ) const			{ return m_FirstChannel; }
-	QString GetCurrentChannel( ) const			{ return m_CurrentChannel; }
-	QString GetRootAdmin( )	const				{ return m_RootAdmin; }
+	const QString &GetUserName( ) const				{ return m_UserName; }
+	const QString &GetUserPassword( ) const			{ return m_UserPassword; }
+	const QString &GetFirstChannel( ) const			{ return m_FirstChannel; }
+	const QString &GetCurrentChannel( ) const			{ return m_CurrentChannel; }
+	const QString &GetRootAdmin( )	const				{ return m_RootAdmin; }
 	char GetCommandTrigger( ) const				{ return m_CommandTrigger; }
-	QByteArray GetEXEVersion( )	const			{ return m_EXEVersion; }
-	QByteArray GetEXEVersionHash( )	const		{ return m_EXEVersionHash; }
-	QString GetPasswordHashType( ) const		{ return m_PasswordHashType; }
-	QString GetPVPGNRealmName( ) const			{ return m_PVPGNRealmName; }
+	const QByteArray &GetEXEVersion( )	const			{ return m_EXEVersion; }
+	const QByteArray &GetEXEVersionHash( )	const		{ return m_EXEVersionHash; }
+	const QString &GetPasswordHashType( ) const		{ return m_PasswordHashType; }
+	const QString &GetPVPGNRealmName( ) const			{ return m_PVPGNRealmName; }
 	quint32 GetHostCounterID( )	const			{ return m_HostCounterID; }
 	bool GetLoggedIn( )	const					{ return m_LoggedIn; }
 	bool GetInChat( ) const						{ return m_InChat; }
@@ -196,7 +197,7 @@ public:
 	bool GetHoldClan( )	const					{ return m_HoldClan; }
 	bool GetPublicCommands( ) const				{ return m_PublicCommands; }
 	quint32 GetOutPacketsQueued( ) const		{ return m_OutPackets.size( ); }
-	QByteArray GetUniqueName( ) const;
+	const QByteArray &GetUniqueName( ) const;
 
 	// processing functions
 
@@ -222,10 +223,10 @@ public:
 
 	// other functions
 
-	bool IsAdmin( const QString &name );
-	bool IsRootAdmin( const QString &name );
-	CDBBan *IsBannedName( const QString &name );
-	CDBBan *IsBannedIP( const QString &ip );
+	bool IsAdmin( const QString &name ) const;
+	bool IsRootAdmin( const QString &name ) const;
+	CDBBan *IsBannedName( const QString &name ) const;
+	CDBBan *IsBannedIP( const QString &ip ) const;
 	void AddAdmin( const QString &name );
 	void AddBan( const QString &name, const QString &ip, const QString &gamename, const QString &admin, const QString &reason );
 	void RemoveAdmin( const QString &name );
