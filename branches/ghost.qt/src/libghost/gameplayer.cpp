@@ -37,7 +37,7 @@
 #include <QTcpSocket>
 #include <QAbstractSocket>
 
-CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket )
+CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QAbstractSocket *nSocket )
 	: QObject(NULL)
 {
 	m_Protocol = nProtocol;
@@ -267,7 +267,7 @@ void CPotentialPlayer :: Send( const QByteArray &data )
 // CGamePlayer
 //
 #include <QTimer>
-CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved )
+CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QAbstractSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved )
 	: CPotentialPlayer( nProtocol, nGame, nSocket )
 {
 	m_PID = nPID;
@@ -316,7 +316,7 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QSt
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
 
-	QTcpSocket *s = potential->GetSocket();
+	QAbstractSocket *s = potential->GetSocket();
 
 	s->disconnect(potential, SLOT(EventConnectionClosed()));
 	s->disconnect(potential, SLOT(EventConnectionError(QAbstractSocket::SocketError)));
@@ -702,7 +702,7 @@ void CGamePlayer :: Send( const QByteArray &data )
 	CPotentialPlayer :: Send( data );
 }
 
-void CGamePlayer :: EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPacket )
+void CGamePlayer :: EventGProxyReconnect( QAbstractSocket *NewSocket, quint32 LastPacket )
 {
 	m_Socket->deleteLater();
 	m_Socket = NewSocket;

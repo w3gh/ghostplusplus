@@ -52,6 +52,7 @@
 #include <QDir>
 #include <QUdpSocket>
 #include <QTcpServer>
+#include <QTcpSocket>
 #include <QThreadStorage>
 #include <QNetworkInterface>
 

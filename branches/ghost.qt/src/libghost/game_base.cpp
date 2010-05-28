@@ -41,6 +41,7 @@
 #include <QRegExp>
 #include <QUdpSocket>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 #include "next_combination.h"
 
