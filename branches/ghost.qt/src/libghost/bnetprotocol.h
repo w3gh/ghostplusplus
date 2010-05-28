@@ -121,36 +121,36 @@ public:
 
 	// receive functions
 
-	bool RECEIVE_SID_NULL( QByteArray data );
-	CIncomingGameHost *RECEIVE_SID_GETADVLISTEX( QByteArray data );
-	bool RECEIVE_SID_ENTERCHAT( QByteArray data );
-	CIncomingChatEvent *RECEIVE_SID_CHATEVENT( QByteArray data );
-	bool RECEIVE_SID_CHECKAD( QByteArray data );
-	bool RECEIVE_SID_STARTADVEX3( QByteArray data );
-	QByteArray RECEIVE_SID_PING( QByteArray data );
-	bool RECEIVE_SID_LOGONRESPONSE( QByteArray data );
-	bool RECEIVE_SID_AUTH_INFO( QByteArray data );
-	bool RECEIVE_SID_AUTH_CHECK( QByteArray data );
-	bool RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data );
-	bool RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data );
-	QByteArray RECEIVE_SID_WARDEN( QByteArray data );
-	QList<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( QByteArray data );
-	QList<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( QByteArray data );
-	CIncomingClanList *RECEIVE_SID_CLANMEMBERSTATUSCHANGE( QByteArray data );
+	bool RECEIVE_SID_NULL( const QByteArray &data );
+	CIncomingGameHost *RECEIVE_SID_GETADVLISTEX( const QByteArray &data );
+	bool RECEIVE_SID_ENTERCHAT( const QByteArray &data );
+	CIncomingChatEvent *RECEIVE_SID_CHATEVENT( const QByteArray &data );
+	bool RECEIVE_SID_CHECKAD( const QByteArray &data );
+	bool RECEIVE_SID_STARTADVEX3( const QByteArray &data );
+	QByteArray RECEIVE_SID_PING( const QByteArray &data );
+	bool RECEIVE_SID_LOGONRESPONSE( const QByteArray &data );
+	bool RECEIVE_SID_AUTH_INFO( const QByteArray &data );
+	bool RECEIVE_SID_AUTH_CHECK( const QByteArray &data );
+	bool RECEIVE_SID_AUTH_ACCOUNTLOGON( const QByteArray &data );
+	bool RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( const QByteArray &data );
+	QByteArray RECEIVE_SID_WARDEN( const QByteArray &data );
+	QList<CIncomingFriendList *> RECEIVE_SID_FRIENDSLIST( const QByteArray &data );
+	QList<CIncomingClanList *> RECEIVE_SID_CLANMEMBERLIST( const QByteArray &data );
+	CIncomingClanList *RECEIVE_SID_CLANMEMBERSTATUSCHANGE( const QByteArray &data );
 
 	// send functions
 
 	QByteArray SEND_PROTOCOL_INITIALIZE_SELECTOR( );
 	QByteArray SEND_SID_NULL( );
 	QByteArray SEND_SID_STOPADV( );
-	QByteArray SEND_SID_GETADVLISTEX( QString gameName );
+	QByteArray SEND_SID_GETADVLISTEX( const QString &gameName );
 	QByteArray SEND_SID_ENTERCHAT( );
-	QByteArray SEND_SID_JOINCHANNEL( QString channel );
-	QByteArray SEND_SID_CHATCOMMAND( QString command );
+	QByteArray SEND_SID_JOINCHANNEL( const QString &channel );
+	QByteArray SEND_SID_CHATCOMMAND( const QString &command );
 	QByteArray SEND_SID_CHECKAD( );
-	QByteArray SEND_SID_STARTADVEX3( unsigned char state, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, QByteArray mapSHA1, quint32 hostCounter );
-	QByteArray SEND_SID_NOTIFYJOIN( QString gameName );
-	QByteArray SEND_SID_PING( QByteArray pingValue );
+	QByteArray SEND_SID_STARTADVEX3( unsigned char state, const QByteArray &mapGameType, const QByteArray &mapFlags, const QByteArray &mapWidth, const QByteArray &mapHeight, const QString &gameName, const QString &hostName, quint32 upTime, const QString &mapPath, const QByteArray &mapCRC, const QByteArray &mapSHA1, quint32 hostCounter );
+	QByteArray SEND_SID_NOTIFYJOIN( const QString &gameName );
+	QByteArray SEND_SID_PING( const QByteArray &pingValue );
 	QByteArray SEND_SID_LOGONRESPONSE( QByteArray clientToken, QByteArray serverToken, QByteArray passwordHash, QString accountName );
 	QByteArray SEND_SID_NETGAMEPORT( quint16 serverPort );
 	QByteArray SEND_SID_AUTH_INFO( unsigned char ver, bool TFT, quint32 localeID, QString countryAbbrev, QString country );
@@ -164,8 +164,8 @@ public:
 	// other functions
 
 private:
-	bool AssignLength( QByteArray &content );
-	bool ValidateLength( QByteArray &content );
+	bool AssignLength( QByteArray &content ) const;
+	bool ValidateLength( const QByteArray &content ) const;
 };
 
 //

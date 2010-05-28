@@ -2991,9 +2991,9 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 
 		if( m_GHost->m_AllowDownloads != 0 )
 		{
-			QByteArray *MapData = m_Map->GetMapData( );
+			const QByteArray &MapData = m_Map->GetMapData( );
 
-			if( !MapData->isEmpty( ) )
+			if( !MapData.isEmpty( ) )
 			{
 				if( m_GHost->m_AllowDownloads == 1 || ( m_GHost->m_AllowDownloads == 2 && player->GetDownloadAllowed( ) ) )
 				{

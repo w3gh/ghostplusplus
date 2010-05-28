@@ -73,7 +73,7 @@ CMap :: CMap( CGHost *nGHost )
 	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
 }
 
-CMap :: CMap( CGHost *nGHost, CConfig *CFG, QString nCFGFile )
+CMap :: CMap( CGHost *nGHost, const CConfig &CFG, const QString &nCFGFile )
 {
 	m_GHost = nGHost;
 	Load( CFG, nCFGFile );
@@ -84,7 +84,7 @@ CMap :: ~CMap( )
 
 }
 
-QByteArray CMap :: GetMapGameFlags( )
+QByteArray CMap :: GetMapGameFlags( ) const
 {
 	/*
 
@@ -158,7 +158,7 @@ QByteArray CMap :: GetMapGameFlags( )
 	return Util::fromUInt32(GameFlags);
 }
 
-quint32 CMap :: GetMapGameType( )
+quint32 CMap :: GetMapGameType( ) const
 {
 	/* spec stolen from Strilanc as follows:
 
@@ -233,7 +233,7 @@ quint32 CMap :: GetMapGameType( )
 	return GameType;
 }
 
-unsigned char CMap :: GetMapLayoutStyle( )
+unsigned char CMap :: GetMapLayoutStyle( ) const
 {
 	// 0 = melee
 	// 1 = custom forces
@@ -249,14 +249,14 @@ unsigned char CMap :: GetMapLayoutStyle( )
 	return 3;
 }
 
-void CMap :: Load( CConfig *CFG, QString nCFGFile )
+void CMap :: Load( const CConfig &CFG, const QString &nCFGFile )
 {
 	m_Valid = true;
 	m_CFGFile = nCFGFile;
 
 	// load the map data
 
-	m_MapLocalPath = CFG->GetString( "map_localpath", QString( ) );
+	m_MapLocalPath = CFG.GetString( "map_localpath", QString( ) );
 	m_MapData.clear( );
 
 	if( !m_MapLocalPath.isEmpty( ) )

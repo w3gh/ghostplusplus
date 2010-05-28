@@ -33,12 +33,12 @@ private:
 	QByteArray m_Data;
 
 public:
-	CCommandPacket( unsigned char nPacketType, int nID, QByteArray nData );
+	CCommandPacket( unsigned char nPacketType, int nID, const QByteArray &nData );
 	~CCommandPacket( );
 
-	unsigned char GetPacketType( )	{ return m_PacketType; }
-	int GetID( )					{ return m_ID; }
-	QByteArray GetData( )			{ return m_Data; }
+	unsigned char GetPacketType( ) const	{ return m_PacketType; }
+	int GetID( ) const					{ return m_ID; }
+	const QByteArray &GetData( ) const		{ return m_Data; }
 };
 
 #endif

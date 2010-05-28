@@ -1712,7 +1712,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									QueueChatCommand( m_GHost->GetLanguage( )->LoadingConfigFile( m_GHost->m_MapCFGPath + Pattern ), User, Whisper );
 									CConfig MapCFG;
 									MapCFG.Read( Pattern );
-									m_GHost->GetCurrentMap( )->Load( &MapCFG, m_GHost->m_MapCFGPath + Pattern );
+									m_GHost->GetCurrentMap( )->Load( MapCFG, m_GHost->m_MapCFGPath + Pattern );
 								}
 								else if (Matches == 1)
 								{
@@ -1720,7 +1720,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									QueueChatCommand( m_GHost->GetLanguage( )->LoadingConfigFile( m_GHost->m_MapCFGPath + File ), User, Whisper );
 									CConfig MapCFG;
 									MapCFG.Read( m_GHost->m_MapCFGPath + File );
-									m_GHost->GetCurrentMap( )->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
+									m_GHost->GetCurrentMap( )->Load( MapCFG, m_GHost->m_MapCFGPath + File );
 								}
 								else
 									QueueChatCommand( m_GHost->GetLanguage( )->FoundMapConfigs( files.join(", ") ), User, Whisper );
@@ -1801,7 +1801,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									CConfig MapCFG;
 									MapCFG.Set( "map_path", "Maps\\Download\\" + Pattern );
 									MapCFG.Set( "map_localpath", Pattern );
-									m_GHost->GetCurrentMap( )->Load( &MapCFG, Pattern );
+									m_GHost->GetCurrentMap( )->Load( MapCFG, Pattern );
 								}
 								else if( Matches == 1 )
 								{
@@ -1813,7 +1813,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									CConfig MapCFG;
 									MapCFG.Set( "map_path", "Maps\\Download\\" + File );
 									MapCFG.Set( "map_localpath", File );
-									m_GHost->GetCurrentMap( )->Load( &MapCFG, File );
+									m_GHost->GetCurrentMap( )->Load( MapCFG, File );
 								}
 								else
 									QueueChatCommand( m_GHost->GetLanguage( )->FoundMaps( files.join(", ") ), User, Whisper );
