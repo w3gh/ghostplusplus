@@ -127,26 +127,26 @@ private:
 
 public:
 	CMap( CGHost *nGHost );
-	CMap( CGHost *nGHost, CConfig *CFG, QString nCFGFile );
+	CMap( CGHost *nGHost, const CConfig &CFG, const QString &nCFGFile );
 	~CMap( );
 
 	bool GetValid( ) const					{ return m_Valid; }
-	QString GetCFGFile( ) const				{ return m_CFGFile; }
-	QString GetMapPath( ) const				{ return m_MapPath; }
-	QByteArray GetMapSize( ) const			{ return m_MapSize; }
-	QByteArray GetMapInfo( ) const			{ return m_MapInfo; }
-	QByteArray GetMapCRC( )	const			{ return m_MapCRC; }
-	QByteArray GetMapSHA1( ) const			{ return m_MapSHA1; }
+	const QString &GetCFGFile( ) const				{ return m_CFGFile; }
+	const QString &GetMapPath( ) const				{ return m_MapPath; }
+	const QByteArray &GetMapSize( ) const			{ return m_MapSize; }
+	const QByteArray &GetMapInfo( ) const			{ return m_MapInfo; }
+	const QByteArray &GetMapCRC( )	const			{ return m_MapCRC; }
+	const QByteArray &GetMapSHA1( ) const			{ return m_MapSHA1; }
 	unsigned char GetMapSpeed( ) const		{ return m_MapSpeed; }
 	unsigned char GetMapVisibility( ) const	{ return m_MapVisibility; }
 	unsigned char GetMapObservers( ) const	{ return m_MapObservers; }
 	unsigned char GetMapFlags( ) const		{ return m_MapFlags; }
-	QByteArray GetMapGameFlags( );
-	quint32 GetMapGameType( );
+	QByteArray GetMapGameFlags( ) const;
+	quint32 GetMapGameType( ) const;
 	quint32 GetMapOptions( ) const			{ return m_MapOptions; }
-	unsigned char GetMapLayoutStyle( );
-	QByteArray GetMapWidth( ) const			{ return m_MapWidth; }
-	QByteArray GetMapHeight( ) const		{ return m_MapHeight; }
+	unsigned char GetMapLayoutStyle( ) const;
+	const QByteArray &GetMapWidth( ) const			{ return m_MapWidth; }
+	const QByteArray &GetMapHeight( ) const		{ return m_MapHeight; }
 	const QString &GetMapType( ) const				{ return m_MapType; }
 	const QString &GetMapMatchMakingCategory( ) const	{ return m_MapMatchMakingCategory; }
 	const QString &GetMapStatsW3MMDCategory( ) const	{ return m_MapStatsW3MMDCategory; }
@@ -154,12 +154,12 @@ public:
 	quint32 GetMapDefaultPlayerScore( )	{ return m_MapDefaultPlayerScore; }
 	const QString &GetMapLocalPath( ) const			{ return m_MapLocalPath; }
 	bool GetMapLoadInGame( ) const			{ return m_MapLoadInGame; }
-	QByteArray *GetMapData( )					{ return &m_MapData; }
-	quint32 GetMapNumPlayers( )			{ return m_MapNumPlayers; }
-	quint32 GetMapNumTeams( )				{ return m_MapNumTeams; }
-	QList<CGameSlot> GetSlots( )			{ return m_Slots; }
+	const QByteArray &GetMapData( ) const					{ return m_MapData; }
+	quint32 GetMapNumPlayers( ) const			{ return m_MapNumPlayers; }
+	quint32 GetMapNumTeams( ) const				{ return m_MapNumTeams; }
+	const QList<CGameSlot> &GetSlots( ) const			{ return m_Slots; }
 
-	void Load( CConfig *CFG, QString nCFGFile );
+	void Load( const CConfig &CFG, const QString &nCFGFile );
 	void CheckValid( );
 	quint32 XORRotateLeft( unsigned char *data, quint32 length );
 };

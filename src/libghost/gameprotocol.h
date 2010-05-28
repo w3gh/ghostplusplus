@@ -109,48 +109,48 @@ public:
 
 	// receive functions
 
-	CIncomingJoinPlayer *RECEIVE_W3GS_REQJOIN( QByteArray data );
-	quint32 RECEIVE_W3GS_LEAVEGAME( QByteArray data );
-	bool RECEIVE_W3GS_GAMELOADED_SELF( QByteArray data );
-	CIncomingAction *RECEIVE_W3GS_OUTGOING_ACTION( QByteArray data, unsigned char PID );
-	quint32 RECEIVE_W3GS_OUTGOING_KEEPALIVE( QByteArray data );
-	CIncomingChatPlayer *RECEIVE_W3GS_CHAT_TO_HOST( QByteArray data );
-	bool RECEIVE_W3GS_SEARCHGAME( QByteArray data, unsigned char war3Version );
-	CIncomingMapSize *RECEIVE_W3GS_MAPSIZE( QByteArray data, QByteArray mapSize );
-	quint32 RECEIVE_W3GS_MAPPARTOK( QByteArray data );
-	quint32 RECEIVE_W3GS_PONG_TO_HOST( QByteArray data );
+	CIncomingJoinPlayer *RECEIVE_W3GS_REQJOIN( const QByteArray &data );
+	quint32 RECEIVE_W3GS_LEAVEGAME( const QByteArray &data );
+	bool RECEIVE_W3GS_GAMELOADED_SELF( const QByteArray &data );
+	CIncomingAction *RECEIVE_W3GS_OUTGOING_ACTION( const QByteArray &data, unsigned char PID );
+	quint32 RECEIVE_W3GS_OUTGOING_KEEPALIVE( const QByteArray &data );
+	CIncomingChatPlayer *RECEIVE_W3GS_CHAT_TO_HOST( const QByteArray &data );
+	bool RECEIVE_W3GS_SEARCHGAME( const QByteArray &data, unsigned char war3Version );
+	CIncomingMapSize *RECEIVE_W3GS_MAPSIZE( const QByteArray &data, const QByteArray &mapSize );
+	quint32 RECEIVE_W3GS_MAPPARTOK( const QByteArray &data );
+	quint32 RECEIVE_W3GS_PONG_TO_HOST( const QByteArray &data );
 
 	// send functions
 
 	QByteArray SEND_W3GS_PING_FROM_HOST( );
-	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, QByteArray port, QByteArray externalIP, QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFOJOIN( unsigned char PID, const QByteArray & port, const QByteArray & externalIP, QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_REJECTJOIN( quint32 reason );
-	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, QString name, QByteArray externalIP, QByteArray internalIP );
+	QByteArray SEND_W3GS_PLAYERINFO( unsigned char PID, const QString &name, const QByteArray & externalIP, const QByteArray & internalIP );
 	QByteArray SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, quint32 leftCode );
 	QByteArray SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
-	QByteArray SEND_W3GS_SLOTINFO( QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	QByteArray SEND_W3GS_SLOTINFO( const QList<CGameSlot> &lslots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	QByteArray SEND_W3GS_COUNTDOWN_START( );
 	QByteArray SEND_W3GS_COUNTDOWN_END( );
-	QByteArray SEND_W3GS_INCOMING_ACTION( QQueue<CIncomingAction *> actions, quint16 sendInterval );
-	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, QByteArray toPIDs, unsigned char flag, QByteArray flagExtra, QString message );
-	QByteArray SEND_W3GS_START_LAG( QList<CGamePlayer *> players, bool loadInGame = false );
+	QByteArray SEND_W3GS_INCOMING_ACTION( const QList<CIncomingAction *> &actions, quint16 sendInterval );
+	QByteArray SEND_W3GS_CHAT_FROM_HOST( unsigned char fromPID, const QByteArray & toPIDs, unsigned char flag, const QByteArray & flagExtra, const QString & message );
+	QByteArray SEND_W3GS_START_LAG( const QList<CGamePlayer *> &players, bool loadInGame = false );
 	QByteArray SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadInGame = false );
 	QByteArray SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Version );
-	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, QByteArray mapGameType, QByteArray mapFlags, QByteArray mapWidth, QByteArray mapHeight, QString gameName, QString hostName, quint32 upTime, QString mapPath, QByteArray mapCRC, quint32 slotsTotal, quint32 slotsOpen, quint16 port, quint32 hostCounter );
+	QByteArray SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, const QByteArray & mapGameType, const QByteArray & mapFlags, const QByteArray & mapWidth, const QByteArray & mapHeight, const QString & gameName, const QString & hostName, quint32 upTime, const QString & mapPath, const QByteArray & mapCRC, quint32 slotsTotal, quint32 slotsOpen, quint16 port, quint32 hostCounter );
 	QByteArray SEND_W3GS_CREATEGAME( bool TFT, unsigned char war3Version );
 	QByteArray SEND_W3GS_REFRESHGAME( quint32 players, quint32 playerSlots );
 	QByteArray SEND_W3GS_DECREATEGAME( );
-	QByteArray SEND_W3GS_MAPCHECK( QString mapPath, QByteArray mapSize, QByteArray mapInfo, QByteArray mapCRC, QByteArray mapSHA1 );
+	QByteArray SEND_W3GS_MAPCHECK( const QString & mapPath, const QByteArray & mapSize, const QByteArray & mapInfo, const QByteArray & mapCRC, const QByteArray & mapSHA1 );
 	QByteArray SEND_W3GS_STARTDOWNLOAD( unsigned char fromPID );
-	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, QByteArray *mapData );
-	QByteArray SEND_W3GS_INCOMING_ACTION2( QQueue<CIncomingAction *> actions );
+	QByteArray SEND_W3GS_MAPPART( unsigned char fromPID, unsigned char toPID, quint32 start, const QByteArray &mapData );
+	QByteArray SEND_W3GS_INCOMING_ACTION2( const QList<CIncomingAction *> &actions );
 
 	// other functions
 
 private:
-	bool AssignLength( QByteArray &content );
-	bool ValidateLength( QByteArray &content );
-	QByteArray EncodeSlotInfo( QList<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
+	bool AssignLength( QByteArray &content ) const;
+	bool ValidateLength( const QByteArray &content ) const;
+	QByteArray EncodeSlotInfo( const QList<CGameSlot> &slots, quint32 randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 };
 
 //
@@ -185,7 +185,7 @@ private:
 	QByteArray m_Action;
 
 public:
-	CIncomingAction( unsigned char nPID, QByteArray &nCRC, QByteArray &nAction );
+	CIncomingAction( unsigned char nPID, const QByteArray &nCRC, const QByteArray &nAction );
 	~CIncomingAction( );
 
 	unsigned char GetPID( ) const	{ return m_PID; }
@@ -221,18 +221,18 @@ private:
 	QByteArray m_ExtraFlags;
 
 public:
-	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, QString nMessage );
-	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, QString nMessage, QByteArray &nExtraFlags );
-	CIncomingChatPlayer( unsigned char nFromPID, QByteArray &nToPIDs, unsigned char nFlag, unsigned char nByte );
+	CIncomingChatPlayer( unsigned char nFromPID, const QByteArray &nToPIDs, unsigned char nFlag, const QString &nMessage );
+	CIncomingChatPlayer( unsigned char nFromPID, const QByteArray &nToPIDs, unsigned char nFlag, const QString &nMessage, const QByteArray &nExtraFlags );
+	CIncomingChatPlayer( unsigned char nFromPID, const QByteArray &nToPIDs, unsigned char nFlag, unsigned char nByte );
 	~CIncomingChatPlayer( );
 
-	ChatToHostType GetType( )		{ return m_Type; }
-	unsigned char GetFromPID( )		{ return m_FromPID; }
-	QByteArray GetToPIDs( )			{ return m_ToPIDs; }
-	unsigned char GetFlag( )		{ return m_Flag; }
-	QString GetMessage( )			{ return m_Message; }
-	unsigned char GetByte( )		{ return m_Byte; }
-	QByteArray GetExtraFlags( )		{ return m_ExtraFlags; }
+	ChatToHostType GetType( ) const		{ return m_Type; }
+	unsigned char GetFromPID( ) const		{ return m_FromPID; }
+	const QByteArray &GetToPIDs( ) const			{ return m_ToPIDs; }
+	unsigned char GetFlag( ) const		{ return m_Flag; }
+	const QString &GetMessage( ) const			{ return m_Message; }
+	unsigned char GetByte( ) const		{ return m_Byte; }
+	const QByteArray &GetExtraFlags( ) const		{ return m_ExtraFlags; }
 };
 
 class CIncomingMapSize

@@ -495,7 +495,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 
 	CConfig MapCFG;
 	MapCFG.Read( m_MapCFGPath + m_DefaultMap );
-	m_Map = new CMap( this, &MapCFG, m_MapCFGPath + m_DefaultMap );
+	m_Map = new CMap( this, MapCFG, m_MapCFGPath + m_DefaultMap );
 
 	if( !m_AdminGameMap.isEmpty( ) )
 	{
@@ -508,7 +508,7 @@ CGHost :: CGHost( CConfig *CFG, QString configFile )
 		CONSOLE_Print( "[GHOST] trying to load default admin game map" );
 		CConfig AdminMapCFG;
 		AdminMapCFG.Read( m_MapCFGPath + m_AdminGameMap );
-		m_AdminMap = new CMap( this, &AdminMapCFG, m_MapCFGPath + m_AdminGameMap );
+		m_AdminMap = new CMap( this, AdminMapCFG, m_MapCFGPath + m_AdminGameMap );
 
 		if( !m_AdminMap->GetValid( ) )
 		{

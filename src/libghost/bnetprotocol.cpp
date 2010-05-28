@@ -37,7 +37,7 @@ CBNETProtocol :: ~CBNETProtocol( )
 // RECEIVE FUNCTIONS //
 ///////////////////////
 
-bool CBNETProtocol :: RECEIVE_SID_NULL( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_NULL( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_NULL" );
 	// DEBUG_Print( data );
@@ -48,7 +48,7 @@ bool CBNETProtocol :: RECEIVE_SID_NULL( QByteArray data )
 	return ValidateLength( data );
 }
 
-CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( QByteArray data )
+CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_GETADVLISTEX" );
 	// DEBUG_Print( data );
@@ -92,7 +92,7 @@ CIncomingGameHost *CBNETProtocol :: RECEIVE_SID_GETADVLISTEX( QByteArray data )
 	return NULL;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_ENTERCHAT" );
 	// DEBUG_Print( data );
@@ -110,7 +110,7 @@ bool CBNETProtocol :: RECEIVE_SID_ENTERCHAT( QByteArray data )
 	return false;
 }
 
-CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( QByteArray data )
+CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_CHATEVENT" );
 	// DEBUG_Print( data );
@@ -159,7 +159,7 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( QByteArray data )
 	return NULL;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_CHECKAD( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_CHECKAD( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_CHECKAD" );
 	// DEBUG_Print( data );
@@ -170,7 +170,7 @@ bool CBNETProtocol :: RECEIVE_SID_CHECKAD( QByteArray data )
 	return ValidateLength( data );
 }
 
-bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_STARTADVEX3" );
 	// DEBUG_Print( data );
@@ -190,7 +190,7 @@ bool CBNETProtocol :: RECEIVE_SID_STARTADVEX3( QByteArray data )
 	return false;
 }
 
-QByteArray CBNETProtocol :: RECEIVE_SID_PING( QByteArray data )
+QByteArray CBNETProtocol :: RECEIVE_SID_PING( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_PING" );
 	// DEBUG_Print( data );
@@ -205,7 +205,7 @@ QByteArray CBNETProtocol :: RECEIVE_SID_PING( QByteArray data )
 	return QByteArray( );
 }
 
-bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_LOGONRESPONSE" );
 	// DEBUG_Print( data );
@@ -225,7 +225,7 @@ bool CBNETProtocol :: RECEIVE_SID_LOGONRESPONSE( QByteArray data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_INFO" );
 	// DEBUG_Print( data );
@@ -252,7 +252,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_INFO( QByteArray data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_CHECK" );
 	// DEBUG_Print( data );
@@ -274,7 +274,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_CHECK( QByteArray data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_ACCOUNTLOGON" );
 	// DEBUG_Print( data );
@@ -301,7 +301,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGON( QByteArray data )
 	return false;
 }
 
-bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data )
+bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_AUTH_ACCOUNTLOGONPROOF" );
 	// DEBUG_Print( data );
@@ -321,7 +321,7 @@ bool CBNETProtocol :: RECEIVE_SID_AUTH_ACCOUNTLOGONPROOF( QByteArray data )
 	return false;
 }
 
-QByteArray CBNETProtocol :: RECEIVE_SID_WARDEN( QByteArray data )
+QByteArray CBNETProtocol :: RECEIVE_SID_WARDEN( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_WARDEN" );
 	// DEBUG_PRINT( data );
@@ -336,7 +336,7 @@ QByteArray CBNETProtocol :: RECEIVE_SID_WARDEN( QByteArray data )
 	return QByteArray( );
 }
 
-QList<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteArray data )
+QList<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_FRIENDSLIST" );
 	// DEBUG_Print( data );
@@ -386,7 +386,7 @@ QList<CIncomingFriendList *> CBNETProtocol :: RECEIVE_SID_FRIENDSLIST( QByteArra
 	return Friends;
 }
 
-QList<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteArray data )
+QList<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_CLANMEMBERLIST" );
 	// DEBUG_Print( data );
@@ -438,7 +438,7 @@ QList<CIncomingClanList *> CBNETProtocol :: RECEIVE_SID_CLANMEMBERLIST( QByteArr
 	return ClanList;
 }
 
-CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( QByteArray data )
+CIncomingClanList *CBNETProtocol :: RECEIVE_SID_CLANMEMBERSTATUSCHANGE( const QByteArray &data )
 {
 	// DEBUG_Print( "RECEIVED SID_CLANMEMBERSTATUSCHANGE" );
 	// DEBUG_Print( data );
@@ -510,7 +510,7 @@ QByteArray CBNETProtocol :: SEND_SID_STOPADV( )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_GETADVLISTEX( QString gameName )
+QByteArray CBNETProtocol :: SEND_SID_GETADVLISTEX( const QString &gameName )
 {
 	char MapFilter1[]	= { 255, 3, 0, 0 };
 	char MapFilter2[]	= { 255, 3, 0, 0 };
@@ -551,7 +551,7 @@ QByteArray CBNETProtocol :: SEND_SID_ENTERCHAT( )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
+QByteArray CBNETProtocol :: SEND_SID_JOINCHANNEL( const QString &channel )
 {
 	char NoCreateJoin[]	= { 2, 0, 0, 0 };
 	char FirstJoin[]		= { 1, 0, 0, 0 };
@@ -575,7 +575,7 @@ QByteArray CBNETProtocol :: SEND_SID_JOINCHANNEL( QString channel )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_CHATCOMMAND( QString command )
+QByteArray CBNETProtocol :: SEND_SID_CHATCOMMAND( const QString &command )
 {
 	QByteArray packet;
 	packet.push_back( BNET_HEADER_CONSTANT );		// BNET header constant
@@ -611,16 +611,16 @@ QByteArray CBNETProtocol :: SEND_SID_CHECKAD( )
 
 QByteArray CBNETProtocol :: SEND_SID_STARTADVEX3(
 		unsigned char state,
-		QByteArray mapGameType,
-		QByteArray mapFlags,
-		QByteArray mapWidth,
-		QByteArray mapHeight,
-		QString gameName,
-		QString hostName,
+		const QByteArray &mapGameType,
+		const QByteArray &mapFlags,
+		const QByteArray &mapWidth,
+		const QByteArray &mapHeight,
+		const QString &gameName,
+		const QString &hostName,
 		quint32 upTime,
-		QString mapPath,
-		QByteArray mapCRC,
-		QByteArray mapSHA1,
+		const QString &mapPath,
+		const QByteArray &mapCRC,
+		const QByteArray &mapSHA1,
 		quint32 hostCounter )
 {
 	// todotodo: sort out how GameType works, the documentation is horrendous
@@ -708,7 +708,7 @@ Flags:
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
+QByteArray CBNETProtocol :: SEND_SID_NOTIFYJOIN( const QString &gameName )
 {
 	char ProductID[]		= {  0, 0, 0, 0 };
 	char ProductVersion[]	= { 14, 0, 0, 0 };	// Warcraft III is 14
@@ -729,7 +729,7 @@ QByteArray CBNETProtocol :: SEND_SID_NOTIFYJOIN( QString gameName )
 	return packet;
 }
 
-QByteArray CBNETProtocol :: SEND_SID_PING( QByteArray pingValue )
+QByteArray CBNETProtocol :: SEND_SID_PING( const QByteArray &pingValue )
 {
 	QByteArray packet;
 
@@ -956,7 +956,7 @@ QByteArray CBNETProtocol :: SEND_SID_CLANMEMBERLIST( )
 // OTHER FUNCTIONS //
 /////////////////////
 
-bool CBNETProtocol :: AssignLength( QByteArray &content )
+bool CBNETProtocol :: AssignLength( QByteArray &content ) const
 {
 	// insert the actual length of the content array into bytes 3 and 4 (indices 2 and 3)
 
@@ -973,7 +973,7 @@ bool CBNETProtocol :: AssignLength( QByteArray &content )
 	return false;
 }
 
-bool CBNETProtocol :: ValidateLength( QByteArray &content )
+bool CBNETProtocol :: ValidateLength( const QByteArray &content ) const
 {
 	// verify that bytes 3 and 4 (indices 2 and 3) of the content array describe the length
 

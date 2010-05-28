@@ -919,7 +919,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							SendChat( player, m_GHost->GetLanguage( )->LoadingConfigFile( m_GHost->m_MapCFGPath + Pattern ) );
 							CConfig MapCFG;
 							MapCFG.Read( Pattern );
-							m_GHost->GetCurrentMap( )->Load( &MapCFG, m_GHost->m_MapCFGPath + Pattern );
+							m_GHost->GetCurrentMap( )->Load( MapCFG, m_GHost->m_MapCFGPath + Pattern );
 						}
 						else if (Matches == 1)
 						{
@@ -927,7 +927,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							SendChat( player, m_GHost->GetLanguage( )->LoadingConfigFile( m_GHost->m_MapCFGPath + File ) );
 							CConfig MapCFG;
 							MapCFG.Read( m_GHost->m_MapCFGPath + File );
-							m_GHost->GetCurrentMap( )->Load( &MapCFG, m_GHost->m_MapCFGPath + File );
+							m_GHost->GetCurrentMap( )->Load( MapCFG, m_GHost->m_MapCFGPath + File );
 						}
 						else
 							SendChat( player, m_GHost->GetLanguage( )->FoundMapConfigs( files.join(", ") ) );
@@ -1006,7 +1006,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							CConfig MapCFG;
 							MapCFG.Set( "map_path", "Maps\\Download\\" + Pattern );
 							MapCFG.Set( "map_localpath", Pattern );
-							m_GHost->GetCurrentMap( )->Load( &MapCFG, Pattern );
+							m_GHost->GetCurrentMap( )->Load( MapCFG, Pattern );
 						}
 						else if( Matches == 1 )
 						{
@@ -1018,7 +1018,7 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, QString command, 
 							CConfig MapCFG;
 							MapCFG.Set( "map_path", "Maps\\Download\\" + File );
 							MapCFG.Set( "map_localpath", File );
-							m_GHost->GetCurrentMap( )->Load( &MapCFG, File );
+							m_GHost->GetCurrentMap( )->Load( MapCFG, File );
 						}
 						else
 							SendChat( player, m_GHost->GetLanguage( )->FoundMaps( files.join(", ") ) );
