@@ -86,7 +86,7 @@ public slots:
 	void EventRefreshBanList();
 
 private:
-	QTimer m_NULLTimer;
+	QTimer m_KeepAliveTimer;
 	QTimer m_CallableUpdateTimer, m_AdminListUpdateTimer, m_BanListRefreshTimer;
 
 public:
@@ -145,7 +145,6 @@ private:
 	quint32 m_LastOutPacketSize;
 	quint32 m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
 	quint32 m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
-	bool m_FirstConnect;							// if we haven't tried to connect to battle.net yet
 	bool m_LoggedIn;								// if we've logged into battle.net or not
 	bool m_InChat;									// if we've entered chat or not (but we're not necessarily in a chat channel yet)
 	bool m_HoldFriends;								// whether to auto hold friends when creating a game or not

@@ -64,8 +64,8 @@ CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAl
 	m_AdminListUpdateTimer.start();
 	m_BanListRefreshTimer.setInterval(3600000);
 	m_BanListRefreshTimer.start();
-	m_NULLTimer.setInterval(60000);
-	QObject::connect(&m_NULLTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePacket()));
+	m_KeepAliveTimer.setInterval(60000);
+	QObject::connect(&m_KeepAliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePacket()));
 
 	QObject::connect(&m_CallableUpdateTimer, SIGNAL(timeout()), this, SLOT(EventCallableUpdateTimeout()));
 	QObject::connect(&m_AdminListUpdateTimer, SIGNAL(timeout()), this, SLOT(EventUpdateAdminList()));
@@ -140,7 +140,6 @@ CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAl
 	m_LastOutPacketSize = 0;
 	m_LastAdminRefreshTime = GetTime( );
 	m_LastBanRefreshTime = GetTime( );
-	m_FirstConnect = true;
 	m_LoggedIn = false;
 	m_InChat = false;
 	m_HoldFriends = nHoldFriends;
@@ -219,9 +218,10 @@ void CBNET :: ResetSocket( )
 
 void CBNET::socketConnect()
 {
+	if( m_Socket->state() != QAbstractSocket::UnconnectedState)
+		return;
 	// attempt to connect to battle.net
 
-	m_FirstConnect = false;
 	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
 	m_GHost->EventBNETConnecting( this );
 	// connecting is not blocking anymore when using Qt sockets
@@ -277,7 +277,7 @@ void CBNET::socketConnected()
 	m_GHost->EventBNETConnected( this );
 	m_Socket->write( m_Protocol->SEND_PROTOCOL_INITIALIZE_SELECTOR( ) );
 	m_Socket->write( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_GHost->m_TFT, m_LocaleID, m_CountryAbbrev, m_Country ) );
-	m_NULLTimer.start();
+	m_KeepAliveTimer.start();
 
 	while( !m_OutPackets.isEmpty( ) )
 		m_OutPackets.dequeue( );
@@ -301,7 +301,7 @@ void CBNET::socketDisconnected()
 	m_LastDisconnectedTime = GetTime( );
 	m_LoggedIn = false;
 	m_InChat = false;
-	m_NULLTimer.stop();
+	m_KeepAliveTimer.stop();
 
 	if (m_Retries > 6)
 	{
@@ -384,12 +384,12 @@ void CBNET::socketError()
 	m_BNLSClient = NULL;
 	m_BNCSUtil->Reset( m_UserName, m_UserPassword );
 	m_Socket->abort();
-	m_Socket->deleteLater();
-	m_Socket = NULL;
+	//m_Socket->deleteLater();
+	//m_Socket = NULL;
 	m_LastDisconnectedTime = GetTime( );
 	m_LoggedIn = false;
 	m_InChat = false;
-	m_NULLTimer.stop();
+	m_KeepAliveTimer.stop();
 
 	QTimer::singleShot(90000, this, SLOT(socketConnect()));
 }
