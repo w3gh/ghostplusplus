@@ -33,7 +33,7 @@ class CBaseGame;
 //
 
 #include <QTimer>
-#include <QTcpSocket>
+#include <QAbstractSocket>
 
 class CPotentialPlayer
 	: public QObject
@@ -58,17 +58,17 @@ protected:
 	// note: we permit m_Socket to be NULL in this class to allow for the virtual host player which doesn't really exist
 	// it also allows us to convert CPotentialPlayers to CGamePlayers without the CPotentialPlayer's destructor closing the socket
 
-	QTcpSocket *m_Socket;
+	QAbstractSocket *m_Socket;
 	QQueue<CCommandPacket *> m_Packets;
 	bool m_Error;
 	QString m_ErrorString;
 	CIncomingJoinPlayer *m_IncomingJoinPlayer;
 
 public:
-	CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket );
+	CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QAbstractSocket *nSocket );
 	virtual ~CPotentialPlayer( );
 
-	virtual QTcpSocket *GetSocket( ) const				{ return m_Socket; }
+	virtual QAbstractSocket *GetSocket( ) const				{ return m_Socket; }
 	virtual QByteArray GetExternalIP( ) const;
 	virtual QString GetExternalIPString( ) const;
 	virtual const QQueue<CCommandPacket *> &GetPackets( ) const	{ return m_Packets; }
@@ -76,7 +76,7 @@ public:
 	virtual const QString &GetErrorString( ) const				{ return m_ErrorString; }
 	virtual CIncomingJoinPlayer *GetJoinPlayer( ) const	{ return m_IncomingJoinPlayer; }
 
-	virtual void SetSocket( QTcpSocket *nSocket )	{ m_Socket = nSocket; }
+	virtual void SetSocket( QAbstractSocket *nSocket )	{ m_Socket = nSocket; }
 
 	// processing functions
 
@@ -162,7 +162,7 @@ private:
 	quint32 m_LastGProxyAckTime;
 
 public:
-	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QTcpSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
+	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, QAbstractSocket *nSocket, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
 	CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, QString nJoinedRealm, QString nName, QByteArray nInternalIP, bool nReserved );
 	virtual ~CGamePlayer( );
 
@@ -249,7 +249,7 @@ public:
 	// other functions
 
 	virtual void Send( const QByteArray &data );
-	virtual void EventGProxyReconnect( QTcpSocket *NewSocket, quint32 LastPacket );
+	virtual void EventGProxyReconnect( QAbstractSocket *NewSocket, quint32 LastPacket );
 };
 
 #endif

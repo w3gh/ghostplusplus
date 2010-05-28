@@ -61,6 +61,8 @@ typedef pair<QString,CCallableBanRemove *> PairedBanRemove;
 typedef pair<QString,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<QString,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
+typedef QPair<QTime,quint32> TimeAndSizePair;
+
 //
 // CBNET
 //
@@ -78,6 +80,7 @@ public slots:
 	void socketDataReady();
 	void socketConnect();
 	void socketError();
+	void socketConnectTimeoutCheck();
 	void sendWardenResponse(const QByteArray & response);
 	void sendKeepAlivePacket();
 
@@ -100,6 +103,11 @@ private:
 	QQueue<CCommandPacket *> m_Packets;				// queue of incoming packets
 	CBNCSUtilInterface *m_BNCSUtil;					// the interface to the bncsutil library (used for logging into battle.net)
 	QQueue<QByteArray> m_OutPackets;					// queue of outgoing packets to be sent (to prevent getting kicked for flooding)
+	QList<TimeAndSizePair> m_SentPackages;			// list of packets that have been sent (only time and size are saved)
+	int m_SendNoWaitMaxCount;						// send the message instantly if only n messages were sent in the time window
+	int m_SendWindowLength;						// how long the message queue should take into account messages sent earlier (in ms)
+	int m_ConnectionTimeout;						// time in milliseconds until the connection attempt is aborted
+	int m_ReconnectInterval;						// time in milliseconds to wait before reconnecting to bnet
 	QList<CIncomingFriendList *> m_Friends;		// vector of friends
 	QList<CIncomingClanList *> m_Clans;			// vector of clan members
 	QList<PairedAdminCount> m_PairedAdminCounts;	// vector of paired threaded database admin counts in progress
@@ -166,6 +174,7 @@ private:
 	QTime m_LastPacketSent;
 
 	void ResetSocket();
+	quint32 CalculateSendWaitTime(const QQueue<QByteArray> &queue, const QList<TimeAndSizePair> &messageLog) const;
 
 public slots:
 	void EnqueuePacket(const QByteArray &pkg);

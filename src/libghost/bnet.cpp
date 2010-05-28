@@ -58,6 +58,11 @@ CBNET :: CBNET( CGHost *nGHost, const QString &nServer, const QString &nServerAl
 	m_Socket = NULL;
 	ResetSocket( );
 
+	m_SendWindowLength = 10000;
+	m_SendNoWaitMaxCount = 2;
+	m_ConnectionTimeout = 10000;
+	m_ReconnectInterval = 90000;
+
 	m_CallableUpdateTimer.setInterval(200);
 	m_CallableUpdateTimer.start();
 	m_AdminListUpdateTimer.setInterval(60000);
@@ -216,6 +221,14 @@ void CBNET :: ResetSocket( )
 	QObject::connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
 }
 
+void CBNET::socketConnectTimeoutCheck()
+{
+	if( m_Socket->state() == QAbstractSocket::ConnectedState)
+		return;
+	CONSOLE_Print("[BNET: " + m_ServerAlias + "] connection attempt to [" + m_Server + "] on port 6112 timed out");
+	socketDisconnected();
+}
+
 void CBNET::socketConnect()
 {
 	if( m_Socket->state() != QAbstractSocket::UnconnectedState)
@@ -226,7 +239,7 @@ void CBNET::socketConnect()
 	m_GHost->EventBNETConnecting( this );
 	// connecting is not blocking anymore when using Qt sockets
 	m_Socket->connectToHost( m_Server, 6112 );
-
+	QTimer::singleShot(m_ConnectionTimeout, this, SLOT(socketConnectTimeoutCheck()));
 
 //	if( m_ServerIP.isEmpty( ) )
 //		m_Socket->connectToHost( m_Server, 6112 );
@@ -266,7 +279,8 @@ void CBNET::socketConnect()
 
 void CBNET::sendKeepAlivePacket()
 {
-	m_Socket->write( m_Protocol->SEND_SID_NULL( ) );
+	if( m_Socket->isOpen() )
+		m_Socket->write( m_Protocol->SEND_SID_NULL( ) );
 }
 
 void CBNET::socketConnected()
@@ -290,7 +304,7 @@ void CBNET::socketDisconnected()
 	// the socket was disconnected
 
 	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net" );
-	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+	CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting " + QString::number(m_ReconnectInterval/1000) + " seconds to reconnect" );
 	m_GHost->EventBNETDisconnected( this );
 	delete m_BNLSClient;
 	m_BNLSClient = NULL;
@@ -311,7 +325,7 @@ void CBNET::socketDisconnected()
 		return;
 	}
 	//ResetSocket( );
-	QTimer::singleShot(90000, this, SLOT(socketConnect()));
+	QTimer::singleShot(m_ReconnectInterval, this, SLOT(socketConnect()));
 }
 
 void CBNET::sendWardenResponse(const QByteArray & response)
@@ -332,26 +346,35 @@ void CBNET::socketDataReady()
 
 void CBNET::EnqueuePacket(const QByteArray &pkg)
 {
-	int ticks = getWaitTicks();
-	int pkgs = m_OutPackets.size();
+//	int ticks = getWaitTicks();
+//	int pkgs = m_OutPackets.size();
 
 	m_OutPackets.enqueue(pkg);
+	SendPacket( );
 
-	if (pkgs > 0)
-		return;
+//	if (pkgs > 0)
+//		return;
+//
+//	if (m_LastPacketSent.elapsed() >= ticks)
+//	{
+//		SendPacket();
+//		return;
+//	}
+//
+//	QTimer::singleShot(ticks - m_LastPacketSent.elapsed(), this, SLOT(SendPacket()));
+}
 
-	if (m_LastPacketSent.elapsed() >= ticks)
-	{
-		SendPacket();
-		return;
-	}
-
-	QTimer::singleShot(ticks - m_LastPacketSent.elapsed(), this, SLOT(SendPacket()));
+quint32 CBNET :: CalculateSendWaitTime(const QQueue<QByteArray> &queue, const QList<TimeAndSizePair> &messageLog) const
+{
+	if(messageLog.count() <= m_SendNoWaitMaxCount)
+		return 0;
+	// TODO: implement something clever, for now just wait 500ms for every packet previously sent
+	return 1000 * messageLog.count();
 }
 
 void CBNET::SendPacket()
 {
-	if (m_OutPackets.size() == 0)
+	if( m_OutPackets.empty( ) )
 	{
 		DEBUG_Print("Nice, empty query... but actually, this shouldn't happen...");
 		return;
@@ -360,13 +383,32 @@ void CBNET::SendPacket()
 	if( m_OutPackets.size( ) > 7 )
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + QString::number( m_OutPackets.size( ) ) + " packets waiting to be sent" );
 
-	m_Socket->write( m_OutPackets.front() );
+	QTime now = QTime::currentTime();
+	while( !m_SentPackages.empty() && m_SentPackages.front().first.msecsTo(now) > m_SendWindowLength )
+		m_SentPackages.pop_front();
+
+	quint32 waitTime = CalculateSendWaitTime(m_OutPackets, m_SentPackages);
+	if(waitTime > 0)
+	{
+		// TODO: this should probably not use a singleShot-timer, we might fire multiple times
+		QTimer::singleShot(waitTime, this, SLOT(SendPacket()));
+		return;
+	}
+	const QByteArray &data = m_OutPackets.front();
+	m_Socket->write( data );
 	m_LastOutPacketSize = m_OutPackets.front( ).size( );
+
+	m_SentPackages.append( TimeAndSizePair(QTime::currentTime(), data.size()) );
+
 	m_OutPackets.dequeue( );
 	m_LastPacketSent.restart();
 
-	if (m_OutPackets.size() > 0)
-		QTimer::singleShot(getWaitTicks(), this, SLOT(SendPacket()));
+	// there are still packets left, resend
+	if( !m_OutPackets.empty() )
+		SendPacket( );
+
+//	if (m_OutPackets.size() > 0)
+//		QTimer::singleShot(getWaitTicks(), this, SLOT(SendPacket()));
 }
 
 void CBNET::socketError()
