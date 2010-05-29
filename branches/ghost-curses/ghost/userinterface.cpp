@@ -28,6 +28,7 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListT
 	for ( uint32_t i = 0; i < 10; ++i )
 		m_WindowData.push_back( temp2 );
 
+	// we use pointers here so updating can be handled easily
 	Buffer *temp3;
 	for ( uint32_t i = 0; i < 30; ++i )
 	{
@@ -44,6 +45,7 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListT
 	m_GHost = 0;
 	m_SplitView = nSplitView;
 	m_ListType = nListType;
+	exY = 0; exX = 0;
 	
 	// Initialize curses and windows
 	initscr( );
@@ -62,12 +64,13 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListT
 	m_WindowData[W_HLINE].Window = newwin( 1, COLS - 22, LINES / 2 - 1, 0 );
 	m_WindowData[W_VLINE].Window = newwin( LINES - 3, 1, 1, COLS - 22 );
 
+	// enable window scrolling
 	scrollok( m_WindowData[W_FULL].Window, TRUE );
 	scrollok( m_WindowData[W_FULL2].Window, TRUE );
 	scrollok( m_WindowData[W_UPPER].Window, TRUE );
 	scrollok( m_WindowData[W_LOWER].Window, TRUE );
-	keypad( m_WindowData[W_INPUT].Window, TRUE );
 	scrollok( m_WindowData[W_INPUT].Window, TRUE );
+	keypad( m_WindowData[W_INPUT].Window, TRUE );
 	nodelay( m_WindowData[W_INPUT].Window, TRUE );
 
 	// Initialize colors
@@ -80,7 +83,6 @@ CCurses :: CCurses( int nTermWidth, int nTermHeight, bool nSplitView, int nListT
 	init_pair( 5, COLOR_BLUE, COLOR_BLACK );
 	init_pair( 6, COLOR_WHITE, COLOR_CYAN );
 
-	// make this an option/config?
 	wbkgdset( m_WindowData[W_INPUT].Window, ' ' | COLOR_PAIR(6)  );
 	wbkgdset( m_WindowData[W_TAB].Window, ' ' | COLOR_PAIR(6)  );
 	wbkgdset( m_WindowData[W_TAB2].Window, ' ' | COLOR_PAIR(6)  );
@@ -141,7 +143,9 @@ void CCurses :: AddTab( string nName, TabType nType, uint32_t nId, BufferType nB
 
 void CCurses :: RemoveTab( TabType type, uint32_t id )
 {
-	// todo
+	// todo, for game-specific tabs
+
+	// perhaps third tab for them? W_TAB3...
 	m_WindowData[W_TAB].IsWindowChanged = true;
 }
 
@@ -380,6 +384,14 @@ void CCurses :: SetGHost( CGHost* nGHost )
 		m_RealmData[(*i)->GetRealmId( )].RealmAlias = (*i)->GetServerAlias( );
 		AddTab( (*i)->GetServerAlias( ), T_REALM, (*i)->GetRealmId( ), B_REALM, W_TAB );
 	}
+	
+	Print( "", 0, true );
+	Print( "{ CursesMod - User Interface }", 0, true );
+	Print( " - Arrow keys: tabs, message history", 0, true );
+	Print( " - Mouse: tabs, scrolling", 0, true );
+	Print( " - CTRL-C: Copy text, CTRL-V: Paste text", 0, true );
+	Print( " - Page Up, Page Down: scrolling", 0, true );
+	Print( "", 0, true );
 }
 
 void CCurses :: SetAttribute( SWindowData &data, string message, int flag, BufferType type, bool on )
@@ -436,7 +448,15 @@ void CCurses :: SetAttribute( SWindowData &data, string message, int flag, Buffe
 	case B_ADMINS:
 		if( flag == 2 ) attribute = A_YELLOW; break;	// ROOTADMIN
 	case B_CLAN:
-		// todo: add flags
+		switch ( flag )
+		{
+		case 0: attribute = A_WHITE;	break;	// INITIATE
+		case 1: attribute = A_WHITE;	break;	// PARTIAL MEMBER
+		case 2: attribute = A_YELLOW;	break;	// MEMBER
+		case 3: attribute = A_GREEN;	break;	// OFFICER
+		case 4: attribute = A_BBLUE;	break;	// LEADER
+		}
+		break;
 		break;
 	}
 
@@ -459,6 +479,7 @@ void CCurses :: Draw ( )
 	DrawTabs( W_TAB );
 	DrawTabs( W_TAB2 );
 
+	// if there are tabs, draw the selected tab
 	if( !m_TabData.empty( ) )
 		switch( m_TabData[m_SelectedTab].type )
 		{
@@ -711,7 +732,8 @@ void CCurses :: Print( string message, uint32_t realmId, bool toMainBuffer )
 
 		m_WindowData[W_UPPER].IsWindowChanged = true;
 
-		m_WindowData[W_UPPER].Scroll++;
+		if(m_WindowData[W_UPPER].Scroll < 512)
+			m_WindowData[W_UPPER].Scroll++;
 	}
 	else
 	{
@@ -722,7 +744,8 @@ void CCurses :: Print( string message, uint32_t realmId, bool toMainBuffer )
 
 		m_WindowData[W_LOWER].IsWindowChanged = true;
 
-		m_WindowData[W_LOWER].Scroll++;
+		if(m_WindowData[W_LOWER].Scroll < 512)
+			m_WindowData[W_LOWER].Scroll++;
 	}
 
 	m_Buffers[B_ALL]->push_back( temp );
@@ -733,19 +756,23 @@ void CCurses :: Print( string message, uint32_t realmId, bool toMainBuffer )
 	m_WindowData[W_FULL].IsWindowChanged = true;
 	m_WindowData[W_FULL2].IsWindowChanged = true;
 
-	m_WindowData[W_FULL].Scroll++;
-	m_WindowData[W_FULL2].Scroll++;
+	if(m_WindowData[W_FULL].Scroll < 512)
+		m_WindowData[W_FULL].Scroll++;
+
+	if(m_WindowData[W_FULL2].Scroll < 512)
+		m_WindowData[W_FULL2].Scroll++;
+
 	Draw( );
 }
 
 void CCurses :: UpdateMouse( int c )
 {
+#ifdef __PDCURSES__
 	// Mouse position update
 	request_mouse_pos( );
 	move( MOUSE_Y_POS, MOUSE_X_POS );
 	refresh( );
 
-	
 	if( c == KEY_MOUSE )
 	{
 		// Is cursor over tabs?
@@ -791,111 +818,110 @@ void CCurses :: UpdateMouse( int c )
 		
 		if ( m_TabData[m_SelectedTab].type != T_LIST && m_TabData[m_SelectedTab].type != T_GAME )
 		{
-			/*
-			// Disabled, as I got mouse wheel working.
-			if( Mouse_status.button[0] == BUTTON_PRESSED )
-			{
-				if( !m_SplitView )
-				{
-					if( MOUSE_Y_POS <= LINES / 2 )
-						ScrollUp( );
-					else
-						ScrollDown( );
-				}
-				else if( m_TabData[m_SelectedTab].type == T_REALM && m_SplitView )
-				{
-					if( MOUSE_Y_POS <= LINES / 4 || ( MOUSE_Y_POS > LINES / 2 && MOUSE_Y_POS <= 3 * LINES / 4 ) )
-						ScrollUp( );
-					else if( ( MOUSE_Y_POS > LINES / 4 && MOUSE_Y_POS <= LINES / 2 ) || MOUSE_Y_POS > 3 * LINES / 4 )
-						ScrollDown( );
-				}
-			}
-			*/
-#ifdef __PDCURSES__
 			if( Mouse_status.changes == MOUSE_WHEEL_UP )
 				ScrollUp( );
 			else if( Mouse_status.changes == MOUSE_WHEEL_DOWN )
 				ScrollDown( );
-#endif
 		}
 	}
+#endif
 }
 
 void CCurses :: ScrollDown( )
 {
-	switch( m_TabData[m_SelectedTab].type )
+	if( exX > COLS - 23 && m_TabData[m_SelectedTab].type == T_REALM )
 	{
-	case T_MAIN:
-		m_WindowData[W_FULL2].Scroll = m_WindowData[W_FULL2].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
-									   m_WindowData[W_FULL2].Scroll + SCROLL_VALUE :
-									   m_WindowData[W_FULL2].Scroll;
-		m_WindowData[W_FULL2].IsWindowChanged = true;
-		break;
-	case T_REALM:
-		if( m_SplitView )
+			m_WindowData[W_CHANNEL].Scroll = (uint32_t)m_WindowData[W_CHANNEL].Scroll < m_Buffers[B_CHANNEL]->size( ) ?
+										   m_WindowData[W_CHANNEL].Scroll + SCROLL_VALUE :
+										   m_WindowData[W_CHANNEL].Scroll;
+			m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	}
+	else
+	{
+		switch( m_TabData[m_SelectedTab].type )
 		{
-			if( MOUSE_Y_POS < LINES / 2 )
+		case T_MAIN:
+			m_WindowData[W_FULL2].Scroll = (uint32_t)m_WindowData[W_FULL2].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+										   m_WindowData[W_FULL2].Scroll + SCROLL_VALUE :
+										   m_WindowData[W_FULL2].Scroll;
+			m_WindowData[W_FULL2].IsWindowChanged = true;
+			break;
+		case T_REALM:
+			if( m_SplitView )
 			{
-				m_WindowData[W_UPPER].Scroll = m_WindowData[W_UPPER].Scroll < m_Buffers[B_MAIN]->size( ) ?
-											   m_WindowData[W_UPPER].Scroll + SCROLL_VALUE :
-											   m_WindowData[W_UPPER].Scroll;
-				m_WindowData[W_UPPER].IsWindowChanged = true;
+				if( exY < LINES / 2 )
+				{
+					m_WindowData[W_UPPER].Scroll = (uint32_t)m_WindowData[W_UPPER].Scroll < m_Buffers[B_MAIN]->size( ) ?
+												   m_WindowData[W_UPPER].Scroll + SCROLL_VALUE :
+												   m_WindowData[W_UPPER].Scroll;
+					m_WindowData[W_UPPER].IsWindowChanged = true;
+				}
+				else
+				{
+					m_WindowData[W_LOWER].Scroll = (uint32_t)m_WindowData[W_LOWER].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+												   m_WindowData[W_LOWER].Scroll + SCROLL_VALUE :
+												   m_WindowData[W_LOWER].Scroll;
+					m_WindowData[W_LOWER].IsWindowChanged = true;
+				}
 			}
 			else
 			{
-				m_WindowData[W_LOWER].Scroll = m_WindowData[W_LOWER].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
-											   m_WindowData[W_LOWER].Scroll + SCROLL_VALUE :
-											   m_WindowData[W_LOWER].Scroll;
-				m_WindowData[W_LOWER].IsWindowChanged = true;
+				m_WindowData[W_FULL].Scroll = (uint32_t)m_WindowData[W_FULL].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
+											  m_WindowData[W_FULL].Scroll + SCROLL_VALUE :
+											  m_WindowData[W_FULL].Scroll;
+				m_WindowData[W_FULL].IsWindowChanged = true;
 			}
+			break;
 		}
-		else
-		{
-			m_WindowData[W_FULL].Scroll = m_WindowData[W_FULL].Scroll < m_Buffers[m_TabData[m_SelectedTab].bufferType]->size( ) ?
-										  m_WindowData[W_FULL].Scroll + SCROLL_VALUE :
-										  m_WindowData[W_FULL].Scroll;
-			m_WindowData[W_FULL].IsWindowChanged = true;
-		}
-		break;
 	}
 }
 
 void CCurses :: ScrollUp( )
 {
-	switch( m_TabData[m_SelectedTab].type )
+	if( exX > COLS - 23 && m_TabData[m_SelectedTab].type == T_REALM )
 	{
-	case T_MAIN:
-		m_WindowData[W_FULL2].Scroll = m_WindowData[W_FULL2].Scroll - SCROLL_VALUE > LINES ?
-									   m_WindowData[W_FULL2].Scroll - SCROLL_VALUE :
-									   LINES - 4;
-		m_WindowData[W_FULL2].IsWindowChanged = true;
-		break;
-	case T_REALM:
-		if( m_SplitView )
+			m_WindowData[W_CHANNEL].Scroll = m_WindowData[W_CHANNEL].Scroll - SCROLL_VALUE > LINES ?
+										   m_WindowData[W_CHANNEL].Scroll - SCROLL_VALUE :
+										   LINES - 4;
+			m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	}
+	else
+	{
+		switch( m_TabData[m_SelectedTab].type )
 		{
-			if( MOUSE_Y_POS < LINES / 2 )
+		case T_MAIN:
+			m_WindowData[W_FULL2].Scroll = m_WindowData[W_FULL2].Scroll - SCROLL_VALUE > LINES ?
+										   m_WindowData[W_FULL2].Scroll - SCROLL_VALUE :
+										   LINES - 4;
+			m_WindowData[W_FULL2].IsWindowChanged = true;
+			break;
+		case T_REALM:
+			if( m_SplitView )
 			{
-				m_WindowData[W_UPPER].Scroll = m_WindowData[W_UPPER].Scroll - SCROLL_VALUE > LINES / 2 ?
-											   m_WindowData[W_UPPER].Scroll - SCROLL_VALUE :
-											   (LINES - 4) / 2;
-				m_WindowData[W_UPPER].IsWindowChanged = true;
+				if( exY < LINES / 2 )
+				{
+					m_WindowData[W_UPPER].Scroll = m_WindowData[W_UPPER].Scroll - SCROLL_VALUE > LINES / 2 ?
+												   m_WindowData[W_UPPER].Scroll - SCROLL_VALUE :
+												   (LINES - 4) / 2;
+					m_WindowData[W_UPPER].IsWindowChanged = true;
+				}
+				else
+				{
+					m_WindowData[W_LOWER].Scroll = m_WindowData[W_LOWER].Scroll - SCROLL_VALUE > LINES / 2 ?
+												   m_WindowData[W_LOWER].Scroll - SCROLL_VALUE :
+												   (LINES - 4) / 2;
+					m_WindowData[W_LOWER].IsWindowChanged = true;
+				}
 			}
 			else
 			{
-				m_WindowData[W_LOWER].Scroll = m_WindowData[W_LOWER].Scroll - SCROLL_VALUE > LINES / 2 ?
-											   m_WindowData[W_LOWER].Scroll - SCROLL_VALUE :
-											   (LINES - 4) / 2;
-				m_WindowData[W_LOWER].IsWindowChanged = true;
+				m_WindowData[W_FULL].Scroll = m_WindowData[W_FULL].Scroll - SCROLL_VALUE > LINES ?
+											  m_WindowData[W_FULL].Scroll - SCROLL_VALUE :
+											  LINES - 4;
+				m_WindowData[W_FULL].IsWindowChanged = true;
 			}
+			break;
 		}
-		else
-		{
-			m_WindowData[W_FULL].Scroll = m_WindowData[W_FULL].Scroll - SCROLL_VALUE > LINES ?
-										  m_WindowData[W_FULL].Scroll - SCROLL_VALUE :
-										  LINES - 4;
-			m_WindowData[W_FULL].IsWindowChanged = true;
-		}
-		break;
 	}
 }
 
@@ -918,6 +944,15 @@ bool CCurses :: Update( )
 	}
 
 	int c = wgetch( m_WindowData[W_INPUT].Window );
+
+#ifdef __PDCURSES__
+	request_mouse_pos( );
+	if( MOUSE_Y_POS != -1 )
+		exY = MOUSE_Y_POS;
+
+	if( MOUSE_X_POS != -1 )
+		exX = MOUSE_X_POS;
+#endif
 
 	while( c != ERR && Connected )
 	{	
@@ -1174,6 +1209,8 @@ bool CCurses :: IsConnected( uint32_t realmId, bool entry )
 
 uint32_t CCurses :: GetMessageFlag( string &message )
 {
+	// message is in lowercase
+	// parses message for flag
 	if ( message.size( ) > 4 && message[0] == '[' )
 	{
 		if ( message.compare(1, 4, "info") == 0 )			return 1;
@@ -1205,6 +1242,7 @@ void CCurses :: AddChannelUser( string name, uint32_t realmId, int flag )
 
 	m_RealmData[realmId].ChannelUsers.push_back( pair<string, int>( name, flag ) );
 	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	m_WindowData[W_CHANNEL].Scroll++;
 }
 
 void CCurses :: UpdateChannelUser( string name, uint32_t realmId, int flag )
@@ -1232,12 +1270,14 @@ void CCurses :: RemoveChannelUser( string name, uint32_t realmId )
 	}
 
 	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	m_WindowData[W_CHANNEL].Scroll--;
 }
 
 void CCurses :: RemoveChannelUsers( uint32_t realmId )
 {
 	m_RealmData[realmId].ChannelUsers.clear( );
 	m_WindowData[W_CHANNEL].IsWindowChanged = true;
+	m_WindowData[W_CHANNEL].Scroll = 0;
 }
 
 void CCurses :: UpdateCustomLists( BufferType type )
