@@ -5,6 +5,7 @@
 CListWidgetItem::CListWidgetItem(CWidget *parent)
 {
 	_parent = parent;
+	_bold = false;
 }
 
 void CListWidgetItem::setText(const string &text)
@@ -17,14 +18,34 @@ string CListWidgetItem::text()
 	return _text;
 }
 
-void CListWidgetItem::setColor(uint color)
+void CListWidgetItem::setBackgroundColor(Color color)
 {
-	_color = color;
+	_bgcolor = color;
 }
 
-uint CListWidgetItem::color()
+void CListWidgetItem::setForegroundColor(Color color)
 {
-	return _color;
+	_fgcolor = color;
+}
+
+void CListWidgetItem::setBold(bool bold)
+{
+	_bold = bold;
+}
+
+Color CListWidgetItem::backgroundColor()
+{
+	return _bgcolor;
+}
+
+Color CListWidgetItem::foregroundColor()
+{
+	return _fgcolor;
+}
+
+bool CListWidgetItem::bold()
+{
+	return _bold;
 }
 
 CListWidget::CListWidget(CWidget *parent)
@@ -36,11 +57,13 @@ CListWidget::CListWidget(CWidget *parent)
 	_multiLine = true;
 }
 
-void CListWidget::addItem(const string &text, uint color)
+void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool bold)
 {
 	CListWidgetItem *item = new CListWidgetItem(this);
 	item->setText(text);
-	item->setColor(color);
+	item->setBackgroundColor(bgcolor);
+	item->setForegroundColor(fgcolor);
+	item->setBold(bold);
 	_items.push_back(item);
 
 	if(_autoScroll || _items.size() < _size.height())
@@ -54,19 +77,22 @@ void CListWidget::update()
 		move_panel(_panel, _pos.y(), _pos.x());
 		top_panel(_panel);
 		wclear(_window);
-		waddch(_window, '\n');
-		for(uint i = 0; i < _items.size() && (_scroll >= _size.height() - 2 ? i < _scroll : i < _size.height() - 2); i++)
-		{
-			wattr_on(_window, attribute(_items[i]->color()), 0);
-			waddch(_window, ' ');
-			
-			for(uint j = 0; j < _items[i]->text().size() && (_multiLine ? true : j < _size.width() - 2); j++)
-				waddch(_window, _items[i]->text()[j]);
 
-			waddch(_window, '\n');
-			wattr_off(_window, attribute(_items[i]->color()), 0);
-		}
-		box(_window, 0, 0);
+		//box(_window, 0, 0);
+
+		uint tw = _size.width() - _leftMargin - _rightMargin;
+		uint th = _size.height() - _topMargin - _bottomMargin;
+
+		for(uint i = 0; i < _items.size() && (_scroll >= th ? i < _scroll : i < th); i++)
+		{
+			attr_t a = attribute(_items[i]->backgroundColor(), _items[i]->foregroundColor(), _items[i]->bold());
+			wattr_on(_window, a, 0);
+			
+			for(uint j = 0; j < _items[i]->text().size() && (_multiLine ? true : j < tw); j++)
+				mvwaddch(_window, i + _topMargin, j + _leftMargin, _items[i]->text()[j]);
+
+			wattr_off(_window, a, 0);
+		}	
 	}
 }
 

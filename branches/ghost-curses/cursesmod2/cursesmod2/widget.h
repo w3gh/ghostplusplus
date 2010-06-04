@@ -1,5 +1,10 @@
 #ifndef WIDGET_H
 #define WIDGET_H
+/*
+bgcolor/fgcolor:
+	wbkgdset( m_WindowData[W_INPUT].Window, ' ' | COLOR_PAIR(6)  );
+	wattr_set( m_WindowData[W_INPUT].Window, A_NORMAL, 6, 0 );
+*/
 
 #include "common.h"
 
@@ -27,7 +32,7 @@ public:
 	virtual void setSize(uint width, uint height);
 
 	// Set fixed size
-	virtual void setFixedSize(uint width, uint height);
+	void setFixedSize(uint width, uint height);
 
 	// Get size
 	CSize size();
@@ -41,9 +46,30 @@ public:
 	// Update widget
 	virtual void update();
 
+	// Set margins
+	void setMargins(uint top, uint bottom, uint left, uint right);
+
 	// If mouse cursor is over this widget or
-	// it's sub widgets, it returns true.
+	// its subwidgets, it returns true.
 	bool isFocused();
+
+	// Set background color
+	void setBackgroundColor(Color color);
+
+	// Set foreground color
+	void setForegroundColor(Color color);
+
+	// Set bold
+	void setBold(bool bold);
+
+	// Get background color
+	Color backgroundColor();
+
+	// Get foreground color
+	Color foregroundColor();
+
+	// Get bold
+	bool bold();
 
 protected:
 	string _name;
@@ -51,16 +77,20 @@ protected:
 	CSize _size;
 	CPoint _pos;
 
-	int _topMargin;
-	int _bottomMargin;
-	int _leftMargin;
-	int _rightMargin;
+	uint _topMargin;
+	uint _bottomMargin;
+	uint _leftMargin;
+	uint _rightMargin;
 
 	bool _selected;
 	bool _visible;
 
 	CWidget *_parent;
 	CLayout *_layout;
+
+	Color _bgcolor;
+	Color _fgcolor;
+	bool _bold;
 
 	// Curses
 	WINDOW *_window;

@@ -12,8 +12,23 @@ using namespace std;
 
 typedef unsigned int uint;
 
-// Get attribute from number
-attr_t attribute(uint i);
+enum Color
+{
+	Black = 0,
+	Blue,
+	Green,
+	Cyan,
+	Red,
+	Magenta,
+	Yellow,
+	White
+};
+
+// Get attribute from bgcolor and fgcolor
+attr_t attribute(Color bgcolor, Color fgcolor, bool bold = false);
+
+// Get color pair from bgcolor and fgcolor
+uint colorpair(Color bgcolor, Color fgcolor);
 
 // Point (x, y)
 class CPoint
@@ -52,6 +67,7 @@ public:
 
 	// Set fixed size. If enabled, vertical layout will not
 	// resize height and horizontal layout will not resize width.
+	// Note: layout will correct the size, if it's invalid.
 	void setFixed(bool enabled);
 
 	// Get fixed.

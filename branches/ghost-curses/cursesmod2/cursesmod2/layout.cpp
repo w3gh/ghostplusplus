@@ -5,6 +5,9 @@
 CLayout::CLayout(CWidget *parent)
 {
 	_parent = parent;
+
+	if(_parent)
+		_parent->setLayout(this);
 }
 
 void CLayout::addWidget(CWidget *widget)
@@ -77,12 +80,34 @@ void CVBoxLayout::recursiveResize(uint from, uint to, uint width, uint height, u
 {
 	if(to - from == 0) // if only one element
 	{
-		_widgets[0]->setSize(width, height);
+		if(!_widgets[0]->size().fixed() || _widgets[0]->size().width() > width || _widgets[0]->size().height() > height)
+			_widgets[0]->setSize(width, height);
+
 		return;
 	}	
 	else if(to - from == 1) // if only two elements
 	{
-		if(_widgets[to]->size().fixed())
+		if(_widgets[from]->size().fixed() && _widgets[to]->size().fixed())
+		{
+			// resize #1 fixed
+			uint nh = _widgets[from]->size().height();
+
+			if(nh > height)
+				nh = height / 2; // space for other widgets
+
+			_widgets[from]->setFixedSize(width, nh);
+			_widgets[from]->setPosition(x, y);
+
+			// resize #2 fixed
+			uint nh2 = _widgets[to]->size().height();
+
+			if(nh2 > width - nh)
+				nh2 = width - nh;
+
+			_widgets[to]->setFixedSize(width, nh2);
+			_widgets[to]->setPosition(x, y + nh);
+		}
+		else if(_widgets[to]->size().fixed())
 		{
 			// resize #2 fixed
 			uint nh = _widgets[to]->size().height();
@@ -96,6 +121,21 @@ void CVBoxLayout::recursiveResize(uint from, uint to, uint width, uint height, u
 			// resize #1 not fixed
 			_widgets[from]->setSize(width, height - nh);
 			_widgets[from]->setPosition(x, y);
+		}
+		else if(_widgets[from]->size().fixed())
+		{
+			// resize #1 fixed
+			uint nh = _widgets[from]->size().height();
+
+			if(nh > height)
+				nh = height / 2; // space for other widgets
+
+			_widgets[from]->setFixedSize(width, nh);
+			_widgets[from]->setPosition(x, y);
+
+			// resize #2 not fixed
+			_widgets[to]->setSize(width, height - nh);
+			_widgets[to]->setPosition(x, y + nh);
 		}
 		else
 		{
@@ -171,7 +211,9 @@ void CHBoxLayout::recursiveResize(uint from, uint to, uint width, uint height, u
 {
 	if(to - from == 0) // if only one element
 	{
-		_widgets[0]->setSize(width, height);
+		if(!_widgets[0]->size().fixed() || _widgets[0]->size().width() > width || _widgets[0]->size().height() > height)
+			_widgets[0]->setSize(width, height);
+
 		return;
 	}	
 	else if(to - from == 1) // if only two elements
@@ -276,7 +318,7 @@ void CHBoxLayout::recursiveResize(uint from, uint to, uint width, uint height, u
 			if(!k) // did not find any fixed
 			{
 				// set size, i..to
-				// limits: width, height / (to - i + 1)
+				// limits: width / (to - i + 1), height
 
 				for(uint j = i; j <= to; j++)
 				{

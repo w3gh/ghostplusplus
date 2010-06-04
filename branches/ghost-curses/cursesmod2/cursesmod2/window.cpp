@@ -13,14 +13,15 @@ CWindow::CWindow()
 	_widget = 0;
 
 	start_color();
-	init_pair( 0, COLOR_BLACK, COLOR_BLACK );
-	init_pair( 1, COLOR_BLUE, COLOR_BLACK );
-	init_pair( 2, COLOR_GREEN, COLOR_BLACK );
-	init_pair( 3, COLOR_CYAN, COLOR_BLACK );
-	init_pair( 4, COLOR_RED, COLOR_BLACK );
-	init_pair( 5, COLOR_MAGENTA, COLOR_BLACK );
-	init_pair( 6, COLOR_YELLOW, COLOR_BLACK );
-	init_pair( 7, COLOR_WHITE, COLOR_BLACK );
+
+	uint k = 0;
+	for(uint i = 0; i <= 7; i++)
+	{
+		for(uint j = 0; j <= 7; j++)
+		{
+			init_pair(k++, i, j);
+		}
+	}
 }
 
 CWindow::~CWindow()
@@ -57,6 +58,26 @@ void CWindow::setTitle(const string &title)
 #ifdef __PDCURSES__
 	PDC_set_title(title.c_str());
 #endif
+}
+
+void CWindow::hide()
+{
+	hide_panel(_panel);
+	_visible = false;
+
+	// Hide subwidget too
+	if(_widget)
+		_widget->hide();
+}
+
+void CWindow::show()
+{
+	show_panel(_panel);
+	_visible = true;
+
+	// Show subwidget too
+	if(_widget)
+		_widget->show();
 }
 
 void CWindow::update()

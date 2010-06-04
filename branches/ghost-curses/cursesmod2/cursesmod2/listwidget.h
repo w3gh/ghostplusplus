@@ -15,17 +15,31 @@ public:
 	// Get text
 	string text();
 
-	// Set color
-	void setColor(uint color);
+	// Set background color
+	void setBackgroundColor(Color color);
 
-	// Get color
-	uint color();
+	// Set foreground color
+	void setForegroundColor(Color color);
+
+	// Set bold
+	void setBold(bool bold);
+
+	// Get background color
+	Color backgroundColor();
+
+	// Get foreground color
+	Color foregroundColor();
+
+	// Get bold
+	bool bold();
 
 protected:
 	CWidget *_parent;
 
 	string _text;
-	uint _color;
+	Color _bgcolor;
+	Color _fgcolor;
+	bool _bold;
 };
 
 // List
@@ -34,7 +48,7 @@ class CListWidget : public CWidget
 public:
 	CListWidget(CWidget *parent = 0);
 
-	void addItem(const string &text, uint color = 7);
+	void addItem(const string &text, Color fgcolor = White, Color bgcolor = Black, bool bold = false);
 
 	// Update widget
 	virtual void update();

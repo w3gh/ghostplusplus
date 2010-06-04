@@ -1,38 +1,45 @@
 #include "common.h"
 
-/*
-0 = Black	8 = Gray
-1 = Blue	9 = Light Blue
-2 = Green	A = Light Green
-3 = Aqua	B = Light Aqua
-4 = Red		C = Light Red
-5 = Purple	D = Light Purple
-6 = Yellow	E = Light Yellow
-7 = White	F = Bright White
-*/
-attr_t attribute(uint i)
+attr_t attribute(Color bgcolor, Color fgcolor, bool bold)
 {
-	switch(i)
+	attr_t result = 0;
+
+	uint k = 0;
+	for(uint i = 0; i <= 7; i++)
 	{
-	case 0: return COLOR_PAIR(0);
-	case 1: return COLOR_PAIR(1);
-	case 2: return COLOR_PAIR(2);
-	case 3: return COLOR_PAIR(3);
-	case 4: return COLOR_PAIR(4);
-	case 5: return COLOR_PAIR(5);
-	case 6: return COLOR_PAIR(6);
-	case 7: return COLOR_PAIR(7);
-	case 8: return COLOR_PAIR(7);
-	case 9: return COLOR_PAIR(1) | A_BOLD;
-	case 10: return COLOR_PAIR(2) | A_BOLD;
-	case 11: return COLOR_PAIR(3) | A_BOLD;
-	case 12: return COLOR_PAIR(4) | A_BOLD;
-	case 13: return COLOR_PAIR(5) | A_BOLD;
-	case 14: return COLOR_PAIR(6) | A_BOLD;
-	case 15: return COLOR_PAIR(7) | A_BOLD;
+		for(uint j = 0; j <= 7; j++)
+		{
+			if(i == fgcolor && j == bgcolor)
+			{
+				result = COLOR_PAIR(k);
+				
+				if(bold) result |= A_BOLD;
+
+				return result;
+			}
+			k++;
+		}
 	}
 
-	return COLOR_PAIR(0);
+	return result;
+}
+
+uint colorpair(Color bgcolor, Color fgcolor)
+{
+	uint k = 0;
+	for(uint i = 0; i <= 7; i++)
+	{
+		for(uint j = 0; j <= 7; j++)
+		{
+			if(i == fgcolor && j == bgcolor)
+			{
+				return k;
+			}
+			k++;
+		}
+	}
+
+	return 0;
 }
 
 CPoint::CPoint(uint x, uint y)
