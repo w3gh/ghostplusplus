@@ -22,6 +22,17 @@ CWindow::CWindow()
 			init_pair(k++, i, j);
 		}
 	}
+
+	nodelay(_window, true);
+	//noecho( );
+	//cbreak( );
+	
+#ifdef __PDCURSES__
+	// Mouse cursor
+	mouse_on( ALL_MOUSE_EVENTS );
+	mouseinterval( 50 );
+	curs_set( 1 );	// 0 = nothing or 1 = underline or 2 = block
+#endif
 }
 
 CWindow::~CWindow()
@@ -82,8 +93,41 @@ void CWindow::show()
 
 void CWindow::update()
 {
-	_widget->update();
+	updateInput();
+
+	if(_widget)
+		_widget->update();
 
 	update_panels();
 	doupdate();
+}
+
+void CWindow::updateInput()
+{
+	int c = wgetch(_window);
+
+	updateMouse( c );
+}
+
+void CWindow::updateMouse(int c)
+{
+#ifdef __PDCURSES__
+	// Mouse position update
+	request_mouse_pos( );
+
+	if( MOUSE_Y_POS != -1 )
+		_mouseY = MOUSE_Y_POS;
+
+	if( MOUSE_X_POS != -1 )
+		_mouseX = MOUSE_X_POS;
+
+	move( _mouseY, _mouseX );
+
+	if( Mouse_status.changes == MOUSE_WHEEL_UP )
+	{
+	}
+	else if( Mouse_status.changes == MOUSE_WHEEL_DOWN )
+	{
+	}
+#endif
 }

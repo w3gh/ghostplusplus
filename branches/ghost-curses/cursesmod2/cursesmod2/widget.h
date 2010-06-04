@@ -1,10 +1,5 @@
 #ifndef WIDGET_H
 #define WIDGET_H
-/*
-bgcolor/fgcolor:
-	wbkgdset( m_WindowData[W_INPUT].Window, ' ' | COLOR_PAIR(6)  );
-	wattr_set( m_WindowData[W_INPUT].Window, A_NORMAL, 6, 0 );
-*/
 
 #include "common.h"
 

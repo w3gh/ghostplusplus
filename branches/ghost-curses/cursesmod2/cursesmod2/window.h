@@ -8,11 +8,13 @@
 	which can be set using SetWidget(). CWindow is not the same
 	as WINDOW in curses. It is the actual terminal window.
 
-	Use SetSize() to resize window. Size should be reasonable.
+	Use setSize() to resize window. Size should be reasonable.
 	Normally resizing crashes with aspect ratios smaller than 2:5
-	and with too large y-values (85+), but SetSize() avoids them.
+	and with too large y-values (85+), but setSize() avoids them.
 
-	Use Update() to update everything.
+	Call show() to show widgets. (The window is "hidden".)
+
+	Use update() to update everything.
 
 	Deleting CWindow deletes all the widgets and exits curses.
 
@@ -23,26 +25,42 @@
 class CWindow : public CWidget
 {
 public:
-	// Creates new window
+	// Create new window
 	CWindow();
 
-	// Deletes window and all of its widgets
+	// Delete window and all of its widgets
 	~CWindow();
 
-	// Sets main widget. Widget's parent is this window.
+	// Set main widget. Widget's parent is this window.
 	void setWidget(CWidget *widget);
 
-	// Resizes window
+	// Resize window
 	void setSize(uint width, uint height);
 
+	// Set title
 	void setTitle(const string &title);
 
-	// Updates window
+	// Show widgets
+	void show();
+
+	// Hide widgets
+	void hide();
+
+	// Update window
 	void update();
 
 private:
+	// Update input
+	void updateInput();
+
+	// Update mouse
+	void updateMouse(int c);
+
 	// Main Widget
 	CWidget *_widget;
+
+	uint _mouseX;
+	uint _mouseY;
 
 };
 

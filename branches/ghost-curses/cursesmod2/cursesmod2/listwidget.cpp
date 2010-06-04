@@ -78,7 +78,8 @@ void CListWidget::update()
 		top_panel(_panel);
 		wclear(_window);
 
-		//box(_window, 0, 0);
+		if(isFocused())
+			box(_window, 0, 0);
 
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 		uint th = _size.height() - _topMargin - _bottomMargin;

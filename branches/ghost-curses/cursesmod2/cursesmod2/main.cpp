@@ -51,9 +51,8 @@ int main()
 
 	window->setSize(135, 43);
 
-	window->update();
-
- 	getch();
+	while(true)
+		window->update();
 
 	SafeDelete(window);
 
