@@ -78,19 +78,48 @@ void CListWidget::update(int c)
 		top_panel(_panel);
 		wclear(_window);
 
-		if(isFocused())
-			box(_window, 0, 0);
-
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 		uint th = _size.height() - _topMargin - _bottomMargin;
-		
-		for(uint i = _scroll > th ? _scroll - th : 0, k = 0; i < _items.size(); i++, k++)
+
+		if(focused())
+		{
+			wattr_on(_window, A_BOLD, 0);
+			box(_window, 0, 0);
+			wattr_off(_window, A_BOLD, 0);
+
+			// Mouse wheel scrolling and keyboard scrolling methods should stay separate
+#ifdef __PDCURSES__
+			// Mouse wheel scrolling
+			if(Mouse_status.changes == MOUSE_WHEEL_DOWN &&
+				_items.size() > th && _scroll <= _items.size() - 1)
+			{
+				_scroll+=1;
+			}
+			if(Mouse_status.changes == MOUSE_WHEEL_UP &&
+				_items.size() > th && _scroll > th)
+			{
+				_scroll-=1;
+			}			
+#endif
+			// Page Down / Page Up scrolling
+			if(c == KEY_NPAGE &&
+				_items.size() > th && _scroll <= _items.size() - 4)
+			{
+				_scroll+=4;
+			}
+			else if(c == KEY_PPAGE &&
+				_items.size() > th && _scroll > th)
+			{
+				_scroll-=4;
+			}
+		}
+
+		for(uint i = _scroll > th ? _scroll - th + 1 : 0, k = 0; i < _items.size() && k < th; i++, k++)
 		{
 			attr_t a = attribute(_items[i]->backgroundColor(), _items[i]->foregroundColor(), _items[i]->bold());
 			wattr_on(_window, a, 0);
 			
-			for(uint j = 0; j < _items[i]->text().size() && (_multiLine ? true : j < tw); j++)
-				mvwaddch(_window, k + _topMargin, j + _leftMargin, _items[i]->text()[j]);
+			mvwaddnstr(_window, k + _topMargin, _leftMargin, _items[i]->text().c_str( ), _multiLine ? -1 : tw);
 
 			wattr_off(_window, a, 0);
 		}

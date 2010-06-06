@@ -6,12 +6,7 @@ static uint widgetID = 0;
 
 CWidget::CWidget(CWidget *parent, bool dummy)
 {
-	_parent = parent;
-	_layout = 0;
-
-	_selected = false;
-	_visible = true;
-	_bold = false;
+	setParent(parent);
 
 	// If we haven't initialized curses yet, don't create a new curses window and panel
 	if(!dummy)
@@ -28,14 +23,30 @@ CWidget::CWidget(CWidget *parent, bool dummy)
 	setMargins(1, 1, 1, 1);
 	setBackgroundColor(Black);
 	setForegroundColor(White);
+	
+	_layout = 0;
+
+	_visible = true;
+	_bold = false;
 
 	// Set default name. (for debugging)
 	char *buf = new char[16];
 	_itoa(widgetID++, buf, 16);
 	_name = "Widget ";
 	_name += buf;
+	delete buf;
 
 	hide();
+}
+
+void CWidget::setName(const string &name)
+{
+	_name = name;
+}
+
+string CWidget::name()
+{
+	return _name;
 }
 
 void CWidget::setParent(CWidget *parent)
@@ -131,10 +142,15 @@ void CWidget::setMargins(uint top, uint bottom, uint left, uint right)
 	_rightMargin = right;
 }
 
-bool CWidget::isFocused()
+bool CWidget::focused()
 {
-	if(uint(MOUSE_Y_POS) >= _pos.y() && uint(MOUSE_Y_POS) < _pos.y() + _size.height() &&
-	   uint(MOUSE_X_POS) >= _pos.x() && uint(MOUSE_X_POS) < _pos.x() + _size.width())
+	// Update mouse position. Everytime we use mouse wheel, positions go to -1 for some reason... this fixes it.
+	if(MOUSE_X_POS != -1 && MOUSE_Y_POS != -1)
+		_mousePos.set(MOUSE_X_POS, MOUSE_Y_POS);
+
+	// Check if mouse cursor is inside the widget
+	if(uint(_mousePos.y()) >= _pos.y() && uint(_mousePos.y()) < _pos.y() + _size.height() &&
+	   uint(_mousePos.x()) >= _pos.x() && uint(_mousePos.x()) < _pos.x() + _size.width())
 	{
 		return true;
 	}
@@ -193,12 +209,17 @@ void CMenuBar::update(int c)
 		move_panel(_panel, _pos.y(), _pos.x());
 		top_panel(_panel);
 		wclear(_window);
+
+		uint tw = _size.width() - _leftMargin - _rightMargin;
+
+		mvwaddnstr(_window, 0, _leftMargin, "", tw);
 	}
 }
 
 CLabel::CLabel(CWidget *parent)
 	: CWidget(parent)
 {
+	_centered = true;
 }
 
 void CLabel::update(int c)
@@ -209,14 +230,19 @@ void CLabel::update(int c)
 		top_panel(_panel);
 		wclear(_window);
 
-		if(isFocused())
+		if(focused())
+		{
+			wattr_on(_window, A_BOLD, 0);
 			box(_window, 0, 0);
+			wattr_off(_window, A_BOLD, 0);
+		}
 
 		uint tw = _size.width() - _leftMargin - _rightMargin;
-		uint th = _size.height() - _topMargin - _bottomMargin;
-		
-		for(uint i = 0; i < _text.size() && i < tw; i++)
-			mvwaddch(_window, _topMargin, i + _leftMargin, _text[i]);
+
+		if(_centered)
+			mvwaddnstr(_window, _topMargin, _leftMargin + (_text.size() < tw ? ( tw - _text.size() ) / 2 : 0), _text.c_str(), tw);
+		else
+			mvwaddnstr(_window, _topMargin, _leftMargin, _text.c_str(), tw);
 	}
 }
 
@@ -231,11 +257,21 @@ string CLabel::text()
 	return _text;
 }
 
+void CLabel::setCentered(bool enabled)
+{
+	_centered = enabled;
+}
+
+bool CLabel::centered()
+{
+	return _centered;
+}
 
 CTextEdit::CTextEdit(CWidget *parent)
 	: CLabel(parent)
 {
 	_requireFocused = false;
+	_selectedHistory = 0;
 }
 
 void CTextEdit::update(int c)
@@ -246,11 +282,19 @@ void CTextEdit::update(int c)
 		top_panel(_panel);
 		wclear(_window);
 
-		if(_requireFocused ? isFocused() : true)
+		if(_requireFocused ? focused() : true)
 		{
 			switch(c)
 			{
 			case ERR:
+				break;
+			case KEY_UP:
+				if(_selectedHistory > 0 && !_history.empty())
+					_text = _history[--_selectedHistory];
+				break;
+			case KEY_DOWN:
+				if(_selectedHistory + 1 < _history.size())
+					_text = _history[++_selectedHistory];
 				break;
 			case 8:
 			case 127:
@@ -265,6 +309,8 @@ void CTextEdit::update(int c)
 			case 10:
 			case 13:
 			case PADENTER:
+				_history.push_back(_text);
+				_selectedHistory = _history.size() - 1;
 				_text.clear();
 				// todo: forward text somewhere
 				break;
@@ -289,5 +335,95 @@ void CTextEdit::update(int c)
 
 		// print text
 		mvwaddstr(_window, 0, 0, _text.c_str());
+	}
+}
+
+CTabWidget::CTabWidget(CWidget *parent)
+	: CWidget(parent)
+{
+	_currentIndex = -1;
+
+	CLayout *layout = new CVBoxLayout();
+	setLayout(layout);
+}
+
+int CTabWidget::addTab(CWidget *page)
+{
+	_widgets.push_back(page);
+
+	if(currentIndex() == -1)
+		setCurrentIndex(_widgets.size() - 1);
+
+	return _widgets.size() - 1;
+}
+
+void CTabWidget::setCurrentIndex(int index)
+{
+	if(_layout->count() > 0)
+		_layout->removeWidget(_widgets[_currentIndex]);
+
+	_currentIndex = index;
+
+	_layout->addWidget(_widgets[_currentIndex]);
+
+	if(_visible)
+		_layout->show();
+}
+
+int CTabWidget::currentIndex()
+{
+	return _currentIndex;
+}
+
+int CTabWidget::indexOf(CWidget *w)
+{
+	//todo
+	return 0;
+}
+
+void CTabWidget::update(int c)
+{
+	if(_visible)
+	{
+		move_panel(_panel, _pos.y(), _pos.x());
+		top_panel(_panel);
+		wclear(_window);
+
+		uint tw = _size.width() - _leftMargin - _rightMargin;
+
+		// Is left mouse button pressed?
+		bool leftClick = focused() && Mouse_status.button[0] == BUTTON_PRESSED;
+		uint x = MOUSE_X_POS;
+		uint y = MOUSE_Y_POS;
+
+		int k = 0;
+		for(uint i = 0; i < _widgets.size(); i++)
+		{
+			if(leftClick &&
+				x > _pos.x() + _leftMargin + k &&
+				x < _pos.x() + _leftMargin + k + _widgets[i]->name().size() &&
+				y == _pos.y())
+			{
+				// select tab
+				setCurrentIndex(i);
+			}
+
+			if(currentIndex() == i)
+				wattr_on(_window, A_BOLD, 0);
+
+			mvwaddnstr(_window, 0, _leftMargin + k, _widgets[i]->name().c_str(), tw);
+
+			if(_currentIndex == i)
+				wattr_off(_window, A_BOLD, 0);
+
+			k += _widgets[i]->name().size() + 1;
+		}
+		
+		if(_layout)
+		{
+			_layout->setSize(_size.width(), _size.height() - 1);
+			_layout->setPosition(_pos.x(), _pos.y() + 1);
+			_layout->update(c);
+		}
 	}
 }

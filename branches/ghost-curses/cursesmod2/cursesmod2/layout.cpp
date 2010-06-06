@@ -16,6 +16,24 @@ void CLayout::addWidget(CWidget *widget)
 	setSize(_size.width(), _size.height());
 }
 
+void CLayout::removeWidget(CWidget *widget)
+{
+	for(vector<CWidget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++)
+	{
+		if((*i) == widget)
+		{
+			_widgets.erase(i);
+			break;
+		}
+	}
+	setSize(_size.width(), _size.height());
+}
+
+CWidget *CLayout::widgetAt(uint index)
+{
+	return _widgets[index];
+}
+
 void CLayout::hide()
 {
 	for(vector<CWidget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++)
@@ -43,7 +61,7 @@ void CLayout::setSize(uint width, uint height)
 {
 	_size.set(width, height);
 	
-	if(width > 0 && height > 0)
+	if(width > 0 && height > 0 && count() > 0)
 		recursiveResize(0, _widgets.size() - 1, width, height, _pos.x(), _pos.y());
 }
 

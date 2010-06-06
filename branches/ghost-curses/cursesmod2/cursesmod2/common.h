@@ -14,6 +14,7 @@ typedef unsigned int uint;
 
 enum Color
 {
+	Null = 99,
 	Black = 0,
 	Blue,
 	Green,

@@ -24,6 +24,12 @@ public:
 	// Add widget to layout
 	void addWidget(CWidget *widget);
 
+	// Remove widget from layout
+	void removeWidget(CWidget *widget);
+
+	// Get widget
+	CWidget *widgetAt(uint index);
+
 	// Show layout
 	void show();
 	

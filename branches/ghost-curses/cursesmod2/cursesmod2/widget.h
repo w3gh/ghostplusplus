@@ -11,6 +11,12 @@ class CWidget
 public:
 	CWidget(CWidget *parent = 0, bool dummy = false);
 
+	// Set name
+	void setName(const string &name);
+
+	// Get name
+	string name();
+
 	// Set parent
 	void setParent(CWidget *parent);
 
@@ -46,7 +52,7 @@ public:
 
 	// If mouse cursor is over this widget or
 	// its subwidgets, it returns true.
-	bool isFocused();
+	bool focused();
 
 	// Set background color
 	void setBackgroundColor(Color color);
@@ -77,7 +83,6 @@ protected:
 	uint _leftMargin;
 	uint _rightMargin;
 
-	bool _selected;
 	bool _visible;
 
 	CWidget *_parent;
@@ -86,6 +91,9 @@ protected:
 	Color _bgcolor;
 	Color _fgcolor;
 	bool _bold;
+
+	// Mouse position
+	CPoint _mousePos;
 
 	// Curses
 	WINDOW *_window;
@@ -143,8 +151,16 @@ public:
 	// Get text
 	string text();
 
+	// Set text centered
+	void setCentered(bool enabled);
+
+	// Get centered
+	bool centered();
+
 protected:
 	string _text;
+
+	bool _centered;
 };
 
 // TextEdit
@@ -161,6 +177,11 @@ public:
 
 protected:
 	bool _requireFocused;
+
+	uint _selectedHistory;
+
+	vector<string> _history;
+
 };
 
 // Button
@@ -169,6 +190,33 @@ class CButton : public CLabel
 public:
 	CButton(CWidget *parent = 0);
 
+};
+
+// TabWidget
+class CTabWidget : public CWidget
+{
+public:
+	CTabWidget(CWidget *parent = 0);
+
+	// Add tab page. The label is widget's name. Returns index.
+	int addTab(CWidget *page);
+
+	// Set current index
+	void setCurrentIndex(int index);
+
+	// Get current index
+	int currentIndex();
+
+	// Get index of widget. Returns -1, if not found.
+	int indexOf(CWidget *w);
+
+	// Update widget
+	virtual void update(int c);
+
+protected:
+	vector<CWidget *> _widgets;
+
+	int _currentIndex;
 };
 
 #endif

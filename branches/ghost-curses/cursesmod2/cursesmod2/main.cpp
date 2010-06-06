@@ -4,6 +4,8 @@
 
 //fix: layout resizing (s-f-s, f-s-f, ...)
 
+//todo: tabwidget, tabText=widgetName, show widget[i], hide others
+
 int main()
 {
 	CWindow *window = new CWindow();
@@ -12,7 +14,15 @@ int main()
 	CWidget *mainWidget = new CWidget();
 	CWidget *sub1 = new CWidget();
 	CWidget *sub2 = new CWidget();
+
 	CWidget *sub3 = new CWidget();
+	sub3->setName("Channel");
+
+	CWidget *sub4 = new CWidget();
+	sub4->setName("Friends");
+
+	CWidget *sub5 = new CWidget();
+	sub5->setName("Clan");
 
 	CListWidget *list = new CListWidget();
 	list->setBackgroundColor(White);
@@ -34,6 +44,11 @@ int main()
 	menu->setBackgroundColor(Cyan);
 	menu->setFixedSize(0, 1);
 
+	CTabWidget *tab = new CTabWidget();
+	tab->setBackgroundColor(White);
+	tab->setForegroundColor(Blue);
+	tab->setFixedSize(22, 0);
+
 	CListWidget *list2 = new CListWidget();
 	list2->setBackgroundColor(White);
 	list2->setForegroundColor(Black);
@@ -41,15 +56,37 @@ int main()
 	list2->addItem("Testing 5", Red);
 	list2->addItem("Testing 6", Blue);
 
-	sub3->setFixedSize(20, 0);
+	CListWidget *list3 = new CListWidget();
+	list3->setBackgroundColor(White);
+	list3->setForegroundColor(Black);
+	list3->addItem("Testing 7", Red);
+	list3->addItem("Testing 8", Red);
+	list3->addItem("Testing 9", Green);
 
-	CLayout *layout0 = new CVBoxLayout(sub3);
-	layout0->addWidget(label);
-	layout0->addWidget(list2);
+	CListWidget *list4 = new CListWidget();
+	list4->setBackgroundColor(White);
+	list4->setForegroundColor(Black);
+	list4->addItem("Testing 10", Yellow);
+	list4->addItem("Testing 11", Yellow);
+	list4->addItem("Testing 12", Cyan);
+
+	CLayout *layout0a = new CVBoxLayout(sub3);
+	layout0a->addWidget(label);
+	layout0a->addWidget(list2);
+
+	CLayout *layout0b = new CVBoxLayout(sub4);
+	layout0b->addWidget(list3);
+
+	CLayout *layout0c = new CVBoxLayout(sub5);
+	layout0c->addWidget(list4);
+
+	tab->addTab(sub3);
+	tab->addTab(sub4);
+	tab->addTab(sub5);
 
 	CLayout *layout1 = new CHBoxLayout(sub2);
 	layout1->addWidget(list);
-	layout1->addWidget(sub3);
+	layout1->addWidget(tab);
 
 	CLayout *layout2 = new CVBoxLayout(sub1);
 	layout2->addWidget(sub2);
@@ -68,6 +105,15 @@ int main()
 	string channelName = "The Void";
 
 	label->setText(channelName);
+
+	// some numbers so we can test scrolling
+	for (int i = 10000; i < 10050; i++)
+	{
+		char *buf = new char[6];
+		_itoa(i, buf, 16);
+		list->addItem(buf);
+		delete buf;
+	}
 
 	while(true)
 	{

@@ -30,8 +30,8 @@ CWindow::CWindow()
 #ifdef __PDCURSES__
 	// Mouse cursor
 	mouse_on(ALL_MOUSE_EVENTS);
-	mouseinterval(50);
-	curs_set(1); // 0 = nothing, 1 = underline, 2 = block
+	mouseinterval(30);
+	curs_set(0); // 0 = nothing, 1 = underline, 2 = block
 #endif
 }
 
@@ -119,12 +119,5 @@ void CWindow::updateMouse(int c)
 		_mousePos.set(MOUSE_X_POS, MOUSE_Y_POS);
 
 	move( _mousePos.y(), _mousePos.x() );
-
-	if( Mouse_status.changes == MOUSE_WHEEL_UP )
-	{
-	}
-	else if( Mouse_status.changes == MOUSE_WHEEL_DOWN )
-	{
-	}
 #endif
 }
