@@ -39,7 +39,7 @@ public:
 	virtual void show();
 
 	// Update widget
-	virtual void update();
+	virtual void update(int c);
 
 	// Set margins
 	void setMargins(uint top, uint bottom, uint left, uint right);
@@ -115,6 +115,9 @@ class CMenuBar : public CWidget
 public:
 	CMenuBar(CWidget *parent = 0);
 
+	// Update widget
+	virtual void update(int c);
+
 };
 
 // Table
@@ -125,27 +128,46 @@ public:
 
 };
 
-// Button
-class CButton : public CWidget
-{
-public:
-	CButton(CWidget *parent = 0);
-
-};
-
 // Label
 class CLabel : public CWidget
 {
 public:
 	CLabel(CWidget *parent = 0);
 
+	// Update widget
+	virtual void update(int c);
+
+	// Set text
+	void setText(const string &text);
+
+	// Get text
+	string text();
+
+protected:
+	string _text;
 };
 
 // TextEdit
-class CTextEdit : public CWidget
+class CTextEdit : public CLabel
 {
 public:
 	CTextEdit(CWidget *parent = 0);
+
+	// Update widget
+	virtual void update(int c);
+
+	// Require focus to write text?
+	void requireFocused(bool enabled);
+
+protected:
+	bool _requireFocused;
+};
+
+// Button
+class CButton : public CLabel
+{
+public:
+	CButton(CWidget *parent = 0);
 
 };
 

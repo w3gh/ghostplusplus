@@ -59,8 +59,11 @@ private:
 	// Main Widget
 	CWidget *_widget;
 
-	uint _mouseX;
-	uint _mouseY;
+	// Mouse position
+	CPoint _mousePos;
+
+	// Pressed key from getch()
+	int _key;
 
 };
 

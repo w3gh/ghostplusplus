@@ -61,8 +61,8 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 {
 	CListWidgetItem *item = new CListWidgetItem(this);
 	item->setText(text);
-	item->setBackgroundColor(bgcolor);
-	item->setForegroundColor(fgcolor);
+	item->setBackgroundColor(bgcolor == Null ? _bgcolor : bgcolor);
+	item->setForegroundColor(fgcolor == Null ? _fgcolor : fgcolor);
 	item->setBold(bold);
 	_items.push_back(item);
 
@@ -70,7 +70,7 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 		_scroll++;
 }
 
-void CListWidget::update()
+void CListWidget::update(int c)
 {
 	if(_visible)
 	{
@@ -83,17 +83,17 @@ void CListWidget::update()
 
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 		uint th = _size.height() - _topMargin - _bottomMargin;
-
-		for(uint i = 0; i < _items.size() && (_scroll >= th ? i < _scroll : i < th); i++)
+		
+		for(uint i = _scroll > th ? _scroll - th : 0, k = 0; i < _items.size(); i++, k++)
 		{
 			attr_t a = attribute(_items[i]->backgroundColor(), _items[i]->foregroundColor(), _items[i]->bold());
 			wattr_on(_window, a, 0);
 			
 			for(uint j = 0; j < _items[i]->text().size() && (_multiLine ? true : j < tw); j++)
-				mvwaddch(_window, i + _topMargin, j + _leftMargin, _items[i]->text()[j]);
+				mvwaddch(_window, k + _topMargin, j + _leftMargin, _items[i]->text()[j]);
 
 			wattr_off(_window, a, 0);
-		}	
+		}
 	}
 }
 

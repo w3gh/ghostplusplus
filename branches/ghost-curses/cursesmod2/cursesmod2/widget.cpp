@@ -111,19 +111,15 @@ void CWidget::show()
 		_layout->show();
 }
 
-void CWidget::update()
+void CWidget::update(int c)
 {
 	if(_visible)
 	{
 		move_panel(_panel, _pos.y(), _pos.x());
-		top_panel(_panel);
-
-		for(uint i = 0; i < _size.width(); i++)
-			for(uint j = 0; j < _size.height(); j++)
-				waddch(_window, 'X');
+		//top_panel(_panel);
 
 		if(_layout)
-			_layout->update();
+			_layout->update(c);
 	}
 }
 
@@ -137,11 +133,12 @@ void CWidget::setMargins(uint top, uint bottom, uint left, uint right)
 
 bool CWidget::isFocused()
 {
-	if(MOUSE_Y_POS >= _pos.y() && MOUSE_Y_POS < _pos.y() + _size.height() &&
-	   MOUSE_X_POS >= _pos.x() && MOUSE_X_POS < _pos.x() + _size.width())
+	if(uint(MOUSE_Y_POS) >= _pos.y() && uint(MOUSE_Y_POS) < _pos.y() + _size.height() &&
+	   uint(MOUSE_X_POS) >= _pos.x() && uint(MOUSE_X_POS) < _pos.x() + _size.width())
 	{
 		return true;
 	}
+
 	return false;
 }
 
@@ -184,6 +181,113 @@ bool CWidget::bold()
 	return _bold;
 }
 
-CTextEdit::CTextEdit(CWidget *parent)
+CMenuBar::CMenuBar(CWidget *parent)
+	: CWidget(parent)
 {
+}
+
+void CMenuBar::update(int c)
+{
+	if(_visible)
+	{
+		move_panel(_panel, _pos.y(), _pos.x());
+		top_panel(_panel);
+		wclear(_window);
+	}
+}
+
+CLabel::CLabel(CWidget *parent)
+	: CWidget(parent)
+{
+}
+
+void CLabel::update(int c)
+{
+	if(_visible)
+	{
+		move_panel(_panel, _pos.y(), _pos.x());
+		top_panel(_panel);
+		wclear(_window);
+
+		if(isFocused())
+			box(_window, 0, 0);
+
+		uint tw = _size.width() - _leftMargin - _rightMargin;
+		uint th = _size.height() - _topMargin - _bottomMargin;
+		
+		for(uint i = 0; i < _text.size() && i < tw; i++)
+			mvwaddch(_window, _topMargin, i + _leftMargin, _text[i]);
+	}
+}
+
+
+void CLabel::setText(const string &text)
+{
+	_text = text;
+}
+
+string CLabel::text()
+{
+	return _text;
+}
+
+
+CTextEdit::CTextEdit(CWidget *parent)
+	: CLabel(parent)
+{
+	_requireFocused = false;
+}
+
+void CTextEdit::update(int c)
+{
+	if(_visible)
+	{
+		move_panel(_panel, _pos.y(), _pos.x());
+		top_panel(_panel);
+		wclear(_window);
+
+		if(_requireFocused ? isFocused() : true)
+		{
+			switch(c)
+			{
+			case ERR:
+				break;
+			case 8:
+			case 127:
+			case KEY_BACKSPACE:
+			case KEY_DC:
+				if(!_text.empty())
+					_text.erase(_text.end() - 1);
+				break;
+			case 27:
+				_text.clear();
+				break;
+			case 10:
+			case 13:
+			case PADENTER:
+				_text.clear();
+				// todo: forward text somewhere
+				break;
+			case PADSLASH:
+				_text += '/';
+				break;
+			case PADSTAR:
+				_text += '*';
+				break;
+			case PADMINUS:
+				_text += '-';
+				break;
+			case PADPLUS:
+				_text += '+';
+				break;
+			default:
+				if(c >= 32 && c <= 255)
+					_text += c;
+				break;
+			}
+		}
+
+		// print text
+		mvwaddstr(_window, 0, 0, _text.c_str());
+	}
 }

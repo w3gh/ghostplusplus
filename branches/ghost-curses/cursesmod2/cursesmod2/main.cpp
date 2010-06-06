@@ -12,35 +12,48 @@ int main()
 	CWidget *mainWidget = new CWidget();
 	CWidget *sub1 = new CWidget();
 	CWidget *sub2 = new CWidget();
+	CWidget *sub3 = new CWidget();
 
 	CListWidget *list = new CListWidget();
+	list->setBackgroundColor(White);
+	list->setForegroundColor(Black);
 	list->addItem("Testing 1", Yellow);
 	list->addItem("Testing 2", Green);
 	list->addItem("Testing 3", Red);
 
-	CListWidget *edit = new CListWidget();
+	CLabel *label = new CLabel();
+	label->setBackgroundColor(White);
+	label->setForegroundColor(Black);
+	label->setFixedSize(0, 3);	
+
+	CTextEdit *edit = new CTextEdit();
 	edit->setBackgroundColor(Cyan);
 	edit->setFixedSize(0, 2);
 
-	CListWidget *menu = new CListWidget();
+	CMenuBar *menu = new CMenuBar();
 	menu->setBackgroundColor(Cyan);
 	menu->setFixedSize(0, 1);
 
 	CListWidget *list2 = new CListWidget();
-	list2->setFixedSize(20, 0);
 	list2->setBackgroundColor(White);
 	list2->setForegroundColor(Black);
-	list2->addItem("Testing 4", Magenta, White);
-	list2->addItem("Testing 5", Red, White);
-	list2->addItem("Testing 6", Blue, White);
+	list2->addItem("Testing 4", Magenta);
+	list2->addItem("Testing 5", Red);
+	list2->addItem("Testing 6", Blue);
 
-	CLayout *layout1 = new CVBoxLayout(sub2);
+	sub3->setFixedSize(20, 0);
+
+	CLayout *layout0 = new CVBoxLayout(sub3);
+	layout0->addWidget(label);
+	layout0->addWidget(list2);
+
+	CLayout *layout1 = new CHBoxLayout(sub2);
 	layout1->addWidget(list);
-	layout1->addWidget(edit);
+	layout1->addWidget(sub3);
 
-	CLayout *layout2 = new CHBoxLayout(sub1);
+	CLayout *layout2 = new CVBoxLayout(sub1);
 	layout2->addWidget(sub2);
-	layout2->addWidget(list2);
+	layout2->addWidget(edit);
 
 	CLayout *layoutA = new CVBoxLayout(mainWidget);
 	layoutA->addWidget(menu);
@@ -51,8 +64,18 @@ int main()
 
 	window->setSize(135, 43);
 
+	string replyTarget = "testuser";
+	string channelName = "The Void";
+
+	label->setText(channelName);
+
 	while(true)
+	{
 		window->update();
+
+		if(edit->text() == "/r ")
+			edit->setText("/w " + replyTarget + " ");
+	}
 
 	SafeDelete(window);
 

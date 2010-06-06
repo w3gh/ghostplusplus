@@ -31,7 +31,7 @@ public:
 	void hide();
 
 	// Update layout
-	void update();
+	void update(int c);
 
 	// Get widgets count
 	int count();
@@ -61,7 +61,7 @@ public:
 	CVBoxLayout(CWidget *parent = 0);
 
 protected:
-	void recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y);
+	void recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y); //fixme?
 };
 
 // Horizontal layout
@@ -71,7 +71,7 @@ public:
 	CHBoxLayout(CWidget *parent = 0);
 
 protected:
-	void recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y);
+	void recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y); //fixme
 };
 
 #endif

@@ -48,10 +48,10 @@ class CListWidget : public CWidget
 public:
 	CListWidget(CWidget *parent = 0);
 
-	void addItem(const string &text, Color fgcolor = White, Color bgcolor = Black, bool bold = false);
+	void addItem(const string &text, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
 
 	// Update widget
-	virtual void update();
+	virtual void update(int c);
 
 	// Set scroll
 	void setScroll(uint scroll);

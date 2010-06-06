@@ -28,10 +28,10 @@ void CLayout::show()
 		(*i)->show();
 }
 
-void CLayout::update()
+void CLayout::update(int c)
 {
 	for(vector<CWidget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++)
-		(*i)->update();
+		(*i)->update(c);
 }
 
 int CLayout::count()

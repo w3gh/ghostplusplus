@@ -5,7 +5,6 @@ CWindow::CWindow()
 {
 	// Initialize curses
 	_window = initscr();
-	_panel = new_panel(_window);
 	refresh();
 
 	_size.set(COLS, LINES);
@@ -24,14 +23,15 @@ CWindow::CWindow()
 	}
 
 	nodelay(_window, true);
-	//noecho( );
-	//cbreak( );
+	keypad(_window, true);
+	cbreak();
+	noecho();
 	
 #ifdef __PDCURSES__
 	// Mouse cursor
-	mouse_on( ALL_MOUSE_EVENTS );
-	mouseinterval( 50 );
-	curs_set( 1 );	// 0 = nothing or 1 = underline or 2 = block
+	mouse_on(ALL_MOUSE_EVENTS);
+	mouseinterval(50);
+	curs_set(1); // 0 = nothing, 1 = underline, 2 = block
 #endif
 }
 
@@ -96,7 +96,7 @@ void CWindow::update()
 	updateInput();
 
 	if(_widget)
-		_widget->update();
+		_widget->update(_key);
 
 	update_panels();
 	doupdate();
@@ -104,9 +104,9 @@ void CWindow::update()
 
 void CWindow::updateInput()
 {
-	int c = wgetch(_window);
+	_key = wgetch(_window);
 
-	updateMouse( c );
+	updateMouse( _key );
 }
 
 void CWindow::updateMouse(int c)
@@ -115,13 +115,10 @@ void CWindow::updateMouse(int c)
 	// Mouse position update
 	request_mouse_pos( );
 
-	if( MOUSE_Y_POS != -1 )
-		_mouseY = MOUSE_Y_POS;
+	if(MOUSE_X_POS != -1 && MOUSE_Y_POS != -1)
+		_mousePos.set(MOUSE_X_POS, MOUSE_Y_POS);
 
-	if( MOUSE_X_POS != -1 )
-		_mouseX = MOUSE_X_POS;
-
-	move( _mouseY, _mouseX );
+	move( _mousePos.y(), _mousePos.x() );
 
 	if( Mouse_status.changes == MOUSE_WHEEL_UP )
 	{
