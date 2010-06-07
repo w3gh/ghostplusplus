@@ -4,121 +4,184 @@
 
 //fix: layout resizing (s-f-s, f-s-f, ...)
 
-//todo: tabwidget, tabText=widgetName, show widget[i], hide others
+CTabWidget *mainWidget = 0;
+
+string toString(int i)
+{
+	char *buf = new char[sizeof(int)];
+	_itoa(i, buf, 10);
+
+	return buf;
+}
+
+CWidget* addServer(const string &name, int id)
+{
+	CWidget *srvmain = new CWidget();
+	srvmain->setName(name);
+	srvmain->setCustomID(id);
+
+	CWidget *sub = new CWidget();
+	sub->setCustomID(0);
+
+	CWidget *channel = new CWidget();
+	channel->setName("Channel");
+	channel->setCustomID(0);
+
+	CListWidget *log1 = new CListWidget();
+	log1->setName("All");
+	log1->setCustomID(0);
+	log1->setBackgroundColor(White);
+	log1->setForegroundColor(Black);
+
+	CListWidget *log2 = new CListWidget();
+	log2->setName("Server");
+	log2->setCustomID(1);
+	log2->setBackgroundColor(White);
+	log2->setForegroundColor(Black);
+
+	CLabel *channelName = new CLabel();
+	channelName->setCustomID(0);
+	channelName->setBackgroundColor(White);
+	channelName->setForegroundColor(Black);
+	channelName->setFixedSize(0, 3);	
+
+	CTextEdit *edit = new CTextEdit();
+	edit->setCustomID(1);
+	edit->setBackgroundColor(Cyan);
+	edit->setFixedSize(0, 2);
+
+	CListWidget *channelList = new CListWidget();
+	channelList->setCustomID(1);
+	channelList->setBackgroundColor(White);
+	channelList->setForegroundColor(Black);
+
+	CListWidget *friendsList = new CListWidget();
+	friendsList->setName("Friends");
+	friendsList->setCustomID(1);
+	friendsList->setBackgroundColor(White);
+	friendsList->setForegroundColor(Black);
+
+	CListWidget *clanList = new CListWidget();
+	clanList->setName("Clan");
+	clanList->setCustomID(1);
+	clanList->setBackgroundColor(White);
+	clanList->setForegroundColor(Black);
+
+	CLayout *layout0a = new CVBoxLayout(channel);
+	layout0a->addWidget(channelName);
+	layout0a->addWidget(channelList);
+	
+	CTabWidget *tab1 = new CTabWidget();
+	tab1->setCustomID(0);
+	tab1->setBackgroundColor(White);
+	tab1->setForegroundColor(Blue);
+	tab1->addTab(log1);
+	tab1->addTab(log2);
+
+	CTabWidget *tab2 = new CTabWidget();
+	tab2->setCustomID(1);
+	tab2->setBackgroundColor(White);
+	tab2->setForegroundColor(Blue);
+	tab2->setFixedSize(22, 0);
+	tab2->addTab(channel);
+	tab2->addTab(friendsList);
+	tab2->addTab(clanList);
+	
+	CLayout *layout1 = new CHBoxLayout(sub);
+	layout1->addWidget(tab1);
+	layout1->addWidget(tab2);
+
+	CLayout *layout2 = new CVBoxLayout(srvmain);
+	layout2->addWidget(sub);
+	layout2->addWidget(edit);
+
+	return srvmain;
+}
+
+// Get widget from IDs. Example: "0,0,1,0,0".
+CWidget *getWidget(const string &IDs)
+{
+	vector<int> _IDs;
+	CLayout *layout = 0;
+
+	for(uint i = 0; i < IDs.size(); i++)
+	{
+		int j = atoi(IDs.substr(i, IDs.find_first_of(",", i) - i).c_str());
+		_IDs.push_back(j);
+
+		if(IDs.find_first_of(",", i) != -1)
+			i = IDs.find_first_of(",", i);
+	}
+
+	layout = mainWidget->at(mainWidget->indexOf(_IDs[0]))->layout();
+
+	for(uint i = 1; i < _IDs.size() - 1; i++)
+		layout = layout->at(layout->indexOf(_IDs[i]))->layout();
+
+	return layout->at(layout->indexOf(_IDs[_IDs.size() - 1]));
+}
+
+void setChannelName(const string &name, int id)
+{
+	CLabel *channelName = (CLabel *)getWidget(toString(id) + ",0,1,0,0");
+	channelName->setText(name);
+}
+
+void addChannelUser(const string &name, int flag, int id)
+{
+	Color color;
+
+	switch(flag)
+	{
+	case 1: color = Blue;	break;	// BLIZZARD REP
+	case 2: color = Yellow;	break;	// CHANNEL OP
+	case 4: color = Cyan;	break;	// SPEAKER
+	case 8: color = Blue;	break;	// BNET ADMIN
+	case 32: color = Red;	break;	// SQUELCHED
+	default: color = Null;
+	}
+
+	CListWidget *channelList = (CListWidget *)getWidget(toString(id) + ",0,1,0,1");
+	channelList->addItem(name, color);
+}
 
 int main()
 {
 	CWindow *window = new CWindow();
 	window->setTitle("CursesMod-2.0");
-	
-	CWidget *mainWidget = new CWidget();
-	CWidget *sub1 = new CWidget();
-	CWidget *sub2 = new CWidget();
 
-	CWidget *sub3 = new CWidget();
-	sub3->setName("Channel");
+	CWidget *sub1a = addServer("Europe", 0);
+	CWidget *sub1b = addServer("USWest", 1);
+	CWidget *sub1c = addServer("USEast", 2);
+	CWidget *sub1d = addServer("Asia", 3);
+	CWidget *sub1e = addServer("PVPGN", 4);
 
-	CWidget *sub4 = new CWidget();
-	sub4->setName("Friends");
+	mainWidget = new CTabWidget();
+	mainWidget->setBackgroundColor(Cyan);
+	mainWidget->setFixedSize(0, 1);
 
-	CWidget *sub5 = new CWidget();
-	sub5->setName("Clan");
-
-	CListWidget *list = new CListWidget();
-	list->setBackgroundColor(White);
-	list->setForegroundColor(Black);
-	list->addItem("Testing 1", Yellow);
-	list->addItem("Testing 2", Green);
-	list->addItem("Testing 3", Red);
-
-	CLabel *label = new CLabel();
-	label->setBackgroundColor(White);
-	label->setForegroundColor(Black);
-	label->setFixedSize(0, 3);	
-
-	CTextEdit *edit = new CTextEdit();
-	edit->setBackgroundColor(Cyan);
-	edit->setFixedSize(0, 2);
-
-	CMenuBar *menu = new CMenuBar();
-	menu->setBackgroundColor(Cyan);
-	menu->setFixedSize(0, 1);
-
-	CTabWidget *tab = new CTabWidget();
-	tab->setBackgroundColor(White);
-	tab->setForegroundColor(Blue);
-	tab->setFixedSize(22, 0);
-
-	CListWidget *list2 = new CListWidget();
-	list2->setBackgroundColor(White);
-	list2->setForegroundColor(Black);
-	list2->addItem("Testing 4", Magenta);
-	list2->addItem("Testing 5", Red);
-	list2->addItem("Testing 6", Blue);
-
-	CListWidget *list3 = new CListWidget();
-	list3->setBackgroundColor(White);
-	list3->setForegroundColor(Black);
-	list3->addItem("Testing 7", Red);
-	list3->addItem("Testing 8", Red);
-	list3->addItem("Testing 9", Green);
-
-	CListWidget *list4 = new CListWidget();
-	list4->setBackgroundColor(White);
-	list4->setForegroundColor(Black);
-	list4->addItem("Testing 10", Yellow);
-	list4->addItem("Testing 11", Yellow);
-	list4->addItem("Testing 12", Cyan);
-
-	CLayout *layout0a = new CVBoxLayout(sub3);
-	layout0a->addWidget(label);
-	layout0a->addWidget(list2);
-
-	CLayout *layout0b = new CVBoxLayout(sub4);
-	layout0b->addWidget(list3);
-
-	CLayout *layout0c = new CVBoxLayout(sub5);
-	layout0c->addWidget(list4);
-
-	tab->addTab(sub3);
-	tab->addTab(sub4);
-	tab->addTab(sub5);
-
-	CLayout *layout1 = new CHBoxLayout(sub2);
-	layout1->addWidget(list);
-	layout1->addWidget(tab);
-
-	CLayout *layout2 = new CVBoxLayout(sub1);
-	layout2->addWidget(sub2);
-	layout2->addWidget(edit);
-
-	CLayout *layoutA = new CVBoxLayout(mainWidget);
-	layoutA->addWidget(menu);
-	layoutA->addWidget(sub1);
+	mainWidget->addTab(sub1a);
+	mainWidget->addTab(sub1b);
+	mainWidget->addTab(sub1c);
+	mainWidget->addTab(sub1d);
+	mainWidget->addTab(sub1e);
 
 	window->setWidget(mainWidget);
 	window->show();
 
 	window->setSize(135, 43);
 
-	string replyTarget = "testuser";
-	string channelName = "The Void";
+	setChannelName("The Void", 0);
+	addChannelUser("Testuser", 0, 0);
 
-	label->setText(channelName);
+	CTextEdit *edit = (CTextEdit *)getWidget("0,1");
 
-	// some numbers so we can test scrolling
-	for (int i = 10000; i < 10050; i++)
-	{
-		char *buf = new char[6];
-		_itoa(i, buf, 16);
-		list->addItem(buf);
-		delete buf;
-	}
+	string replyTarget = "Testuser";
 
 	while(true)
 	{
 		window->update();
-
+		
 		if(edit->text() == "/r ")
 			edit->setText("/w " + replyTarget + " ");
 	}

@@ -84,6 +84,36 @@ void CLayout::setPosition(uint x, uint y)
 	}
 }
 
+int CLayout::indexOf(CWidget *w)
+{
+	for(uint i = 0; i < _widgets.size(); i++)
+	{
+		if(_widgets[i] == w)
+			return i; // found
+	}
+
+	return -1; // not found
+}
+
+int CLayout::indexOf(int id)
+{
+	for(uint i = 0; i < _widgets.size(); i++)
+	{
+		if(_widgets[i]->customID() == id)
+			return i; // found
+	}
+
+	return -1; // not found
+}
+
+CWidget *CLayout::at(uint i)
+{
+	if(i >= 0 && i < _widgets.size())
+		return _widgets[i];
+	
+	return 0;
+}
+
 void CLayout::recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y)
 {
 

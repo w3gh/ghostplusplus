@@ -17,6 +17,12 @@ public:
 	// Get name
 	string name();
 
+	// Set custom id
+	void setCustomID(int id);
+
+	// Get custom id
+	int customID();
+
 	// Set parent
 	void setParent(CWidget *parent);
 
@@ -28,6 +34,9 @@ public:
 
 	// Set layout
 	void setLayout(CLayout *layout);
+
+	// Get layout
+	CLayout *layout();
 
 	// Set size
 	virtual void setSize(uint width, uint height);
@@ -74,6 +83,7 @@ public:
 
 protected:
 	string _name;
+	int _customID;
 
 	CSize _size;
 	CPoint _pos;
@@ -201,6 +211,9 @@ public:
 	// Add tab page. The label is widget's name. Returns index.
 	int addTab(CWidget *page);
 
+	// Remove tab page. Changes tab index automatically.
+	void removeTab(CWidget *page);
+
 	// Set current index
 	void setCurrentIndex(int index);
 
@@ -209,6 +222,12 @@ public:
 
 	// Get index of widget. Returns -1, if not found.
 	int indexOf(CWidget *w);
+
+	// Find first widget with custom id. Returns -1, if not found.
+	int indexOf(int id);
+
+	// Get widget at i.
+	CWidget *at(uint i);
 
 	// Update widget
 	virtual void update(int c);

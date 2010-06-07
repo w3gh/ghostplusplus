@@ -99,7 +99,7 @@ void CListWidget::update(int c)
 				_items.size() > th && _scroll > th)
 			{
 				_scroll-=1;
-			}			
+			}
 #endif
 			// Page Down / Page Up scrolling
 			if(c == KEY_NPAGE &&

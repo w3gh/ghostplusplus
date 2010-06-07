@@ -49,6 +49,16 @@ string CWidget::name()
 	return _name;
 }
 
+void CWidget::setCustomID(int id)
+{
+	_customID = id;
+}
+
+int CWidget::customID()
+{
+	return _customID;
+}
+
 void CWidget::setParent(CWidget *parent)
 {
 	_parent = parent;
@@ -72,6 +82,11 @@ void CWidget::setLayout(CLayout *layout)
 	_layout = layout;
 	_layout->setSize(_size.width(), _size.height());
 	_layout->setPosition(_pos.x(), _pos.y());
+}
+
+CLayout *CWidget::layout()
+{
+	return _layout;
 }
 
 void CWidget::setSize(uint width, uint height)
@@ -289,12 +304,22 @@ void CTextEdit::update(int c)
 			case ERR:
 				break;
 			case KEY_UP:
-				if(_selectedHistory > 0 && !_history.empty())
-					_text = _history[--_selectedHistory];
+				if(!_history.empty())
+				{
+					if(_selectedHistory > 0)
+						_text = _history[--_selectedHistory];
+					else if(_selectedHistory == 0)
+						_text = _history[0];
+				}
 				break;
 			case KEY_DOWN:
-				if(_selectedHistory + 1 < _history.size())
-					_text = _history[++_selectedHistory];
+				if(!_history.empty())
+				{
+					if(_selectedHistory < _history.size() - 1)
+						_text = _history[++_selectedHistory];
+					else if(_selectedHistory == _history.size() - 1)
+						_text = _history[_history.size() - 1];
+				}
 				break;
 			case 8:
 			case 127:
@@ -310,7 +335,7 @@ void CTextEdit::update(int c)
 			case 13:
 			case PADENTER:
 				_history.push_back(_text);
-				_selectedHistory = _history.size() - 1;
+				_selectedHistory = _history.size();
 				_text.clear();
 				// todo: forward text somewhere
 				break;
@@ -377,7 +402,31 @@ int CTabWidget::currentIndex()
 
 int CTabWidget::indexOf(CWidget *w)
 {
-	//todo
+	for(uint i = 0; i < _widgets.size(); i++)
+	{
+		if(_widgets[i] == w)
+			return i; // found
+	}
+
+	return -1; // not found
+}
+
+int CTabWidget::indexOf(int id)
+{
+	for(uint i = 0; i < _widgets.size(); i++)
+	{
+		if(_widgets[i]->customID() == id)
+			return i; // found
+	}
+
+	return -1; // not found
+}
+
+CWidget *CTabWidget::at(uint i)
+{
+	if(i < _widgets.size())
+		return _widgets[i];
+	
 	return 0;
 }
 

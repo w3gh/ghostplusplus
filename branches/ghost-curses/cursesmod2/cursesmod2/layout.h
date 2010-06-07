@@ -48,6 +48,15 @@ public:
 	// Set position
 	void setPosition(uint x, uint y);
 
+	// Get index of widget. Returns -1, if not found.
+	int indexOf(CWidget *w);
+
+	// Find first widget with custom id. Returns -1, if not found.
+	int indexOf(int id);
+
+	// Get widget at i.
+	CWidget *at(uint i);
+
 protected:
 	virtual void recursiveResize(uint from, uint to, uint width, uint height, uint x, uint y);
 
