@@ -21,6 +21,7 @@
 #include "ghost.h"
 #include "util.h"
 #include "bnlsprotocol.h"
+#include "ui/forward.h"
 
 CBNLSProtocol :: CBNLSProtocol( )
 {
@@ -56,7 +57,10 @@ BYTEARRAY CBNLSProtocol :: RECEIVE_BNLS_WARDEN( BYTEARRAY data )
 		if( Result == 0x00 )
 			return BYTEARRAY( data.begin( ) + 11, data.end( ) );
 		else
+		{
 			CONSOLE_Print( "[BNLSPROTO] received error code " + UTIL_ToString( data[8] ) );
+			forward(new CFwdData(FWD_GENERAL, "Received error code " + UTIL_ToString( data[8] ), 0, 0));
+		}
 	}
 
 	return BYTEARRAY( );

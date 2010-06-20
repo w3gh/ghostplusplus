@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="ghost"
 	ProjectGUID="{B57A04BC-13D4-4CAD-B835-C046B9D66269}"
 	RootNamespace="ghost"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include"
+				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include;..\pdcurses"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib pdcurses.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib"
+				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib;..\pdcurses"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -118,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include"
+				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include;..\pdcurses"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -137,9 +137,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib pdcurses.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib"
+				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib;..\pdcurses"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -194,7 +194,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include"
+				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include;..\pdcurses"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;GHOST_MYSQL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -214,9 +214,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib libmysql.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib libmysql.lib pdcurses.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib"
+				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib;..\pdcurses"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -271,8 +271,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;GHOST_MYSQL"
+				AdditionalIncludeDirectories="..\bncsutil\src;..\StormLib;..\zlib\include;..\mysql\include;..\pdcurses"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;GHOST_MYSQL;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -290,9 +290,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib libmysql.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib zdll.lib StormLibRAS.lib libmysql.lib pdcurses.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib"
+				AdditionalLibraryDirectories="..\zlib\lib;..\mysql\lib\opt;..\boost\lib;..\pdcurses"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -463,6 +463,38 @@
 				RelativePath=".\util.cpp"
 				>
 			</File>
+			<Filter
+				Name="ui"
+				>
+				<File
+					RelativePath=".\ui\common.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\layout.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\listwidget.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\tablewidget.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\ui.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\widget.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\window.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -613,6 +645,42 @@
 				RelativePath=".\util.h"
 				>
 			</File>
+			<Filter
+				Name="ui"
+				>
+				<File
+					RelativePath=".\ui\common.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\forward.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\layout.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\listwidget.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\tablewidget.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\ui.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\widget.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ui\window.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

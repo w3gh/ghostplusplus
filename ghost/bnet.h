@@ -97,6 +97,7 @@ private:
 	string m_FirstChannel;							// the first chat channel to join upon entering chat (note: we hijack this to store the last channel when entering a game)
 	string m_CurrentChannel;						// the current chat channel
 	string m_RootAdmin;								// the root admin
+	string m_ReplyTarget;							// reply target
 	char m_CommandTrigger;							// the character prefix to identify commands
 	unsigned char m_War3Version;					// custom warcraft 3 version for PvPGN users
 	BYTEARRAY m_EXEVersion;							// custom exe version for PvPGN users
@@ -112,6 +113,7 @@ private:
 	uint32_t m_LastOutPacketSize;
 	uint32_t m_LastAdminRefreshTime;				// GetTime when the admin list was last refreshed from the database
 	uint32_t m_LastBanRefreshTime;					// GetTime when the ban list was last refreshed from the database
+	uint32_t m_LastListRefreshTime;					// GetTime when the friends list and clan list was last refreshed
 	bool m_FirstConnect;							// if we haven't tried to connect to battle.net yet
 	bool m_WaitingToConnect;						// if we're waiting to reconnect to battle.net after being disconnected
 	bool m_LoggedIn;								// if we've logged into battle.net or not
@@ -134,6 +136,7 @@ public:
 	string GetFirstChannel( )			{ return m_FirstChannel; }
 	string GetCurrentChannel( )			{ return m_CurrentChannel; }
 	string GetRootAdmin( )				{ return m_RootAdmin; }
+	string GetReplyTarget( )			{ return m_ReplyTarget; }
 	char GetCommandTrigger( )			{ return m_CommandTrigger; }
 	BYTEARRAY GetEXEVersion( )			{ return m_EXEVersion; }
 	BYTEARRAY GetEXEVersionHash( )		{ return m_EXEVersionHash; }
@@ -147,6 +150,9 @@ public:
 	bool GetPublicCommands( )			{ return m_PublicCommands; }
 	uint32_t GetOutPacketsQueued( )		{ return m_OutPackets.size( ); }
 	BYTEARRAY GetUniqueName( );
+
+	void GetBans( );
+	void GetAdmins( );
 
 	// processing functions
 
@@ -162,7 +168,7 @@ public:
 	void SendGetFriendsList( );
 	void SendGetClanList( );
 	void QueueEnterChat( );
-	void QueueChatCommand( string chatCommand );
+	void QueueChatCommand( string chatCommand, bool hidden = false );
 	void QueueChatCommand( string chatCommand, string user, bool whisper );
 	void QueueGameCreate( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t hostCounter );
 	void QueueGameRefresh( unsigned char state, string gameName, string hostName, CMap *map, CSaveGame *saveGame, uint32_t upTime, uint32_t hostCounter );
@@ -184,6 +190,7 @@ public:
 	void RemoveBan( string name );
 	void HoldFriends( CBaseGame *game );
 	void HoldClan( CBaseGame *game );
+	void HiddenCommand( const string &Message );
 };
 
 #endif

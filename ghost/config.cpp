@@ -19,6 +19,7 @@
 */
 
 #include "ghost.h"
+#include "ui/forward.h"
 #include "config.h"
 
 #include <stdlib.h>
@@ -43,10 +44,14 @@ void CConfig :: Read( string file )
 	in.open( file.c_str( ) );
 
 	if( in.fail( ) )
+	{
 		CONSOLE_Print( "[CONFIG] warning - unable to read file [" + file + "]" );
+		//forward( new CFwdData(FWD_GENERAL, "CONFIG: Warning - unable to read file [" + file + "]", 0) );
+	}
 	else
 	{
 		CONSOLE_Print( "[CONFIG] loading file [" + file + "]" );
+		//forward( new CFwdData(FWD_GENERAL, "CONFIG: Loading file [" + file + "]", 0) );
 		string Line;
 
 		while( !in.eof( ) )

@@ -60,11 +60,13 @@ public:
 
 	virtual bool Update( void *fd, void *send_fd );
 	virtual void EventPlayerDeleted( CGamePlayer *player );
+	virtual void EventPlayerLeft( CGamePlayer *player, uint32_t reason );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
 	virtual bool EventPlayerBotCommand( CGamePlayer *player, string command, string payload );
 	virtual void EventGameStarted( );
 	virtual bool IsGameDataSaved( );
 	virtual void SaveGameData( );
+
 };
 
 #endif

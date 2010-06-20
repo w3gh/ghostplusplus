@@ -32,6 +32,7 @@
 #include "gameplayer.h"
 #include "gameprotocol.h"
 #include "game_base.h"
+#include "ui/forward.h"
 
 #include <cmath>
 #include <string.h>
@@ -43,8 +44,12 @@
 // CBaseGame
 //
 
+static uint32_t nextID = 0;
+
 CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer )
 {
+	m_GameID = nextID++;
+
 	m_GHost = nGHost;
 	m_Socket = new CTCPServer( );
 	m_Protocol = new CGameProtocol( m_GHost );
@@ -133,6 +138,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_MatchMaking = false;
 	m_LocalAdminMessages = m_GHost->m_LocalAdminMessages;
 
+	m_LastUiTime = 0;
+	m_LastUiSlotsTime = 0;
+
 	if( m_SaveGame )
 	{
 		m_EnforceSlots = m_SaveGame->GetSlots( );
@@ -210,10 +218,55 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 		CONSOLE_Print( "[GAME: " + m_GameName + "] error listening on port " + UTIL_ToString( m_HostPort ) );
 		m_Exiting = true;
 	}
+	
+	forward( new CFwdData( FWD_GAME_ADD, m_GameName, m_GameID ) );
+
+	vector<string> MapData;
+	MapData.push_back( "Local Path" ); MapData.push_back( m_Map->GetMapLocalPath( ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Players" ); MapData.push_back( UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Teams" ); MapData.push_back( UTIL_ToString( m_Map->GetMapNumTeams( ) ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Visibility" ); MapData.push_back( m_Map->GetMapVisibility( ) == 4 ? "Default" :
+														  m_Map->GetMapVisibility( ) == 3 ? "Always visible" :
+														  m_Map->GetMapVisibility( ) == 2 ? "Explored" : "Hide Terrain" );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Speed" ); MapData.push_back( m_Map->GetMapSpeed( ) == 3 ? "Fast" :
+													 m_Map->GetMapSpeed( ) == 2 ? "Normal" : "Slow" );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "HCL" ); MapData.push_back( m_HCLCommandString );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Owner" ); MapData.push_back( m_OwnerName );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
+
+	MapData.clear( );
+	MapData.push_back( "Time" );
+	
+	if( m_GameLoading || m_GameLoaded )
+		MapData.push_back( UTIL_ToString( ( m_GameTicks / 1000 ) / 60 ) + " minutes" );
+	else
+		MapData.push_back( UTIL_ToString( ( GetTime( ) - m_CreationTime ) / 60 ) + " minutes" );
+
+	forward( new CFwdData( FWD_GAME_MAP_INFO_ADD, MapData, m_GameID ) );
 }
 
 CBaseGame :: ~CBaseGame( )
 {
+	forward( new CFwdData( FWD_GAME_REMOVE, m_GameID ) );
+
 	// save replay
 	// todotodo: put this in a thread
 
@@ -1049,6 +1102,50 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 			return true;
 	}
 
+	// update time in ui
+
+	if( GetTime( ) > m_LastUiTime )
+	{
+		vector<string> MapData;
+		MapData.push_back( "Time" );
+		
+		if( m_GameLoading || m_GameLoaded )
+			MapData.push_back( UTIL_ToString( ( m_GameTicks / 1000 ) / 60 ) + " minutes" );
+		else
+			MapData.push_back( UTIL_ToString( ( GetTime( ) - m_CreationTime ) / 60 ) + " minutes" );
+
+		forward( new CFwdData( FWD_GAME_MAP_INFO_UPDATE, MapData, m_GameID ) );
+
+		m_LastUiTime = GetTime( ) + 60;
+	}
+
+	// update players in ui
+
+	if( GetTime( ) > m_LastUiSlotsTime )
+	{
+		vector<string> playerData;
+		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		{
+			playerData.clear( );
+			playerData.push_back( (*i)->GetName( ) ); // name
+			playerData.push_back( UTIL_ToString( GetSIDFromPID( (*i)->GetPID( ) ) + 1 ) ); // slot
+			playerData.push_back( m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( (*i)->GetExternalIP( ), true ) ) ); // from
+			playerData.push_back( UTIL_ToString( (*i)->GetPing(true) ) + " ms" ); // ping
+			playerData.push_back( m_Slots[ GetSIDFromPID( (*i)->GetPID( ) ) ].GetRace( ) == 1 ? "HU" : 
+								  m_Slots[ GetSIDFromPID( (*i)->GetPID( ) ) ].GetRace( ) == 2 ? "ORC" :
+								  m_Slots[ GetSIDFromPID( (*i)->GetPID( ) ) ].GetRace( ) == 4 ? "NE" :
+								  m_Slots[ GetSIDFromPID( (*i)->GetPID( ) ) ].GetRace( ) == 8 ? "UD" : "??" ); // race
+			playerData.push_back( UTIL_ToString( m_Slots[GetSIDFromPID( (*i)->GetPID( ) )].GetTeam( ) + 1 ) ); // team
+			playerData.push_back( ColourValueToString( m_Slots[GetSIDFromPID( (*i)->GetPID( ) )].GetColour( ) ) ); // color
+			playerData.push_back( UTIL_ToString( m_Slots[GetSIDFromPID( (*i)->GetPID( ) )].GetHandicap( ) ) ); // handicap
+			playerData.push_back( (*i)->GetGProxy( ) ? "on" : "off" ); // gproxy++
+
+			forward( new CFwdData( FWD_GAME_SLOT_UPDATE, playerData, m_GameID ) );
+		}
+
+		m_LastUiSlotsTime = GetTime( ) + 10;
+	}
+
 	return m_Exiting;
 }
 
@@ -1143,6 +1240,42 @@ void CBaseGame :: SendChat( unsigned char toPID, string message )
 
 void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
 {
+	// bot command
+
+	if( !message.empty( ) && message[0] == m_GHost->m_CommandTrigger )
+	{
+		// extract the command trigger, the command, and the payload
+		// e.g. "!say hello world" -> command: "say", payload: "hello world"
+
+		string Command;
+		string Payload;
+		string :: size_type PayloadStart = message.find( " " );
+
+		if( PayloadStart != string :: npos )
+		{
+			Command = message.substr( 1, PayloadStart - 1 );
+			Payload = message.substr( PayloadStart + 1 );
+		}
+		else
+			Command = message.substr( 1 );
+
+		transform( Command.begin( ), Command.end( ), Command.begin( ), (int(*)(int))tolower );
+
+		BYTEARRAY temp;
+
+		CGamePlayer *Player = new CGamePlayer(0, 0, 0, fromPID, m_CreatorServer, m_CreatorName, temp, false);
+		Player->SetSpoofed(true);
+		Player->SetSpoofedRealm(m_CreatorServer);
+
+		EventPlayerBotCommand( Player, Command, Payload );
+
+		delete Player;
+
+		return; // Don't show the message.
+	}
+
+	forward( new CFwdData( FWD_GAME_CHAT, "ADMIN: " + message, m_GameID ) );
+
 	// send a public message to all players - it'll be marked [All] in Warcraft 3
 
 	if( GetNumHumanPlayers( ) > 0 )
@@ -1443,6 +1576,10 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
 
+	forward( new CFwdData( FWD_GAME_SLOT_REMOVE, player->GetName( ), m_GameID ) );
+	forward( new CFwdData( FWD_GAME_STATS_REMOVE, player->GetName( ), m_GameID ) );
+	forward( new CFwdData( FWD_GAME_DOTA_DB_REMOVE, player->GetName( ), m_GameID ) );
+
 	// remove any queued spoofcheck messages for this player
 
 	if( player->GetWhoisSent( ) && !player->GetJoinedRealm( ).empty( ) && player->GetSpoofedRealm( ).empty( ) )
@@ -1549,6 +1686,10 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 
 	m_KickVotePlayer.clear( );
 	m_StartedKickVoteTime = 0;
+		
+	vector<string> MapData;
+	MapData.push_back( "Players" ); MapData.push_back( UTIL_ToString( GetNumHumanPlayers( ) - 1 ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_UPDATE, MapData, m_GameID ) );
 }
 
 void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
@@ -2122,6 +2263,78 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		SendAllChat( m_GHost->m_Language->GameLocked( ) );
 		m_Locked = true;
 	}
+
+	vector<string> playerData;
+	playerData.push_back( Player->GetName( ) ); // name
+	playerData.push_back( UTIL_ToString( SID + 1 ) ); // slot
+	playerData.push_back( m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( Player->GetExternalIP( ), true ) ) ); // from
+	playerData.push_back( UTIL_ToString( Player->GetPing(true) ) + " ms" ); // ping
+	playerData.push_back( m_Slots[SID].GetRace( ) == 1 ? "HU" : 
+						  m_Slots[SID].GetRace( ) == 2 ? "ORC" :
+						  m_Slots[SID].GetRace( ) == 4 ? "NE" :
+						  m_Slots[SID].GetRace( ) == 8 ? "UD" : "??" ); // race
+	playerData.push_back( UTIL_ToString( m_Slots[SID].GetTeam( ) + 1 ) ); // team
+	playerData.push_back( ColourValueToString( m_Slots[SID].GetColour( ) ) ); // color
+	playerData.push_back( UTIL_ToString( m_Slots[SID].GetHandicap( ) ) ); // handicap
+	playerData.push_back( Player->GetGProxy( ) ? "on" : "off" ); // gproxy++
+
+	forward( new CFwdData( FWD_GAME_SLOT_ADD, playerData, m_GameID ) );
+	
+	CCallableGamePlayerSummaryCheck *stats = m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName( ) );
+
+	if(stats->GetResult())
+	{
+		playerData.clear( );
+		playerData.push_back( Player->GetName( ) ); // name
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetTotalGames( ) ) ); // total games
+		playerData.push_back( stats->GetResult( )->GetLastGameDateTime( ) ); // last gamedate
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgLeftPercent( ) ) ); // avg left%
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgDuration( ) ) + " s" ); // avg duration
+		playerData.push_back( UTIL_ToString( (float)stats->GetResult( )->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
+
+		forward( new CFwdData( FWD_GAME_STATS_ADD, playerData, m_GameID ) );
+	}
+
+	delete stats;
+
+	CCallableDotAPlayerSummaryCheck *dotadb = m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( Player->GetName( ) );
+
+	if(dotadb->GetResult())
+	{
+		playerData.clear( );
+		playerData.push_back( Player->GetName( ) ); // Name
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalWins( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalLosses( ) ) ); // Wins/Losses
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalDeaths( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalAssists( ) ) ); // K/D/A
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgDeaths( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgAssists( ), 2 ) ); // AVG K/D/A
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalCreepKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalCreepDenies( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalNeutralKills( ) ) ); // CS K/D/N
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgCreepKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgCreepDenies( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalTowerKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalRaxKills( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalCourierKills( ) ) ); // T/R/C
+
+		forward( new CFwdData( FWD_GAME_DOTA_DB_ADD, playerData, m_GameID ) );
+	}
+
+	delete dotadb;
+
+	playerData.clear( );
+	playerData.push_back( "Players" ); playerData.push_back( UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_UPDATE, playerData, m_GameID ) );
 }
 
 void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score )
@@ -2537,6 +2750,78 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
 		BalanceSlots( );
+	
+	vector<string> playerData;
+	playerData.push_back( Player->GetName( ) ); // name
+	playerData.push_back( UTIL_ToString( SID + 1 ) ); // slot
+	playerData.push_back( m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( Player->GetExternalIP( ), true ) ) ); // from
+	playerData.push_back( UTIL_ToString( Player->GetPing(true) ) + " ms" ); // ping
+	playerData.push_back( m_Slots[SID].GetRace( ) == 1 ? "HU" : 
+						  m_Slots[SID].GetRace( ) == 2 ? "ORC" :
+						  m_Slots[SID].GetRace( ) == 4 ? "NE" :
+						  m_Slots[SID].GetRace( ) == 8 ? "UD" : "??" ); // race
+	playerData.push_back( UTIL_ToString( m_Slots[SID].GetTeam( ) + 1 ) ); // team
+	playerData.push_back( ColourValueToString( m_Slots[SID].GetColour( ) ) ); // color
+	playerData.push_back( UTIL_ToString( m_Slots[SID].GetHandicap( ) ) ); // handicap
+	playerData.push_back( Player->GetGProxy( ) ? "on" : "off" ); // gproxy++
+
+	forward( new CFwdData( FWD_GAME_SLOT_ADD, playerData, m_GameID ) );
+	
+	CCallableGamePlayerSummaryCheck *stats = m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName( ) );
+
+	if(stats->GetResult())
+	{
+		playerData.clear( );
+		playerData.push_back( Player->GetName( ) ); // name
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetTotalGames( ) ) ); // total games
+		playerData.push_back( stats->GetResult( )->GetLastGameDateTime( ) ); // last gamedate
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgLeftPercent( ) ) ); // avg left%
+		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgDuration( ) ) + " s" ); // avg duration
+		playerData.push_back( UTIL_ToString( (float)stats->GetResult( )->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
+
+		forward( new CFwdData( FWD_GAME_STATS_ADD, playerData, m_GameID ) );
+	}
+
+	delete stats;
+
+	CCallableDotAPlayerSummaryCheck *dotadb = m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( Player->GetName( ) );
+
+	if(dotadb->GetResult())
+	{
+		playerData.clear( );
+		playerData.push_back( Player->GetName( ) ); // Name
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalWins( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalLosses( ) ) ); // Wins/Losses
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalDeaths( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalAssists( ) ) ); // K/D/A
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgDeaths( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgAssists( ), 2 ) ); // AVG K/D/A
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalCreepKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalCreepDenies( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalNeutralKills( ) ) ); // CS K/D/N
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgCreepKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgCreepDenies( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
+
+		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalTowerKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalRaxKills( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetResult( )->GetTotalCourierKills( ) ) ); // T/R/C
+
+		forward( new CFwdData( FWD_GAME_DOTA_DB_ADD, playerData, m_GameID ) );
+	}
+
+	delete dotadb;
+
+	playerData.clear( );
+	playerData.push_back( "Players" ); playerData.push_back( UTIL_ToString( GetNumHumanPlayers( ) ) + "/" + UTIL_ToString( m_GameLoading || m_GameLoaded ? m_StartPlayers : m_Slots.size( ) ) );
+	forward( new CFwdData( FWD_GAME_MAP_INFO_UPDATE, playerData, m_GameID ) );
 }
 
 void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
@@ -2799,6 +3084,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 					// this is an ingame [All] message, print it to the console
 
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [All] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					forward( new CFwdData( FWD_GAME_CHAT, "(" + MinString + ":" + SecString + ") (All) " + player->GetName( ) + ": " + chatPlayer->GetMessage( ), m_GameID ) );
 
 					// don't relay ingame messages targeted for all players if we're currently muting all
 					// note that commands will still be processed even when muting all because we only stop relaying the messages, the rest of the function is unaffected
@@ -2811,6 +3097,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 					// this is an ingame [Obs/Ref] message, print it to the console
 
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Obs/Ref] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					forward( new CFwdData( FWD_GAME_CHAT, "(" + MinString + ":" + SecString + ") (Obs/Ref) " + player->GetName( ) + ": " + chatPlayer->GetMessage( ), m_GameID ) );
 				}
 
 				if( Relay )
@@ -2827,6 +3114,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 				// this is a lobby message, print it to the console
 
 				CONSOLE_Print( "[GAME: " + m_GameName + "] [Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+				forward( new CFwdData( FWD_GAME_CHAT, player->GetName( ) + ": " + chatPlayer->GetMessage( ), m_GameID ) );
 
 				if( m_MuteLobby )
 					Relay = false;
@@ -3169,6 +3457,8 @@ void CBaseGame :: EventGameRefreshed( string server )
 
 		SendAllChat( m_GHost->m_Language->RehostWasSuccessful( ) );
 		m_RefreshRehosted = false;
+
+		forward( new CFwdData( FWD_GAME_UPDATE, m_GameName, m_GameID ) );
 	}
 }
 
@@ -3845,6 +4135,8 @@ void CBaseGame :: CloseSlot( unsigned char SID, bool kick )
 		CGameSlot Slot = m_Slots[SID];
 		m_Slots[SID] = CGameSlot( 0, 255, SLOTSTATUS_CLOSED, 0, Slot.GetTeam( ), Slot.GetColour( ), Slot.GetRace( ) ); 
 		SendAllSlotInfo( );
+
+
 	}
 }
 
@@ -4619,4 +4911,24 @@ void CBaseGame :: DeleteFakePlayer( )
 	SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( m_FakePlayerPID, PLAYERLEAVE_LOBBY ) );
 	SendAllSlotInfo( );
 	m_FakePlayerPID = 255;
+}
+
+string CBaseGame :: ColourValueToString( unsigned char value )
+{
+	switch( value )
+	{
+	case 0: return "Red";
+	case 1: return "Blue";
+	case 2: return "Teal";
+	case 3: return "Purple";
+	case 4: return "Yellow";
+	case 5: return "Orange";
+	case 6: return "Green";
+	case 7: return "Pink";
+	case 8: return "Gray";
+	case 9: return "Light Blue";
+	case 10: return "Dark Green";
+	case 11: return "Brown";
+	default: return "---";
+	}
 }

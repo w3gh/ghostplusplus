@@ -61,6 +61,10 @@ int32_t UTIL_ToInt32( string &s );
 double UTIL_ToDouble( string &s );
 string UTIL_MSToString( uint32_t ms );
 
+void UTIL_Construct_UTF8_Latin1_Map( );
+string UTIL_Latin1ToUTF8( string &s );
+string UTIL_UTF8ToLatin1( string &s );
+
 // files
 
 bool UTIL_FileExists( string file );

@@ -632,6 +632,11 @@ private:
 	uint32_t m_Team;
 	uint32_t m_Colour;
 
+	uint32_t m_LeavingTime;
+	uint32_t m_Team1;
+	uint32_t m_Team2;
+
+
 public:
 	CDBGamePlayer( uint32_t nID, uint32_t nGameID, string nName, string nIP, uint32_t nSpoofed, string nSpoofedRealm, uint32_t nReserved, uint32_t nLoadingTime, uint32_t nLeft, string nLeftReason, uint32_t nTeam, uint32_t nColour );
 	~CDBGamePlayer( );
@@ -649,9 +654,18 @@ public:
 	uint32_t GetTeam( )			{ return m_Team; }
 	uint32_t GetColour( )		{ return m_Colour; }
 
+	uint32_t GetTeam1( )		{ return m_Team1; }
+    uint32_t GetTeam2( )		{ return m_Team2; }
+    uint32_t GetLeavingTime( )	{ return m_LeavingTime; }
+
+
 	void SetLoadingTime( uint32_t nLoadingTime )	{ m_LoadingTime = nLoadingTime; }
 	void SetLeft( uint32_t nLeft )					{ m_Left = nLeft; }
 	void SetLeftReason( string nLeftReason )		{ m_LeftReason = nLeftReason; }
+
+    void SetTeam1( uint32_t nTeam1 )				{ m_Team1 = nTeam1; }
+    void SetTeam2( uint32_t nTeam2 )				{ m_Team2 = nTeam2; }
+
 };
 
 //

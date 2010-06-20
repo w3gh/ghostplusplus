@@ -4,7 +4,7 @@ C++ = g++
 CC = gcc
 DFLAGS = -DGHOST_MYSQL
 OFLAGS = -O3
-LFLAGS = -L. -L../bncsutil/src/bncsutil/ -L../StormLib/stormlib/ -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt
+LFLAGS = -L. -L../bncsutil/src/bncsutil/ -L../StormLib/stormlib/ -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt -lcurses
 CFLAGS =
 
 ifeq ($(SYSTEM),Darwin)
@@ -82,3 +82,10 @@ stats.o: ghost.h includes.h stats.h
 statsdota.o: ghost.h includes.h util.h ghostdb.h gameplayer.h gameprotocol.h game_base.h stats.h statsdota.h
 statsw3mmd.o: ghost.h includes.h util.h ghostdb.h gameprotocol.h game_base.h stats.h statsw3mmd.h
 util.o: ghost.h includes.h util.h
+ui/common.o: ui/common.h
+ui/layout.o: ui/layout.h ui/widget.h
+ui/listwidget.o: ui/listwidget.h ui/layout.h
+ui/tablewidget.o: ui/tablewidget.h  ui/layout.h
+ui/ui.o: ui/ui.h ui/window.h ui/listwidget.h ui/tablewidget.h ui/layout.h ui/forward.h
+ui/widget.o: ui/widget.h ui/layout.h ui/forward.h
+ui/window.o: ui/window.h

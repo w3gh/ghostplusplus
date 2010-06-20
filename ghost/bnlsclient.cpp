@@ -24,6 +24,7 @@
 #include "commandpacket.h"
 #include "bnlsprotocol.h"
 #include "bnlsclient.h"
+#include "ui/forward.h"
 
 //
 // CBNLSClient
@@ -84,12 +85,14 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 	if( m_Socket->HasError( ) )
 	{
 		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server due to socket error" );
+		forward(new CFwdData(FWD_GENERAL, "BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + " - Disconnected from BNLS server due to socket error", 6, 0));
 		return true;
 	}
 
 	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && m_WasConnected )
 	{
 		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] disconnected from BNLS server" );
+		forward(new CFwdData(FWD_GENERAL, "BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + " - Disconnected from BNLS server", 6, 0));
 		return true;
 	}
 
@@ -118,6 +121,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 	if( m_Socket->GetConnecting( ) && m_Socket->CheckConnect( ) )
 	{
 		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connected" );
+		forward(new CFwdData(FWD_GENERAL, "BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + " - Connected", 0, 0));
 		m_WasConnected = true;
 		m_LastNullTime = GetTime( );
 		return false;
@@ -126,6 +130,7 @@ bool CBNLSClient :: Update( void *fd, void *send_fd )
 	if( !m_Socket->GetConnecting( ) && !m_Socket->GetConnected( ) && !m_WasConnected )
 	{
 		CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] connecting to server [" + m_Server + "] on port " + UTIL_ToString( m_Port ) );
+		forward(new CFwdData(FWD_GENERAL, "BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + " - Connecting to server [" + m_Server + "] on port " + UTIL_ToString( m_Port ), 0, 0));
 		m_Socket->Connect( string( ), m_Server, m_Port );
 		return false;
 	}
@@ -156,6 +161,7 @@ void CBNLSClient :: ExtractPackets( )
 		else
 		{
 			CONSOLE_Print( "[BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + "] error - received invalid packet from BNLS server (bad length), disconnecting" );
+			forward(new CFwdData(FWD_GENERAL, "BNLSC: " + m_Server + ":" + UTIL_ToString( m_Port ) + ":C" + UTIL_ToString( m_WardenCookie ) + " - Error - received invalid packet from BNLS server (bad length), disconnecting", 0, 0));
 			m_Socket->Disconnect( );
 			return;
 		}

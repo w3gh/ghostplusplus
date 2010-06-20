@@ -373,7 +373,6 @@ DWORD DecryptName1(const char * szFileName)
     DWORD  dwSeed1 = 0x7FED7FED;
     DWORD  dwSeed2 = 0xEEEEEEEE;
     DWORD  ch;
-    
 
     while(*pbKey != 0)
     {
@@ -382,7 +381,6 @@ DWORD DecryptName1(const char * szFileName)
         dwSeed1 = StormBuffer[0x100 + ch] ^ (dwSeed1 + dwSeed2);
         dwSeed2 = ch + dwSeed1 + dwSeed2 + (dwSeed2 << 5) + 3;
     }
-    
     return dwSeed1;
 }
 

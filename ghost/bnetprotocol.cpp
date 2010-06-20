@@ -21,6 +21,7 @@
 #include "ghost.h"
 #include "util.h"
 #include "bnetprotocol.h"
+#include "ui/forward.h"
 
 CBNETProtocol :: CBNETProtocol( )
 {
@@ -118,7 +119,7 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 	// 2 bytes					-> Header
 	// 2 bytes					-> Length
 	// 4 bytes					-> EventID
-	// 4 bytes					-> ???
+	// 4 bytes					-> UserFlags
 	// 4 bytes					-> Ping
 	// 12 bytes					-> ???
 	// null terminated string	-> User
@@ -127,6 +128,7 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 	if( ValidateLength( data ) && data.size( ) >= 29 )
 	{
 		BYTEARRAY EventID = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
+		BYTEARRAY UserFlags = BYTEARRAY( data.begin( ) + 8, data.begin( ) + 12 );
 		BYTEARRAY Ping = BYTEARRAY( data.begin( ) + 12, data.begin( ) + 16 );
 		BYTEARRAY User = UTIL_ExtractCString( data, 28 );
 		BYTEARRAY Message = UTIL_ExtractCString( data, User.size( ) + 29 );
@@ -149,6 +151,7 @@ CIncomingChatEvent *CBNETProtocol :: RECEIVE_SID_CHATEVENT( BYTEARRAY data )
 		case CBNETProtocol :: EID_ERROR:
 		case CBNETProtocol :: EID_EMOTE:
 			return new CIncomingChatEvent(	(CBNETProtocol :: IncomingChatEvent)UTIL_ByteArrayToUInt32( EventID, false ),
+												UTIL_ByteArrayToUInt32( UserFlags, false ),
 												UTIL_ByteArrayToUInt32( Ping, false ),
 												string( User.begin( ), User.end( ) ),
 												string( Message.begin( ), Message.end( ) ) );
@@ -685,7 +688,10 @@ Flags:
 		AssignLength( packet );
 	}
 	else
+	{
 		CONSOLE_Print( "[BNETPROTO] invalid parameters passed to SEND_SID_STARTADVEX3" );
+		forward(new CFwdData(FWD_REALM, "Invalid parameters passed to SEND_SID_STARTADVEX3", 6, hostCounter));
+	}
 
 	// DEBUG_Print( "SENT SID_STARTADVEX3" );
 	// DEBUG_Print( packet );
@@ -726,7 +732,10 @@ BYTEARRAY CBNETProtocol :: SEND_SID_PING( BYTEARRAY pingValue )
 		AssignLength( packet );
 	}
 	else
+	{
 		CONSOLE_Print( "[BNETPROTO] invalid parameters passed to SEND_SID_PING" );
+		forward(new CFwdData(FWD_GENERAL, "Invalid parameters passed to SEND_SID_PING", 6, 0));
+	}
 
 	// DEBUG_Print( "SENT SID_PING" );
 	// DEBUG_Print( packet );
@@ -836,7 +845,10 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_CHECK( bool TFT, BYTEARRAY clientToken,
 		AssignLength( packet );
 	}
 	else
+	{
 		CONSOLE_Print( "[BNETPROTO] invalid parameters passed to SEND_SID_AUTH_CHECK" );
+		forward(new CFwdData(FWD_GENERAL, "Invalid parameters passed to SEND_SID_AUTH_CHECK", 6, 0));
+	}
 
 	// DEBUG_Print( "SENT SID_AUTH_CHECK" );
 	// DEBUG_Print( packet );
@@ -858,7 +870,10 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGON( BYTEARRAY clientPublicKey
 		AssignLength( packet );
 	}
 	else
+	{
 		CONSOLE_Print( "[BNETPROTO] invalid parameters passed to SEND_SID_AUTH_ACCOUNTLOGON" );
+		forward(new CFwdData(FWD_GENERAL, "Invalid parameters passed to SEND_SID_AUTH_ACCOUNTLOGON", 6, 0));
+	}
 
 	// DEBUG_Print( "SENT SID_AUTH_ACCOUNTLOGON" );
 	// DEBUG_Print( packet );
@@ -879,7 +894,10 @@ BYTEARRAY CBNETProtocol :: SEND_SID_AUTH_ACCOUNTLOGONPROOF( BYTEARRAY clientPass
 		AssignLength( packet );
 	}
 	else
+	{
 		CONSOLE_Print( "[BNETPROTO] invalid parameters passed to SEND_SID_AUTH_ACCOUNTLOGON" );
+		forward(new CFwdData(FWD_GENERAL, "Invalid parameters passed to SEND_SID_AUTH_ACCOUNTLOGON", 6, 0));
+	}
 
 	// DEBUG_Print( "SENT SID_AUTH_ACCOUNTLOGONPROOF" );
 	// DEBUG_Print( packet );
@@ -1009,9 +1027,10 @@ string CIncomingGameHost :: GetIPString( )
 // CIncomingChatEvent
 //
 
-CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nPing, string nUser, string nMessage )
+CIncomingChatEvent :: CIncomingChatEvent( CBNETProtocol :: IncomingChatEvent nChatEvent, uint32_t nUserFlags, uint32_t nPing, string nUser, string nMessage )
 {
 	m_ChatEvent = nChatEvent;
+	m_UserFlags = nUserFlags;
 	m_Ping = nPing;
 	m_User = nUser;
 	m_Message = nMessage;

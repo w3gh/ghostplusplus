@@ -35,6 +35,7 @@
 #include "replay.h"
 #include "gameprotocol.h"
 #include "game_base.h"
+#include "ui/forward.h"
 
 #include <boost/filesystem.hpp>
 
@@ -76,6 +77,7 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	if( nPasswordHashType == "pvpgn" && !nBNLSServer.empty( ) )
 	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] pvpgn connection found with a configured BNLS server, ignoring BNLS server" );
+		forward(new CFwdData(FWD_REALM, "PVPGN connection found with a configured BNLS server, ignoring BNLS server.", 4, m_HostCounterID));
 		nBNLSServer.clear( );
 		nBNLSPort = 0;
 		nBNLSWardenCookie = 0;
@@ -97,10 +99,16 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	transform( m_CDKeyTFT.begin( ), m_CDKeyTFT.end( ), m_CDKeyTFT.begin( ), (int(*)(int))toupper );
 
 	if( m_CDKeyROC.size( ) != 26 )
+	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - your ROC CD key is not 26 characters long and is probably invalid" );
+		forward(new CFwdData(FWD_REALM, "Warning - your ROC CD key is not 26 characters long and is probably invalid", 4, m_HostCounterID));
+	}
 
 	if( m_GHost->m_TFT && m_CDKeyTFT.size( ) != 26 )
+	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - your TFT CD key is not 26 characters long and is probably invalid" );
+		forward(new CFwdData(FWD_REALM, "Warning - your TFT CD key is not 26 characters long and is probably invalid", 4, m_HostCounterID));
+	}
 
 	m_CountryAbbrev = nCountryAbbrev;
 	m_Country = nCountry;
@@ -125,6 +133,7 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	m_LastOutPacketSize = 0;
 	m_LastAdminRefreshTime = GetTime( );
 	m_LastBanRefreshTime = GetTime( );
+	m_LastListRefreshTime = GetTime( );
 	m_FirstConnect = true;
 	m_WaitingToConnect = true;
 	m_LoggedIn = false;
@@ -193,6 +202,37 @@ BYTEARRAY CBNET :: GetUniqueName( )
 	return m_Protocol->GetUniqueName( );
 }
 
+void CBNET :: GetBans( )
+{
+	forward( new CFwdData( FWD_BANS_CLEAR, "", m_HostCounterID ) );
+
+	for( vector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); i++ )
+	{
+		vector<string> banData;
+		banData.push_back((*i)->GetName( ));
+		banData.push_back((*i)->GetIP( ));
+		banData.push_back((*i)->GetDate( ));
+		banData.push_back((*i)->GetGameName( ));
+		banData.push_back((*i)->GetAdmin( ));
+		banData.push_back((*i)->GetReason( ));
+
+		forward( new CFwdData( FWD_BANS_ADD, banData, m_HostCounterID ) );
+	}
+}
+
+void CBNET :: GetAdmins( )
+{
+	forward( new CFwdData( FWD_ADMINS_CLEAR, "", m_HostCounterID ) );
+
+	vector<string> roots = UTIL_Tokenize( m_RootAdmin, ' ' );
+	
+	for( vector<string> :: iterator i = roots.begin( ); i != roots.end( ); i++ )
+		forward( new CFwdData( FWD_ADMINS_ADD, *i, 1, m_HostCounterID ) );
+
+	for( vector<string> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
+		forward( new CFwdData( FWD_ADMINS_ADD, *i, 0, m_HostCounterID ) );
+}
+
 unsigned int CBNET :: SetFD( void *fd, void *send_fd, int *nfds )
 {
 	unsigned int NumFDs = 0;
@@ -211,6 +251,17 @@ unsigned int CBNET :: SetFD( void *fd, void *send_fd, int *nfds )
 
 bool CBNET :: Update( void *fd, void *send_fd )
 {
+	//
+	// update friends list and clan list
+	//
+
+	if( GetTime( ) > m_LastListRefreshTime )
+	{
+		SendGetFriendsList( );
+		SendGetClanList( );
+		m_LastListRefreshTime = GetTime( ) + 8;
+	}
+
 	//
 	// update callables
 	//
@@ -443,11 +494,16 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		// the socket has an error
 
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net due to socket error" );
+		forward(new CFwdData(FWD_REALM, "Disconnected from battle.net due to socket error", 4, m_HostCounterID));
 
 		if( m_Socket->GetError( ) == ECONNRESET && GetTime( ) - m_LastConnectionAttemptTime <= 15 )
+		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - you are probably temporarily IP banned from battle.net" );
+			forward(new CFwdData(FWD_REALM, "Warning - you are probably temporarily IP banned from battle.net", 4, m_HostCounterID));
+		}
 
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+		forward(new CFwdData(FWD_REALM, "Waiting 90 seconds to reconnect", 4, m_HostCounterID));
 		m_GHost->EventBNETDisconnected( this );
 		delete m_BNLSClient;
 		m_BNLSClient = NULL;
@@ -466,6 +522,8 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] disconnected from battle.net" );
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+		forward(new CFwdData(FWD_REALM, "Disconnected from battle.net", 4, m_HostCounterID));
+		forward(new CFwdData(FWD_REALM, "Waiting 90 seconds to reconnect", 4, m_HostCounterID));
 		m_GHost->EventBNETDisconnected( this );
 		delete m_BNLSClient;
 		m_BNLSClient = NULL;
@@ -493,6 +551,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			if( m_BNLSClient->Update( fd, send_fd ) )
 			{
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] deleting BNLS client" );
+				forward(new CFwdData(FWD_REALM, "Deleting BNLS client", 4, m_HostCounterID));
 				delete m_BNLSClient;
 				m_BNLSClient = NULL;
 			}
@@ -520,7 +579,10 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		if( !m_OutPackets.empty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
 		{
 			if( m_OutPackets.size( ) > 7 )
+			{
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent" );
+				forward(new CFwdData(FWD_REALM, "Packet queue warning - there are " + UTIL_ToString( m_OutPackets.size( ) ) + " packets waiting to be sent", 4, m_HostCounterID));
+			}
 
 			m_Socket->PutBytes( m_OutPackets.front( ) );
 			m_LastOutPacketSize = m_OutPackets.front( ).size( );
@@ -549,6 +611,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			// the connection attempt completed
 
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connected" );
+			forward(new CFwdData(FWD_REALM, "Connected", 4, m_HostCounterID));
 			m_GHost->EventBNETConnected( this );
 			m_Socket->PutBytes( m_Protocol->SEND_PROTOCOL_INITIALIZE_SELECTOR( ) );
 			m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_INFO( m_War3Version, m_GHost->m_TFT, m_LocaleID, m_CountryAbbrev, m_Country ) );
@@ -567,6 +630,8 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connect timed out" );
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] waiting 90 seconds to reconnect" );
+			forward(new CFwdData(FWD_REALM, "Connect timed out", 4, m_HostCounterID));
+			forward(new CFwdData(FWD_REALM, "Waiting 90 seconds to reconnect", 4, m_HostCounterID));
 			m_GHost->EventBNETConnectTimedOut( this );
 			m_Socket->Reset( );
 			m_LastDisconnectedTime = GetTime( );
@@ -581,10 +646,14 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
 		m_FirstConnect = false;
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] connecting to server [" + m_Server + "] on port 6112" );
+		forward(new CFwdData(FWD_REALM, "Connecting to server [" + m_Server + "] on port 6112", 4, m_HostCounterID));
 		m_GHost->EventBNETConnecting( this );
 
 		if( !m_GHost->m_BindAddress.empty( ) )
+		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to bind to address [" + m_GHost->m_BindAddress + "]" );
+			forward(new CFwdData(FWD_REALM, "Attempting to bind to address [" + m_GHost->m_BindAddress + "]", 4, m_HostCounterID));
+		}
 
 		if( m_ServerIP.empty( ) )
 		{
@@ -594,6 +663,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			{
 				m_ServerIP = m_Socket->GetIPString( );
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] resolved and cached server IP address " + m_ServerIP );
+				forward(new CFwdData(FWD_REALM, "Resolved and cached server IP address " + m_ServerIP, 4, m_HostCounterID));
 			}
 		}
 		else
@@ -601,6 +671,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			// use cached server IP address since resolving takes time and is blocking
 
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using cached server IP address " + m_ServerIP );
+			forward(new CFwdData(FWD_REALM, "Using cached server IP address " + m_ServerIP, 4, m_HostCounterID));
 			m_Socket->Connect( m_GHost->m_BindAddress, m_ServerIP, 6112 );
 		}
 
@@ -645,6 +716,7 @@ void CBNET :: ExtractPackets( )
 			else
 			{
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad length), disconnecting" );
+				forward(new CFwdData(FWD_REALM, "Error - received invalid packet from battle.net (bad length), disconnecting", 6, m_HostCounterID));
 				m_Socket->Disconnect( );
 				return;
 			}
@@ -652,6 +724,7 @@ void CBNET :: ExtractPackets( )
 		else
 		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error - received invalid packet from battle.net (bad header constant), disconnecting" );
+			forward(new CFwdData(FWD_REALM, "Error - received invalid packet from battle.net (bad header constant), disconnecting", 6, m_HostCounterID));
 			m_Socket->Disconnect( );
 			return;
 		}
@@ -690,7 +763,10 @@ void CBNET :: ProcessPackets( )
 				GameHost = m_Protocol->RECEIVE_SID_GETADVLISTEX( Packet->GetData( ) );
 
 				if( GameHost )
+				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joining game [" + GameHost->GetGameName( ) + "]" );
+					forward(new CFwdData(FWD_REALM, "Joining game [" + GameHost->GetGameName( ) + "]", 4, m_HostCounterID));
+				}
 
 				delete GameHost;
 				GameHost = NULL;
@@ -700,6 +776,7 @@ void CBNET :: ProcessPackets( )
 				if( m_Protocol->RECEIVE_SID_ENTERCHAT( Packet->GetData( ) ) )
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joining channel [" + m_FirstChannel + "]" );
+					forward(new CFwdData(FWD_REALM, "Joining channel [" + m_FirstChannel + "]", 4, m_HostCounterID));
 					m_InChat = true;
 					m_Socket->PutBytes( m_Protocol->SEND_SID_JOINCHANNEL( m_FirstChannel ) );
 				}
@@ -729,6 +806,7 @@ void CBNET :: ProcessPackets( )
 				else
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] startadvex3 failed" );
+					forward(new CFwdData(FWD_REALM, "Startadvex3 failed", 6, m_HostCounterID));
 					m_GHost->EventBNETGameRefreshFailed( this );
 				}
 
@@ -749,19 +827,27 @@ void CBNET :: ProcessPackets( )
 						if( m_EXEVersion.size( ) == 4 )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version bnet_custom_exeversion = " + UTIL_ToString( m_EXEVersion[0] ) + " " + UTIL_ToString( m_EXEVersion[1] ) + " " + UTIL_ToString( m_EXEVersion[2] ) + " " + UTIL_ToString( m_EXEVersion[3] ) );
+							forward(new CFwdData(FWD_REALM, "using custom exe version bnet_custom_exeversion = " + UTIL_ToString( m_EXEVersion[0] ) + " " + UTIL_ToString( m_EXEVersion[1] ) + " " + UTIL_ToString( m_EXEVersion[2] ) + " " + UTIL_ToString( m_EXEVersion[3] ), 4, m_HostCounterID));
 							m_BNCSUtil->SetEXEVersion( m_EXEVersion );
 						}
 
 						if( m_EXEVersionHash.size( ) == 4 )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using custom exe version hash bnet_custom_exeversionhash = " + UTIL_ToString( m_EXEVersionHash[0] ) + " " + UTIL_ToString( m_EXEVersionHash[1] ) + " " + UTIL_ToString( m_EXEVersionHash[2] ) + " " + UTIL_ToString( m_EXEVersionHash[3] ) );
+							forward(new CFwdData(FWD_REALM, "using custom exe version hash bnet_custom_exeversionhash = " + UTIL_ToString( m_EXEVersionHash[0] ) + " " + UTIL_ToString( m_EXEVersionHash[1] ) + " " + UTIL_ToString( m_EXEVersionHash[2] ) + " " + UTIL_ToString( m_EXEVersionHash[3] ), 4, m_HostCounterID));
 							m_BNCSUtil->SetEXEVersionHash( m_EXEVersionHash );
 						}
 
 						if( m_GHost->m_TFT )
+						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: The Frozen Throne" );
+							forward(new CFwdData(FWD_REALM, "Attempting to auth as Warcraft III: The Frozen Throne", 4, m_HostCounterID));
+						}
 						else
-							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: Reign of Chaos" );							
+						{
+							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempting to auth as Warcraft III: Reign of Chaos" );
+							forward(new CFwdData(FWD_REALM, "Attempting to auth as Warcraft III: Reign of Chaos", 4, m_HostCounterID));
+						}
 
 						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_CHECK( m_GHost->m_TFT, m_Protocol->GetClientToken( ), m_BNCSUtil->GetEXEVersion( ), m_BNCSUtil->GetEXEVersionHash( ), m_BNCSUtil->GetKeyInfoROC( ), m_BNCSUtil->GetKeyInfoTFT( ), m_BNCSUtil->GetEXEInfo( ), "GHost" ) );
 
@@ -771,6 +857,7 @@ void CBNET :: ProcessPackets( )
 						if( !m_BNLSServer.empty( ) )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] creating BNLS client" );
+							forward(new CFwdData(FWD_REALM, "Creating BNLS client", 4, m_HostCounterID));
 							delete m_BNLSClient;
 							m_BNLSClient = new CBNLSClient( m_BNLSServer, m_BNLSPort, m_BNLSWardenCookie );
 							m_BNLSClient->QueueWardenSeed( UTIL_ByteArrayToUInt32( m_BNCSUtil->GetKeyInfoROC( ), false, 16 ) );
@@ -779,6 +866,7 @@ void CBNET :: ProcessPackets( )
 					else
 					{
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - bncsutil key hash failed (check your Warcraft 3 path and cd keys), disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - bncsutil key hash failed (check your Warcraft 3 path and cd keys), disconnecting", 6, m_HostCounterID));
 						m_Socket->Disconnect( );
 						delete Packet;
 						return;
@@ -793,6 +881,7 @@ void CBNET :: ProcessPackets( )
 					// cd keys accepted
 
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] cd keys accepted" );
+					forward(new CFwdData(FWD_REALM, "Cd keys accepted", 4, m_HostCounterID));
 					m_BNCSUtil->HELP_SID_AUTH_ACCOUNTLOGON( );
 					m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGON( m_BNCSUtil->GetClientKey( ), m_UserName ) );
 				}
@@ -804,18 +893,23 @@ void CBNET :: ProcessPackets( )
 					{
 					case CBNETProtocol :: KR_ROC_KEY_IN_USE:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - ROC CD key in use by user [" + m_Protocol->GetKeyStateDescription( ) + "], disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - ROC CD key in use by user [" + m_Protocol->GetKeyStateDescription( ) + "], disconnecting", 6, m_HostCounterID));
 						break;
 					case CBNETProtocol :: KR_TFT_KEY_IN_USE:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - TFT CD key in use by user [" + m_Protocol->GetKeyStateDescription( ) + "], disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - TFT CD key in use by user [" + m_Protocol->GetKeyStateDescription( ) + "], disconnecting", 6, m_HostCounterID));
 						break;
 					case CBNETProtocol :: KR_OLD_GAME_VERSION:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - game version is too old, disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - game version is too old, disconnecting", 6, m_HostCounterID));
 						break;
 					case CBNETProtocol :: KR_INVALID_VERSION:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - game version is invalid, disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - game version is invalid, disconnecting", 6, m_HostCounterID));
 						break;
 					default:
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - cd keys not accepted, disconnecting" );
+						forward(new CFwdData(FWD_REALM, "Logon failed - cd keys not accepted, disconnecting", 6, m_HostCounterID));
 						break;
 					}
 
@@ -830,12 +924,14 @@ void CBNET :: ProcessPackets( )
 				if( m_Protocol->RECEIVE_SID_AUTH_ACCOUNTLOGON( Packet->GetData( ) ) )
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] username [" + m_UserName + "] accepted" );
+					forward(new CFwdData(FWD_REALM, "Username [" + m_UserName + "] accepted", 4, m_HostCounterID));
 
 					if( m_PasswordHashType == "pvpgn" )
 					{
 						// pvpgn logon
 
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using pvpgn logon type (for pvpgn servers only)" );
+						forward(new CFwdData(FWD_REALM, "Using pvpgn logon type (for pvpgn servers only)", 4, m_HostCounterID));
 						m_BNCSUtil->HELP_PvPGNPasswordHash( m_UserPassword );
 						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetPvPGNPasswordHash( ) ) );
 					}
@@ -844,6 +940,7 @@ void CBNET :: ProcessPackets( )
 						// battle.net logon
 
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] using battle.net logon type (for official battle.net servers only)" );
+						forward(new CFwdData(FWD_REALM, "Using battle.net logon type (for official battle.net servers only)", 4, m_HostCounterID));
 						m_BNCSUtil->HELP_SID_AUTH_ACCOUNTLOGONPROOF( m_Protocol->GetSalt( ), m_Protocol->GetServerPublicKey( ) );
 						m_Socket->PutBytes( m_Protocol->SEND_SID_AUTH_ACCOUNTLOGONPROOF( m_BNCSUtil->GetM1( ) ) );
 					}
@@ -851,6 +948,7 @@ void CBNET :: ProcessPackets( )
 				else
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - invalid username, disconnecting" );
+					forward(new CFwdData(FWD_REALM, "Logon failed - invalid username, disconnecting", 6, m_HostCounterID));
 					m_Socket->Disconnect( );
 					delete Packet;
 					return;
@@ -864,6 +962,7 @@ void CBNET :: ProcessPackets( )
 					// logon successful
 
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon successful" );
+					forward(new CFwdData(FWD_REALM, "Logon successful", 4, m_HostCounterID));
 					m_LoggedIn = true;
 					m_GHost->EventBNETLoggedIn( this );
 					m_Socket->PutBytes( m_Protocol->SEND_SID_NETGAMEPORT( m_GHost->m_HostPort ) );
@@ -874,6 +973,7 @@ void CBNET :: ProcessPackets( )
 				else
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] logon failed - invalid password, disconnecting" );
+					forward(new CFwdData(FWD_REALM, "Logon failed - invalid password, disconnecting", 6, m_HostCounterID));
 
 					// try to figure out if the user might be using the wrong logon type since too many people are confused by this
 
@@ -881,9 +981,15 @@ void CBNET :: ProcessPackets( )
 					transform( Server.begin( ), Server.end( ), Server.begin( ), (int(*)(int))tolower );
 
 					if( m_PasswordHashType == "pvpgn" && ( Server == "useast.battle.net" || Server == "uswest.battle.net" || Server == "asia.battle.net" || Server == "europe.battle.net" ) )
+					{
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] it looks like you're trying to connect to a battle.net server using a pvpgn logon type, check your config file's \"battle.net custom data\" section" );
+						forward(new CFwdData(FWD_REALM, "It looks like you're trying to connect to a battle.net server using a pvpgn logon type, check your config file's \"battle.net custom data\" section", 4, m_HostCounterID));
+					}
 					else if( m_PasswordHashType != "pvpgn" && ( Server != "useast.battle.net" && Server != "uswest.battle.net" && Server != "asia.battle.net" && Server != "europe.battle.net" ) )
+					{
 						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] it looks like you're trying to connect to a pvpgn server using a battle.net logon type, check your config file's \"battle.net custom data\" section" );
+						forward(new CFwdData(FWD_REALM, "It looks like you're trying to connect to a pvpgn server using a battle.net logon type, check your config file's \"battle.net custom data\" section", 4, m_HostCounterID));
+					}
 
 					m_Socket->Disconnect( );
 					delete Packet;
@@ -898,7 +1004,10 @@ void CBNET :: ProcessPackets( )
 				if( m_BNLSClient )
 					m_BNLSClient->QueueWardenRaw( WardenData );
 				else
+				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] warning - received warden packet but no BNLS server is available, you will be kicked from battle.net soon" );
+					forward(new CFwdData(FWD_REALM, "Warning - received warden packet but no BNLS server is available, you will be kicked from battle.net soon", 4, m_HostCounterID));
+				}
 
 				break;
 
@@ -909,6 +1018,11 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Friends = Friends;
+
+				forward(new CFwdData(FWD_FRIENDS_CLEAR, "", m_HostCounterID));
+
+				for( vector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
+					forward(new CFwdData(FWD_FRIENDS_ADD, (*i)->GetAccount( ), 0, m_HostCounterID));
 				break;
 
 			case CBNETProtocol :: SID_CLANMEMBERLIST:
@@ -918,6 +1032,11 @@ void CBNET :: ProcessPackets( )
 					delete *i;
 
 				m_Clans = Clans;
+
+				forward(new CFwdData(FWD_CLAN_CLEAR, "", m_HostCounterID));
+
+				for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
+					forward(new CFwdData(FWD_CLAN_ADD, (*i)->GetName( ), 0, m_HostCounterID));
 				break;
 			}
 		}
@@ -930,22 +1049,66 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 {
 	CBNETProtocol :: IncomingChatEvent Event = chatEvent->GetChatEvent( );
 	bool Whisper = ( Event == CBNETProtocol :: EID_WHISPER );
+	uint32_t UserFlags = chatEvent->GetUserFlags();
 	string User = chatEvent->GetUser( );
 	string Message = chatEvent->GetMessage( );
 
-	if( Event == CBNETProtocol :: EID_WHISPER || Event == CBNETProtocol :: EID_TALK )
+	if( Event == CBNETProtocol :: EID_SHOWUSER )
+		forward(new CFwdData(FWD_CHANNEL_ADD, User, UserFlags, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_USERFLAGS )
+		forward(new CFwdData(FWD_CHANNEL_UPDATE, User, UserFlags, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_JOIN )
+		forward(new CFwdData(FWD_CHANNEL_ADD, User, UserFlags, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_LEAVE )
+		forward(new CFwdData(FWD_CHANNEL_REMOVE, User, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_WHISPER )
 	{
-		if( Event == CBNETProtocol :: EID_WHISPER )
-		{
-			CONSOLE_Print( "[WHISPER: " + m_ServerAlias + "] [" + User + "] " + Message );
-			m_GHost->EventBNETWhisper( this, User, Message );
-		}
-		else
-		{
-			CONSOLE_Print( "[LOCAL: " + m_ServerAlias + "] [" + User + "] " + Message );
-			m_GHost->EventBNETChat( this, User, Message );
-		}
+		m_ReplyTarget = User;
 
+		CONSOLE_Print( "[WHISPER: " + m_ServerAlias + "] [" + User + "] " + Message );
+		forward(new CFwdData(FWD_REALM, User + " whispers: " + Message, 5, m_HostCounterID));
+		forward(new CFwdData(FWD_REPLYTARGET, User, m_HostCounterID));
+		m_GHost->EventBNETWhisper( this, User, Message );
+	}
+	else if( Event == CBNETProtocol :: EID_TALK )
+	{
+		CONSOLE_Print( "[LOCAL: " + m_ServerAlias + "] [" + User + "] " + Message );
+		forward(new CFwdData(FWD_REALM, User + ": " + Message, 0, m_HostCounterID));
+		m_GHost->EventBNETChat( this, User, Message );
+	}
+	else if( Event == CBNETProtocol :: EID_BROADCAST )
+		forward(new CFwdData(FWD_REALM, Message, 3, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_CHANNEL )
+	{
+		// keep track of current channel so we can rejoin it after hosting a game
+
+		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joined channel [" + Message + "]" );
+		forward(new CFwdData(FWD_REALM, "Joined channel [" + Message + "]", 4, m_HostCounterID));
+		forward(new CFwdData(FWD_CHANNEL_CLEAR, "", m_HostCounterID));
+		forward(new CFwdData(FWD_CHANNEL_CHANGE, Message, m_HostCounterID));
+		forward(new CFwdData(FWD_CHANNEL_ADD, m_UserName, UserFlags, m_HostCounterID));
+		m_CurrentChannel = Message;
+	}
+	else if( Event == CBNETProtocol :: EID_CHANNELFULL )
+		forward(new CFwdData(FWD_REALM, "Channel is full", 6, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_CHANNELDOESNOTEXIST )
+		forward(new CFwdData(FWD_REALM, "Channel does not exist", 6, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_CHANNELRESTRICTED )
+		forward(new CFwdData(FWD_REALM, "Channel restricted", 6, m_HostCounterID));
+	else if( Event == CBNETProtocol :: EID_ERROR )
+	{
+		CONSOLE_Print( "[ERROR: " + m_ServerAlias + "] " + Message );
+		forward(new CFwdData(FWD_REALM, Message, 6, m_HostCounterID));
+	}
+	else if( Event == CBNETProtocol :: EID_EMOTE )
+	{
+		CONSOLE_Print( "[EMOTE: " + m_ServerAlias + "] [" + User + "] " + Message );
+		forward(new CFwdData(FWD_REALM, User + " " + Message, 1, m_HostCounterID));
+		m_GHost->EventBNETEmote( this, User, Message );
+	}	
+
+	if( Event == CBNETProtocol :: EID_WHISPER || Event == CBNETProtocol :: EID_TALK || Event == 29 )
+	{
 		// handle spoof checking for current game
 		// this case covers whispers - we assume that anyone who sends a whisper to the bot with message "spoofcheck" should be considered spoof checked
 		// note that this means you can whisper "spoofcheck" even in a public game to manually spoofcheck if the /whois fails
@@ -999,7 +1162,11 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 			if( IsAdmin( User ) || IsRootAdmin( User ) )
 			{
+				if( User == "" )
+					User = m_UserName;
+
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] admin [" + User + "] sent command [" + Message + "]" );
+				//forward(new CFwdData(FWD_REALM, "Admin [" + User + "] sent command [" + Message + "]", 4, m_HostCounterID));
 
 				/*****************
 				* ADMIN COMMANDS *
@@ -1076,11 +1243,17 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						SS >> Interval;
 
 						if( SS.fail( ) || Interval == 0 )
+						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to announce command" );
+							forward(new CFwdData(FWD_REALM, "Bad input #1 to announce command", 4, m_HostCounterID));
+						}
 						else
 						{
 							if( SS.eof( ) )
+							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to announce command" );
+								forward(new CFwdData(FWD_REALM, "Missing input #2 to announce command", 4, m_HostCounterID));
+							}
 							else
 							{
 								getline( SS, Message );
@@ -1130,17 +1303,26 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							SS >> MaximumGames;
 
 							if( SS.fail( ) || MaximumGames == 0 )
+							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to autohost command" );
+								forward(new CFwdData(FWD_REALM, "Bad input #1 to autohost command", 4, m_HostCounterID));
+							}
 							else
 							{
 								SS >> AutoStartPlayers;
 
 								if( SS.fail( ) || AutoStartPlayers == 0 )
+								{
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to autohost command" );
+									forward(new CFwdData(FWD_REALM, "Bad input #2 to autohost command", 4, m_HostCounterID));
+								}
 								else
 								{
 									if( SS.eof( ) )
+									{
 										CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #3 to autohost command" );
+										forward(new CFwdData(FWD_REALM, "Missing input #3 to autohost command", 4, m_HostCounterID));
+									}
 									else
 									{
 										getline( SS, GameName );
@@ -1206,29 +1388,44 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							SS >> MaximumGames;
 
 							if( SS.fail( ) || MaximumGames == 0 )
+							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to autohostmm command" );
+								forward(new CFwdData(FWD_REALM, "Bad input #1 to autohostmm command", 4, m_HostCounterID));
+							}
 							else
 							{
 								SS >> AutoStartPlayers;
 
 								if( SS.fail( ) || AutoStartPlayers == 0 )
+								{
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to autohostmm command" );
+									forward(new CFwdData(FWD_REALM, "Bad input #2 to autohostmm command", 4, m_HostCounterID));
+								}
 								else
 								{
 									SS >> MinimumScore;
 
 									if( SS.fail( ) )
+									{
 										CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #3 to autohostmm command" );
+										forward(new CFwdData(FWD_REALM, "Bad input #3 to autohostmm command", 4, m_HostCounterID));
+									}
 									else
 									{
 										SS >> MaximumScore;
 
 										if( SS.fail( ) )
+										{
 											CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #4 to autohostmm command" );
+											forward(new CFwdData(FWD_REALM, "Bad input #4 to autohostmm command", 4, m_HostCounterID));
+										}
 										else
 										{
 											if( SS.eof( ) )
+											{
 												CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #5 to autohostmm command" );
+												forward(new CFwdData(FWD_REALM, "Missing input #5 to autohostmm command", 4, m_HostCounterID));
+											}
 											else
 											{
 												getline( SS, GameName );
@@ -1342,6 +1539,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							if( SS.fail( ) )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to close command" );
+								forward(new CFwdData(FWD_REALM, "Bad input to close command", 4, m_HostCounterID));
 								break;
 							}
 							else
@@ -1490,6 +1688,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						{
 							QueueChatCommand( m_GHost->m_Language->EndingGame( m_GHost->m_Games[GameNumber]->GetDescription( ) ), User, Whisper );
 							CONSOLE_Print( "[GAME: " + m_GHost->m_Games[GameNumber]->GetGameName( ) + "] is over (admin ended game)" );
+							forward(new CFwdData(FWD_REALM, m_GHost->m_Games[GameNumber]->GetGameName( ) + "] is over (admin ended game)", 4, m_HostCounterID));
 							m_GHost->m_Games[GameNumber]->StopPlayers( "was disconnected (admin ended game)" );
 						}
 					}
@@ -1615,6 +1814,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						if( SS.fail( ) )
 						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to hold command" );
+							forward(new CFwdData(FWD_REALM, "Bad input to hold command", 4, m_HostCounterID));
 							break;
 						}
 						else
@@ -1653,6 +1853,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							if( !exists( MapCFGPath ) )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing map configs - map config path doesn't exist" );
+								forward(new CFwdData(FWD_REALM, "Error listing map configs - map config path doesn't exist", 6, m_HostCounterID));
 								QueueChatCommand( m_GHost->m_Language->ErrorListingMapConfigs( ), User, Whisper );
 							}
 							else
@@ -1764,6 +1965,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							if( !exists( MapPath ) )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing maps - map path doesn't exist" );
+								forward(new CFwdData(FWD_REALM, "Error listing maps - map path doesn't exist", 6, m_HostCounterID));
 								QueueChatCommand( m_GHost->m_Language->ErrorListingMaps( ), User, Whisper );
 							}
 							else
@@ -1819,7 +2021,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						}
 						catch( const exception &ex )
 						{
-							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing maps - caught exception [" + ex.what( ) + "]" );
+								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] error listing maps - caught exception [" + ex.what( ) + "]" );
+							forward(new CFwdData(FWD_REALM, "Error listing maps - caught exception.", 6, m_HostCounterID));
 							QueueChatCommand( m_GHost->m_Language->ErrorListingMaps( ), User, Whisper );
 						}
 					}
@@ -1846,6 +2049,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							if( SS.fail( ) )
 							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input to open command" );
+								forward(new CFwdData(FWD_REALM, "Bad input to open command", 4, m_HostCounterID));
 								break;
 							}
 							else
@@ -1964,11 +2168,17 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						SS >> GameNumber;
 
 						if( SS.fail( ) )
+						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to saygame command" );
+							forward(new CFwdData(FWD_REALM, "Bad input #1 to saygame command", 4, m_HostCounterID));
+						}
 						else
 						{
 							if( SS.eof( ) )
+							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to saygame command" );
+								forward(new CFwdData(FWD_REALM, "Missing input #2 to saygame command", 4, m_HostCounterID));
+							}
 							else
 							{
 								getline( SS, Message );
@@ -2056,17 +2266,26 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						SS >> SID1;
 
 						if( SS.fail( ) )
+						{
 							CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to swap command" );
+							forward(new CFwdData(FWD_REALM, "Bad input #1 to swap command", 4, m_HostCounterID));
+						}
 						else
 						{
 							if( SS.eof( ) )
+							{
 								CONSOLE_Print( "[BNET: " + m_ServerAlias + "] missing input #2 to swap command" );
+								forward(new CFwdData(FWD_REALM, "Missing input #2 to swap command", 4, m_HostCounterID));
+							}
 							else
 							{
 								SS >> SID2;
 
 								if( SS.fail( ) )
+								{
 									CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #2 to swap command" );
+									forward(new CFwdData(FWD_REALM, "Bad input #2 to swap command", 4, m_HostCounterID));
+								}
 								else
 									m_GHost->m_CurrentGame->SwapSlots( (unsigned char)( SID1 - 1 ), (unsigned char)( SID2 - 1 ) );
 							}
@@ -2114,7 +2333,10 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				}
 			}
 			else
+			{
 				CONSOLE_Print( "[BNET: " + m_ServerAlias + "] non-admin [" + User + "] sent command [" + Message + "]" );
+				//forward(new CFwdData(FWD_REALM, "Non-admin [" + User + "] sent command [" + Message + "]", 4, m_HostCounterID));
+			}
 
 			/*********************
 			* NON ADMIN COMMANDS *
@@ -2175,16 +2397,10 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 			}
 		}
 	}
-	else if( Event == CBNETProtocol :: EID_CHANNEL )
-	{
-		// keep track of current channel so we can rejoin it after hosting a game
-
-		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joined channel [" + Message + "]" );
-		m_CurrentChannel = Message;
-	}
 	else if( Event == CBNETProtocol :: EID_INFO )
 	{
 		CONSOLE_Print( "[INFO: " + m_ServerAlias + "] " + Message );
+		forward(new CFwdData(FWD_REALM, Message, 1, m_HostCounterID));
 
 		// extract the first word which we hope is the username
 		// this is not necessarily true though since info messages also include channel MOTD's and such
@@ -2229,13 +2445,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 			}
 		}
 	}
-	else if( Event == CBNETProtocol :: EID_ERROR )
-		CONSOLE_Print( "[ERROR: " + m_ServerAlias + "] " + Message );
-	else if( Event == CBNETProtocol :: EID_EMOTE )
-	{
-		CONSOLE_Print( "[EMOTE: " + m_ServerAlias + "] [" + User + "] " + Message );
-		m_GHost->EventBNETEmote( this, User, Message );
-	}
 }
 
 void CBNET :: SendJoinChannel( string channel )
@@ -2262,7 +2471,7 @@ void CBNET :: QueueEnterChat( )
 		m_OutPackets.push( m_Protocol->SEND_SID_ENTERCHAT( ) );
 }
 
-void CBNET :: QueueChatCommand( string chatCommand )
+void CBNET :: QueueChatCommand( string chatCommand, bool hidden )
 {
 	if( chatCommand.empty( ) )
 		return;
@@ -2276,10 +2485,49 @@ void CBNET :: QueueChatCommand( string chatCommand )
 			chatCommand = chatCommand.substr( 0, 255 );
 
 		if( m_OutPackets.size( ) > 10 )
+		{
 			CONSOLE_Print( "[BNET: " + m_ServerAlias + "] attempted to queue chat command [" + chatCommand + "] but there are too many (" + UTIL_ToString( m_OutPackets.size( ) ) + ") packets queued, discarding" );
+			forward(new CFwdData(FWD_REALM, "Attempted to queue chat command [" + chatCommand + "] but there are too many (" + UTIL_ToString( m_OutPackets.size( ) ) + ") packets queued, discarding", 6, m_HostCounterID));
+		}
 		else
 		{
-			CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
+			bool whisper = false;
+			int r = 0;
+			
+			if ( chatCommand.size( ) > 3 )
+			{
+				if ( chatCommand.substr( 0, 3 ) == "/w " )					{	whisper = true; r = 3;	}
+				else if ( chatCommand.substr( 0, 9 ) == "/whisper " )		{	whisper = true; r = 9;	}
+				else if ( chatCommand.substr( 0, 5 ) == "/f m " )			{	whisper = true; r = 5;	}
+				else if ( chatCommand.substr( 0, 7 ) == "/f msg " )			{	whisper = true; r = 7;	}
+				else if ( chatCommand.substr( 0, 11 ) == "/friends m " )	{	whisper = true; r = 11;	}
+				else if ( chatCommand.substr( 0, 13 ) == "/friends msg " )	{	whisper = true; r = 13;	}
+			}
+
+			if ( whisper )
+			{
+				if ( r == 3 || r == 9 )
+				{
+					int nameEndpos = chatCommand.find_first_of( " ", r );
+					if ( nameEndpos != -1 )
+					{
+						string target = chatCommand.substr( r, nameEndpos - r );
+						CONSOLE_Print( "[WHISPERED: " + m_ServerAlias + "] [" + target + "] " + chatCommand.substr( nameEndpos + 1, chatCommand.length( ) ) );
+						forward(new CFwdData(FWD_REALM, "Whispered to " + target + ": " + chatCommand.substr( nameEndpos + 1, chatCommand.length( ) ), 5, m_HostCounterID));
+					}
+				}
+				else
+				{
+					CONSOLE_Print( "[WHISPERED: " + m_ServerAlias + "] [Friends] " + chatCommand.substr( r, chatCommand.length( ) ) );
+					forward(new CFwdData(FWD_REALM, "Whispered to friends: " + chatCommand.substr( r, chatCommand.length( ) ), 5, m_HostCounterID));
+				}
+			}
+			else if (!hidden)
+			{
+				CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
+				forward(new CFwdData(FWD_REALM, m_UserName + ": " + chatCommand, 0, m_HostCounterID));
+			}
+
 			m_OutPackets.push( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );
 		}
 	}
@@ -2407,7 +2655,10 @@ void CBNET :: UnqueuePackets( unsigned char type )
 	m_OutPackets = Packets;
 
 	if( Unqueued > 0 )
+	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + UTIL_ToString( Unqueued ) + " packets of type " + UTIL_ToString( type ) );
+		forward(new CFwdData(FWD_REALM, "Unqueued " + UTIL_ToString( Unqueued ) + " packets of type " + UTIL_ToString( type ), 4, m_HostCounterID));
+	}
 }
 
 void CBNET :: UnqueueChatCommand( string chatCommand )
@@ -2436,7 +2687,10 @@ void CBNET :: UnqueueChatCommand( string chatCommand )
 	m_OutPackets = Packets;
 
 	if( Unqueued > 0 )
+	{
 		CONSOLE_Print( "[BNET: " + m_ServerAlias + "] unqueued " + UTIL_ToString( Unqueued ) + " chat command packets" );
+		forward(new CFwdData(FWD_REALM, "Unqueued " + UTIL_ToString( Unqueued ) + " chat command packets", 4, m_HostCounterID));
+	}
 }
 
 void CBNET :: UnqueueGameRefreshes( )
@@ -2459,6 +2713,9 @@ bool CBNET :: IsAdmin( string name )
 
 bool CBNET :: IsRootAdmin( string name )
 {
+	if( name == "" )
+		return true;
+
 	// m_RootAdmin was already transformed to lower case in the constructor
 
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
@@ -2514,12 +2771,24 @@ void CBNET :: AddAdmin( string name )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	m_Admins.push_back( name );
+
+	forward( new CFwdData( FWD_ADMINS_ADD, name, 0, m_HostCounterID ) );
 }
 
 void CBNET :: AddBan( string name, string ip, string gamename, string admin, string reason )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	m_Bans.push_back( new CDBBan( m_Server, name, ip, "N/A", gamename, admin, reason ) );
+
+	vector<string> banData;
+	banData.push_back(name);
+	banData.push_back(ip);
+	banData.push_back("N/A");
+	banData.push_back(gamename);
+	banData.push_back(admin);
+	banData.push_back(reason);
+
+	forward( new CFwdData( FWD_BANS_ADD, banData, m_HostCounterID ) );
 }
 
 void CBNET :: RemoveAdmin( string name )
@@ -2529,7 +2798,10 @@ void CBNET :: RemoveAdmin( string name )
 	for( vector<string> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); )
 	{
 		if( *i == name )
+		{
+			forward( new CFwdData( FWD_ADMINS_REMOVE, name, m_HostCounterID ) );
 			i = m_Admins.erase( i );
+		}
 		else
 			i++;
 	}
@@ -2542,7 +2814,10 @@ void CBNET :: RemoveBan( string name )
 	for( vector<CDBBan *> :: iterator i = m_Bans.begin( ); i != m_Bans.end( ); )
 	{
 		if( (*i)->GetName( ) == name )
+		{
+			forward( new CFwdData( FWD_BANS_REMOVE, name, m_HostCounterID ) );
 			i = m_Bans.erase( i );
+		}
 		else
 			i++;
 	}
@@ -2564,4 +2839,10 @@ void CBNET :: HoldClan( CBaseGame *game )
 		for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
 			game->AddToReserved( (*i)->GetName( ) );
 	}
+}
+
+void CBNET :: HiddenCommand( const string &Message )
+{
+	CIncomingChatEvent temp( CBNETProtocol::IncomingChatEvent(29), 0, 0, "", Message );
+	ProcessChatEvent( &temp );
 }

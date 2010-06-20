@@ -47,6 +47,12 @@ using namespace std;
 typedef vector<unsigned char> BYTEARRAY;
 typedef pair<unsigned char,string> PIDPlayer;
 
+// ui forward
+
+class CFwdData;
+
+void forward(CFwdData *data);
+
 // time
 
 uint32_t GetTime( );		// seconds
