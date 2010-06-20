@@ -834,7 +834,7 @@ CGHost :: CGHost( CConfig *CFG )
 	if( m_AdminGameCreate )
 	{
 		CONSOLE_Print( "[GHOST] creating admin game" );
-		forward( new CFwdData(FWD_REALM, "Creating admin game", 2, 0 ) );
+		forward( new CFwdData(FWD_GENERAL, "Creating admin game", 2, 0 ) );
 		m_AdminGame = new CAdminGame( this, m_AdminMap, NULL, m_AdminGamePort, 0, "GHost++ Admin Game", m_AdminGamePassword );
 
 		if( m_AdminGamePort == m_HostPort )
