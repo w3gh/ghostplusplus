@@ -14,6 +14,7 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 	_games = new CTabWidget("", -2, White, Cyan);
 
 	CListWidget *log = new CListWidget("Log", -3, White, Black);
+	log->listenKeys(true);
 
 	CWidget *splitWidget = new CWidget("Games", -1);
 	splitWidget->setLayout(new CVBoxLayout(splitWidget));
@@ -37,6 +38,8 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 	// Initialize replytargets
 	for(uint i = 0; i < 20; i++)
 		_replyTargets.push_back("");
+
+	_scrollablewidgets.push_back(log);
 
 	_tabwidgets.push_back(_mainWidget);
 	_tabwidgets.push_back(_games);
@@ -119,6 +122,12 @@ bool CUI::update()
 		_selectedTabWidget->listenKeys(true);
 	}
 
+	if(_window->key() == KEY_LEFT || _window->key() == KEY_RIGHT)
+	{
+		for(vector<CWidget *>::iterator i = _scrollablewidgets.begin(); i != _scrollablewidgets.end(); i++)
+			(*i)->listenKeys((*i)->visible());
+	}
+
 	if(currentServerID() >= 0)
 	{
 		for(vector<PairedWidget>::iterator i = _edit.begin(); i != _edit.end(); i++)
@@ -154,9 +163,11 @@ void CUI::addServer(const string &name, int id)
 
 	CListWidget *log1 = new CListWidget("All", 0, White, Black);
 	_allLog.push_back(PairedWidget(id, log1));
+	_scrollablewidgets.push_back(log1);
 
 	CListWidget *log2 = new CListWidget("Server", 1, White, Black);
 	_serverLog.push_back(PairedWidget(id, log2));
+	_scrollablewidgets.push_back(log2);
 
 	vector<PairedColumnHeader> headers;
 	headers.push_back(PairedColumnHeader("Name", 15));
@@ -171,6 +182,7 @@ void CUI::addServer(const string &name, int id)
 	bans->setAutoScroll(false);
 	bans->forwardOnSelect(new CFwdData(FWD_OUT_BANS, id));
 	_bans.push_back(PairedWidget(id, bans));
+	_scrollablewidgets.push_back(bans);
 
 	CLabel *channelName = new CLabel("", 0, White, Black);
 	channelName->setText("Channel");

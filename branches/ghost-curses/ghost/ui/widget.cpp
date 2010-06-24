@@ -62,6 +62,7 @@ void CWidget::initialize(CWidget *parent, bool dummy)
 	_fwdDataSelect = 0;
 	_customID = 0;
 
+	_listenKeys = false;
 	_changed = false;
 	_visible = true;
 	_bold = false;
@@ -290,6 +291,11 @@ void CWidget::forceChange()
 	_changed = true;
 }
 
+void CWidget::listenKeys(bool enabled)
+{
+	_listenKeys = enabled;
+}
+
 CLabel::CLabel(CWidget *parent)
 	: CWidget(parent)
 {
@@ -495,7 +501,6 @@ CTabWidget::CTabWidget(CWidget *parent)
 {
 	_currentIndex = -1;
 	_bottom = false;
-	_listenKeys = false;
 
 	CLayout *layout = new CVBoxLayout();
 	setLayout(layout);
@@ -698,9 +703,4 @@ void CTabWidget::update(int c)
 void CTabWidget::setTabPosition(bool bottom)
 {
 	_bottom = bottom;
-}
-
-void CTabWidget::listenKeys(bool enabled)
-{
-	_listenKeys = enabled;
 }

@@ -75,6 +75,8 @@ private:
 	vector<PairedWidget> _gamechat;
 	vector<PairedWidget> _gameinfo;
 
+	vector<CWidget *> _scrollablewidgets;
+
 	vector<CTabWidget *> _tabwidgets;
 	CTabWidget *_selectedTabWidget;
 
