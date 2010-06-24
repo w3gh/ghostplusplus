@@ -68,6 +68,18 @@ CListWidget::CListWidget(CWidget *parent)
 	_autoScroll = true;
 }
 
+CListWidget::CListWidget(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CWidget(name, id)
+{
+	scrollok(_window, true);
+	_scroll = 0;
+	_autoScroll = true;
+
+	setForegroundColor(fgcolor);
+	setBackgroundColor(bgcolor);
+	setBold(bold);
+}
+
 CListWidget::~CListWidget()
 {
 	for(vector<CListWidgetItem *>::iterator i = _items.begin(); i != _items.end(); i++)
@@ -126,11 +138,11 @@ void CListWidget::updateItem(uint i, const string &text, Color fgcolor, Color bg
 	}
 }
 
-void CListWidget::removeItem(const string &text)
+void CListWidget::removeItem(const string &text, Color fgcolor)
 {
 	for(vector<CListWidgetItem *>::const_iterator i = _items.begin(); i != _items.end(); i++)
 	{
-		if((*i)->text() == text)
+		if((*i)->text() == text && (fgcolor == Null ? true : (*i)->foregroundColor() == fgcolor))
 		{
 			delete *i;
 			_items.erase(i);
@@ -209,7 +221,7 @@ void CListWidget::update(int c)
 		{		
 #ifdef __PDCURSES__
 			// Mouse wheel scrolling
-			if(c != ERR && _scroll >= th - 1)
+			if(c == KEY_MOUSE && _scroll >= th - 1)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{

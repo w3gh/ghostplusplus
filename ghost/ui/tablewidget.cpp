@@ -141,35 +141,32 @@ CTableWidget::CTableWidget(CWidget *parent)
 	_scroll = 0;
 	_autoScroll = true;
 
-	_headers = 0;
+	_sortColumn = -1;
+}
+
+CTableWidget::CTableWidget(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CWidget(name, id)
+{
+	scrollok(_window, true);
+	_scroll = 0;
+	_autoScroll = true;
 
 	_sortColumn = -1;
+
+	setForegroundColor(fgcolor);
+	setBackgroundColor(bgcolor);
+	setBold(bold);
 }
 
 CTableWidget::~CTableWidget()
 {
 	for(vector<CTableWidgetRow *>::iterator i = _rows.begin(); i != _rows.end(); i++)
 		SafeDelete(*i);
-
-	SafeDelete(_headers);
 }
 
-void CTableWidget::setColumnHeaders(const vector<string> &row)
+void CTableWidget::setColumnHeaders(const vector<PairedColumnHeader> &headers)
 {
-	if(!_headers)
-		_headers = new CTableWidgetRow(this);
-
-	for(vector<string>::const_iterator i = row.begin(); i != row.end(); i++)
-	{
-		_headers->addItem(*i);
-		_headers->setBackgroundColor(_bgcolor);
-		_headers->setForegroundColor(_fgcolor);
-	}
-}
-
-void CTableWidget::setColumnWidths(const vector<uint> &widths)
-{
-	_columnWidths = widths;
+	_headers = headers;
 }
 
 void CTableWidget::addRow(const vector<string> &row)
@@ -294,7 +291,7 @@ void CTableWidget::update(int c)
 		{		
 #ifdef __PDCURSES__
 			// Mouse wheel scrolling
-			if(c != ERR && _scroll >= th - 1)
+			if(c == KEY_MOUSE && _scroll >= th - 1)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
@@ -329,10 +326,10 @@ void CTableWidget::update(int c)
 				m = 0;
 				stopHere = false;
 
-				for(uint l = 0; l < _headers->count() && !stopHere; l++)
+				for(uint l = 0; l < _headers.size() && !stopHere; l++)
 				{
 					string message = (*i)->at(l)->text();
-					cw = _columnWidths.at(l);
+					cw = _headers[l].second;
 
 					a = attribute((*i)->at(l)->backgroundColor(), (*i)->at(l)->foregroundColor(), (*i)->at(l)->bold());
 					wattr_on(_window, a, 0);
@@ -347,13 +344,13 @@ void CTableWidget::update(int c)
 					{
 						waddch(_window, toULong(message[j]));
 
-						if(m++ >= tw - 1)
+						if(m++ >= tw - 2)
 						{
 							stopHere = true;
 							break;
 						}
 
-						if(n++ >= cw - 1)
+						if(n++ >= cw - 1 && l < _headers.size() - 1)
 							break;
 					}
 
@@ -362,7 +359,7 @@ void CTableWidget::update(int c)
 
 					for(; n < cw; n++)
 					{
-						if(m++ >= tw - 1)
+						if(m++ >= tw - 2)
 						{
 							stopHere = true;
 							break;
@@ -388,10 +385,10 @@ void CTableWidget::update(int c)
 			wattr_on(_window, a, 0);
 			mvwaddch(_window, 0, 0, ' ');
 
-			for(uint i = 0; i < _headers->count() && !stopHere; i++)
+			for(uint i = 0; i < _headers.size() && !stopHere; i++)
 			{
-				string message = _headers->at(i)->text();
-				cw = _columnWidths.at(i);
+				string &message = _headers[i].first;
+				cw = _headers[i].second;
 
 				if(i != 0)
 					waddch(_window, ' ');
@@ -410,14 +407,14 @@ void CTableWidget::update(int c)
 						break;
 					}
 
-					if(n++ >= cw - 1)
+					if(n++ >= cw - 1 && i < _headers.size() - 1)
 						break;
 				}
 
 				if(stopHere)
 					break;
 
-				for(; n < cw; n++)
+				for(; i == _headers.size() - 1 ? m < tw : n < cw; n++)
 				{
 					if(m++ >= tw - 1)
 					{
@@ -447,7 +444,7 @@ void CTableWidget::sortByColumn(int column)
 
 void CTableWidget::sort()
 {
-	if(_doSort && _sortColumn >= 0 && _sortColumn < int(_headers->count()))
+	if(_doSort && _sortColumn >= 0 && _sortColumn < int(_headers.size()))
 	{
 		// Insertion sort. Good at sorting small number of rows.
 

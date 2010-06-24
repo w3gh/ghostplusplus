@@ -13,6 +13,8 @@ class CWidget
 public:
 	CWidget(CWidget *parent = 0, bool dummy = false);
 
+	CWidget(const string &name, int id);
+
 	~CWidget();
 
 	// Set name
@@ -67,6 +69,9 @@ public:
 	// its subwidgets, it returns true.
 	bool focused();
 
+	// Is widget visible?
+	bool visible();
+
 	// Set background color
 	void setBackgroundColor(Color color);
 
@@ -93,6 +98,9 @@ public:
 
 	// Force _changed
 	void forceChange();
+
+private:
+	void initialize(CWidget *parent = 0, bool dummy = false);
 
 protected:
 	string _name;
@@ -133,6 +141,8 @@ class CLabel : public CWidget
 public:
 	CLabel(CWidget *parent = 0);
 
+	CLabel(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
+
 	~CLabel();
 
 	// Update widget
@@ -162,6 +172,8 @@ class CTextEdit : public CLabel
 public:
 	CTextEdit(CWidget *parent = 0);
 
+	CTextEdit(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
+
 	~CTextEdit();
 
 	// Update widget
@@ -189,6 +201,8 @@ class CTabWidget : public CWidget
 {
 public:
 	CTabWidget(CWidget *parent = 0);
+
+	CTabWidget(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
 
 	~CTabWidget();
 
@@ -222,10 +236,20 @@ public:
 	// Update widget
 	virtual void update(int c);
 
+	// If bottom is true, tab is shown bottom instead of top.
+	void setTabPosition(bool bottom);
+
+	// Listen keys (left arrow, right arrow)
+	void listenKeys(bool enabled);
+
 protected:
 	vector<CWidget *> _widgets;
 
+	bool _bottom;
+
 	int _currentIndex;
+
+	bool _listenKeys;
 };
 
 // Button

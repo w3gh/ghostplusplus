@@ -49,6 +49,9 @@ public:
 	// Update window
 	void update();
 
+	// Get pressed key
+	int key();
+
 private:
 	// Update input
 	void updateInput();
