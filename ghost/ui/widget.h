@@ -2,10 +2,9 @@
 #define WIDGET_H
 
 #include "common.h"
+#include "forward.h"
 
 class CLayout;
-class CFwdData;
-enum FwdType;
 
 // Widget
 class CWidget

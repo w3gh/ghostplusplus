@@ -24,7 +24,7 @@ void CLayout::addWidget(CWidget *widget)
 
 void CLayout::removeWidget(CWidget *widget)
 {
-	for(vector<CWidget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++)
+	for(vector<CWidget *>::iterator i = _widgets.begin(); i != _widgets.end(); i++)
 	{
 		if((*i) == widget)
 		{
