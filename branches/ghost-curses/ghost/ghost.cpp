@@ -333,7 +333,10 @@ int main( int argc, char **argv )
 	// initialize ui
 
 	if ( CFG.GetInt( "ui_enabled", 1 ) == 1 )
+	{
+		CONSOLE_Print( "[GHOST] Initializing user interface..." );
 		gUI = new CUI( CFG.GetInt( "ui_width", 135 ), CFG.GetInt( "ui_height", 43 ), CFG.GetInt( "ui_splitsid", 1 ), CFG.GetInt( "ui_spliton", 0 ) == 0 ? false : true );
+	}
 
 	//
 

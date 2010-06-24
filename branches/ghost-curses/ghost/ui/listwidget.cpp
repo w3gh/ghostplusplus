@@ -140,7 +140,7 @@ void CListWidget::updateItem(uint i, const string &text, Color fgcolor, Color bg
 
 void CListWidget::removeItem(const string &text, Color fgcolor)
 {
-	for(vector<CListWidgetItem *>::const_iterator i = _items.begin(); i != _items.end(); i++)
+	for(vector<CListWidgetItem *>::iterator i = _items.begin(); i != _items.end(); i++)
 	{
 		if((*i)->text() == text && (fgcolor == Null ? true : (*i)->foregroundColor() == fgcolor))
 		{
@@ -159,7 +159,7 @@ void CListWidget::removeItem(const string &text, Color fgcolor)
 void CListWidget::removeItem(uint i)
 {
 	uint k = 0;
-	for(vector<CListWidgetItem *>::const_iterator j = _items.begin(); j != _items.end(); j++, k++)
+	for(vector<CListWidgetItem *>::iterator j = _items.begin(); j != _items.end(); j++, k++)
 	{
 		if(k == i)
 		{

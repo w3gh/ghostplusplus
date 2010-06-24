@@ -1,6 +1,8 @@
 #include "tablewidget.h"
 #include "layout.h"
 
+#include <cstdlib>
+
 unsigned long toULong(int i);
 
 int toInt(const string &str)
@@ -210,7 +212,7 @@ void CTableWidget::updateRow(const vector<string> &row)
 
 void CTableWidget::removeRow(const string &text)
 {
-	for(vector<CTableWidgetRow *>::const_iterator i = _rows.begin(); i != _rows.end(); i++)
+	for(vector<CTableWidgetRow *>::iterator i = _rows.begin(); i != _rows.end(); i++)
 	{
 		if((*i)->at(0)->text() == text)
 		{
@@ -229,7 +231,7 @@ void CTableWidget::removeRow(const string &text)
 void CTableWidget::removeRow(uint index)
 {
 	uint k = 0;
-	for(vector<CTableWidgetRow *>::const_iterator j = _rows.begin(); j != _rows.end(); j++, k++)
+	for(vector<CTableWidgetRow *>::iterator j = _rows.begin(); j != _rows.end(); j++, k++)
 	{
 		if(k == index)
 		{
@@ -270,7 +272,7 @@ void CTableWidget::removeRows()
 {
 	if(!_rows.empty())
 	{
-		for(vector<CTableWidgetRow *>::const_iterator j = _rows.begin(); j != _rows.end(); j++)
+		for(vector<CTableWidgetRow *>::iterator j = _rows.begin(); j != _rows.end(); j++)
 			delete *j;
 
 		_rows.clear();
@@ -321,7 +323,7 @@ void CTableWidget::update(int c)
 
 			waddch(_window, '\n');
 
-			for(vector<CTableWidgetRow *>::const_iterator i = _rows.begin() + k; i != _rows.end(); i++)
+			for(vector<CTableWidgetRow *>::iterator i = _rows.begin() + k; i != _rows.end(); i++)
 			{
 				m = 0;
 				stopHere = false;

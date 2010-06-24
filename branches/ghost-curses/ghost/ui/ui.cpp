@@ -24,7 +24,9 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 	_window->setWidget(_mainWidget);
 	_window->show();
 
+#ifdef WIN32
 	resize(width, height);
+#endif
 
 	_forceQuit = false;
 	_splitOn = splitOn;
@@ -69,11 +71,14 @@ bool CUI::update()
 
 	_window->update();
 
+	if(_window->key() == KEY_RESIZE)
+		resize(COLS, LINES);
+
 	if(_window->key() == 9 || !_selectedTabWidget->visible()) // TAB
 	{
 		_selectedTabWidget->listenKeys(false);
 		bool next = false;
-		for(vector<CTabWidget *>::const_iterator i = _tabwidgets.begin();; i++)
+		for(vector<CTabWidget *>::iterator i = _tabwidgets.begin();; i++)
 		{
 			if(i == _tabwidgets.end())
 				i = _tabwidgets.begin();
@@ -95,7 +100,7 @@ bool CUI::update()
 	{
 		_selectedTabWidget->listenKeys(false);
 		bool next = false;
-		for(vector<CTabWidget *>::const_iterator i = _tabwidgets.end() - 1;; i--)
+		for(vector<CTabWidget *>::iterator i = _tabwidgets.end() - 1;; i--)
 		{
 			if(next)
 			{
@@ -116,7 +121,7 @@ bool CUI::update()
 
 	if(currentServerID() >= 0)
 	{
-		for(vector<PairedWidget>::const_iterator i = _edit.begin(); i != _edit.end(); i++)
+		for(vector<PairedWidget>::iterator i = _edit.begin(); i != _edit.end(); i++)
 		{
 			if((*i).first == currentServerID())
 			{
@@ -356,7 +361,7 @@ void CUI::updateGame(const string &name, int id)
 
 void CUI::removeGame(int id)
 {
-	for(vector<CTabWidget *>::const_iterator i = _tabwidgets.begin(); i != _tabwidgets.end(); i++)
+	for(vector<CTabWidget *>::iterator i = _tabwidgets.begin(); i != _tabwidgets.end(); i++)
 	{
 		if((*i)->customID() == id)
 		{
@@ -365,7 +370,7 @@ void CUI::removeGame(int id)
 		}
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
+	for(vector<PairedWidget>::iterator i = _players.begin(); i != _players.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -374,7 +379,7 @@ void CUI::removeGame(int id)
 		}
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
+	for(vector<PairedWidget>::iterator i = _stats.begin(); i != _stats.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -383,7 +388,7 @@ void CUI::removeGame(int id)
 		}
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
+	for(vector<PairedWidget>::iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -392,7 +397,7 @@ void CUI::removeGame(int id)
 		}
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _gamechat.begin(); i != _gamechat.end(); i++)
+	for(vector<PairedWidget>::iterator i = _gamechat.begin(); i != _gamechat.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -401,7 +406,7 @@ void CUI::removeGame(int id)
 		}
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
+	for(vector<PairedWidget>::iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -427,7 +432,7 @@ void CUI::printToGeneral(const string &message, int flag, int id)
 	case 6: color = Red;     break; // ERROR
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _allLog.begin(); i != _allLog.end(); i++)
+	for(vector<PairedWidget>::iterator i = _allLog.begin(); i != _allLog.end(); i++)
 	{
 		if((*i).first == id)
 		{
@@ -451,7 +456,7 @@ void CUI::printToServer(const string &message, int flag, int id)
 	case 6: color = Red;     break; // ERROR
 	}
 
-	for(vector<PairedWidget>::const_iterator i = _serverLog.begin(); i != _serverLog.end(); i++)
+	for(vector<PairedWidget>::iterator i = _serverLog.begin(); i != _serverLog.end(); i++)
 	{
 		if((*i).first == id)
 		{

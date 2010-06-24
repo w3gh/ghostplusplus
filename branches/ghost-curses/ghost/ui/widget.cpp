@@ -54,9 +54,10 @@ void CWidget::initialize(CWidget *parent, bool dummy)
 	}
 
 	setMargins(1, 1, 1, 1);
-	setBackgroundColor(Black);
-	setForegroundColor(White);
 	
+	_bgcolor = Black;
+	_fgcolor = White;
+
 	_layout = 0;
 	_fwdDataSelect = 0;
 	_customID = 0;
@@ -65,12 +66,8 @@ void CWidget::initialize(CWidget *parent, bool dummy)
 	_visible = true;
 	_bold = false;
 
-	// Set default name. (for debugging)
-	char *buf = new char[16];
-	_itoa(widgetID++, buf, 16);
-	_name = "Widget_";
-	_name += buf;
-	delete buf;
+	// Set default name.
+	_name = "Widget";
 
 	hide();
 }
@@ -211,9 +208,11 @@ void CWidget::setMargins(uint top, uint bottom, uint left, uint right)
 
 bool CWidget::focused()
 {
+#ifdef __PDCURSES__
 	// Update mouse position. Everytime we use mouse wheel, positions go to -1 for some reason... this fixes it.
 	if(MOUSE_X_POS != -1 && MOUSE_Y_POS != -1)
 		_mousePos.set(MOUSE_X_POS, MOUSE_Y_POS);
+#endif
 
 	// Check if mouse cursor is inside the widget
 	if(uint(_mousePos.y()) >= _pos.y() && uint(_mousePos.y()) < _pos.y() + _size.height() &&
@@ -435,7 +434,9 @@ void CTextEdit::update(int c)
 				break;
 			case 10:
 			case 13:
+#ifdef WIN32
 			case PADENTER:
+#endif
 				if(!_text.empty())
 				{
 					_history.push_back(_text);
@@ -444,6 +445,7 @@ void CTextEdit::update(int c)
 					_text.clear();
 				}
 				break;
+#ifdef WIN32
 			case PADSLASH:
 				_text += '/';
 				break;
@@ -456,6 +458,7 @@ void CTextEdit::update(int c)
 			case PADPLUS:
 				_text += '+';
 				break;
+#endif
 			default:
 				if(c >= 32 && c <= 255)
 					_text += c;
@@ -531,7 +534,7 @@ int CTabWidget::addTab(CWidget *page)
 
 void CTabWidget::removeTab(CWidget *page)
 {
-	for(vector<CWidget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++)
+	for(vector<CWidget *>::iterator i = _widgets.begin(); i != _widgets.end(); i++)
 	{
 		if(*i == page)
 		{
@@ -647,7 +650,11 @@ void CTabWidget::update(int c)
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 
 		// Is left mouse button pressed?
+#ifdef __PDCURSES__
 		bool leftClick = focused() && Mouse_status.button[0] == BUTTON_PRESSED;
+#else
+		bool leftClick = false;
+#endif
 
 		int k = 0;
 		for(uint i = 0; i < _widgets.size(); i++)
