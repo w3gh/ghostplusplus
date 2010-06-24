@@ -12,8 +12,8 @@ CLayout::CLayout(CWidget *parent)
 
 CLayout::~CLayout()
 {
-	//for(vector<CWidget *>::iterator i = _widgets.begin(); i != _widgets.end(); i++)
-	//	SafeDelete(*i);
+	for(vector<CWidget *>::iterator i = _widgets.begin(); i != _widgets.end(); i++)
+		SafeDelete(*i);
 }
 
 void CLayout::addWidget(CWidget *widget)
