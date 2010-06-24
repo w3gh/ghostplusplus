@@ -50,6 +50,8 @@ class CListWidget : public CWidget
 public:
 	CListWidget(CWidget *parent = 0);
 
+	CListWidget(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
+
 	~CListWidget();
 
 	// Add item
@@ -62,7 +64,7 @@ public:
 	void updateItem(uint i, const string &text, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
 
 	// Remove item
-	void removeItem(const string &text);
+	void removeItem(const string &text, Color fgcolor = Null);
 
 	// Remove item
 	void removeItem(uint i);

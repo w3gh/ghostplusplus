@@ -5,46 +5,24 @@
 #include "layout.h"
 #include "forward.h"
 
-string toString(int i)
-{
-	char *buf = new char[4];
-	_itoa(i, buf, 10);
-
-	return buf;
-}
-
 CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 {
-	window = new CWindow();
-	window->setTitle("GHost++ 17.1 CursesMod-2.0");
+	_window = new CWindow();
+	_window->setTitle("GHost++ 17.1 CursesMod-2.0");
 
-	mainWidget = new CTabWidget();
-	mainWidget->setBackgroundColor(Cyan);
-	mainWidget->setForegroundColor(White);
-	mainWidget->setFixedSize(0, 1);
+	_mainWidget = new CTabWidget("", 0, White, Cyan);
+	_games = new CTabWidget("", -2, White, Cyan);
 
-	CListWidget *log0 = new CListWidget();
-	log0->setName("Raw");
-	log0->setCustomID(-3);
-	log0->setBackgroundColor(Black);
-	log0->setForegroundColor(White);
-	mainWidget->addTab(log0);
+	CListWidget *log = new CListWidget("Log", -3, White, Black);
 
-	games = new CTabWidget();
-	games->setName("Games");
-	games->setCustomID(-2);
-	games->setBackgroundColor(Cyan);
-	games->setForegroundColor(White);
-	//mainWidget->addTab(games);
-
-	CWidget *splitWidget = new CWidget();
-	splitWidget->setName("Games");
-	splitWidget->setCustomID(-1);
+	CWidget *splitWidget = new CWidget("Games", -1);
 	splitWidget->setLayout(new CVBoxLayout(splitWidget));
-	mainWidget->addTab(splitWidget);
 
-	window->setWidget(mainWidget);
-	window->show();
+	_mainWidget->addTab(log);
+	_mainWidget->addTab(splitWidget);
+
+	_window->setWidget(_mainWidget);
+	_window->show();
 
 	resize(width, height);
 
@@ -57,11 +35,17 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 	// Initialize replytargets
 	for(uint i = 0; i < 20; i++)
 		_replyTargets.push_back("");
+
+	_tabwidgets.push_back(_mainWidget);
+	_tabwidgets.push_back(_games);
+
+	_selectedTabWidget = _mainWidget;
+	_selectedTabWidget->listenKeys(true);
 }
 
 CUI::~CUI()
 {
-	SafeDelete(window);
+	SafeDelete(_window);
 }
 
 void CUI::forceQuit()
@@ -79,130 +63,148 @@ bool CUI::update()
 {
 	if(_resize)
 	{
-		window->setSize(_newSize.width(), _newSize.height());
+		_window->setSize(_newSize.width(), _newSize.height());
 		_resize = false;
 	}
 
-	window->update();
+	_window->update();
+
+	if(_window->key() == 9 || !_selectedTabWidget->visible()) // TAB
+	{
+		_selectedTabWidget->listenKeys(false);
+		bool next = false;
+		for(vector<CTabWidget *>::const_iterator i = _tabwidgets.begin();; i++)
+		{
+			if(i == _tabwidgets.end())
+				i = _tabwidgets.begin();
+
+			if(next)
+			{
+				if((*i)->visible() || *i == _selectedTabWidget)
+				{
+					_selectedTabWidget = *i;
+					break;
+				}
+			}
+			else if(*i == _selectedTabWidget)
+				next = true;
+		}
+		_selectedTabWidget->listenKeys(true);
+	}
+	else if(_window->key() == KEY_BTAB) // SHIFT-TAB
+	{
+		_selectedTabWidget->listenKeys(false);
+		bool next = false;
+		for(vector<CTabWidget *>::const_iterator i = _tabwidgets.end() - 1;; i--)
+		{
+			if(next)
+			{
+				if((*i)->visible() || *i == _selectedTabWidget)
+				{
+					_selectedTabWidget = *i;
+					break;
+				}
+			}
+			else if(*i == _selectedTabWidget)
+				next = true;
+
+			if(i == _tabwidgets.begin())
+				i = _tabwidgets.end() - 1;
+		}
+		_selectedTabWidget->listenKeys(true);
+	}
 
 	if(currentServerID() >= 0)
 	{
-		CTextEdit *edit = (CTextEdit *)getWidget(currentServerID() + ",1");
-
-		if(edit)
+		for(vector<PairedWidget>::const_iterator i = _edit.begin(); i != _edit.end(); i++)
 		{
-			if(edit->text() == "/r ")
-				edit->setText("/w " + _replyTargets[currentServerID()] + " ");
+			if((*i).first == currentServerID())
+			{
+				CTextEdit *edit = static_cast<CTextEdit *>((*i).second);
+
+				if(edit->text() == "/r ")
+				{
+					if(_replyTargets[(*i).first].empty())
+						edit->setText("/w ");
+					else
+						edit->setText("/w " + _replyTargets[(*i).first] + " ");
+				}
+				break;
+			}
 		}
 	}
 
 	return _forceQuit;
 }
 
-CWidget* CUI::addServer(const string &name, int id)
+void CUI::addServer(const string &name, int id)
 {
-	CWidget *srvmain = new CWidget();
-	srvmain->setName(name);
-	srvmain->setCustomID(id);
-
-	CWidget *sub = new CWidget();
-	sub->setCustomID(0);
-
-	CWidget *channel = new CWidget();
-	channel->setName("Channel");
-	channel->setCustomID(0);
-
-	CWidget *friends = new CWidget();
-	friends->setName("Friends");
-	friends->setCustomID(1);
-
-	CWidget *clan = new CWidget();
-	clan->setName("Clan");
-	clan->setCustomID(2);
-
-	CListWidget *log1 = new CListWidget();
-	log1->setName("All");
-	log1->setCustomID(0);
-	log1->setBackgroundColor(Black);
-	log1->setForegroundColor(White);
-
-	CListWidget *log2 = new CListWidget();
-	log2->setName("Server");
-	log2->setCustomID(1);
-	log2->setBackgroundColor(Black);
-	log2->setForegroundColor(White);
-
-	CListWidget *admins = new CListWidget();
-	admins->setName("Admins");
-	admins->setCustomID(2);
-	admins->setBackgroundColor(Black);
-	admins->setForegroundColor(White);
-	admins->setAutoScroll(false);
+	CWidget *server = new CWidget(name, id);
+	CWidget *sub = new CWidget("", 0);
+	CWidget *channel = new CWidget("Channel", 0);
+	CWidget *friends = new CWidget("Friends", 1);
+	CWidget *clan = new CWidget("Clan", 2);
+	CWidget *admins = new CWidget("Admins", 3);
 	admins->forwardOnSelect(new CFwdData(FWD_OUT_ADMINS, id));
 
-	vector<string> bansHeader;			vector<uint> bansWidths;
-	bansHeader.push_back("Name");		bansWidths.push_back(15);
-	bansHeader.push_back("IP");			bansWidths.push_back(15);
-	bansHeader.push_back("Date");		bansWidths.push_back(15);
-	bansHeader.push_back("GameName");	bansWidths.push_back(20);
-	bansHeader.push_back("Admin");		bansWidths.push_back(15);
-	bansHeader.push_back("Reason");		bansWidths.push_back(25);
+	CListWidget *log1 = new CListWidget("All", 0, White, Black);
+	_allLog.push_back(PairedWidget(id, log1));
 
-	CTableWidget *bans = new CTableWidget();
-	bans->setName("Bans");
-	bans->setCustomID(3);
-	bans->setBackgroundColor(Black);
-	bans->setForegroundColor(White);
-	bans->setColumnHeaders(bansHeader);
-	bans->setColumnWidths(bansWidths);
+	CListWidget *log2 = new CListWidget("Server", 1, White, Black);
+	_serverLog.push_back(PairedWidget(id, log2));
+
+	vector<PairedColumnHeader> headers;
+	headers.push_back(PairedColumnHeader("Name", 15));
+	headers.push_back(PairedColumnHeader("IP", 15));
+	headers.push_back(PairedColumnHeader("Date", 15));
+	headers.push_back(PairedColumnHeader("GameName", 20));
+	headers.push_back(PairedColumnHeader("Admin", 15));
+	headers.push_back(PairedColumnHeader("Reason", 25));
+
+	CTableWidget *bans = new CTableWidget("Bans", 2, White, Black);
+	bans->setColumnHeaders(headers);
 	bans->setAutoScroll(false);
 	bans->forwardOnSelect(new CFwdData(FWD_OUT_BANS, id));
+	_bans.push_back(PairedWidget(id, bans));
 
-	CLabel *channelName = new CLabel();
-	channelName->setCustomID(0);
+	CLabel *channelName = new CLabel("", 0, White, Black);
 	channelName->setText("Channel");
-	channelName->setBackgroundColor(Black);
-	channelName->setForegroundColor(White);
 	channelName->setFixedSize(0, 3);
+	_channelName.push_back(PairedWidget(id, channelName));
 
-	CLabel *friendsLabel = new CLabel();
-	friendsLabel->setCustomID(0);
+	CLabel *friendsLabel = new CLabel("", 0, White, Black);
 	friendsLabel->setText("Friends");
-	friendsLabel->setBackgroundColor(Black);
-	friendsLabel->setForegroundColor(White);
 	friendsLabel->setFixedSize(0, 3);
 
-	CLabel *clanName = new CLabel();
-	clanName->setCustomID(0);
+	CLabel *clanName = new CLabel("", 0, White, Black);
 	clanName->setText("Clan");
-	clanName->setBackgroundColor(Black);
-	clanName->setForegroundColor(White);
 	clanName->setFixedSize(0, 3);
 
-	CTextEdit *edit = new CTextEdit(srvmain);
-	edit->setCustomID(1);
-	edit->setBackgroundColor(Cyan);
+	CLabel *adminsLabel = new CLabel("", 0, White, Black);
+	adminsLabel->setText("Admins");
+	adminsLabel->setFixedSize(0, 3);
+
+	CTextEdit *edit = new CTextEdit("", 1, White, Cyan);
 	edit->setFixedSize(0, 2);
 	edit->setForwardTypeOnEnter(FWD_OUT_MESSAGE);
+	_edit.push_back(PairedWidget(id, edit));
 
-	CListWidget *channelList = new CListWidget();
-	channelList->setCustomID(1);
-	channelList->setBackgroundColor(Black);
-	channelList->setForegroundColor(White);
+	CListWidget *channelList = new CListWidget("", 1, White, Black);
 	channelList->setAutoScroll(false);
+	_channel.push_back(PairedWidget(id, channelList));
 
-	CListWidget *friendsList = new CListWidget();
-	friendsList->setCustomID(1);
-	friendsList->setBackgroundColor(Black);
-	friendsList->setForegroundColor(White);
+	CListWidget *friendsList = new CListWidget("", 1, White, Black);
 	friendsList->setAutoScroll(false);
+	_friends.push_back(PairedWidget(id, friendsList));
 
-	CListWidget *clanList = new CListWidget();
-	clanList->setCustomID(1);
-	clanList->setBackgroundColor(Black);
-	clanList->setForegroundColor(White);
+	CListWidget *clanList = new CListWidget("", 1, White, Black);
 	clanList->setAutoScroll(false);
+	_clan.push_back(PairedWidget(id, clanList));
 
+	CListWidget *adminsList = new CListWidget("", 1, White, Black);
+	adminsList->setAutoScroll(false);
+	_admins.push_back(PairedWidget(id, adminsList));
+	
 	CLayout *layout0a = new CVBoxLayout(channel);
 	layout0a->addWidget(channelName);
 	layout0a->addWidget(channelList);
@@ -214,192 +216,117 @@ CWidget* CUI::addServer(const string &name, int id)
 	CLayout *layout0c = new CVBoxLayout(clan);
 	layout0c->addWidget(clanName);
 	layout0c->addWidget(clanList);
+
+	CLayout *layout0d = new CVBoxLayout(admins);
+	layout0d->addWidget(adminsLabel);
+	layout0d->addWidget(adminsList);
 	
-	CTabWidget *tab1 = new CTabWidget();
-	tab1->setCustomID(0);
-	tab1->setBackgroundColor(Cyan);
-	tab1->setForegroundColor(White);
+	CTabWidget *tab1 = new CTabWidget("", 0, White, Cyan);
 	tab1->addTab(log1);
 	tab1->addTab(log2);
-	tab1->addTab(admins);
 	tab1->addTab(bans);
 
-	CTabWidget *tab2 = new CTabWidget();
-	tab2->setCustomID(1);
-	tab2->setBackgroundColor(Cyan);
-	tab2->setForegroundColor(White);
-	tab2->setFixedSize(22, 0);
+	CTabWidget *tab2 = new CTabWidget("", 1, White, Cyan);
+	tab2->setFixedSize(29, 0);
 	tab2->addTab(channel);
 	tab2->addTab(friends);
 	tab2->addTab(clan);
+	tab2->addTab(admins);
 	
 	CLayout *layout1 = new CHBoxLayout(sub);
 	layout1->addWidget(tab1);
 	layout1->addWidget(tab2);
 
-	CLayout *layout2 = new CVBoxLayout(srvmain);
+	CLayout *layout2 = new CVBoxLayout(server);
 	layout2->addWidget(sub);
 	layout2->addWidget(edit);
 
-	return srvmain;
+	_mainWidget->addTab(server);
+
+	_tabwidgets.push_back(tab1);
+	_tabwidgets.push_back(tab2);
 }
 
-CWidget* CUI::addGame(const string &name, int id)
+void CUI::addGame(const string &name, int id)
 {
-	CWidget *game = new CWidget();
-	game->setName(name);
-	game->setCustomID(id);
+	CWidget *game = new CWidget(name, id);
+	CWidget *sub1 = new CWidget("", 0);
+	CWidget *sub2 = new CWidget("", 0);
+	CListWidget *chat = new CListWidget("", 0, White, Black);
+	_gamechat.push_back(PairedWidget(id, chat));
 
-	CWidget *sub1 = new CWidget();
-	sub1->setCustomID(0);
+	vector<PairedColumnHeader> headers;
+	headers.push_back(PairedColumnHeader("", 10));
+	headers.push_back(PairedColumnHeader("", 30));
 
-	CWidget *sub2 = new CWidget();
-	sub2->setCustomID(0);
+	CTableWidget *info = new CTableWidget("", 1, White, Black);
+	info->setFixedSize(40, 0);
+	info->setColumnHeaders(headers);
+	_gameinfo.push_back(PairedWidget(id, info));
 
-	CWidget *sub3 = new CWidget();
-	sub3->setFixedSize(40, 0);
-	sub3->setCustomID(1);
+	headers.clear();
+	headers.push_back(PairedColumnHeader("Name", 15));
+	headers.push_back(PairedColumnHeader("Slot", 5));
+	headers.push_back(PairedColumnHeader("From", 5));
+	headers.push_back(PairedColumnHeader("Ping", 8));
+	headers.push_back(PairedColumnHeader("Race", 5));
+	headers.push_back(PairedColumnHeader("Team", 5));
+	headers.push_back(PairedColumnHeader("Color", 10));
+	headers.push_back(PairedColumnHeader("Handicap", 9));
+	headers.push_back(PairedColumnHeader("GProxy++", 9));
 
-	CListWidget *chat = new CListWidget();
-	chat->setCustomID(1);
-	chat->setBackgroundColor(Black);
-	chat->setForegroundColor(White);
+	CTableWidget *players = new CTableWidget("Players", 0, White, Black);
+	players->setColumnHeaders(headers);
+	players->sortByColumn(1);
+	_players.push_back(PairedWidget(id, players));
 
-	vector<string> mapHeaders;
-	mapHeaders.push_back("");
-	mapHeaders.push_back("");
+	headers.clear();
+	headers.push_back(PairedColumnHeader("Name", 15));
+	headers.push_back(PairedColumnHeader("Total Games", 12));
+	headers.push_back(PairedColumnHeader("Last Gamedate", 20));
+	headers.push_back(PairedColumnHeader("AVG Stay%", 10));
+	headers.push_back(PairedColumnHeader("AVG Duration", 13));
+	headers.push_back(PairedColumnHeader("AVG Loading time", 20));
 
-	vector<uint> mapWidths;
-	mapWidths.push_back(10);
-	mapWidths.push_back(30);
+	CTableWidget *stats = new CTableWidget("Stats", 1, White, Black);
+	stats->setColumnHeaders(headers);
+	_stats.push_back(PairedWidget(id, stats));
 
-	CTableWidget *map = new CTableWidget();
-	map->setCustomID(0);
-	map->setBackgroundColor(Black);
-	map->setForegroundColor(White);
-	map->setColumnHeaders(mapHeaders);
-	map->setColumnWidths(mapWidths);
+	headers.clear();
+	headers.push_back(PairedColumnHeader("Name", 15));
+	headers.push_back(PairedColumnHeader("Wins/Losses", 15));
+	headers.push_back(PairedColumnHeader("K/D/A", 20));
+	headers.push_back(PairedColumnHeader("AVG K/D/A", 15));
+	headers.push_back(PairedColumnHeader("CS K/D/N", 20));
+	headers.push_back(PairedColumnHeader("AVG CS K/D/N", 15));
+	headers.push_back(PairedColumnHeader("T/R/C", 10));
 
-	vector<string> slotHeaders;
-	slotHeaders.push_back("Name");
-	slotHeaders.push_back("Slot");
-	slotHeaders.push_back("From");
-	slotHeaders.push_back("Ping");
-	slotHeaders.push_back("Race");
-	slotHeaders.push_back("Team");
-	slotHeaders.push_back("Color");
-	slotHeaders.push_back("Handicap");
-	slotHeaders.push_back("GProxy++");
-
-	vector<uint> slotWidths;
-	slotWidths.push_back(15);
-	slotWidths.push_back(5);
-	slotWidths.push_back(5);
-	slotWidths.push_back(8);
-	slotWidths.push_back(5);
-	slotWidths.push_back(5);
-	slotWidths.push_back(10);
-	slotWidths.push_back(9);
-	slotWidths.push_back(9);
-
-	CTableWidget *slots = new CTableWidget();
-	slots->setName("Slots");
-	slots->setCustomID(0);
-	slots->setBackgroundColor(Black);
-	slots->setForegroundColor(White);
-	slots->setColumnHeaders(slotHeaders);
-	slots->setColumnWidths(slotWidths);
-	slots->sortByColumn(1);
-
-	vector<string> statHeaders;
-	statHeaders.push_back("Name");
-	statHeaders.push_back("Total Games");
-	statHeaders.push_back("Last Gamedate");
-	statHeaders.push_back("AVG Stay%");
-	statHeaders.push_back("AVG Duration");
-	statHeaders.push_back("AVG Loading time");
-
-	vector<uint> statWidths;
-	statWidths.push_back(15);
-	statWidths.push_back(12);
-	statWidths.push_back(20);
-	statWidths.push_back(10);
-	statWidths.push_back(13);
-	statWidths.push_back(20);
-
-	CTableWidget *stats = new CTableWidget();
-	stats->setName("Stats");
-	stats->setCustomID(1);
-	stats->setBackgroundColor(Black);
-	stats->setForegroundColor(White);
-	stats->setColumnHeaders(statHeaders);
-	stats->setColumnWidths(statWidths);
-
-	vector<string> dotaHeaders;
-	dotaHeaders.push_back("Name");
-	dotaHeaders.push_back("Wins/Losses");
-	dotaHeaders.push_back("K/D/A");
-	dotaHeaders.push_back("AVG K/D/A");
-	dotaHeaders.push_back("CS K/D/N");
-	dotaHeaders.push_back("AVG CS K/D/N");
-	dotaHeaders.push_back("T/R/C");
-
-	vector<uint> dotaWidths;
-	dotaWidths.push_back(15);
-	dotaWidths.push_back(12);
-	dotaWidths.push_back(8);
-	dotaWidths.push_back(12);
-	dotaWidths.push_back(15);
-	dotaWidths.push_back(15);
-	dotaWidths.push_back(10);
-
-	CTableWidget *dota = new CTableWidget();
-	dota->setName("DotA/DB");
-	dota->setCustomID(2);
-	dota->setBackgroundColor(Black);
-	dota->setForegroundColor(White);
-	dota->setColumnHeaders(dotaHeaders);
-	dota->setColumnWidths(dotaWidths);
+	CTableWidget *dotadb = new CTableWidget("DotA/DB", 2, White, Black);
+	dotadb->setColumnHeaders(headers);
+	_dotadb.push_back(PairedWidget(id, dotadb));
 
 	/*
-	vector<string> dotaCurrentHeaders;
-	dotaCurrentHeaders.push_back("Name");
-	dotaCurrentHeaders.push_back("Hero");
-	dotaCurrentHeaders.push_back("Kills");
-	dotaCurrentHeaders.push_back("Deaths");
-	dotaCurrentHeaders.push_back("Assists");
-	dotaCurrentHeaders.push_back("CS K/D/N");
-	dotaCurrentHeaders.push_back("T/R/C");
+	headers.clear();
+	headers.push_back(PairedColumnHeader("Name", 15));
+	headers.push_back(PairedColumnHeader("Hero", 15));
+	headers.push_back(PairedColumnHeader("Kills", 10));
+	headers.push_back(PairedColumnHeader("Deaths", 10));
+	headers.push_back(PairedColumnHeader("Assists", 10));
+	headers.push_back(PairedColumnHeader("CS K/D/N", 10));
+	headers.push_back(PairedColumnHeader("T/R/C", 10));
 
-	vector<uint> dotaCurrentWidths;
-	dotaCurrentWidths.push_back(15);
-	dotaCurrentWidths.push_back(15);
-	dotaCurrentWidths.push_back(10);
-	dotaCurrentWidths.push_back(10);
-	dotaCurrentWidths.push_back(10);
-	dotaCurrentWidths.push_back(10);
-	dotaCurrentWidths.push_back(10);
-	dotaCurrentWidths.push_back(10);
+	CTableWidget *dotart = new CTableWidget("DotA/RT", 3, White, Black);
+	dotart->setColumnHeaders(headers);
+	_dotart.push_back(PairedWidget(id, dotart));
+	*/
 
-	CTableWidget *dotaCurrent = new CTableWidget();
-	dotaCurrent->setName("DotA/RT");
-	dotaCurrent->setCustomID(3);
-	dotaCurrent->setBackgroundColor(Black);
-	dotaCurrent->setForegroundColor(White);
-	dotaCurrent->setColumnHeaders(dotaCurrentHeaders);
-	dotaCurrent->setColumnWidths(dotaCurrentWidths);*/
-
-	CTabWidget *tabs = new CTabWidget();
-	tabs->setBackgroundColor(Cyan);
-	tabs->setForegroundColor(White);
-	tabs->addTab(slots);
+	CTabWidget *tabs = new CTabWidget("", id, White, Cyan);
+	tabs->addTab(players);
 	tabs->addTab(stats);
-	tabs->addTab(dota);
-	//tabs->addTab(dotaCurrent);
+	tabs->addTab(dotadb);
+	//tabs->addTab(dotart);
 
-	CTextEdit *edit = new CTextEdit(game);
-	edit->setCustomID(1);
-	edit->setBackgroundColor(Cyan);
+	CTextEdit *edit = new CTextEdit("", 1, White, Cyan);
 	edit->setFixedSize(0, 2);
 	edit->setForwardTypeOnEnter(FWD_OUT_GAME);
 
@@ -407,77 +334,83 @@ CWidget* CUI::addGame(const string &name, int id)
 	layout0->addWidget(sub1);
 	layout0->addWidget(edit);
 
-	CLayout *layout1 = new CHBoxLayout(sub1);
+	CLayout *layout1 = new CVBoxLayout(sub1);
+	layout1->addWidget(tabs);
 	layout1->addWidget(sub2);
-	layout1->addWidget(sub3);
-	
-	CLayout *layout2 = new CVBoxLayout(sub2);
-	layout2->addWidget(tabs);
+
+	CLayout *layout2 = new CHBoxLayout(sub2);
 	layout2->addWidget(chat);
+	layout2->addWidget(info);
 
-	CLayout *layout3 = new CVBoxLayout(sub3);
-	layout3->addWidget(map);
+	_games->addTab(game);
 
-	return game;
+	_tabwidgets.push_back(tabs);
 }
 
 void CUI::updateGame(const string &name, int id)
 {
-	CWidget *widget = games->at(games->indexOf(id));
+	CWidget *widget = _games->at(_games->indexOf(id));
 
 	widget->setName(name);
 }
 
 void CUI::removeGame(int id)
 {
-	games->removeTab(games->at(games->indexOf(id)));
-}
-
-// Get widget from IDs. Example: "0,0,1,0,0".
-CWidget* CUI::getWidget(const string &IDs)
-{
-	CWidget *result = 0;
-	if(mainWidget)
+	for(vector<CTabWidget *>::const_iterator i = _tabwidgets.begin(); i != _tabwidgets.end(); i++)
 	{
-		vector<int> _IDs;
-		CLayout *layout = 0;
-
-		for(uint i = 0; i < IDs.size(); i++)
+		if((*i)->customID() == id)
 		{
-			int j = atoi(IDs.substr(i, IDs.find_first_of(",", i) - i).c_str());
-			_IDs.push_back(j);
-
-			if(IDs.find_first_of(",", i) != -1)
-				i = IDs.find_first_of(",", i);
-		}
-
-		if(!_IDs.empty() && mainWidget->indexOf(_IDs[0]) != -1)
-		{
-			layout = mainWidget->at(mainWidget->indexOf(_IDs[0]))->layout();
-
-			if(layout)
-			{
-				for(uint i = 1; i < _IDs.size() - 1; i++)
-				{
-					if(layout)
-					{
-						if(layout->indexOf(_IDs[i]) != -1)
-						{
-							if(layout->at(layout->indexOf(_IDs[i]))->layout())
-								layout = layout->at(layout->indexOf(_IDs[i]))->layout();
-						}
-						else
-							return 0;
-					}
-				}
-
-				if(layout)
-					result = layout->at(layout->indexOf(_IDs[_IDs.size() - 1]));
-			}
+			_tabwidgets.erase(i);
+			break;
 		}
 	}
 
-	return result;
+	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			_players.erase(i);
+			break;
+		}
+	}
+
+	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			_stats.erase(i);
+			break;
+		}
+	}
+
+	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			_dotadb.erase(i);
+			break;
+		}
+	}
+
+	for(vector<PairedWidget>::const_iterator i = _gamechat.begin(); i != _gamechat.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			_gamechat.erase(i);
+			break;
+		}
+	}
+
+	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			_gameinfo.erase(i);
+			break;
+		}
+	}
+
+	_games->removeTab(_games->at(_games->indexOf(id)));
 }
 
 void CUI::printToGeneral(const string &message, int flag, int id)
@@ -494,12 +427,14 @@ void CUI::printToGeneral(const string &message, int flag, int id)
 	case 6: color = Red;     break; // ERROR
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *log1 = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	log1 = (CListWidget *)tabs->at(0);
-
-	log1->addItem(message, color);
+	for(vector<PairedWidget>::const_iterator i = _allLog.begin(); i != _allLog.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->addItem(message, color);
+			return;
+		}
+	}
 }
 
 void CUI::printToServer(const string &message, int flag, int id)
@@ -516,12 +451,14 @@ void CUI::printToServer(const string &message, int flag, int id)
 	case 6: color = Red;     break; // ERROR
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *log2 = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	log2 = (CListWidget *)tabs->at(1);
-
-	log2->addItem(message, color);
+	for(vector<PairedWidget>::const_iterator i = _serverLog.begin(); i != _serverLog.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->addItem(message, color);
+			return;
+		}
+	}
 }
 
 void CUI::printToRaw(const string &message)
@@ -539,8 +476,7 @@ void CUI::printToRaw(const string &message)
 	case 6: color = Red;     break; // ERROR
 	}
 	
-	CListWidget *log0 = (CListWidget *)mainWidget->at(mainWidget->indexOf(-3));
-	log0->addItem(message, color);
+	static_cast<CListWidget *>(_mainWidget->at(_mainWidget->indexOf(-3)))->addItem(message, color);
 }
 
 void CUI::printToGame(const string &message, int flag, int id)
@@ -551,10 +487,15 @@ void CUI::printToGame(const string &message, int flag, int id)
 	{
 	case 1: color = Cyan;    break; //
 	}
-	
-	CListWidget *widget = static_cast<CListWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(1));
 
-	widget->addItem(message, color);
+	for(vector<PairedWidget>::const_iterator i = _gamechat.begin(); i != _gamechat.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->addItem(message, color);
+			return;
+		}
+	}
 }
 
 int CUI::rawFlag(const string &message)
@@ -574,12 +515,14 @@ int CUI::rawFlag(const string &message)
 
 void CUI::setChannelName(const string &name, int id)
 {
-	CTabWidget *tabs = 0;
-	CLabel *channelName = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	channelName = (CLabel *)tabs->at(0)->layout()->at(0);
-
-	channelName->setText(name);
+	for(vector<PairedWidget>::const_iterator i = _channelName.begin(); i != _channelName.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CLabel *>((*i).second)->setText(name);
+			return;
+		}
+	}
 }
 
 void CUI::updateChannelUser(const string &name, int flag, int id)
@@ -595,35 +538,44 @@ void CUI::updateChannelUser(const string &name, int flag, int id)
 	case 32: color = Red;	break;	// SQUELCHED
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *channelList = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	channelList = (CListWidget *)tabs->at(0)->layout()->at(1);
+	for(vector<PairedWidget>::const_iterator i = _channel.begin(); i != _channel.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			CListWidget *channelList = static_cast<CListWidget *>((*i).second);
 
-	if(channelList->indexOf(name) == -1)
-		channelList->addItem(name, color);
-	else
-		channelList->updateItem(name, color);
+			if(channelList->indexOf(name) == -1)
+				channelList->addItem(name, color);
+			else
+				channelList->updateItem(name, color);
+
+			return;
+		}
+	}
 }
 
 void CUI::removeChannelUser(const string &name, int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *channelList = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	channelList = (CListWidget *)tabs->at(0)->layout()->at(1);
-
-	channelList->removeItem(name);
+	for(vector<PairedWidget>::const_iterator i = _channel.begin(); i != _channel.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItem(name);
+			return;
+		}
+	}
 }
 
 void CUI::removeChannelUsers(int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *channelList = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	channelList = (CListWidget *)tabs->at(0)->layout()->at(1);
-
-	channelList->removeItems();
+	for(vector<PairedWidget>::const_iterator i = _channel.begin(); i != _channel.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItems();
+			return;
+		}
+	}
 }
 
 void CUI::addFriend(const string &name, int flag, int id)
@@ -640,23 +592,32 @@ void CUI::addFriend(const string &name, int flag, int id)
 	case 5: color = Magenta; break;	// IN PRIVATE GAME; MUTUAL
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *friends = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	friends = (CListWidget *)tabs->at(1)->layout()->at(1);
+	for(vector<PairedWidget>::const_iterator i = _friends.begin(); i != _friends.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			CListWidget *friends = static_cast<CListWidget *>((*i).second);
 
-	if(friends->indexOf(name) == -1)
-		friends->addItem(name, color);
+			if(friends->indexOf(name) == -1)
+				friends->addItem(name, color);
+			else
+				friends->updateItem(name, color);
+
+			return;
+		}
+	}
 }
 
 void CUI::removeFriends(int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *friends = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	friends = (CListWidget *)tabs->at(1)->layout()->at(1);
-
-	friends->removeItems();
+	for(vector<PairedWidget>::const_iterator i = _friends.begin(); i != _friends.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItems();
+			return;
+		}
+	}
 }
 
 void CUI::addClanMember(const string &name, int flag, int id)
@@ -672,52 +633,67 @@ void CUI::addClanMember(const string &name, int flag, int id)
 	case 4: color = Magenta; break;	// LEADER
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *clan = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	clan = (CListWidget *)tabs->at(2)->layout()->at(1);
+	for(vector<PairedWidget>::const_iterator i = _clan.begin(); i != _clan.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			CListWidget *clan = static_cast<CListWidget *>((*i).second);
 
-	if(clan->indexOf(name) == -1)
-		clan->addItem(name, color);
+			if(clan->indexOf(name) == -1)
+				clan->addItem(name, color);
+			else
+				clan->updateItem(name, color);
+
+			return;
+		}
+	}
 }
 void CUI::removeClan(int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *clan = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,1");
-	clan = (CListWidget *)tabs->at(2)->layout()->at(1);
-
-	clan->removeItems();
+	for(vector<PairedWidget>::const_iterator i = _clan.begin(); i != _clan.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItems();
+			return;
+		}
+	}
 }
 
 void CUI::addBan(const vector<string> &row, int id)
 {
-	CTabWidget *tabs = 0;
-	CTableWidget *bans = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	bans = (CTableWidget *)tabs->at(3);
-
-	bans->addRow(row);
+	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->addRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::removeBan(const string &name, int id)
 {
-	CTabWidget *tabs = 0;
-	CTableWidget *bans = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	bans = (CTableWidget *)tabs->at(3);
-
-	bans->removeRow(name);
+	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->removeRow(name);
+			return;
+		}
+	}
 }
 
 void CUI::removeBans(int id)
 {
-	CTabWidget *tabs = 0;
-	CTableWidget *bans = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	bans = (CTableWidget *)tabs->at(3);
-
-	bans->removeRows();
+	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->removeRows();
+			return;
+		}
+	}
 }
 
 void CUI::addAdmin(const string &name, int flag, int id)
@@ -730,109 +706,146 @@ void CUI::addAdmin(const string &name, int flag, int id)
 	case 1: color = Yellow;    break; // ROOT
 	}
 
-	CTabWidget *tabs = 0;
-	CListWidget *admins = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	admins = (CListWidget *)tabs->at(2);
-
-	admins->addItem(name, color);
+	for(vector<PairedWidget>::const_iterator i = _admins.begin(); i != _admins.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->addItem(name, color);
+			return;
+		}
+	}
 }
 
 void CUI::removeAdmin(const string &name, int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *admins = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	admins = (CListWidget *)tabs->at(2);
-
-	admins->removeItem(name);
+	for(vector<PairedWidget>::const_iterator i = _admins.begin(); i != _admins.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItem(name, White);
+			return;
+		}
+	}
 }
 
 void CUI::removeAdmins(int id)
 {
-	CTabWidget *tabs = 0;
-	CListWidget *admins = 0;
-	tabs = (CTabWidget *)getWidget(toString(id) + ",0,0");
-	admins = (CListWidget *)tabs->at(2);
-
-	admins->removeItems();
+	for(vector<PairedWidget>::const_iterator i = _admins.begin(); i != _admins.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CListWidget *>((*i).second)->removeItems();
+			return;
+		}
+	}
 }
 
 void CUI::addPlayer(const vector<string> &row, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *slots = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(0)));
-
-	slots->addRow(row);
+	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->addRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::updatePlayer(const vector<string> &row, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *slots = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(0)));
-
-	slots->updateRow(row);
+	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->updateRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::removePlayer(const string &name, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *slots = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(0)));
-
-	slots->removeRow(name);
+	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->removeRow(name);
+			return;
+		}
+	}
 }
 
 void CUI::addStats(const vector<string> &row, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *stats = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(1)));
-
-	stats->addRow(row);
+	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->addRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::removeStats(const string &name, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *stats = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(1)));
-
-	stats->removeRow(name);
+	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->removeRow(name);
+			return;
+		}
+	}
 }
 
 void CUI::addDotaDB(const vector<string> &row, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *stats = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(2)));
-
-	stats->addRow(row);
+	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->addRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::removeDotaDB(const string &name, int id)
 {
-	CTabWidget *tabs = static_cast<CTabWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(0)->layout()->at(0));
-
-	CTableWidget *stats = static_cast<CTableWidget *>(tabs->at(tabs->indexOf(2)));
-
-	stats->removeRow(name);
+	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->removeRow(name);
+			return;
+		}
+	}
 }
 
 void CUI::addGameInfo(const vector<string> &row, int id)
 {
-	CTableWidget *info = static_cast<CTableWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(1)->layout()->at(0));
-
-	info->addRow(row);
+	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->addRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::updateGameInfo(const vector<string> &row, int id)
 {
-	CTableWidget *info = static_cast<CTableWidget *>(games->at(games->indexOf(id))->layout()->at(0)->layout()->at(1)->layout()->at(0));
-
-	info->updateRow(row);
+	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
+	{
+		if((*i).first == id)
+		{
+			static_cast<CTableWidget *>((*i).second)->updateRow(row);
+			return;
+		}
+	}
 }
 
 void CUI::forward(CFwdData *data)
@@ -840,9 +853,9 @@ void CUI::forward(CFwdData *data)
 	switch(data->_type)
 	{
 	case FWD_GENERAL:
-		for(uint i = 0; i < mainWidget->count(); i++)
+		for(uint i = 0; i < _mainWidget->count(); i++)
 		{
-			int cID = mainWidget->at(i)->customID();
+			int cID = _mainWidget->at(i)->customID();
 			if(cID >= 0 && cID < 50) // only servers
 				printToGeneral(data->_text, data->_flag, cID);
 		}
@@ -855,7 +868,7 @@ void CUI::forward(CFwdData *data)
 		printToRaw(data->_text);
 		break;
 	case FWD_SERVER_ADD:
-		mainWidget->addTab(addServer(data->_text, data->_id));
+		addServer(data->_text, data->_id);
 		split();
 		break;
 	case FWD_CHANNEL_CHANGE:
@@ -905,8 +918,8 @@ void CUI::forward(CFwdData *data)
 		_replyTargets[data->_id] = data->_text;
 		break;
 	case FWD_GAME_ADD:
-		games->addTab(addGame(data->_text, data->_id));
-		mainWidget->update(31); // Refresh tab
+		addGame(data->_text, data->_id);
+		_mainWidget->update(31); // Refresh
 		break;
 	case FWD_GAME_UPDATE:
 		updateGame(data->_text, data->_id);
@@ -951,32 +964,20 @@ void CUI::forward(CFwdData *data)
 
 uint CUI::currentServerID()
 {
-	if(mainWidget->at(mainWidget->currentIndex())->customID() == -1)
+	if(_mainWidget->at(_mainWidget->currentIndex())->customID() == -1)
 		return _splitSID;
 	else
-		return mainWidget->currentIndex() >= 0 ? mainWidget->at(mainWidget->currentIndex())->customID() : 0;
+		return _mainWidget->currentIndex() >= 0 ? _mainWidget->at(_mainWidget->currentIndex())->customID() : 0;
 }
 
 uint CUI::currentGameID()
 {
-	return games->currentIndex() >= 0 ? games->at(games->currentIndex())->customID() : 0;
-}
-
-void CUI::setSplitServerID(int id)
-{
-	_splitSID = id;
-}
-
-void CUI::setSplit(bool enabled)
-{
-	_splitOn = enabled;
-
-	split();
+	return _games->currentIndex() >= 0 ? _games->at(_games->currentIndex())->customID() : 0;
 }
 
 void CUI::split()
 {
-	CLayout *splitLayout = mainWidget->at(mainWidget->indexOf(-1))->layout();
+	CLayout *splitLayout = _mainWidget->at(_mainWidget->indexOf(-1))->layout();
 
 	if(splitLayout->count() == 2)
 		splitLayout->removeWidget(splitLayout->at(1));
@@ -984,10 +985,8 @@ void CUI::split()
 	if(splitLayout->count() == 1)
 		splitLayout->removeWidget(splitLayout->at(0));
 	
-	if(_splitOn && mainWidget->indexOf(_splitSID) != -1)
-	{
-		splitLayout->addWidget(mainWidget->at(mainWidget->indexOf(_splitSID)));
-	}
+	if(_splitOn && _mainWidget->indexOf(_splitSID) != -1)
+		splitLayout->addWidget(_mainWidget->at(_mainWidget->indexOf(_splitSID)));
 
-	splitLayout->addWidget(games);
+	splitLayout->addWidget(_games);
 }

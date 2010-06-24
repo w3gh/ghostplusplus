@@ -3,6 +3,8 @@
 
 #include "widget.h"
 
+typedef pair<string, uint> PairedColumnHeader;
+
 // Table item
 class CTableWidgetItem
 {
@@ -98,13 +100,12 @@ class CTableWidget : public CWidget
 public:
 	CTableWidget(CWidget *parent = 0);
 
+	CTableWidget(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
+
 	~CTableWidget();
 
 	// Set headers for columns
-	void setColumnHeaders(const vector<string> &row);
-
-	// Set column widths
-	void setColumnWidths(const vector<uint> &widths);
+	void setColumnHeaders(const vector<PairedColumnHeader> &headers);
 
 	// Add row
 	void addRow(const vector<string> &row);
@@ -143,9 +144,8 @@ private:
 
 	uint _scroll;
 
-	CTableWidgetRow *_headers;
 	vector<CTableWidgetRow *> _rows;
-	vector<uint> _columnWidths;
+	vector<PairedColumnHeader> _headers;
 
 	bool _doSort;
 	int _sortColumn;

@@ -13,6 +13,32 @@ static uint widgetID = 0;
 
 CWidget::CWidget(CWidget *parent, bool dummy)
 {
+	initialize(parent, dummy);
+}
+
+CWidget::CWidget(const string &name, int id)
+{
+	initialize();
+
+	setName(name);
+	setCustomID(id);
+}
+
+CWidget::~CWidget()
+{
+	SafeDelete(_fwdDataSelect);
+
+	del_panel(_panel);
+	delwin(_window);
+
+	_window = 0;
+	_panel = 0;
+
+	SafeDelete(_layout);
+}
+
+void CWidget::initialize(CWidget *parent, bool dummy)
+{
 	setParent(parent);
 
 	// If we haven't initialized curses yet, don't create a new curses window and panel
@@ -47,19 +73,6 @@ CWidget::CWidget(CWidget *parent, bool dummy)
 	delete buf;
 
 	hide();
-}
-
-CWidget::~CWidget()
-{
-	SafeDelete(_fwdDataSelect);
-
-	del_panel(_panel);
-	delwin(_window);
-
-	_window = 0;
-	_panel = 0;
-
-	SafeDelete(_layout);
 }
 
 void CWidget::setName(const string &name)
@@ -212,6 +225,11 @@ bool CWidget::focused()
 	return false;
 }
 
+bool CWidget::visible()
+{
+	return _visible;
+}
+
 void CWidget::setBackgroundColor(Color color)
 {
 	_bgcolor = color;
@@ -279,6 +297,16 @@ CLabel::CLabel(CWidget *parent)
 	_centered = true;
 }
 
+CLabel::CLabel(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CWidget(name, id)
+{
+	_centered = true;
+
+	setForegroundColor(fgcolor);
+	setBackgroundColor(bgcolor);
+	setBold(bold);
+}
+
 CLabel::~CLabel()
 {
 }
@@ -290,15 +318,6 @@ void CLabel::update(int c)
 		move_panel(_panel, _pos.y(), _pos.x());
 		top_panel(_panel);
 		wclear(_window);
-
-		/*
-		if(focused())
-		{
-			//wattr_on(_window, A_BOLD, 0);
-			//box(_window, 0, 0);
-			//wattr_off(_window, A_BOLD, 0);
-		}
-		*/
 
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 
@@ -338,6 +357,14 @@ bool CLabel::centered()
 
 CTextEdit::CTextEdit(CWidget *parent)
 	: CLabel(parent)
+{
+	_requireFocused = false;
+	_selectedHistory = 0;
+	_fwdTypeEnter = (FwdType)0;
+}
+
+CTextEdit::CTextEdit(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CLabel(name, id, fgcolor, bgcolor, bold)
 {
 	_requireFocused = false;
 	_selectedHistory = 0;
@@ -464,9 +491,26 @@ CTabWidget::CTabWidget(CWidget *parent)
 	: CWidget(parent)
 {
 	_currentIndex = -1;
+	_bottom = false;
+	_listenKeys = false;
 
 	CLayout *layout = new CVBoxLayout();
 	setLayout(layout);
+}
+
+CTabWidget::CTabWidget(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CWidget(name, id)
+{
+	_currentIndex = -1;
+	_bottom = false;
+	_listenKeys = false;
+
+	CLayout *layout = new CVBoxLayout();
+	setLayout(layout);
+
+	setForegroundColor(fgcolor);
+	setBackgroundColor(bgcolor);
+	setBold(bold);
 }
 
 CTabWidget::~CTabWidget()
@@ -582,6 +626,24 @@ void CTabWidget::update(int c)
 		//top_panel(_panel);
 		wclear(_window);
 
+		if(_listenKeys)
+		{
+			if(c == KEY_LEFT)
+			{
+				if(currentIndex() - 1 >= 0)
+					setCurrentIndex(currentIndex() - 1);
+				else
+					setCurrentIndex(count() - 1);
+			}
+			else if(c == KEY_RIGHT)
+			{
+				if(currentIndex() + 1 < int(count()))
+					setCurrentIndex(currentIndex() + 1);
+				else
+					setCurrentIndex(0);
+			}
+		}
+
 		uint tw = _size.width() - _leftMargin - _rightMargin;
 
 		// Is left mouse button pressed?
@@ -594,7 +656,7 @@ void CTabWidget::update(int c)
 			{
 				if(_mousePos.x() >= _pos.x() + _leftMargin + k &&
 				   _mousePos.x() < _pos.x() + _leftMargin + k + _widgets[i]->name().size() &&
-				   _mousePos.y() == _pos.y())
+				   _mousePos.y() == (_bottom ? _pos.y() + _size.height() - 1 : _pos.y()))
 				{
 					// select tab
 					setCurrentIndex(i);
@@ -604,7 +666,7 @@ void CTabWidget::update(int c)
 			if(currentIndex() == i)
 				wattr_on(_window, A_BOLD, 0);
 
-			mvwaddstr(_window, 0, _leftMargin + k, _widgets[i]->name().c_str());
+			mvwaddstr(_window, _bottom ? _size.height() - 1 : 0, _leftMargin + k, _widgets[i]->name().c_str());
 
 			if(_currentIndex == i)
 				wattr_off(_window, A_BOLD, 0);
@@ -617,11 +679,21 @@ void CTabWidget::update(int c)
 			if(_changed)
 			{
 				_layout->setSize(_size.width(), _size.height() - 1);
-				_layout->setPosition(_pos.x(), _pos.y() + 1);
+				_layout->setPosition(_pos.x(), _bottom ? _pos.y() : _pos.y() + 1);
 				_changed = false;
 			}
 
 			_layout->update(c);
 		}
 	}
+}
+
+void CTabWidget::setTabPosition(bool bottom)
+{
+	_bottom = bottom;
+}
+
+void CTabWidget::listenKeys(bool enabled)
+{
+	_listenKeys = enabled;
 }

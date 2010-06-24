@@ -116,3 +116,8 @@ void CWindow::updateMouse(int c)
 	request_mouse_pos();
 #endif
 }
+
+int CWindow::key()
+{
+	return _key;
+}
