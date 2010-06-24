@@ -97,6 +97,9 @@ public:
 
 	// Force _changed
 	void forceChange();
+	
+	// Listen keys (left arrow, right arrow)
+	void listenKeys(bool enabled);
 
 private:
 	void initialize(CWidget *parent = 0, bool dummy = false);
@@ -115,6 +118,7 @@ protected:
 
 	bool _changed;
 	bool _visible;
+	bool _listenKeys;
 
 	CWidget *_parent;
 	CLayout *_layout;
@@ -238,17 +242,12 @@ public:
 	// If bottom is true, tab is shown bottom instead of top.
 	void setTabPosition(bool bottom);
 
-	// Listen keys (left arrow, right arrow)
-	void listenKeys(bool enabled);
-
 protected:
 	vector<CWidget *> _widgets;
 
 	bool _bottom;
 
 	int _currentIndex;
-
-	bool _listenKeys;
 };
 
 // Button

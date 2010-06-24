@@ -237,6 +237,20 @@ void CListWidget::update(int c)
 #endif
 		}
 
+		if(_listenKeys)
+		{
+			if( c == KEY_NPAGE )	// PAGE DOWN
+			{
+				_scroll = _scroll < _items.size() ? _scroll + 4 : _scroll;
+				_changed = true;
+			}
+			else if( c == KEY_PPAGE )	// PAGE UP
+			{
+				_scroll = _scroll - 4 >= th ? _scroll - 4 : th - 1;
+				_changed = true;
+			}
+		}
+
 		if(_changed)
 		{
 			move_panel(_panel, _pos.y(), _pos.x());
