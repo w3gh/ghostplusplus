@@ -12,6 +12,7 @@ using namespace std;
 
 typedef unsigned int uint;
 
+#ifdef __PDCURSES__
 enum Color
 {
 	Null = 99,
@@ -24,6 +25,20 @@ enum Color
 	Yellow,
 	White
 };
+#else
+enum Color
+{
+	Null = 99,
+	Black = 0,
+	Red,
+	Green,
+	Yellow,
+	Bluew,
+	Magenta,
+	Cyan,
+	White
+};
+#endif
 
 // Get attribute from bgcolor and fgcolor
 attr_t attribute(Color bgcolor, Color fgcolor, bool bold = false);

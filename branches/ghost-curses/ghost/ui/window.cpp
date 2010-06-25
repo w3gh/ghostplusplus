@@ -27,12 +27,10 @@ CWindow::CWindow()
 	cbreak();
 	noecho();
 	
-#ifdef __PDCURSES__
-	// Mouse cursor
-	mouse_on(ALL_MOUSE_EVENTS);
+	// Mouse
+	mousemask(ALL_MOUSE_EVENTS, 0);
 	mouseinterval(30);
 	curs_set(0); // 0 = nothing, 1 = underline, 2 = block
-#endif
 }
 
 CWindow::~CWindow()
@@ -113,7 +111,7 @@ void CWindow::updateMouse(int c)
 {
 #ifdef __PDCURSES__
 	// Mouse position update
-	request_mouse_pos();
+	//request_mouse_pos();
 #endif
 }
 

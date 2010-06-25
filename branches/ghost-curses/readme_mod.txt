@@ -35,10 +35,8 @@ Usage
 
 ui_enabled = 1
 ui_width = 135
-
 ui_height = 43
 ui_splitsid = 1
-
 ui_spliton = 0
 
 (Note: These values cannot be changed using ghost dynamic configurator)
@@ -76,7 +74,23 @@ Compiling
 
 Check readme.txt.
 
-Note for Linux-users:
- You may compile this with ncurses. Mouse-support requires pdcurses.
- If you are using this over ssh, you might want to compile with ncurses instead of pdcurses.
+ghost/         <-- new cursesmod v2.0
+ghost-legacy/  <-- old cursesmod v1.12
 
+Notes for Linux-users:
+ 
+ You may compile this with ncurses. Ncurses version supports mouse (but not wheel).
+ 
+ If you plan to use this with ssh client, you might want to compile with ncurses instead of pdcurses.
+
+ If you want to compile with pdcurses, change
+
+
+ #include <panel.h> to #include <xpanel.h> in ui/common.h
+
+
+
+ and
+
+
+ -lpanel to -lXpanel and -lcurses to -lXCurses in Makefile
