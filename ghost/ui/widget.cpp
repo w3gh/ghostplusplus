@@ -211,8 +211,16 @@ bool CWidget::focused()
 {
 #ifdef __PDCURSES__
 	// Update mouse position. Everytime we use mouse wheel, positions go to -1 for some reason... this fixes it.
+	request_mouse_pos();
 	if(MOUSE_X_POS != -1 && MOUSE_Y_POS != -1)
 		_mousePos.set(MOUSE_X_POS, MOUSE_Y_POS);
+#else
+	MEVENT event;
+	if(getmouse(&event) == OK)
+	{
+		if(event.x != -1 && event.y != -1)
+			_mousePos.set(event.x, event.y);
+	}
 #endif
 
 	// Check if mouse cursor is inside the widget
@@ -659,6 +667,9 @@ void CTabWidget::update(int c)
 		bool leftClick = focused() && Mouse_status.button[0] == BUTTON_PRESSED;
 #else
 		bool leftClick = false;
+		MEVENT event;
+		if(getmouse(&event) == OK)
+			leftClick = focused() && (event.bstate & BUTTON1_PRESSED);
 #endif
 
 		int k = 0;

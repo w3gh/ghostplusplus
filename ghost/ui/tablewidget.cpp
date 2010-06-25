@@ -309,7 +309,7 @@ void CTableWidget::update(int c)
 #endif
 		}
 
-		if(_listenKeys)
+		if(_listenKeys || focused())
 		{
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
