@@ -83,14 +83,4 @@ Notes for Linux-users:
  
  If you plan to use this with ssh client, you might want to compile with ncurses instead of pdcurses.
 
- If you want to compile with pdcurses, change
-
-
- #include <panel.h> to #include <xpanel.h> in ui/common.h
-
-
-
- and
-
-
- -lpanel to -lXpanel and -lcurses to -lXCurses in Makefile
+ If you want to compile with pdcurses, write "make PDCURSES=1"

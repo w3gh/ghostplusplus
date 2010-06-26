@@ -1,7 +1,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <panel.h>
+#ifdef WIN32
+#	include <panel.h>
+#else
+#	ifdef __PDCURSES__
+#		include <xpanel.h>
+#	else
+#		include <panel.h>
+#	endif
+#endif
+
 #include <string>
 #include <vector>
 using namespace std;
@@ -33,7 +42,7 @@ enum Color
 	Red,
 	Green,
 	Yellow,
-	Bluew,
+	Blue,
 	Magenta,
 	Cyan,
 	White

@@ -523,7 +523,7 @@ int CUI::rawFlag(const string &message)
 		else if ( message.compare(1, 4, "BNET") == 0 )		return 4;
 		else if ( message.compare(1, 5, "GHOST") == 0 )		return 2;
 		else if ( message.compare(1, 5, "BNLSC") == 0 )		return 4;
-		else if ( message.compare(1, 5, "ERROR") == 0 )		return 3;
+		else if ( message.compare(1, 5, "ERROR") == 0 )		return 6;
 		else if ( message.compare(1, 5, "EMOTE") == 0 )		return 1;
 		else if ( message.compare(1, 7, "WHISPER") == 0 )	return 5;
 	}

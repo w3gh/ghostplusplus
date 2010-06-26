@@ -4,8 +4,16 @@ C++ = g++
 CC = gcc
 DFLAGS = -DGHOST_MYSQL
 OFLAGS = -O3
-LFLAGS = -L. -L../bncsutil/src/bncsutil/ -L../StormLib/stormlib/ -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt -lpanel -lcurses
+LFLAGS = -L. -L../bncsutil/src/bncsutil/ -L../StormLib/stormlib/ -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt
 CFLAGS =
+PDCURSES = 0
+
+ifeq ($(PDCURSES),1)
+LFLAGS += -lXpanel -lXCurses
+DFLAGS += -D__PDCURSES__
+else
+LFLAGS += -lpanel -lcurses
+endif
 
 ifeq ($(SYSTEM),Darwin)
 DFLAGS += -D__APPLE__
