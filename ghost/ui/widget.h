@@ -250,6 +250,21 @@ protected:
 	int _currentIndex;
 };
 
+// Seperator
+class CSeparatorWidget : public CLabel
+{
+public:
+	CSeparatorWidget(CWidget *parent = 0);
+
+	CSeparatorWidget(const string &name, int id, Color fgcolor = Null, Color bgcolor = Null, bool bold = false);
+
+	~CSeparatorWidget();
+
+	// Update widget
+	virtual void update(int c);
+
+};
+
 // Button
 class CButton : public CLabel
 {
