@@ -5,7 +5,7 @@
 #include "layout.h"
 #include "forward.h"
 
-CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
+CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
 {
 	_window = new CWindow();
 	_window->setTitle("GHost++ 17.1 CursesMod-2.0");
@@ -32,6 +32,7 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn)
 	_forceQuit = false;
 	_splitOn = splitOn;
 	_splitSID = splitSID;
+	_gameinfotab = gameinfotab;
 
 	split();
 
@@ -88,7 +89,7 @@ bool CUI::update()
 
 			if(next)
 			{
-				if((*i)->visible() || *i == _selectedTabWidget)
+				if(((*i)->visible() && (*i)->count() > 1) || *i == _selectedTabWidget)
 				{
 					_selectedTabWidget = *i;
 					break;
@@ -107,7 +108,7 @@ bool CUI::update()
 		{
 			if(next)
 			{
-				if((*i)->visible() || *i == _selectedTabWidget)
+				if(((*i)->visible() && (*i)->count() > 1) || *i == _selectedTabWidget)
 				{
 					_selectedTabWidget = *i;
 					break;
@@ -154,7 +155,7 @@ bool CUI::update()
 void CUI::addServer(const string &name, int id)
 {
 	CWidget *server = new CWidget(name, id);
-	CWidget *sub = new CWidget("", 0);
+	CWidget *sub = new CWidget;
 	CWidget *channel = new CWidget("Channel", 0);
 	CWidget *friends = new CWidget("Friends", 1);
 	CWidget *clan = new CWidget("Clan", 2);
@@ -267,8 +268,9 @@ void CUI::addServer(const string &name, int id)
 void CUI::addGame(const string &name, int id)
 {
 	CWidget *game = new CWidget(name, id);
-	CWidget *sub1 = new CWidget("", 0);
-	CWidget *sub2 = new CWidget("", 0);
+	CWidget *sub1 = new CWidget;
+	CWidget *sub2 = new CWidget;
+	CWidget *sub3 = new CWidget;
 	CListWidget *chat = new CListWidget("", 0, White, Black);
 	_gamechat.push_back(PairedWidget(id, chat));
 
@@ -276,7 +278,7 @@ void CUI::addGame(const string &name, int id)
 	headers.push_back(PairedColumnHeader("", 10));
 	headers.push_back(PairedColumnHeader("", 30));
 
-	CTableWidget *info = new CTableWidget("", 1, White, Black);
+	CTableWidget *info = new CTableWidget("Info", 1, White, Black);
 	info->setFixedSize(40, 0);
 	info->setColumnHeaders(headers);
 	_gameinfo.push_back(PairedWidget(id, info));
@@ -342,10 +344,14 @@ void CUI::addGame(const string &name, int id)
 	tabs->addTab(stats);
 	tabs->addTab(dotadb);
 	//tabs->addTab(dotart);
+	if(_gameinfotab) tabs->addTab(info);
 
 	CTextEdit *edit = new CTextEdit("", 1, White, Cyan);
 	edit->setFixedSize(0, 2);
 	edit->setForwardTypeOnEnter(FWD_OUT_GAME);
+
+	CSeparatorWidget *separator = new CSeparatorWidget;
+	separator->setFixedSize(0, 1);
 
 	CLayout *layout0 = new CVBoxLayout(game);
 	layout0->addWidget(sub1);
@@ -355,9 +361,15 @@ void CUI::addGame(const string &name, int id)
 	layout1->addWidget(tabs);
 	layout1->addWidget(sub2);
 
-	CLayout *layout2 = new CHBoxLayout(sub2);
-	layout2->addWidget(chat);
-	layout2->addWidget(info);
+	// Because of the bug in layout.cpp recursive resizing functions, we have to make another layout.
+	// Otherwise we would just have done layout1->addWidget(separator) between tabs and sub2 (now sub3).
+	CLayout *layout2 = new CVBoxLayout(sub2);
+	layout2->addWidget(separator);
+	layout2->addWidget(sub3);
+
+	CLayout *layout3 = new CHBoxLayout(sub3);
+	layout3->addWidget(chat);
+	if(!_gameinfotab) layout3->addWidget(info);
 
 	_games->addTab(game);
 

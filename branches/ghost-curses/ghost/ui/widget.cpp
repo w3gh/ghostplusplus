@@ -715,3 +715,36 @@ void CTabWidget::setTabPosition(bool bottom)
 {
 	_bottom = bottom;
 }
+
+CSeparatorWidget::CSeparatorWidget(CWidget *parent)
+	: CLabel(parent)
+{
+	setMargins(0, 0, 0, 0);
+}
+
+CSeparatorWidget::CSeparatorWidget(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
+	: CLabel(name, id, fgcolor, bgcolor, bold)
+{
+	setMargins(0, 0, 0, 0);
+}
+
+CSeparatorWidget::~CSeparatorWidget()
+{
+
+}
+
+void CSeparatorWidget::update(int c)
+{
+	if(_visible && _changed)
+	{
+		move_panel(_panel, _pos.y(), _pos.x());
+		top_panel(_panel);
+		wclear(_window);
+
+		uint tw = _size.width() - _leftMargin - _rightMargin;
+
+		mvwhline(_window, _topMargin, _leftMargin, 0, tw);
+
+		_changed = false;
+	}
+}

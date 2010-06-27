@@ -10,7 +10,7 @@ typedef pair<int, CWidget *> PairedWidget; // serverID, widget
 class CUI
 {
 public:
-	CUI(uint width, uint height, uint splitSID, bool splitOn);
+	CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab);
 	~CUI();
 	
 	void forward(CFwdData *data);										// Forward data to UI
@@ -89,6 +89,8 @@ private:
 
 	bool _splitOn;
 	uint _splitSID;
+
+	bool _gameinfotab;
 };
 
 #endif
