@@ -84,6 +84,7 @@ CListWidget::CListWidget(const string &name, int id, Color fgcolor, Color bgcolo
 {
 	scrollok(_window, true);
 	_scroll = 0;
+	_count = 0;
 	_autoScroll = true;
 
 	setForegroundColor(fgcolor);
@@ -101,7 +102,7 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 {
 	CListWidgetItem *item = new CListWidgetItem(this);
 
-	if(text[text.size() - 1] == '\3')
+	if(!text.empty() && text[text.size() - 1] == '\3')
 	{
 		item->setNocrlf(true);
 		item->setText(text.substr(0, text.size() - 1));
@@ -114,17 +115,26 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 	item->setBold(bold);
 	_items.push_back(item);
 
-	if(_autoScroll || _items.size() < _size.height())
+	if(!item->nocrlf() &&(_autoScroll || _items.size() < _size.height()))
 		_scroll++;
+
+	if(!item->nocrlf())
+		_count++;
 
 	_changed = true;
 
 	if(_items.size() > 512)
 	{
+		if((*_items.begin())->nocrlf())
+			_items.erase(_items.begin());
+
 		_items.erase(_items.begin());
 		
-		if(_autoScroll && _scroll > 512)
+		if(!item->nocrlf() && (_autoScroll && _scroll > 512))
 			_scroll--;
+
+		if(!item->nocrlf())
+		_count--;
 	}
 }
 
@@ -244,12 +254,12 @@ void CListWidget::update(int c)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
-					_scroll = _scroll < _items.size() ? _scroll + 4 : _scroll;
+					_scroll = _scroll < _count ? _scroll + 4 : _scroll;
 					_changed = true;
 				}
 				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
 				{
-					_scroll = _scroll - 4 >= th ? _scroll - 4 : th - 1;
+					_scroll = _scroll - 4 >= th - 1 ? _scroll - 4 : th;
 					_changed = true;
 				}
 			}
@@ -260,12 +270,12 @@ void CListWidget::update(int c)
 		{
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
-				_scroll = _scroll < _items.size() ? _scroll + 4 : _scroll;
+				_scroll = _scroll < _count ? _scroll + 4 : _scroll;
 				_changed = true;
 			}
 			else if( c == KEY_PPAGE )	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th ? _scroll - 4 : th - 1;
+				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
 				_changed = true;
 			}
 		}
@@ -278,6 +288,9 @@ void CListWidget::update(int c)
 
 			uint k = (_scroll > tw ? _scroll - tw : 0), n = 0;
 
+			bool previousNocrlf = false;
+			uint previousN = 0;
+
 			for(uint i = k; i < _items.size(); i++)
 			{
 				const string &message = _items[i]->text();
@@ -287,7 +300,7 @@ void CListWidget::update(int c)
 				attr_t a = attribute(_items[i]->backgroundColor(), _items[i]->foregroundColor(), _items[i]->bold());
 				wattr_on(_window, a, 0);
 
-				n = 0;
+				n = previousNocrlf ? previousN : 0;
 
 				for(uint j = 0; j < message.size(); j++)
 				{
@@ -301,15 +314,23 @@ void CListWidget::update(int c)
 						waddch(_window, ' ');
 						wattr_on(_window, a, 0);
 					}
+
+					if(j == message.size() - 1)
+						previousN = n;
 				}
 
 				wattr_off(_window, a, 0);
 
-				if(k++ >= _scroll)
+				if(!_items[i]->nocrlf())
+					k++;
+
+				if(k >= _scroll)
 					break;
 
 				if(i != _items.size() - 1 && !_items[i]->nocrlf())
 					waddch(_window, '\n');
+
+				previousNocrlf = _items[i]->nocrlf();
 			}
 
 			_changed = false;

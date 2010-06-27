@@ -94,6 +94,7 @@ public:
 protected:
 	vector<CListWidgetItem *> _items;
 
+	uint _count;
 	uint _scroll;
 	bool _autoScroll;
 
