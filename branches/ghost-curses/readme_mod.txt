@@ -80,7 +80,5 @@ ghost-legacy/  <-- old cursesmod v1.12
 Notes for Linux-users:
  
  You may compile this with ncurses. Ncurses version supports mouse (but not wheel).
- 
- If you plan to use this with ssh client, you might want to compile with ncurses instead of pdcurses.
 
- If you want to compile with pdcurses, write "make PDCURSES=1"
+ If you want to compile with pdcurses/X11, write "make XCURSES=1"

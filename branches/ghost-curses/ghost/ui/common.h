@@ -4,7 +4,7 @@
 #ifdef WIN32
 #	include <panel.h>
 #else
-#	ifdef __PDCURSES__
+#	ifdef USE_XCURSES
 #		include <xpanel.h>
 #	else
 #		include <panel.h>
