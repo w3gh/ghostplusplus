@@ -203,6 +203,7 @@ void CUI::addServer(const string &name, int id)
 	adminsLabel->setFixedSize(0, 3);
 
 	CTextEdit *edit = new CTextEdit("", 1, White, Cyan);
+	edit->setParent(server);
 	edit->setFixedSize(0, 2);
 	edit->setForwardTypeOnEnter(FWD_OUT_MESSAGE);
 	_edit.push_back(PairedWidget(id, edit));
@@ -347,6 +348,7 @@ void CUI::addGame(const string &name, int id)
 	if(_gameinfotab) tabs->addTab(info);
 
 	CTextEdit *edit = new CTextEdit("", 1, White, Cyan);
+	edit->setParent(game);
 	edit->setFixedSize(0, 2);
 	edit->setForwardTypeOnEnter(FWD_OUT_GAME);
 
