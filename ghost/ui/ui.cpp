@@ -514,7 +514,7 @@ void CUI::printToGame(const string &message, int flag, int id)
 
 	switch(flag)
 	{
-	case 1: color = Cyan;    break; //
+	case 1: color = Yellow;    break; //
 	}
 
 	for(vector<PairedWidget>::const_iterator i = _gamechat.begin(); i != _gamechat.end(); i++)

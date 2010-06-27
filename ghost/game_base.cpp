@@ -1274,7 +1274,8 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
 		return; // Don't show the message.
 	}
 
-	forward( new CFwdData( FWD_GAME_CHAT, "ADMIN: " + message, m_GameID ) );
+	forward( new CFwdData( FWD_GAME_CHAT, "ADMIN:\3", 1, m_GameID ) );
+	forward( new CFwdData( FWD_GAME_CHAT, message, 0, m_GameID ) );
 
 	// send a public message to all players - it'll be marked [All] in Warcraft 3
 
@@ -3114,7 +3115,8 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 				// this is a lobby message, print it to the console
 
 				CONSOLE_Print( "[GAME: " + m_GameName + "] [Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
-				forward( new CFwdData( FWD_GAME_CHAT, player->GetName( ) + ": " + chatPlayer->GetMessage( ), m_GameID ) );
+				forward( new CFwdData( FWD_GAME_CHAT, player->GetName( ) + ":\3", 1, m_GameID ) );
+				forward( new CFwdData( FWD_GAME_CHAT, chatPlayer->GetMessage( ), 0, m_GameID ) );
 
 				if( m_MuteLobby )
 					Relay = false;
