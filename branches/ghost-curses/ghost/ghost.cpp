@@ -91,7 +91,7 @@ void forward(CFwdData *data)
 		{
 			forward( new CFwdData(FWD_GENERAL, "  In the GHost++ console:", 0 ) );
 			forward( new CFwdData(FWD_GENERAL, "   !<command>               : GHost command. Replace '!' with defined trigger character", 0 ) );
-			forward( new CFwdData(FWD_GENERAL, "   /resize <width> <height> : Resizes console. This might crash. Please configure size in config file instead.", 0 ) );
+			forward( new CFwdData(FWD_GENERAL, "   /resize <width> <height> : Resizes console. This might crash. Please configure in config file instead.", 0 ) );
 			forward( new CFwdData(FWD_GENERAL, "   /exit or /quit           : Close GHost++", 0 ) );
 			forward( new CFwdData(FWD_GENERAL, "", 0 ) );
 			forward( new CFwdData(FWD_GENERAL, "  User interface usage:", 0 ) );

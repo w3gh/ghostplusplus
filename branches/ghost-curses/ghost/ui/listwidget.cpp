@@ -115,11 +115,11 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 	item->setBold(bold);
 	_items.push_back(item);
 
-	if(!item->nocrlf() &&(_autoScroll || _items.size() < _size.height()))
-		_scroll++;
-
 	if(!item->nocrlf())
 		_count++;
+
+	if(!item->nocrlf() &&(_autoScroll || _count <= _size.height()))
+		_scroll++;
 
 	_changed = true;
 
@@ -250,16 +250,17 @@ void CListWidget::update(int c)
 		{		
 #ifdef __PDCURSES__
 			// Mouse wheel scrolling
-			if(c == KEY_MOUSE && _scroll >= th - 1)
+			if(c == KEY_MOUSE)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
 					_scroll = _scroll < _count ? _scroll + 4 : _scroll;
+					if(_scroll > _count) _scroll = _count;
 					_changed = true;
 				}
 				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
 				{
-					_scroll = _scroll - 4 >= th - 1 ? _scroll - 4 : th;
+					_scroll = _scroll - 4 >= th + 4 ? _scroll - 4 : th;
 					_changed = true;
 				}
 			}
@@ -271,11 +272,12 @@ void CListWidget::update(int c)
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
 				_scroll = _scroll < _count ? _scroll + 4 : _scroll;
+				if(_scroll > _count) _scroll = _count;
 				_changed = true;
 			}
 			else if( c == KEY_PPAGE )	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
+				_scroll = _scroll - 4 >= th + 4 ? _scroll - 4 : th;
 				_changed = true;
 			}
 		}
@@ -286,7 +288,7 @@ void CListWidget::update(int c)
 			top_panel(_panel);
 			wclear(_window);
 
-			uint k = (_scroll > tw ? _scroll - tw : 0), n = 0;
+			uint k = (_scroll > th ? _scroll - th : 0), n = 0;
 
 			bool previousNocrlf = false;
 			uint previousN = 0;
