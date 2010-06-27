@@ -14,6 +14,7 @@ CListWidgetItem::CListWidgetItem(CWidget *parent)
 	_bgcolor = Null;
 	_fgcolor = Null;
 	_bold = false;
+	_nocrlf = false;
 }
 
 CListWidgetItem::~CListWidgetItem()
@@ -60,6 +61,16 @@ bool CListWidgetItem::bold()
 	return _bold;
 }
 
+void CListWidgetItem::setNocrlf(bool enabled)
+{
+	_nocrlf = enabled;
+}
+
+bool CListWidgetItem::nocrlf()
+{
+	return _nocrlf;
+}
+
 CListWidget::CListWidget(CWidget *parent)
 	: CWidget(parent)
 {
@@ -89,7 +100,15 @@ CListWidget::~CListWidget()
 void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool bold)
 {
 	CListWidgetItem *item = new CListWidgetItem(this);
-	item->setText(text);
+
+	if(text[text.size() - 1] == '\3')
+	{
+		item->setNocrlf(true);
+		item->setText(text.substr(0, text.size() - 1));
+	}
+	else
+		item->setText(text);
+	
 	item->setBackgroundColor(bgcolor == Null ? _bgcolor : bgcolor);
 	item->setForegroundColor(fgcolor == Null ? _fgcolor : fgcolor);
 	item->setBold(bold);
@@ -289,7 +308,7 @@ void CListWidget::update(int c)
 				if(k++ >= _scroll)
 					break;
 
-				if(i != _items.size() - 1)
+				if(i != _items.size() - 1 && !_items[i]->nocrlf())
 					waddch(_window, '\n');
 			}
 

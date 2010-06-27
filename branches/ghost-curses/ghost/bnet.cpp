@@ -1066,14 +1066,16 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 		m_ReplyTarget = User;
 
 		CONSOLE_Print( "[WHISPER: " + m_ServerAlias + "] [" + User + "] " + Message );
-		forward(new CFwdData(FWD_REALM, User + " whispers: " + Message, 5, m_HostCounterID));
+		forward(new CFwdData(FWD_REALM, User + " whispers:\3", 4, m_HostCounterID));
+		forward(new CFwdData(FWD_REALM, Message, 5, m_HostCounterID));
 		forward(new CFwdData(FWD_REPLYTARGET, User, m_HostCounterID));
 		m_GHost->EventBNETWhisper( this, User, Message );
 	}
 	else if( Event == CBNETProtocol :: EID_TALK )
 	{
 		CONSOLE_Print( "[LOCAL: " + m_ServerAlias + "] [" + User + "] " + Message );
-		forward(new CFwdData(FWD_REALM, User + ": " + Message, 0, m_HostCounterID));
+		forward(new CFwdData(FWD_REALM, User + ":\3", 4, m_HostCounterID));
+		forward(new CFwdData(FWD_REALM, Message, 0, m_HostCounterID));
 		m_GHost->EventBNETChat( this, User, Message );
 	}
 	else if( Event == CBNETProtocol :: EID_BROADCAST )
@@ -2525,7 +2527,8 @@ void CBNET :: QueueChatCommand( string chatCommand, bool hidden )
 			else if (!hidden)
 			{
 				CONSOLE_Print( "[QUEUED: " + m_ServerAlias + "] " + chatCommand );
-				forward(new CFwdData(FWD_REALM, m_UserName + ": " + chatCommand, 0, m_HostCounterID));
+				forward(new CFwdData(FWD_REALM, m_UserName + ":\3", 4, m_HostCounterID));
+				forward(new CFwdData(FWD_REALM, chatCommand, 0, m_HostCounterID));
 			}
 
 			m_OutPackets.push( m_Protocol->SEND_SID_CHATCOMMAND( chatCommand ) );

@@ -35,6 +35,12 @@ public:
 	// Get bold
 	bool bold();
 
+	// Set NOCRLF
+	void setNocrlf(bool enabled);
+
+	// Is NOCRLF enabled?
+	bool nocrlf();
+
 protected:
 	CWidget *_parent;
 
@@ -42,6 +48,7 @@ protected:
 	Color _bgcolor;
 	Color _fgcolor;
 	bool _bold;
+	bool _nocrlf;
 };
 
 // List
