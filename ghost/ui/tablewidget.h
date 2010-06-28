@@ -149,6 +149,8 @@ private:
 
 	bool _doSort;
 	int _sortColumn;
+
+	uint _count;
 };
 
 #endif

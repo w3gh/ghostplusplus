@@ -257,10 +257,13 @@ public:
 	CIncomingClanList( string nName, unsigned char nRank, unsigned char nStatus );
 	~CIncomingClanList( );
 
-	string GetName( )			{ return m_Name; }
+	string GetName( )				{ return m_Name; }
 	string GetRank( );
 	string GetStatus( );
 	string GetDescription( );
+
+	unsigned char GetRawRank( )		{ return m_Rank; }
+	unsigned char GetRawStatus( )	{ return m_Status; }
 };
 
 #endif

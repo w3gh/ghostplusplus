@@ -102,6 +102,8 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 {
 	CListWidgetItem *item = new CListWidgetItem(this);
 
+	uint th = _size.height();
+
 	if(!text.empty() && text[text.size() - 1] == '\3')
 	{
 		item->setNocrlf(true);
@@ -118,7 +120,7 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 	if(!item->nocrlf())
 		_count++;
 
-	if(!item->nocrlf() &&(_autoScroll || _count <= _size.height()))
+	if(!item->nocrlf() && (_autoScroll || _scroll < th))
 		_scroll++;
 
 	_changed = true;
@@ -134,7 +136,7 @@ void CListWidget::addItem(const string &text, Color fgcolor, Color bgcolor, bool
 			_scroll--;
 
 		if(!item->nocrlf())
-		_count--;
+			_count--;
 	}
 }
 
@@ -173,6 +175,9 @@ void CListWidget::removeItem(const string &text, Color fgcolor)
 	{
 		if((*i)->text() == text && (fgcolor == Null ? true : (*i)->foregroundColor() == fgcolor))
 		{
+			if(!(*i)->nocrlf())
+				_count--;
+
 			delete *i;
 			_items.erase(i);
 
@@ -192,6 +197,9 @@ void CListWidget::removeItem(uint i)
 	{
 		if(k == i)
 		{
+			if(!(*j)->nocrlf())
+				_count--;
+
 			delete *j;
 			_items.erase(j);
 
@@ -234,6 +242,7 @@ void CListWidget::removeItems()
 
 		_items.clear();
 
+		_count = 0;
 		_scroll = 0;
 		_changed = true;
 	}
@@ -250,7 +259,7 @@ void CListWidget::update(int c)
 		{		
 #ifdef __PDCURSES__
 			// Mouse wheel scrolling
-			if(c == KEY_MOUSE)
+			if(c == KEY_MOUSE && _count > th)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
@@ -260,14 +269,15 @@ void CListWidget::update(int c)
 				}
 				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
 				{
-					_scroll = _scroll - 4 >= th + 4 ? _scroll - 4 : th;
+					_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
+					if(_scroll < th) _scroll = th;
 					_changed = true;
 				}
 			}
 #endif
 		}
 
-		if(_listenKeys || focused())
+		if((_listenKeys || focused()) && _count > th)
 		{
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
@@ -277,7 +287,8 @@ void CListWidget::update(int c)
 			}
 			else if( c == KEY_PPAGE )	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th + 4 ? _scroll - 4 : th;
+				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
+				if(_scroll < th) _scroll = th;
 				_changed = true;
 			}
 		}
@@ -287,6 +298,9 @@ void CListWidget::update(int c)
 			move_panel(_panel, _pos.y(), _pos.x());
 			top_panel(_panel);
 			wclear(_window);
+
+			if(_count < th && _scroll < _count) _scroll = _count;
+			if(_scroll < th && _count > _scroll) _scroll = th;
 
 			uint k = (_scroll > th ? _scroll - th : 0), n = 0;
 

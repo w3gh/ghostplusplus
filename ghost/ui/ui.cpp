@@ -8,7 +8,7 @@
 CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
 {
 	_window = new CWindow();
-	_window->setTitle("GHost++ 17.1 CursesMod-2.0");
+	_window->setTitle("");
 
 	_mainWidget = new CTabWidget("", 0, White, Cyan);
 	_games = new CTabWidget("", -2, White, Cyan);
@@ -34,7 +34,9 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
 	_splitSID = splitSID;
 	_gameinfotab = gameinfotab;
 
+#ifndef NO_MOUSE
 	split();
+#endif
 
 	// Initialize replytargets
 	for(uint i = 0; i < 20; i++)
@@ -63,6 +65,11 @@ void CUI::resize(uint width, uint height)
 {
 	_resize = true;
 	_newSize.set(width, height);
+}
+
+void CUI::setWindowTitle(const string &text)
+{
+	_window->setTitle(text);
 }
 
 bool CUI::update()
