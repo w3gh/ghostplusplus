@@ -7,6 +7,11 @@ OFLAGS = -O3
 LFLAGS = -L. -L../bncsutil/src/bncsutil/ -L../StormLib/stormlib/ -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt
 CFLAGS =
 XCURSES = 0
+NOMOUSE = 0
+
+ifeq ($(NOMOUSE),1)
+DFLAGS += -DNO_MOUSE
+#endif
 
 ifeq ($(XCURSES),1)
 LFLAGS += -lXpanel -lXCurses
