@@ -11,7 +11,7 @@ NOMOUSE = 0
 
 ifeq ($(NOMOUSE),1)
 DFLAGS += -DNO_MOUSE
-#endif
+endif
 
 ifeq ($(XCURSES),1)
 LFLAGS += -lXpanel -lXCurses
