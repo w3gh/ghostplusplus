@@ -392,7 +392,12 @@ void CTextEdit::update(int c)
 {
 	if(_visible)
 	{
-		if((_requireFocused ? focused() : true) && (_parent ? _parent->focused() : true))
+		bool alwaysFocused = false;
+#ifdef NO_MOUSE
+		alwaysfocused = true; // If we have no mouse, we can't focus widgets so let's have it always focused.
+#endif
+
+		if((_requireFocused ? focused() : true) && (_parent ? _parent->focused() || alwaysFocused : true))
 		{
 			switch(c)
 			{

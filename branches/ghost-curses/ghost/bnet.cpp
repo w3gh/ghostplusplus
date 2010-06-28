@@ -1022,7 +1022,7 @@ void CBNET :: ProcessPackets( )
 				forward(new CFwdData(FWD_FRIENDS_CLEAR, "", m_HostCounterID));
 
 				for( vector<CIncomingFriendList *> :: iterator i = m_Friends.begin( ); i != m_Friends.end( ); i++ )
-					forward(new CFwdData(FWD_FRIENDS_ADD, (*i)->GetAccount( ), 0, m_HostCounterID));
+					forward( new CFwdData(FWD_FRIENDS_ADD, (*i)->GetAccount( ), (*i)->GetArea( ), m_HostCounterID) );
 				break;
 
 			case CBNETProtocol :: SID_CLANMEMBERLIST:
@@ -1036,7 +1036,7 @@ void CBNET :: ProcessPackets( )
 				forward(new CFwdData(FWD_CLAN_CLEAR, "", m_HostCounterID));
 
 				for( vector<CIncomingClanList *> :: iterator i = m_Clans.begin( ); i != m_Clans.end( ); i++ )
-					forward(new CFwdData(FWD_CLAN_ADD, (*i)->GetName( ), 0, m_HostCounterID));
+					forward( new CFwdData(FWD_CLAN_ADD, (*i)->GetName( ), (*i)->GetRawRank( ), m_HostCounterID) );
 				break;
 			}
 		}

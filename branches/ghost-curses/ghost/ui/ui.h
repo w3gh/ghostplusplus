@@ -19,6 +19,7 @@ public:
 	void forceQuit();													// Force quit
 	void resize(uint width, uint height);								// Resize UI
 	bool update();														// Update UI
+	void setWindowTitle(const string &text);							// Set window title
 
 private:
 	void addServer(const string &name, int id);							// Add server to UI

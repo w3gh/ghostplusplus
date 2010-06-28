@@ -81,4 +81,7 @@ Notes for Linux-users:
  
  You may compile this with ncurses. Ncurses version supports mouse (but not wheel).
 
- If you want to compile with pdcurses/X11, write "make XCURSES=1"
+ If you want to compile with pdcurses/X11, write "make XCURSES=1".
+
+ If you are using this with a SSH client or you don't have/use a mouse then compile with "make NOMOUSE=1".
+ This makes textedit-widgets always focused. Note that you can't use split view with this option.

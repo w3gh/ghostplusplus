@@ -144,6 +144,8 @@ CTableWidget::CTableWidget(CWidget *parent)
 	_autoScroll = true;
 
 	_sortColumn = -1;
+
+	_count = 0;
 }
 
 CTableWidget::CTableWidget(const string &name, int id, Color fgcolor, Color bgcolor, bool bold)
@@ -154,6 +156,8 @@ CTableWidget::CTableWidget(const string &name, int id, Color fgcolor, Color bgco
 	_autoScroll = true;
 
 	_sortColumn = -1;
+
+	_count = 0;
 
 	setForegroundColor(fgcolor);
 	setBackgroundColor(bgcolor);
@@ -184,7 +188,9 @@ void CTableWidget::addRow(const vector<string> &row)
 
 		_rows.push_back(nrow);
 
-		if(_autoScroll || _rows.size() < _size.height())
+		_count++;
+
+		if(_autoScroll || _scroll < _size.height())
 			_scroll++;
 
 		_doSort = true;
@@ -219,6 +225,8 @@ void CTableWidget::removeRow(const string &text)
 			delete *i;
 			_rows.erase(i);
 
+			_count--;
+
 			if(_autoScroll)
 				_scroll--;
 
@@ -237,6 +245,8 @@ void CTableWidget::removeRow(uint index)
 		{
 			delete *j;
 			_rows.erase(j);
+
+			_count--;
 
 			if(_autoScroll)
 				_scroll--;
@@ -277,6 +287,7 @@ void CTableWidget::removeRows()
 
 		_rows.clear();
 
+		_count = 0;
 		_scroll = 0;
 		_changed = true;
 	}
@@ -293,32 +304,36 @@ void CTableWidget::update(int c)
 		{		
 #ifdef __PDCURSES__
 			// Mouse wheel scrolling
-			if(c == KEY_MOUSE && _scroll >= th - 1)
+			if(c == KEY_MOUSE && _count > th)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
-					_scroll = _scroll < _rows.size() ? _scroll + 4 : _scroll;
+					_scroll = _scroll < _count ? _scroll + 4 : _scroll;
+					if(_scroll > _count) _scroll = _count;
 					_changed = true;
 				}
 				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
 				{
-					_scroll = _scroll - 4 >= th ? _scroll - 4 : th - 1;
+					_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
+					if(_scroll < th) _scroll = th;
 					_changed = true;
 				}
 			}
 #endif
 		}
 
-		if(_listenKeys || focused())
+		if((_listenKeys || focused()) && _count > th)
 		{
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
-				_scroll = _scroll < _rows.size() ? _scroll + 4 : _scroll;
+				_scroll = _scroll < _count ? _scroll + 4 : _scroll;
+				if(_scroll > _count) _scroll = _count;
 				_changed = true;
 			}
 			else if( c == KEY_PPAGE )	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th ? _scroll - 4 : th - 1;
+				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
+				if(_scroll < th) _scroll = th;
 				_changed = true;
 			}
 		}
@@ -331,7 +346,7 @@ void CTableWidget::update(int c)
 			
 			sort();
 
-			uint k = (_scroll > tw ? _scroll - tw : 0), n = 0, m = 0, cw = 0;
+			uint k = (_scroll > th ? _scroll - th : 0), n = 0, m = 0, cw = 0;
 			attr_t a = 0;
 			bool stopHere = false;
 
