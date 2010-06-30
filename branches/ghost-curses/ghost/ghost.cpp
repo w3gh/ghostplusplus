@@ -137,13 +137,18 @@ void forward(CFwdData *data)
 			{
 				if( (*i)->m_GameID == gUI->currentGameID( ) )
 				{
-					if( !data->_text.empty( ) && data->_text[0] == gGHost->m_CommandTrigger )
+					if( ( !data->_text.empty( ) && data->_text[0] == gGHost->m_CommandTrigger ) || !(*i)->GetGameLoaded( ) )
 						(*i)->SendAllChat( data->_text );
 					else
 						(*i)->SendAllChat( "ADMIN: " + data->_text );
 
 					break;
 				}
+			}
+
+			if( gGHost->m_AdminGame && gGHost->m_AdminGame->m_GameID == gUI->currentGameID( ) )
+			{
+				gGHost->m_AdminGame->SendAllChat(data->_text);
 			}
 
 			if( gGHost->m_CurrentGame && gGHost->m_CurrentGame->m_GameID == gUI->currentGameID( ) )

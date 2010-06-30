@@ -308,14 +308,12 @@ void CTableWidget::update(int c)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
-					_scroll = _scroll < _count ? _scroll + 4 : _scroll;
-					if(_scroll > _count) _scroll = _count;
+					_scroll += 4;
 					_changed = true;
 				}
-				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
+				else if(Mouse_status.changes == MOUSE_WHEEL_UP && _scroll >= 4)
 				{
-					_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
-					if(_scroll < th) _scroll = th;
+					_scroll -= 4;
 					_changed = true;
 				}
 			}
@@ -326,14 +324,12 @@ void CTableWidget::update(int c)
 		{
 			if( c == KEY_NPAGE )	// PAGE DOWN
 			{
-				_scroll = _scroll < _count ? _scroll + 4 : _scroll;
-				if(_scroll > _count) _scroll = _count;
+				_scroll += 4;
 				_changed = true;
 			}
-			else if( c == KEY_PPAGE )	// PAGE UP
+			else if(c == KEY_PPAGE && _scroll >= 4)	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
-				if(_scroll < th) _scroll = th;
+				_scroll -= 4;
 				_changed = true;
 			}
 		}
@@ -343,6 +339,9 @@ void CTableWidget::update(int c)
 			move_panel(_panel, _pos.y(), _pos.x());
 			//top_panel(_panel);
 			wclear(_window);
+
+			if((_count < th && _scroll < _count) || (_count > th && _scroll > _count)) _scroll = _count;
+			if(_count > th && _scroll < th) _scroll = th - 1;
 			
 			sort();
 
