@@ -263,14 +263,12 @@ void CListWidget::update(int c)
 			{
 				if(Mouse_status.changes == MOUSE_WHEEL_DOWN)
 				{
-					_scroll = _scroll < _count ? _scroll + 4 : _scroll;
-					if(_scroll > _count) _scroll = _count;
+					_scroll += 4;
 					_changed = true;
 				}
-				else if(Mouse_status.changes == MOUSE_WHEEL_UP)
+				else if(Mouse_status.changes == MOUSE_WHEEL_UP && _scroll >= 4)
 				{
-					_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
-					if(_scroll < th) _scroll = th;
+					_scroll -= 4;
 					_changed = true;
 				}
 			}
@@ -279,16 +277,14 @@ void CListWidget::update(int c)
 
 		if((_listenKeys || focused()) && _count > th)
 		{
-			if( c == KEY_NPAGE )	// PAGE DOWN
+			if(c == KEY_NPAGE)	// PAGE DOWN
 			{
-				_scroll = _scroll < _count ? _scroll + 4 : _scroll;
-				if(_scroll > _count) _scroll = _count;
+				_scroll += 4;
 				_changed = true;
 			}
-			else if( c == KEY_PPAGE )	// PAGE UP
+			else if(c == KEY_PPAGE && _scroll >= 4)	// PAGE UP
 			{
-				_scroll = _scroll - 4 >= th ? _scroll - 4 : th;
-				if(_scroll < th) _scroll = th;
+				_scroll -= 4;
 				_changed = true;
 			}
 		}
@@ -299,54 +295,51 @@ void CListWidget::update(int c)
 			top_panel(_panel);
 			wclear(_window);
 
-			if(_count < th && _scroll < _count) _scroll = _count;
-			if(_scroll < th && _count > _scroll) _scroll = th;
+			if((_count < th && _scroll < _count) || (_count > th && _scroll > _count)) _scroll = _count;
+			if(_count > th && _scroll < th) _scroll = th;
 
-			uint k = (_scroll > th ? _scroll - th : 0), n = 0;
+			uint b = 0, prevn = 0, n = 0;
 
-			bool previousNocrlf = false;
-			uint previousN = 0;
-
-			for(uint i = k; i < _items.size(); i++)
+			for(uint i = 0; i < _items.size() && i < _scroll + b; i++)
 			{
+				if(_items[i]->nocrlf()) b++;
+
+				n = 0;
+				
+				if(i > 0 && _items[i-1]->nocrlf())
+					n = prevn;
+
 				const string &message = _items[i]->text();
 
-				waddch(_window, ' ');
-				
+				for(uint j = 0; j < _leftMargin; j++)
+					waddch(_window, ' ');
+
 				attr_t a = attribute(_items[i]->backgroundColor(), _items[i]->foregroundColor(), _items[i]->bold());
 				wattr_on(_window, a, 0);
 
-				n = previousNocrlf ? previousN : 0;
+				n++;
 
-				for(uint j = 0; j < message.size(); j++)
+				for(uint j = 0; j < message.size(); j++, n++)
 				{
-					waddch(_window, toULong(message[j]));
-
-					if(n++ >= tw - 4)
+					if(n >= tw - _leftMargin - _rightMargin)
 					{
 						n = 0;
 						wattr_off(_window, a, 0);
 						waddch(_window, '\n');
-						waddch(_window, ' ');
+						for(uint j = 0; j < _leftMargin; j++)
+							waddch(_window, ' ');
 						wattr_on(_window, a, 0);
 					}
 
-					if(j == message.size() - 1)
-						previousN = n;
+					waddch(_window, toULong(message[j]));
 				}
 
 				wattr_off(_window, a, 0);
 
-				if(!_items[i]->nocrlf())
-					k++;
-
-				if(k >= _scroll)
-					break;
-
-				if(i != _items.size() - 1 && !_items[i]->nocrlf())
+				if(i < _scroll + b - 1 && i != _items.size() - 1 && !_items[i]->nocrlf())
 					waddch(_window, '\n');
 
-				previousNocrlf = _items[i]->nocrlf();
+				prevn = n;
 			}
 
 			_changed = false;
