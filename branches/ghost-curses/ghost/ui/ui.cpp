@@ -958,11 +958,14 @@ void CUI::forward(CFwdData *data)
 	switch(data->_type)
 	{
 	case FWD_GENERAL:
-		for(uint i = 0; i < _mainWidget->count(); i++)
+		if(_mainWidget)
 		{
-			int cID = _mainWidget->at(i)->customID();
-			if(cID >= 0 && cID < 50) // only servers
-				printToGeneral(data->_text, data->_flag, cID);
+			for(uint i = 0; i < _mainWidget->count(); i++)
+			{
+				int cID = _mainWidget->at(i)->customID();
+				if(cID >= 0 && cID < 50) // only servers
+					printToGeneral(data->_text, data->_flag, cID);
+			}
 		}
 		break;
 	case FWD_REALM:

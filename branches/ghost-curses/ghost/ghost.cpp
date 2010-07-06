@@ -399,33 +399,28 @@ int main( int argc, char **argv )
 	}
 
 	CONSOLE_Print( "[GHOST] starting up" );
-	forward( new CFwdData(FWD_GENERAL, "Starting up", 2, 0) );
 
 	if( !gLogFile.empty( ) )
 	{
 		if( gLogMethod == 1 )
 		{
 			CONSOLE_Print( "[GHOST] using log method 1, logging is enabled and [" + gLogFile + "] will not be locked" );
-			forward( new CFwdData(FWD_GENERAL, "Using log method 1, logging is enabled and [" + gLogFile + "] will not be locked", 2, 0) );
 		}
 		else if( gLogMethod == 2 )
 		{
 			if( gLog->fail( ) )
 			{
 				CONSOLE_Print( "[GHOST] using log method 2 but unable to open [" + gLogFile + "] for appending, logging is disabled" );
-				forward( new CFwdData(FWD_GENERAL, "Using log method 2 but unable to open [" + gLogFile + "] for appending, logging is disabled", 2, 0) );
 			}
 			else
 			{
 				CONSOLE_Print( "[GHOST] using log method 2, logging is enabled and [" + gLogFile + "] is now locked" );
-				forward( new CFwdData(FWD_GENERAL, "Using log method 2, logging is enabled and [" + gLogFile + "] is now locked", 2, 0) );
 			}
 		}
 	}
 	else
 	{
 		CONSOLE_Print( "[GHOST] no log file specified, logging is disabled" );
-		forward( new CFwdData(FWD_GENERAL, "No log file specified, logging is disabled", 2, 0) );
 	}
 
 	// catch SIGABRT and SIGINT
@@ -455,18 +450,15 @@ int main( int argc, char **argv )
 		else if( i < 5 )
 		{
 			CONSOLE_Print( "[GHOST] error setting Windows timer resolution to " + UTIL_ToString( i ) + " milliseconds, trying a higher resolution" );
-			forward( new CFwdData(FWD_GENERAL, "Error setting Windows timer resolution to " + UTIL_ToString( i ) + " milliseconds, trying a higher resolution", 6, 0) );
 		}
 		else
 		{
 			CONSOLE_Print( "[GHOST] error setting Windows timer resolution" );
-			forward( new CFwdData(FWD_GENERAL, "Error setting Windows timer resolution", 6, 0) );
 			return 1;
 		}
 	}
 
 	CONSOLE_Print( "[GHOST] using Windows timer with resolution " + UTIL_ToString( TimerResolution ) + " milliseconds" );
-	forward( new CFwdData(FWD_GENERAL, "Using Windows timer with resolution " + UTIL_ToString( TimerResolution ) + " milliseconds", 1, 0) );
 #elif __APPLE__
 	// not sure how to get the resolution
 #else
@@ -477,12 +469,10 @@ int main( int argc, char **argv )
 	if( clock_getres( CLOCK_MONOTONIC, &Resolution ) == -1 )
 	{
 		CONSOLE_Print( "[GHOST] error getting monotonic timer resolution" );
-		forward( new CFwdData(FWD_GENERAL, "Error getting monotonic timer resolution", 6, 0) );
 	}
 	else
 	{
 		CONSOLE_Print( "[GHOST] using monotonic timer with resolution " + UTIL_ToString( (double)( Resolution.tv_nsec / 1000 ), 2 ) + " microseconds" );
-		forward( new CFwdData(FWD_GENERAL, "Using monotonic timer with resolution " + UTIL_ToString( (double)( Resolution.tv_nsec / 1000 ), 2 ) + " microseconds", 1, 0) );
 	}
 #endif
 
@@ -490,20 +480,17 @@ int main( int argc, char **argv )
 	// initialize winsock
 
 	CONSOLE_Print( "[GHOST] starting winsock" );
-	forward( new CFwdData(FWD_GENERAL, "Starting winsock", 1, 0) );
 	WSADATA wsadata;
 
 	if( WSAStartup( MAKEWORD( 2, 2 ), &wsadata ) != 0 )
 	{
 		CONSOLE_Print( "[GHOST] error starting winsock" );
-		forward( new CFwdData(FWD_GENERAL, "Error starting winsock", 6, 0) );
 		return 1;
 	}
 
 	// increase process priority
 
 	CONSOLE_Print( "[GHOST] setting process priority to \"above normal\"" );
-	forward( new CFwdData(FWD_GENERAL, "Setting process priority to \"above normal\"", 2, 0) );
 	SetPriorityClass( GetCurrentProcess( ), ABOVE_NORMAL_PRIORITY_CLASS );
 #endif
 
@@ -530,7 +517,6 @@ int main( int argc, char **argv )
 	// shutdown ghost
 
 	CONSOLE_Print( "[GHOST] shutting down" );
-	forward( new CFwdData(FWD_GENERAL, "Shutting down GHost++", 2, 0 ) );
 	delete gGHost;
 	gGHost = NULL;
 
@@ -538,7 +524,6 @@ int main( int argc, char **argv )
 	// shutdown winsock
 
 	CONSOLE_Print( "[GHOST] shutting down winsock" );
-	forward( new CFwdData(FWD_GENERAL, "Shutting down winsock", 2, 0 ) );
 	WSACleanup( );
 
 	// shutdown timer
