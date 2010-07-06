@@ -34,12 +34,14 @@ Usage
 2.) You must add next five lines to your config file (ghost.cfg). Change values as you like. More information in default.cfg.
 
 ui_enabled = 1
-ui_width = 135
-ui_height = 43
+ui_width = 125
+ui_height = 45
 ui_splitsid = 1
 ui_spliton = 0
 
 (Note: These values cannot be changed using ghost dynamic configurator)
+
+Important! Make sure to configure ui_width and ui_height properly or it might crash. More in default.cfg.
 
 
 3.) After configuring GHost++:
