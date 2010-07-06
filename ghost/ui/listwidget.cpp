@@ -300,16 +300,14 @@ void CListWidget::update(int c)
 			if((_count < th && _scroll < _count) || (_count > th && _scroll > _count)) _scroll = _count;
 			if(_count > th && _scroll < th) _scroll = th;
 
-			uint b = 0, prevn = 0, n = 0;
+			uint b = 0, n = 0;
 
 			for(uint i = 0; i < _items.size() && i < _scroll + b; i++)
 			{
 				if(_items[i]->nocrlf()) b++;
 
-				n = 0;
-				
-				if(i > 0 && _items[i-1]->nocrlf())
-					n = prevn;
+				if(!_items[i]->nocrlf())
+					n = 0;
 
 				const string &message = _items[i]->text();
 
@@ -340,8 +338,6 @@ void CListWidget::update(int c)
 
 				if(i < _scroll + b - 1 && i != _items.size() - 1 && !_items[i]->nocrlf())
 					waddch(_window, '\n');
-
-				prevn = n;
 			}
 
 			_changed = false;
