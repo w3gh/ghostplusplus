@@ -46,7 +46,8 @@ enum FwdType
 	FWD_OUT_BANS,
 	FWD_OUT_ADMINS,
 	FWD_OUT_MESSAGE,
-	FWD_OUT_GAME
+	FWD_OUT_GAME,
+	FWD_DEBUG
 };
 
 class CFwdData
@@ -96,6 +97,5 @@ public:
 	int _flag;
 	int _id;
 };
-
 
 #endif

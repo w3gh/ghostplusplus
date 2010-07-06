@@ -5,16 +5,39 @@
 #include "layout.h"
 #include "forward.h"
 
-CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
+string UTIL_ToString(int i);
+
+void DEBUG_ui(const string &message);
+
+CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab, bool debugOn)
 {
+	_debug = debugOn;
+	_debugCounter = 0;
+	DEBUG_ui("==============================================================================================================");
+
 	_window = new CWindow();
 	_window->setTitle("");
 
 	_mainWidget = new CTabWidget("", 0, White, Cyan);
 	_games = new CTabWidget("", -2, White, Cyan);
 
+
+	if(_debug)
+	{
+		_debugWidget = new CListWidget("Debug", -4, White, Black);
+		_debugWidget->listenKeys(true);
+		_mainWidget->addTab(_debugWidget);
+	}
+	else
+		_debugWidget = 0;
+
+	DEBUG_ui("CUI::CUI, [" + UTIL_ToString(width) + "x" + UTIL_ToString(height) + "] [" + UTIL_ToString(splitSID) + "] [" + (splitOn ? "on" : "off") + "] [" + (gameinfotab ? "on" : "off") + "]" );
+	DEBUG_ui("CUI::CUI, 0");
+
 	CListWidget *log = new CListWidget("Log", -3, White, Black);
 	log->listenKeys(true);
+
+	DEBUG_ui("CUI::CUI, 1");
 
 	CWidget *splitWidget = new CWidget("Games", -1);
 	splitWidget->setLayout(new CVBoxLayout(splitWidget));
@@ -33,6 +56,8 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
 	_splitOn = splitOn;
 	_splitSID = splitSID;
 	_gameinfotab = gameinfotab;
+	
+	DEBUG_ui("CUI::CUI, 2");
 
 #ifndef NO_MOUSE
 	split();
@@ -49,26 +74,32 @@ CUI::CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab)
 
 	_selectedTabWidget = _mainWidget;
 	_selectedTabWidget->listenKeys(true);
+
+	DEBUG_ui("CUI::CUI, 3");
 }
 
 CUI::~CUI()
 {
+	DEBUG_ui("CUI::~CUI");
 	SafeDelete(_window);
 }
 
 void CUI::forceQuit()
 {
+	DEBUG_ui("CUI::forceQuit");
 	_forceQuit = true;
 }
 
 void CUI::resize(uint width, uint height)
 {
+	DEBUG_ui("CUI::resize");
 	_resize = true;
 	_newSize.set(width, height);
 }
 
 void CUI::setWindowTitle(const string &text)
 {
+	DEBUG_ui("CUI::setWindowTitle");
 	_window->setTitle(text);
 }
 
@@ -76,6 +107,7 @@ bool CUI::update()
 {
 	if(_resize)
 	{
+		DEBUG_ui("CUI::update, resized");
 		_window->setSize(_newSize.width(), _newSize.height());
 		_resize = false;
 	}
@@ -161,6 +193,7 @@ bool CUI::update()
 
 void CUI::addServer(const string &name, int id)
 {
+	DEBUG_ui("CUI::addServer");
 	CWidget *server = new CWidget(name, id);
 	CWidget *sub = new CWidget;
 	CWidget *channel = new CWidget("Channel", 0);
@@ -275,6 +308,7 @@ void CUI::addServer(const string &name, int id)
 
 void CUI::addGame(const string &name, int id)
 {
+	DEBUG_ui("CUI::addGame");
 	CWidget *game = new CWidget(name, id);
 	CWidget *sub1 = new CWidget;
 	CWidget *sub2 = new CWidget;
@@ -387,6 +421,7 @@ void CUI::addGame(const string &name, int id)
 
 void CUI::updateGame(const string &name, int id)
 {
+	DEBUG_ui("CUI::updateGame");
 	CWidget *widget = _games->at(_games->indexOf(id));
 
 	widget->setName(name);
@@ -394,6 +429,7 @@ void CUI::updateGame(const string &name, int id)
 
 void CUI::removeGame(int id)
 {
+	DEBUG_ui("CUI::removeGame");
 	for(vector<CTabWidget *>::iterator i = _tabwidgets.begin(); i != _tabwidgets.end(); i++)
 	{
 		if((*i)->customID() == id)
@@ -453,6 +489,7 @@ void CUI::removeGame(int id)
 
 void CUI::printToGeneral(const string &message, int flag, int id)
 {
+	DEBUG_ui("CUI::printToGeneral");
 	Color color = Null;
 
 	switch(flag)
@@ -477,6 +514,7 @@ void CUI::printToGeneral(const string &message, int flag, int id)
 
 void CUI::printToServer(const string &message, int flag, int id)
 {
+	DEBUG_ui("CUI::printToServer");
 	Color color = Null;
 
 	switch(flag)
@@ -501,6 +539,7 @@ void CUI::printToServer(const string &message, int flag, int id)
 
 void CUI::printToRaw(const string &message)
 {
+	DEBUG_ui("CUI::printToRaw");
 	Color color = Null;
 	int flag = rawFlag(message);
 
@@ -519,6 +558,7 @@ void CUI::printToRaw(const string &message)
 
 void CUI::printToGame(const string &message, int flag, int id)
 {
+	DEBUG_ui("CUI::printToGame");
 	Color color = Null;
 
 	switch(flag)
@@ -538,6 +578,7 @@ void CUI::printToGame(const string &message, int flag, int id)
 
 int CUI::rawFlag(const string &message)
 {
+	DEBUG_ui("CUI::rawFlag");
 	if ( message.size( ) > 4 && message[0] == '[' )
 	{
 		if ( message.compare(1, 4, "INFO") == 0 )			return 1;
@@ -553,6 +594,7 @@ int CUI::rawFlag(const string &message)
 
 void CUI::setChannelName(const string &name, int id)
 {
+	DEBUG_ui("CUI::setChannelName");
 	for(vector<PairedWidget>::const_iterator i = _channelName.begin(); i != _channelName.end(); i++)
 	{
 		if((*i).first == id)
@@ -565,6 +607,7 @@ void CUI::setChannelName(const string &name, int id)
 
 void CUI::updateChannelUser(const string &name, int flag, int id)
 {
+	DEBUG_ui("CUI::updateChannelUser");
 	Color color = Null;
 
 	switch(flag)
@@ -594,6 +637,7 @@ void CUI::updateChannelUser(const string &name, int flag, int id)
 
 void CUI::removeChannelUser(const string &name, int id)
 {
+	DEBUG_ui("CUI::removeChannelUser");
 	for(vector<PairedWidget>::const_iterator i = _channel.begin(); i != _channel.end(); i++)
 	{
 		if((*i).first == id)
@@ -606,6 +650,7 @@ void CUI::removeChannelUser(const string &name, int id)
 
 void CUI::removeChannelUsers(int id)
 {
+	DEBUG_ui("CUI::removeChannelUsers");
 	for(vector<PairedWidget>::const_iterator i = _channel.begin(); i != _channel.end(); i++)
 	{
 		if((*i).first == id)
@@ -618,6 +663,7 @@ void CUI::removeChannelUsers(int id)
 
 void CUI::addFriend(const string &name, int flag, int id)
 {
+	DEBUG_ui("CUI::addFriend");
 	Color color = Null;
 
 	switch(flag)
@@ -648,6 +694,7 @@ void CUI::addFriend(const string &name, int flag, int id)
 
 void CUI::removeFriends(int id)
 {
+	DEBUG_ui("CUI::removeFriends");
 	for(vector<PairedWidget>::const_iterator i = _friends.begin(); i != _friends.end(); i++)
 	{
 		if((*i).first == id)
@@ -660,6 +707,7 @@ void CUI::removeFriends(int id)
 
 void CUI::addClanMember(const string &name, int flag, int id)
 {
+	DEBUG_ui("CUI::addClanMember");
 	Color color = Null;
 
 	switch(flag)
@@ -688,6 +736,7 @@ void CUI::addClanMember(const string &name, int flag, int id)
 }
 void CUI::removeClan(int id)
 {
+	DEBUG_ui("CUI::removeClan");
 	for(vector<PairedWidget>::const_iterator i = _clan.begin(); i != _clan.end(); i++)
 	{
 		if((*i).first == id)
@@ -700,6 +749,7 @@ void CUI::removeClan(int id)
 
 void CUI::addBan(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::addBan");
 	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
 	{
 		if((*i).first == id)
@@ -712,6 +762,7 @@ void CUI::addBan(const vector<string> &row, int id)
 
 void CUI::removeBan(const string &name, int id)
 {
+	DEBUG_ui("CUI::removeBan");
 	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
 	{
 		if((*i).first == id)
@@ -724,6 +775,7 @@ void CUI::removeBan(const string &name, int id)
 
 void CUI::removeBans(int id)
 {
+	DEBUG_ui("CUI::removeBans");
 	for(vector<PairedWidget>::const_iterator i = _bans.begin(); i != _bans.end(); i++)
 	{
 		if((*i).first == id)
@@ -736,6 +788,7 @@ void CUI::removeBans(int id)
 
 void CUI::addAdmin(const string &name, int flag, int id)
 {
+	DEBUG_ui("CUI::addAdmin");
 	Color color = Null;
 
 	switch(flag)
@@ -756,6 +809,7 @@ void CUI::addAdmin(const string &name, int flag, int id)
 
 void CUI::removeAdmin(const string &name, int id)
 {
+	DEBUG_ui("CUI::removeAdmin");
 	for(vector<PairedWidget>::const_iterator i = _admins.begin(); i != _admins.end(); i++)
 	{
 		if((*i).first == id)
@@ -768,6 +822,7 @@ void CUI::removeAdmin(const string &name, int id)
 
 void CUI::removeAdmins(int id)
 {
+	DEBUG_ui("CUI::removeAdmins");
 	for(vector<PairedWidget>::const_iterator i = _admins.begin(); i != _admins.end(); i++)
 	{
 		if((*i).first == id)
@@ -780,6 +835,7 @@ void CUI::removeAdmins(int id)
 
 void CUI::addPlayer(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::addPlayer");
 	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
 	{
 		if((*i).first == id)
@@ -792,6 +848,7 @@ void CUI::addPlayer(const vector<string> &row, int id)
 
 void CUI::updatePlayer(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::updatePlayer");
 	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
 	{
 		if((*i).first == id)
@@ -804,6 +861,7 @@ void CUI::updatePlayer(const vector<string> &row, int id)
 
 void CUI::removePlayer(const string &name, int id)
 {
+	DEBUG_ui("CUI::removePlayer");
 	for(vector<PairedWidget>::const_iterator i = _players.begin(); i != _players.end(); i++)
 	{
 		if((*i).first == id)
@@ -816,6 +874,7 @@ void CUI::removePlayer(const string &name, int id)
 
 void CUI::addStats(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::addStats");
 	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
 	{
 		if((*i).first == id)
@@ -828,6 +887,7 @@ void CUI::addStats(const vector<string> &row, int id)
 
 void CUI::removeStats(const string &name, int id)
 {
+	DEBUG_ui("CUI::removeStats");
 	for(vector<PairedWidget>::const_iterator i = _stats.begin(); i != _stats.end(); i++)
 	{
 		if((*i).first == id)
@@ -840,6 +900,7 @@ void CUI::removeStats(const string &name, int id)
 
 void CUI::addDotaDB(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::addDotaDB");
 	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
 	{
 		if((*i).first == id)
@@ -852,6 +913,7 @@ void CUI::addDotaDB(const vector<string> &row, int id)
 
 void CUI::removeDotaDB(const string &name, int id)
 {
+	DEBUG_ui("CUI::removeDotaDB");
 	for(vector<PairedWidget>::const_iterator i = _dotadb.begin(); i != _dotadb.end(); i++)
 	{
 		if((*i).first == id)
@@ -864,6 +926,7 @@ void CUI::removeDotaDB(const string &name, int id)
 
 void CUI::addGameInfo(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::addGameInfo");
 	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
 	{
 		if((*i).first == id)
@@ -876,6 +939,7 @@ void CUI::addGameInfo(const vector<string> &row, int id)
 
 void CUI::updateGameInfo(const vector<string> &row, int id)
 {
+	DEBUG_ui("CUI::updateGameInfo");
 	for(vector<PairedWidget>::const_iterator i = _gameinfo.begin(); i != _gameinfo.end(); i++)
 	{
 		if((*i).first == id)
@@ -888,6 +952,9 @@ void CUI::updateGameInfo(const vector<string> &row, int id)
 
 void CUI::forward(CFwdData *data)
 {
+	if(data->_type != FWD_DEBUG)
+		DEBUG_ui("CUI::forward, incoming data [" + UTIL_ToString(data->_type) + "] [" + UTIL_ToString(data->_flag) + "] [" + UTIL_ToString(data->_id) + "] [" + UTIL_ToString(data->_data.size()) + "] " + data->_text );
+
 	switch(data->_type)
 	{
 	case FWD_GENERAL:
@@ -995,7 +1062,13 @@ void CUI::forward(CFwdData *data)
 	case FWD_GAME_MAP_INFO_UPDATE:
 		updateGameInfo(data->_data, data->_id);
 		break;
+	case FWD_DEBUG:
+		debug(data->_text);
+		break;
 	}
+
+	if(data->_type != FWD_DEBUG)
+		DEBUG_ui("CUI::forward, deleting data");
 
 	delete data;
 }
@@ -1015,6 +1088,7 @@ uint CUI::currentGameID()
 
 void CUI::split()
 {
+	DEBUG_ui("CUI::split, splitting");
 	CLayout *splitLayout = _mainWidget->at(_mainWidget->indexOf(-1))->layout();
 
 	if(splitLayout->count() == 2)
@@ -1027,4 +1101,11 @@ void CUI::split()
 		splitLayout->addWidget(_mainWidget->at(_mainWidget->indexOf(_splitSID)));
 
 	splitLayout->addWidget(_games);
+	DEBUG_ui("CUI::split, ok");
+}
+
+void CUI::debug(const string &text)
+{
+	if(_debugWidget)
+		_debugWidget->addItem(UTIL_ToString(_debugCounter++) + " " + text);
 }

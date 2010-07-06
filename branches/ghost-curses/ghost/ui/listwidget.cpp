@@ -1,6 +1,8 @@
 #include "listwidget.h"
 #include "layout.h"
 
+void DEBUG_ui(const string &message);
+
 unsigned long toULong(int i)
 {
 	unsigned long result = i;

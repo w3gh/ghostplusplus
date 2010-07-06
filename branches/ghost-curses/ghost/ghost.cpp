@@ -301,6 +301,36 @@ void CONSOLE_Print( string message )
 	}
 }
 
+string lastDebugUiMsg;
+
+void DEBUG_ui( const string &message )
+{
+	if(gUI && gUI->debugOn())
+	{
+		if(lastDebugUiMsg == message)
+			return;
+
+		gUI->forward(new CFwdData(FWD_DEBUG, message, 0));
+
+		ofstream Log;
+		Log.open( "ui_log.txt", ios :: app );
+
+		if( !Log.fail( ) )
+		{
+			time_t Now = time( NULL );
+			string Time = asctime( localtime( &Now ) );
+
+			// erase the newline
+
+			Time.erase( Time.size( ) - 1 );
+			Log << "[" << Time << "] " << message << endl;
+			Log.close( );
+		}
+
+		lastDebugUiMsg = message;
+	}
+}
+
 void DEBUG_Print( string message )
 {
 	cout << message << endl;
@@ -340,7 +370,12 @@ int main( int argc, char **argv )
 	if ( CFG.GetInt( "ui_enabled", 1 ) == 1 )
 	{
 		CONSOLE_Print( "[GHOST] Initializing user interface..." );
-		gUI = new CUI( CFG.GetInt( "ui_width", 135 ), CFG.GetInt( "ui_height", 43 ), CFG.GetInt( "ui_splitsid", 1 ), CFG.GetInt( "ui_spliton", 0 ) == 0 ? false : true, CFG.GetInt( "ui_gameinfotab", 0 ) == 0 ? false : true );
+		gUI = new CUI( CFG.GetInt( "ui_width", 135 ),
+					   CFG.GetInt( "ui_height", 43 ),
+					   CFG.GetInt( "ui_splitsid", 1 ),
+					   CFG.GetInt( "ui_spliton", 0 ) == 0 ? false : true,
+					   CFG.GetInt( "ui_gameinfotab", 0 ) == 0 ? false : true,
+					   CFG.GetInt( "ui_debugon", 0 ) == 0 ? false : true );
 	}
 
 	//

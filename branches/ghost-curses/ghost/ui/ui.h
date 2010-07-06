@@ -3,6 +3,7 @@
 
 #include "window.h"
 
+class CListWidget;
 class CFwdData;
 
 typedef pair<int, CWidget *> PairedWidget; // serverID, widget
@@ -10,7 +11,7 @@ typedef pair<int, CWidget *> PairedWidget; // serverID, widget
 class CUI
 {
 public:
-	CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab);
+	CUI(uint width, uint height, uint splitSID, bool splitOn, bool gameinfotab, bool debugOn);
 	~CUI();
 	
 	void forward(CFwdData *data);										// Forward data to UI
@@ -20,6 +21,10 @@ public:
 	void resize(uint width, uint height);								// Resize UI
 	bool update();														// Update UI
 	void setWindowTitle(const string &text);							// Set window title
+
+	void debug(const string &text);
+
+	bool debugOn() { return _debug; }
 
 private:
 	void addServer(const string &name, int id);							// Add server to UI
@@ -58,6 +63,7 @@ private:
 
 	CWindow *_window;
 	CTabWidget *_mainWidget;
+	CListWidget *_debugWidget;
 	CTabWidget *_games;
 
 	vector<PairedWidget> _edit;
@@ -92,6 +98,8 @@ private:
 	uint _splitSID;
 
 	bool _gameinfotab;
+	bool _debug;
+	int _debugCounter;
 };
 
 #endif

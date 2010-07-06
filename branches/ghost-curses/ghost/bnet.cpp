@@ -259,7 +259,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 	{
 		SendGetFriendsList( );
 		SendGetClanList( );
-		m_LastListRefreshTime = GetTime( ) + 8;
+		m_LastListRefreshTime = GetTime( ) + 20;
 	}
 
 	//
