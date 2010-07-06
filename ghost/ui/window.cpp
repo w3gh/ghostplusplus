@@ -1,5 +1,7 @@
 #include "window.h"
 
+void DEBUG_ui(const string &message);
+
 CWindow::CWindow()
 	: CWidget(0, true)
 {
@@ -91,6 +93,7 @@ void CWindow::show()
 
 void CWindow::update()
 {
+	DEBUG_ui("CWindow::update");
 	updateInput();
 
 	if(_widget)

@@ -9,6 +9,8 @@ string UTIL_UTF8ToLatin1( string &s );
 // Forwards data. Implement this method somewhere, if you use this UI in projects other than GHost++/GProxy++.
 void forward(CFwdData *data);
 
+void DEBUG_ui(const string &message);
+
 static uint widgetID = 0;
 
 CWidget::CWidget(CWidget *parent, bool dummy)
@@ -18,6 +20,7 @@ CWidget::CWidget(CWidget *parent, bool dummy)
 
 CWidget::CWidget(const string &name, int id)
 {
+	DEBUG_ui("CWidget::CWidget(2) [" + name + "]");
 	initialize();
 
 	setName(name);
@@ -39,7 +42,10 @@ CWidget::~CWidget()
 
 void CWidget::initialize(CWidget *parent, bool dummy)
 {
-	setParent(parent);
+	DEBUG_ui("CWidget::initialize, 0");
+	_parent = parent;
+
+	DEBUG_ui("CWidget::initialize, 1");
 
 	// If we haven't initialized curses yet, don't create a new curses window and panel
 	if(!dummy)
@@ -53,7 +59,11 @@ void CWidget::initialize(CWidget *parent, bool dummy)
 		_panel = 0;
 	}
 
+	DEBUG_ui("CWidget::initialize, 2");
+
 	setMargins(1, 1, 1, 1);
+
+	DEBUG_ui("CWidget::initialize, 3");
 	
 	_bgcolor = Black;
 	_fgcolor = White;
@@ -69,6 +79,8 @@ void CWidget::initialize(CWidget *parent, bool dummy)
 
 	// Set default name.
 	_name = "Widget";
+
+	DEBUG_ui("CWidget::initialize, 4");
 
 	hide();
 }
@@ -102,6 +114,7 @@ void CWidget::setParent(CWidget *parent)
 
 void CWidget::setPosition(uint x, uint y)
 {
+	DEBUG_ui("CWidget::setPosition [" + _name + "]");
 	_pos.set(x, y);
 
 	if(_layout)
@@ -117,6 +130,7 @@ CPoint CWidget::pos()
 
 void CWidget::setLayout(CLayout *layout)
 {
+	DEBUG_ui("CWidget::setLayout");
 	_layout = layout;
 	_layout->setSize(_size.width(), _size.height());
 	_layout->setPosition(_pos.x(), _pos.y());
@@ -131,6 +145,7 @@ CLayout *CWidget::layout()
 
 void CWidget::setSize(uint width, uint height)
 {
+	DEBUG_ui("CWidget::setSize [" + _name + "]");
 	_size.set(width, height);
 
 	wresize(_window, height, width);
@@ -144,6 +159,7 @@ void CWidget::setSize(uint width, uint height)
 
 void CWidget::setFixedSize(uint width, uint height)
 {
+	DEBUG_ui("CWidget::setFixedSize [" + _name + "]");
 	_size.set(width, height);
 	_size.setFixed(true);
 
@@ -163,6 +179,7 @@ CSize CWidget::size()
 
 void CWidget::hide()
 {
+	DEBUG_ui("CWidget::hide [" + _name + "]");
 	hide_panel(_panel);
 	_visible = false;
 
@@ -175,6 +192,7 @@ void CWidget::hide()
 
 void CWidget::show()
 {
+	DEBUG_ui("CWidget::hide [" + _name + "]");
 	show_panel(_panel);
 	_visible = true;
 
@@ -199,6 +217,7 @@ void CWidget::update(int c)
 
 void CWidget::setMargins(uint top, uint bottom, uint left, uint right)
 {
+	DEBUG_ui("CWidget::setMargins");
 	_topMargin = top;
 	_bottomMargin = bottom;
 	_leftMargin = left;
@@ -240,6 +259,7 @@ bool CWidget::visible()
 
 void CWidget::setBackgroundColor(Color color)
 {
+	DEBUG_ui("CWidget::setBackgroundColor");
 	_bgcolor = color;
 	
 	wbkgdset(_window, attribute(_bgcolor, _fgcolor, _bold));
@@ -250,6 +270,7 @@ void CWidget::setBackgroundColor(Color color)
 
 void CWidget::setForegroundColor(Color color)
 {
+	DEBUG_ui("CWidget::setForegroundColor");
 	_fgcolor = color;
 
 	wbkgdset(_window, attribute(_bgcolor, _fgcolor, _bold));
@@ -260,6 +281,7 @@ void CWidget::setForegroundColor(Color color)
 
 void CWidget::setBold(bool bold)
 {
+	DEBUG_ui("CWidget::setBold");
 	_bold = bold;
 
 	wbkgdset(_window, attribute(_bgcolor, _fgcolor, _bold));
@@ -394,7 +416,7 @@ void CTextEdit::update(int c)
 	{
 		bool alwaysFocused = false;
 #ifdef NO_MOUSE
-		alwaysFocused = true; // If we have no mouse, we can't focus widgets so let's have it always focused.
+		alwaysfocused = true; // If we have no mouse, we can't focus widgets so let's have it always focused.
 #endif
 
 		if((_requireFocused ? focused() : true) && (_parent ? _parent->focused() || alwaysFocused : true))
@@ -706,9 +728,11 @@ void CTabWidget::update(int c)
 		{
 			if(_changed)
 			{
+				DEBUG_ui("CTabWidget::update, 0");
 				_layout->setSize(_size.width(), _size.height() - 1);
 				_layout->setPosition(_pos.x(), _bottom ? _pos.y() : _pos.y() + 1);
 				_changed = false;
+				DEBUG_ui("CTabWidget::update, 1");
 			}
 
 			_layout->update(c);
