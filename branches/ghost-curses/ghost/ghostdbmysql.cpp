@@ -126,6 +126,20 @@ void CGHostDBMySQL :: RecoverCallable( CBaseCallable *callable )
 		CONSOLE_Print( "[MYSQL] tried to recover a non-mysql callable" );
 }
 
+CDBGamePlayerSummary *CGHostDBMySQL :: GamePlayerSummaryCheck( string name )
+{
+	void *Connection = GetIdleConnection( );
+
+	return MySQLGamePlayerSummaryCheck( Connection, &m_Error, m_BotID, name );
+}
+
+CDBDotAPlayerSummary *CGHostDBMySQL :: DotAPlayerSummaryCheck( string name )
+{
+	void *Connection = GetIdleConnection( );
+
+	return MySQLDotAPlayerSummaryCheck( Connection, &m_Error, m_BotID, name );
+}
+
 void CGHostDBMySQL :: CreateThread( CBaseCallable *callable )
 {
 	try
