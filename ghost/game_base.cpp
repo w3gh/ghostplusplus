@@ -2281,52 +2281,52 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 	forward( new CFwdData( FWD_GAME_SLOT_ADD, playerData, m_GameID ) );
 	
-	CCallableGamePlayerSummaryCheck *stats = m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName( ) );
+	CDBGamePlayerSummary *stats = m_GHost->m_DB->GamePlayerSummaryCheck( Player->GetName( ) );
 
-	if(stats->GetResult())
+	if(stats)
 	{
 		playerData.clear( );
 		playerData.push_back( Player->GetName( ) ); // name
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetTotalGames( ) ) ); // total games
-		playerData.push_back( stats->GetResult( )->GetLastGameDateTime( ) ); // last gamedate
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgLeftPercent( ) ) ); // avg left%
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgDuration( ) ) + " s" ); // avg duration
-		playerData.push_back( UTIL_ToString( (float)stats->GetResult( )->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
+		playerData.push_back( UTIL_ToString( stats->GetTotalGames( ) ) ); // total games
+		playerData.push_back( stats->GetLastGameDateTime( ) ); // last gamedate
+		playerData.push_back( UTIL_ToString( stats->GetAvgLeftPercent( ) ) ); // avg left%
+		playerData.push_back( UTIL_ToString( stats->GetAvgDuration( ) ) + " s" ); // avg duration
+		playerData.push_back( UTIL_ToString( (float)stats->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
 
 		forward( new CFwdData( FWD_GAME_STATS_ADD, playerData, m_GameID ) );
 	}
 
 	delete stats;
 
-	CCallableDotAPlayerSummaryCheck *dotadb = m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( Player->GetName( ) );
+	CDBDotAPlayerSummary *dotadb = m_GHost->m_DB->DotAPlayerSummaryCheck( Player->GetName( ) );
 
-	if(dotadb->GetResult())
+	if(dotadb)
 	{
 		playerData.clear( );
 		playerData.push_back( Player->GetName( ) ); // Name
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalWins( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalLosses( ) ) ); // Wins/Losses
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalWins( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalLosses( ) ) ); // Wins/Losses
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalDeaths( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalAssists( ) ) ); // K/D/A
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalDeaths( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalAssists( ) ) ); // K/D/A
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgKills( ), 2 ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgDeaths( ), 2 ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgAssists( ), 2 ) ); // AVG K/D/A
+		playerData.push_back( UTIL_ToString( dotadb->GetAvgKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetAvgDeaths( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetAvgAssists( ), 2 ) ); // AVG K/D/A
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalCreepKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalCreepDenies( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalNeutralKills( ) ) ); // CS K/D/N
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalCreepKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalCreepDenies( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalNeutralKills( ) ) ); // CS K/D/N
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgCreepKills( ), 2 ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgCreepDenies( ), 2 ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
+		playerData.push_back( UTIL_ToString( dotadb->GetAvgCreepKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetAvgCreepDenies( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalTowerKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalRaxKills( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalCourierKills( ) ) ); // T/R/C
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalTowerKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalRaxKills( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalCourierKills( ) ) ); // T/R/C
 
 		forward( new CFwdData( FWD_GAME_DOTA_DB_ADD, playerData, m_GameID ) );
 	}
@@ -2767,53 +2767,53 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	playerData.push_back( Player->GetGProxy( ) ? "on" : "off" ); // gproxy++
 
 	forward( new CFwdData( FWD_GAME_SLOT_ADD, playerData, m_GameID ) );
-	
-	CCallableGamePlayerSummaryCheck *stats = m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName( ) );
 
-	if(stats->GetResult())
+	CDBGamePlayerSummary *stats = m_GHost->m_DB->GamePlayerSummaryCheck( Player->GetName( ) );
+
+	if(stats)
 	{
 		playerData.clear( );
 		playerData.push_back( Player->GetName( ) ); // name
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetTotalGames( ) ) ); // total games
-		playerData.push_back( stats->GetResult( )->GetLastGameDateTime( ) ); // last gamedate
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgLeftPercent( ) ) ); // avg left%
-		playerData.push_back( UTIL_ToString( stats->GetResult( )->GetAvgDuration( ) ) + " s" ); // avg duration
-		playerData.push_back( UTIL_ToString( (float)stats->GetResult( )->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
+		playerData.push_back( UTIL_ToString( stats->GetTotalGames( ) ) ); // total games
+		playerData.push_back( stats->GetLastGameDateTime( ) ); // last gamedate
+		playerData.push_back( UTIL_ToString( stats->GetAvgLeftPercent( ) ) ); // avg left%
+		playerData.push_back( UTIL_ToString( stats->GetAvgDuration( ) ) + " s" ); // avg duration
+		playerData.push_back( UTIL_ToString( (float)stats->GetAvgLoadingTime( ) / 1000, 2 ) + " s" ); // avg loading time
 
 		forward( new CFwdData( FWD_GAME_STATS_ADD, playerData, m_GameID ) );
 	}
 
 	delete stats;
 
-	CCallableDotAPlayerSummaryCheck *dotadb = m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( Player->GetName( ) );
+	CDBDotAPlayerSummary *dotadb = m_GHost->m_DB->DotAPlayerSummaryCheck( Player->GetName( ) );
 
-	if(dotadb->GetResult())
+	if(dotadb)
 	{
 		playerData.clear( );
 		playerData.push_back( Player->GetName( ) ); // Name
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalWins( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalLosses( ) ) ); // Wins/Losses
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalWins( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalLosses( ) ) ); // Wins/Losses
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalDeaths( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalAssists( ) ) ); // K/D/A
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalDeaths( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalAssists( ) ) ); // K/D/A
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgKills( ), 2 ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgDeaths( ), 2 ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgAssists( ), 2 ) ); // AVG K/D/A
+		playerData.push_back( UTIL_ToString( dotadb->GetAvgKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetAvgDeaths( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetAvgAssists( ), 2 ) ); // AVG K/D/A
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalCreepKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalCreepDenies( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalNeutralKills( ) ) ); // CS K/D/N
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalCreepKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalCreepDenies( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalNeutralKills( ) ) ); // CS K/D/N
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetAvgCreepKills( ), 2 ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgCreepDenies( ), 2 ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
+		playerData.push_back( UTIL_ToString( dotadb->GetAvgCreepKills( ), 2 ) + "/" + 
+							  UTIL_ToString( dotadb->GetAvgCreepDenies( ), 2 ) + "/" +
+							  UTIL_ToString( dotadb->GetAvgNeutralKills( ), 2 ) ); // AVG CS K/D/N
 
-		playerData.push_back( UTIL_ToString( dotadb->GetResult( )->GetTotalTowerKills( ) ) + "/" + 
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalRaxKills( ) ) + "/" +
-							  UTIL_ToString( dotadb->GetResult( )->GetTotalCourierKills( ) ) ); // T/R/C
+		playerData.push_back( UTIL_ToString( dotadb->GetTotalTowerKills( ) ) + "/" + 
+							  UTIL_ToString( dotadb->GetTotalRaxKills( ) ) + "/" +
+							  UTIL_ToString( dotadb->GetTotalCourierKills( ) ) ); // T/R/C
 
 		forward( new CFwdData( FWD_GAME_DOTA_DB_ADD, playerData, m_GameID ) );
 	}

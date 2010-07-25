@@ -185,6 +185,9 @@ public:
 
 	virtual void RecoverCallable( CBaseCallable *callable );
 
+	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
+	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( string name );
+
 	// threaded database functions
 
 	virtual void CreateThread( CBaseCallable *callable );
