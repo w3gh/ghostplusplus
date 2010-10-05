@@ -29,10 +29,9 @@
 // CGameProtocol
 //
 
-CGameProtocol :: CGameProtocol( CGHost *nGHost )
-	: MessageLogger( nGHost )
+CGameProtocol :: CGameProtocol( CGHost *nGHost ) : m_GHost( nGHost ), MessageLogger( nGHost )
 {
-	m_GHost = nGHost;
+	
 }
 
 CGameProtocol :: ~CGameProtocol( )
@@ -64,12 +63,13 @@ CIncomingJoinPlayer *CGameProtocol :: RECEIVE_W3GS_REQJOIN( BYTEARRAY data )
 	if( ValidateLength( data ) && data.size( ) >= 20 )
 	{
 		uint32_t HostCounter = UTIL_ByteArrayToUInt32( data, false, 4 );
+		uint32_t EntryKey = UTIL_ByteArrayToUInt32( data, false, 8 );
 		BYTEARRAY Name = UTIL_ExtractCString( data, 19 );
 
 		if( !Name.empty( ) && data.size( ) >= Name.size( ) + 30 )
 		{
 			BYTEARRAY InternalIP = BYTEARRAY( data.begin( ) + Name.size( ) + 26, data.begin( ) + Name.size( ) + 30 );
-			return new CIncomingJoinPlayer( HostCounter, string( Name.begin( ), Name.end( ) ), InternalIP );
+			return new CIncomingJoinPlayer( HostCounter, EntryKey, string( Name.begin( ), Name.end( ) ), InternalIP );
 		}
 	}
 
@@ -309,11 +309,11 @@ BYTEARRAY CGameProtocol :: SEND_W3GS_PING_FROM_HOST( )
 	return packet;
 }
 
-BYTEARRAY CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, BYTEARRAY port, BYTEARRAY externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots )
+BYTEARRAY CGameProtocol :: SEND_W3GS_SLOTINFOJOIN( unsigned char PID, BYTEARRAY port, BYTEARRAY externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	unsigned char Zeros[] = { 0, 0, 0, 0 };
 
-	BYTEARRAY SlotInfo = EncodeSlotInfo( slots, randomSeed, gameType, playerSlots );
+	BYTEARRAY SlotInfo = EncodeSlotInfo( slots, randomSeed, layoutStyle, playerSlots );
 	BYTEARRAY packet;
 
 	if( port.size( ) == 2 && externalIP.size( ) == 4 )
@@ -440,9 +440,9 @@ BYTEARRAY CGameProtocol :: SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID )
 	return packet;
 }
 
-BYTEARRAY CGameProtocol :: SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots )
+BYTEARRAY CGameProtocol :: SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
-	BYTEARRAY SlotInfo = EncodeSlotInfo( slots, randomSeed, gameType, playerSlots );
+	BYTEARRAY SlotInfo = EncodeSlotInfo( slots, randomSeed, layoutStyle, playerSlots );
 	BYTEARRAY packet;
 	packet.push_back( W3GS_HEADER_CONSTANT );									// W3GS header constant
 	packet.push_back( W3GS_SLOTINFO );											// W3GS_SLOTINFO
@@ -560,12 +560,12 @@ BYTEARRAY CGameProtocol :: SEND_W3GS_START_LAG( vector<CGamePlayer *> players, b
 		if( loadInGame )
 		{
 			if( !(*i)->GetFinishedLoading( ) )
-				NumLaggers++;
+                                ++NumLaggers;
 		}
 		else
 		{
 			if( (*i)->GetLagging( ) )
-				NumLaggers++;
+                                ++NumLaggers;
 		}
 	}
 
@@ -653,12 +653,11 @@ BYTEARRAY CGameProtocol :: SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Ver
 	return packet;
 }
 
-BYTEARRAY CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter )
+BYTEARRAY CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter, uint32_t entryKey )
 {
 	unsigned char ProductID_ROC[]	= {          51, 82, 65, 87 };	// "WAR3"
 	unsigned char ProductID_TFT[]	= {          80, 88, 51, 87 };	// "W3XP"
 	unsigned char Version[]			= { war3Version,  0,  0,  0 };
-	unsigned char Unknown1[]		= {           1,  2,  3,  4 };
 	unsigned char Unknown2[]		= {           1,  0,  0,  0 };
 
 	BYTEARRAY packet;
@@ -692,7 +691,7 @@ BYTEARRAY CGameProtocol :: SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Versi
 
 		UTIL_AppendByteArray( packet, Version, 4 );						// Version
 		UTIL_AppendByteArray( packet, hostCounter, false );				// Host Counter
-		UTIL_AppendByteArray( packet, Unknown1, 4 );					// ??? (this varies wildly even between two identical games created one after another)
+		UTIL_AppendByteArray( packet, entryKey, false );				// Entry Key
 		UTIL_AppendByteArrayFast( packet, gameName );					// Game Name
 		packet.push_back( 0 );											// ??? (maybe game password)
 		UTIL_AppendByteArrayFast( packet, StatString );					// Stat String
@@ -944,16 +943,16 @@ bool CGameProtocol :: ValidateLength( BYTEARRAY &content )
 	return false;
 }
 
-BYTEARRAY CGameProtocol :: EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots )
+BYTEARRAY CGameProtocol :: EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots )
 {
 	BYTEARRAY SlotInfo;
 	SlotInfo.push_back( (unsigned char)slots.size( ) );		// number of slots
 
-	for( unsigned int i = 0; i < slots.size( ); i++ )
+        for( unsigned int i = 0; i < slots.size( ); ++i )
 		UTIL_AppendByteArray( SlotInfo, slots[i].GetByteArray( ) );
 
 	UTIL_AppendByteArray( SlotInfo, randomSeed, false );	// random seed
-	SlotInfo.push_back( gameType );							// GameType (seems to be 0 for regular game, 3 for custom game)
+	SlotInfo.push_back( layoutStyle );						// LayoutStyle (0 = melee, 1 = custom forces, 3 = custom forces + fixed player settings)
 	SlotInfo.push_back( playerSlots );						// number of player slots (non observer)
 	return SlotInfo;
 }
@@ -962,11 +961,9 @@ BYTEARRAY CGameProtocol :: EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t ra
 // CIncomingJoinPlayer
 //
 
-CIncomingJoinPlayer :: CIncomingJoinPlayer( uint32_t nHostCounter, string nName, BYTEARRAY &nInternalIP )
+CIncomingJoinPlayer :: CIncomingJoinPlayer( uint32_t nHostCounter, uint32_t nEntryKey, string nName, BYTEARRAY &nInternalIP ) : m_HostCounter( nHostCounter ), m_EntryKey( nEntryKey ), m_Name( nName ), m_InternalIP( nInternalIP )
 {
-	m_HostCounter = nHostCounter;
-	m_Name = nName;
-	m_InternalIP = nInternalIP;
+
 }
 
 CIncomingJoinPlayer :: ~CIncomingJoinPlayer( )
@@ -978,11 +975,9 @@ CIncomingJoinPlayer :: ~CIncomingJoinPlayer( )
 // CIncomingAction
 //
 
-CIncomingAction :: CIncomingAction( unsigned char nPID, BYTEARRAY &nCRC, BYTEARRAY &nAction )
+CIncomingAction :: CIncomingAction( unsigned char nPID, BYTEARRAY &nCRC, BYTEARRAY &nAction ) : m_PID( nPID ), m_CRC( nCRC ), m_Action( nAction )
 {
-	m_PID = nPID;
-	m_CRC = nCRC;
-	m_Action = nAction;
+
 }
 
 CIncomingAction :: ~CIncomingAction( )
@@ -994,26 +989,17 @@ CIncomingAction :: ~CIncomingAction( )
 // CIncomingChatPlayer
 //
 
-CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, string nMessage )
+CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, string nMessage ) : m_Type( CTH_MESSAGE ), m_FromPID( nFromPID ), m_ToPIDs( nToPIDs ), m_Flag( nFlag ), m_Message( nMessage )
 {
-	m_Type = CTH_MESSAGE;
-	m_FromPID = nFromPID;
-	m_ToPIDs = nToPIDs;
-	m_Flag = nFlag;
-	m_Message = nMessage;
+
 }
 
-CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, string nMessage, BYTEARRAY &nExtraFlags )
+CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, string nMessage, BYTEARRAY &nExtraFlags ) : m_Type( CTH_MESSAGEEXTRA ), m_FromPID( nFromPID ), m_ToPIDs( nToPIDs ), m_Flag( nFlag ), m_Message( nMessage ), m_ExtraFlags( nExtraFlags )
 {
-	m_Type = CTH_MESSAGEEXTRA;
-	m_FromPID = nFromPID;
-	m_ToPIDs = nToPIDs;
-	m_Flag = nFlag;
-	m_Message = nMessage;
-	m_ExtraFlags = nExtraFlags;
+
 }
 
-CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, unsigned char nByte )
+CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &nToPIDs, unsigned char nFlag, unsigned char nByte ) : m_FromPID( nFromPID ), m_ToPIDs( nToPIDs ), m_Flag( nFlag ), m_Byte( nByte )
 {
 	if( nFlag == 17 )
 		m_Type = CTH_TEAMCHANGE;
@@ -1023,11 +1009,6 @@ CIncomingChatPlayer :: CIncomingChatPlayer( unsigned char nFromPID, BYTEARRAY &n
 		m_Type = CTH_RACECHANGE;
 	else if( nFlag == 20 )
 		m_Type = CTH_HANDICAPCHANGE;
-
-	m_FromPID = nFromPID;
-	m_ToPIDs = nToPIDs;
-	m_Flag = nFlag;
-	m_Byte = nByte;
 }
 
 CIncomingChatPlayer :: ~CIncomingChatPlayer( )
@@ -1039,10 +1020,9 @@ CIncomingChatPlayer :: ~CIncomingChatPlayer( )
 // CIncomingMapSize
 //
 
-CIncomingMapSize :: CIncomingMapSize( unsigned char nSizeFlag, uint32_t nMapSize )
+CIncomingMapSize :: CIncomingMapSize( unsigned char nSizeFlag, uint32_t nMapSize ) : m_SizeFlag( nSizeFlag ), m_MapSize( nMapSize )
 {
-	m_SizeFlag = nSizeFlag;
-	m_MapSize = nMapSize;
+
 }
 
 CIncomingMapSize :: ~CIncomingMapSize( )

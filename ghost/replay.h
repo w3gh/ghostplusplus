@@ -37,9 +37,11 @@ public:
 		REPLAY_FIRSTSTARTBLOCK	= 0x1A,
 		REPLAY_SECONDSTARTBLOCK	= 0x1B,
 		REPLAY_THIRDSTARTBLOCK	= 0x1C,
-		REPLAY_TIMESLOT			= 0x1F,
+		REPLAY_TIMESLOT2		= 0x1E,		// corresponds to W3GS_INCOMING_ACTION2
+		REPLAY_TIMESLOT			= 0x1F,		// corresponds to W3GS_INCOMING_ACTION
 		REPLAY_CHATMESSAGE		= 0x20,
-		REPLAY_CHECKSUM			= 0x22
+		REPLAY_CHECKSUM			= 0x22,		// corresponds to W3GS_OUTGOING_KEEPALIVE
+		REPLAY_DESYNC			= 0x23
 	};
 
 private:
@@ -48,15 +50,16 @@ private:
 	string m_GameName;
 	string m_StatString;
 	uint32_t m_PlayerCount;
-	unsigned char m_MapGameType;
+	uint32_t m_MapGameType;
 	vector<PIDPlayer> m_Players;
 	vector<CGameSlot> m_Slots;
 	uint32_t m_RandomSeed;
-	unsigned char m_SelectMode;
+	unsigned char m_SelectMode;				// also known as the "layout style" elsewhere in this project
 	unsigned char m_StartSpotCount;
 	queue<BYTEARRAY> m_LoadingBlocks;
 	queue<BYTEARRAY> m_Blocks;
 	queue<uint32_t> m_CheckSums;
+	string m_CompiledBlocks;
 
 public:
 	CReplay( MessageLogger *logger );
@@ -67,7 +70,7 @@ public:
 	string GetGameName( )					{ return m_GameName; }
 	string GetStatString( )					{ return m_StatString; }
 	uint32_t GetPlayerCount( )				{ return m_PlayerCount; }
-	unsigned char GetMapGameType( )			{ return m_MapGameType; }
+	uint32_t GetMapGameType( )				{ return m_MapGameType; }
 	vector<PIDPlayer> GetPlayers( )			{ return m_Players; }
 	vector<CGameSlot> GetSlots( )			{ return m_Slots; }
 	uint32_t GetRandomSeed( )				{ return m_RandomSeed; }
@@ -82,16 +85,15 @@ public:
 	void SetRandomSeed( uint32_t nRandomSeed )				{ m_RandomSeed = nRandomSeed; }
 	void SetSelectMode( unsigned char nSelectMode )			{ m_SelectMode = nSelectMode; }
 	void SetStartSpotCount( unsigned char nStartSpotCount )	{ m_StartSpotCount = nStartSpotCount; }
-	void SetMapGameType( unsigned char nMapGameType )		{ m_MapGameType = nMapGameType; }
+	void SetMapGameType( uint32_t nMapGameType )			{ m_MapGameType = nMapGameType; }
 	void SetHostPID( unsigned char nHostPID )				{ m_HostPID = nHostPID; }
 	void SetHostName( string nHostName )					{ m_HostName = nHostName; }
 
 	void AddLeaveGame( uint32_t reason, unsigned char PID, uint32_t result );
 	void AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, uint32_t result );
+	void AddTimeSlot2( queue<CIncomingAction *> actions );
 	void AddTimeSlot( uint16_t timeIncrement, queue<CIncomingAction *> actions );
 	void AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, string message );
-	void AddCheckSum( uint32_t checkSum );
-	void AddBlock( BYTEARRAY &block );
 	void AddLoadingBlock( BYTEARRAY &loadingBlock );
 	void BuildReplay( string gameName, string statString, uint32_t war3Version, uint16_t buildNumber );
 

@@ -32,22 +32,14 @@
 // CSocket
 //
 
-CSocket :: CSocket( MessageLogger* logger )
-	: MessageLogger( logger )
+CSocket :: CSocket( MessageLogger* logger ) :  m_Socket( INVALID_SOCKET ), m_HasError( false ), m_Error( 0 ), MessageLogger( logger )
 {
-	m_Socket = INVALID_SOCKET;
-	memset( &m_SIN, 0, sizeof( m_SIN ) );
-	m_HasError = false;
-	m_Error = 0;
+        memset( &m_SIN, 0, sizeof( m_SIN ) );
 }
 
-CSocket :: CSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN )
-	: MessageLogger( logger )
+CSocket :: CSocket( MessageLogger* logger, SOCKET nSocket, struct sockaddr_in nSIN ) : m_Socket( nSocket ), m_SIN( nSIN ), m_HasError( false ), m_Error( 0 ), MessageLogger( logger )
 {
-	m_Socket = nSocket;
-	m_SIN = nSIN;
-	m_HasError = false;
-	m_Error = 0;
+
 }
 
 CSocket :: ~CSocket( )
@@ -161,12 +153,9 @@ void CSocket :: Reset( )
 // CTCPSocket
 //
 
-CTCPSocket :: CTCPSocket( MessageLogger* logger ) : CSocket( logger )
+CTCPSocket :: CTCPSocket( MessageLogger* logger ) : CSocket( logger ), m_Connected( false ), m_LastRecv( GetTime( ) ), m_LastSend( GetTime( ) )
 {
 	Allocate( SOCK_STREAM );
-	m_Connected = false;
-	m_LastRecv = GetTime( );
-	m_LastSend = GetTime( );
 
 	// make socket non blocking
 
@@ -356,9 +345,9 @@ void CTCPSocket :: SetNoDelay( bool noDelay )
 // CTCPClient
 //
 
-CTCPClient :: CTCPClient( MessageLogger* logger ) : CTCPSocket( logger )
+CTCPClient :: CTCPClient( MessageLogger* logger ) : CTCPSocket( logger ), m_Connecting( false )
 {
-	m_Connecting = false;
+
 }
 
 CTCPClient :: ~CTCPClient( )

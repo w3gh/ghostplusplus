@@ -66,22 +66,12 @@ int tzuncompress( Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourc
 // CPacked
 //
 
-CPacked :: CPacked( MessageLogger *logger )
-	: MessageLogger( logger )
+CPacked :: CPacked( MessageLogger *logger ) 
+	: m_Valid( true ), m_HeaderSize( 0 ), m_CompressedSize( 0 ), m_HeaderVersion( 0 ), m_DecompressedSize( 0 ), m_NumBlocks( 0 ), m_War3Identifier( 0 ), m_War3Version( 0 ), 
+	m_BuildNumber( 0 ), m_Flags( 0 ), m_ReplayLength( 0 ), MessageLogger( logger )
 {
 	m_CRC = new CCRC32( );
 	m_CRC->Initialize( );
-	m_Valid = true;
-	m_HeaderSize = 0;
-	m_CompressedSize = 0;
-	m_HeaderVersion = 0;
-	m_DecompressedSize = 0;
-	m_NumBlocks = 0;
-	m_War3Identifier = 0;
-	m_War3Version = 0;
-	m_BuildNumber = 0;
-	m_Flags = 0;
-	m_ReplayLength = 0;
 }
 
 CPacked :: ~CPacked( )
@@ -197,7 +187,7 @@ void CPacked :: Decompress( bool allBlocks )
 
 	// read blocks
 
-	for( uint32_t i = 0; i < m_NumBlocks; i++ )
+        for( uint32_t i = 0; i < m_NumBlocks; ++i )
 	{
 		uint16_t BlockCompressed;
 		uint16_t BlockDecompressed;
@@ -375,14 +365,13 @@ void CPacked :: Compress( bool TFT )
 
 	// append blocks
 
-	for( vector<string> :: iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); i++ )
+        for( vector<string> :: iterator i = CompressedBlocks.begin( ); i != CompressedBlocks.end( ); ++i )
 	{
 		BYTEARRAY BlockHeader;
 		UTIL_AppendByteArray( BlockHeader, (uint16_t)(*i).size( ), false );
 		UTIL_AppendByteArray( BlockHeader, (uint16_t)8192, false );
 
 		// append zero block header CRC
-
 		UTIL_AppendByteArray( BlockHeader, (uint32_t)0, false );
 
 		// calculate block header CRC
