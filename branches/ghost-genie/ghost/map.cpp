@@ -35,45 +35,36 @@
 // CMap
 //
 
-CMap :: CMap( CGHost *nGHost )
-	: MessageLogger( nGHost )
+CMap :: CMap( CGHost *nGHost ) 
+	: m_GHost( nGHost ), m_Valid( true ), m_MapPath( "Maps\\FrozenThrone\\(12)EmeraldGardens.w3x" ), m_MapSpeed( MAPSPEED_FAST ), 
+	m_MapVisibility( MAPVIS_DEFAULT ), m_MapObservers( MAPOBS_NONE ), m_MapFlags( MAPFLAG_TEAMSTOGETHER | MAPFLAG_FIXEDTEAMS ), 
+	m_MapFilterMaker( MAPFILTER_MAKER_BLIZZARD ), m_MapFilterType( MAPFILTER_TYPE_MELEE ), m_MapFilterSize( MAPFILTER_SIZE_LARGE ), 
+	m_MapFilterObs( MAPFILTER_OBS_NONE ), m_MapOptions( MAPOPT_MELEE ), m_MapLoadInGame( false ), m_MapNumPlayers( 12 ), m_MapNumTeams( 12 ), MessageLogger( nGHost )
 {
 	CONSOLE_Print( "[MAP] using hardcoded Emerald Gardens map data for Warcraft 3 version 1.24 & 1.24b" );
-	m_GHost = nGHost;
-	m_Valid = true;
-	m_MapPath = "Maps\\FrozenThrone\\(12)EmeraldGardens.w3x";
 	m_MapSize = UTIL_ExtractNumbers( "174 221 4 0", 4 );
 	m_MapInfo = UTIL_ExtractNumbers( "251 57 68 98", 4 );
 	m_MapCRC = UTIL_ExtractNumbers( "108 250 204 59", 4 );
 	m_MapSHA1 = UTIL_ExtractNumbers( "35 81 104 182 223 63 204 215 1 17 87 234 220 66 3 185 82 99 6 13", 20 );
-	m_MapSpeed = MAPSPEED_FAST;
-	m_MapVisibility = MAPVIS_DEFAULT;
-	m_MapObservers = MAPOBS_NONE;
-	m_MapFlags = MAPFLAG_TEAMSTOGETHER | MAPFLAG_FIXEDTEAMS;
-	m_MapGameType = 9;
 	m_MapWidth = UTIL_ExtractNumbers( "172 0", 2 );
 	m_MapHeight = UTIL_ExtractNumbers( "172 0", 2 );
-	m_MapLoadInGame = false;
-	m_MapNumPlayers = 12;
-	m_MapNumTeams = 12;
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 0, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 1, 1, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 2, 2, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 3, 3, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 4, 4, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 5, 5, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 6, 6, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 7, 7, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 8, 8, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 9, 9, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 10, 10, SLOTRACE_RANDOM ) );
-	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 0, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 1, 1, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 2, 2, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 3, 3, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 4, 4, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 5, 5, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 6, 6, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 7, 7, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 8, 8, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 9, 9, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 10, 10, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
+	m_Slots.push_back( CGameSlot( 0, 255, SLOTSTATUS_OPEN, 0, 11, 11, SLOTRACE_RANDOM | SLOTRACE_SELECTABLE ) );
 }
 
-CMap :: CMap( CGHost *nGHost, CConfig *CFG, string nCFGFile )
-	: MessageLogger( nGHost )
+CMap :: CMap( CGHost *nGHost, CConfig *CFG, string nCFGFile ) 
+	: m_GHost( nGHost ), MessageLogger( nGHost )
 {
-	m_GHost = nGHost;
 	Load( CFG, nCFGFile );
 }
 
@@ -154,6 +145,97 @@ BYTEARRAY CMap :: GetMapGameFlags( )
 		GameFlags |= 0x04000000;
 
 	return UTIL_CreateByteArray( GameFlags, false );
+}
+
+uint32_t CMap :: GetMapGameType( )
+{
+	/* spec stolen from Strilanc as follows:
+
+    Public Enum GameTypes As UInteger
+        None = 0
+        Unknown0 = 1 << 0 '[always seems to be set?]
+
+        '''<summary>Setting this bit causes wc3 to check the map and disc if it is not signed by Blizzard</summary>
+        AuthenticatedMakerBlizzard = 1 << 3
+        OfficialMeleeGame = 1 << 5
+
+		SavedGame = 1 << 9
+        PrivateGame = 1 << 11
+
+        MakerUser = 1 << 13
+        MakerBlizzard = 1 << 14
+        TypeMelee = 1 << 15
+        TypeScenario = 1 << 16
+        SizeSmall = 1 << 17
+        SizeMedium = 1 << 18
+        SizeLarge = 1 << 19
+        ObsFull = 1 << 20
+        ObsOnDeath = 1 << 21
+        ObsNone = 1 << 22
+
+        MaskObs = ObsFull Or ObsOnDeath Or ObsNone
+        MaskMaker = MakerBlizzard Or MakerUser
+        MaskType = TypeMelee Or TypeScenario
+        MaskSize = SizeLarge Or SizeMedium Or SizeSmall
+        MaskFilterable = MaskObs Or MaskMaker Or MaskType Or MaskSize
+    End Enum
+
+	*/
+
+	// note: we allow "conflicting" flags to be set at the same time (who knows if this is a good idea)
+	// we also don't set any flags this class is unaware of such as Unknown0, SavedGame, and PrivateGame
+
+	uint32_t GameType = 0;
+
+	// maker
+
+	if( m_MapFilterMaker & MAPFILTER_MAKER_USER )
+		GameType |= MAPGAMETYPE_MAKERUSER;
+	if( m_MapFilterMaker & MAPFILTER_MAKER_BLIZZARD )
+		GameType |= MAPGAMETYPE_MAKERBLIZZARD;
+
+	// type
+
+	if( m_MapFilterType & MAPFILTER_TYPE_MELEE )
+		GameType |= MAPGAMETYPE_TYPEMELEE;
+	if( m_MapFilterType & MAPFILTER_TYPE_SCENARIO )
+		GameType |= MAPGAMETYPE_TYPESCENARIO;
+
+	// size
+
+	if( m_MapFilterSize & MAPFILTER_SIZE_SMALL )
+		GameType |= MAPGAMETYPE_SIZESMALL;
+	if( m_MapFilterSize & MAPFILTER_SIZE_MEDIUM )
+		GameType |= MAPGAMETYPE_SIZEMEDIUM;
+	if( m_MapFilterSize & MAPFILTER_SIZE_LARGE )
+		GameType |= MAPGAMETYPE_SIZELARGE;
+
+	// obs
+
+	if( m_MapFilterObs & MAPFILTER_OBS_FULL )
+		GameType |= MAPGAMETYPE_OBSFULL;
+	if( m_MapFilterObs & MAPFILTER_OBS_ONDEATH )
+		GameType |= MAPGAMETYPE_OBSONDEATH;
+	if( m_MapFilterObs & MAPFILTER_OBS_NONE )
+		GameType |= MAPGAMETYPE_OBSNONE;
+
+	return GameType;
+}
+
+unsigned char CMap :: GetMapLayoutStyle( )
+{
+	// 0 = melee
+	// 1 = custom forces
+	// 2 = fixed player settings (not possible with the Warcraft III map editor)
+	// 3 = custom forces + fixed player settings
+
+	if( !( m_MapOptions & MAPOPT_CUSTOMFORCES ) )
+		return 0;
+
+	if( !( m_MapOptions & MAPOPT_FIXEDPLAYERSETTINGS ) )
+		return 1;
+
+	return 3;
 }
 
 void CMap :: Load( CConfig *CFG, string nCFGFile )
@@ -318,7 +400,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 					FileList.push_back( "war3map.w3q" );
 					bool FoundScript = false;
 
-					for( vector<string> :: iterator i = FileList.begin( ); i != FileList.end( ); i++ )
+                                        for( vector<string> :: iterator i = FileList.begin( ); i != FileList.end( ); ++i )
 					{
 						// don't use scripts\war3map.j if we've already used war3map.j (yes, some maps have both but only war3map.j is used)
 
@@ -380,6 +462,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	// try to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams
 
+	uint32_t MapOptions = 0;
 	BYTEARRAY MapWidth;
 	BYTEARRAY MapHeight;
 	uint32_t MapNumPlayers = 0;
@@ -478,7 +561,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 							ISS.read( (char *)&RawMapNumPlayers, 4 );	// number of players
 							uint32_t ClosedSlots = 0;
 
-							for( uint32_t i = 0; i < RawMapNumPlayers; i++ )
+                                                        for( uint32_t i = 0; i < RawMapNumPlayers; ++i )
 							{
 								CGameSlot Slot( 0, 255, SLOTSTATUS_OPEN, 0, 0, 1, SLOTRACE_RANDOM );
 								uint32_t Colour;
@@ -500,7 +583,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 								else
 								{
 									Slot.SetSlotStatus( SLOTSTATUS_CLOSED );
-									ClosedSlots++;
+                                                                        ++ClosedSlots;
 								}
 
 								ISS.read( (char *)&Race, 4 );			// race
@@ -529,7 +612,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 							ISS.read( (char *)&RawMapNumTeams, 4 );		// number of teams
 
-							for( uint32_t i = 0; i < RawMapNumTeams; i++ )
+                                                        for( uint32_t i = 0; i < RawMapNumTeams; ++i )
 							{
 								uint32_t Flags;
 								uint32_t PlayerMask;
@@ -537,11 +620,11 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 								ISS.read( (char *)&Flags, 4 );			// flags
 								ISS.read( (char *)&PlayerMask, 4 );		// player mask
 
-								for( unsigned char j = 0; j < 12; j++ )
+                                                                for( unsigned char j = 0; j < 12; ++j )
 								{
 									if( PlayerMask & 1 )
 									{
-										for( vector<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); k++ )
+                                                                                for( vector<CGameSlot> :: iterator k = Slots.begin( ); k != Slots.end( ); ++k )
 										{
 											if( (*k).GetColour( ) == j )
 												(*k).SetTeam( i );
@@ -554,6 +637,11 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 								getline( ISS, GarbageString, '\0' );	// team name
 							}
 
+							// the bot only cares about the following options: melee, fixed player settings, custom forces
+							// let's not confuse the user by displaying erroneous map options so zero them out now
+
+							MapOptions = RawMapFlags & ( MAPOPT_MELEE | MAPOPT_FIXEDPLAYERSETTINGS | MAPOPT_CUSTOMFORCES );
+							CONSOLE_Print( "[MAP] calculated map_options = " + UTIL_ToString( MapOptions ) );
 							MapWidth = UTIL_CreateByteArray( (uint16_t)RawMapWidth, false );
 							CONSOLE_Print( "[MAP] calculated map_width = " + UTIL_ByteArrayToDecString( MapWidth ) );
 							MapHeight = UTIL_CreateByteArray( (uint16_t)RawMapHeight, false );
@@ -565,15 +653,13 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 							uint32_t SlotNum = 1;
 
-							for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+                                                        for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); ++i )
 							{
 								CONSOLE_Print( "[MAP] calculated map_slot" + UTIL_ToString( SlotNum ) + " = " + UTIL_ByteArrayToDecString( (*i).GetByteArray( ) ) );
-								SlotNum++;
+                                                                ++SlotNum;
 							}
 
-							// if it's a melee map...
-
-							if( RawMapFlags & 4 )
+							if( MapOptions & MAPOPT_MELEE )
 							{
 								CONSOLE_Print( "[MAP] found melee map, initializing slots" );
 
@@ -581,16 +667,24 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 								unsigned char Team = 0;
 
-								for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); i++ )
+                                                                for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); ++i )
 								{
 									(*i).SetTeam( Team++ );
 									(*i).SetRace( SLOTRACE_RANDOM );
 								}
 							}
+
+							if( !( MapOptions & MAPOPT_FIXEDPLAYERSETTINGS ) )
+							{
+								// make races selectable
+
+                                                                for( vector<CGameSlot> :: iterator i = Slots.begin( ); i != Slots.end( ); ++i )
+									(*i).SetRace( (*i).GetRace( ) | SLOTRACE_SELECTABLE );
+							}
 						}
 					}
 					else
-						CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - unable to extract war3map.w3i from MPQ file" );
+						CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - unable to extract war3map.w3i from MPQ file" );
 
 					delete [] SubFileData;
 				}
@@ -598,13 +692,13 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 				SFileCloseFile( SubFile );
 			}
 			else
-				CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - couldn't find war3map.w3i in MPQ file" );
+				CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - couldn't find war3map.w3i in MPQ file" );
 		}
 		else
-			CONSOLE_Print( "[MAP] unable to calculate map_width, map_height, map_slot<x>, map_numplayers, map_numteams - map MPQ file not loaded" );
+			CONSOLE_Print( "[MAP] unable to calculate map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams - map MPQ file not loaded" );
 	}
 	else
-		CONSOLE_Print( "[MAP] no map data available, using config file for map_width, map_height, map_slot<x>, map_numplayers, map_numteams" );
+		CONSOLE_Print( "[MAP] no map data available, using config file for map_options, map_width, map_height, map_slot<x>, map_numplayers, map_numteams" );
 
 	// close the map MPQ
 
@@ -656,7 +750,22 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 	m_MapVisibility = CFG->GetInt( "map_visibility", MAPVIS_DEFAULT );
 	m_MapObservers = CFG->GetInt( "map_observers", MAPOBS_NONE );
 	m_MapFlags = CFG->GetInt( "map_flags", MAPFLAG_TEAMSTOGETHER | MAPFLAG_FIXEDTEAMS );
-	m_MapGameType = CFG->GetInt( "map_gametype", 1 );
+	m_MapFilterMaker = CFG->GetInt( "map_filter_maker", MAPFILTER_MAKER_USER );
+	m_MapFilterType = CFG->GetInt( "map_filter_type", 0 );
+	m_MapFilterSize = CFG->GetInt( "map_filter_size", MAPFILTER_SIZE_LARGE );
+	m_MapFilterObs = CFG->GetInt( "map_filter_obs", MAPFILTER_OBS_NONE );
+
+	// todotodo: it might be possible for MapOptions to legitimately be zero so this is not a valid way of checking if it wasn't parsed out earlier
+
+	if( MapOptions == 0 )
+		MapOptions = CFG->GetInt( "map_options", 0 );
+	else if( CFG->Exists( "map_options" ) )
+	{
+		CONSOLE_Print( "[MAP] overriding calculated map_options with config value map_options = " + CFG->GetString( "map_options", string( ) ) );
+		MapOptions = CFG->GetInt( "map_options", 0 );
+	}
+
+	m_MapOptions = MapOptions;
 
 	if( MapWidth.empty( ) )
 		MapWidth = UTIL_ExtractNumbers( CFG->GetString( "map_width", string( ) ), 2 );
@@ -706,7 +815,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	if( Slots.empty( ) )
 	{
-		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
+                for( uint32_t Slot = 1; Slot <= 12; ++Slot )
 		{
 			string SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), string( ) );
 
@@ -722,7 +831,7 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 		CONSOLE_Print( "[MAP] overriding slots" );
 		Slots.clear( );
 
-		for( uint32_t Slot = 1; Slot <= 12; Slot++ )
+                for( uint32_t Slot = 1; Slot <= 12; ++Slot )
 		{
 			string SlotString = CFG->GetString( "map_slot" + UTIL_ToString( Slot ), string( ) );
 
@@ -736,14 +845,14 @@ void CMap :: Load( CConfig *CFG, string nCFGFile )
 
 	m_Slots = Slots;
 
-	// if random races is set force every slot's race to random + fixed
+	// if random races is set force every slot's race to random
 
 	if( m_MapFlags & MAPFLAG_RANDOMRACES )
 	{
 		CONSOLE_Print( "[MAP] forcing races to random" );
 
-		for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
-			(*i).SetRace( SLOTRACE_RANDOM | SLOTRACE_FIXED );
+                for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); ++i )
+			(*i).SetRace( SLOTRACE_RANDOM );
 	}
 
 	// add observer slots
@@ -763,7 +872,7 @@ void CMap :: CheckValid( )
 {
 	// todotodo: should this code fix any errors it sees rather than just warning the user?
 
-	if( m_MapPath.empty( ) )
+	if( m_MapPath.empty( ) || m_MapPath.length( ) > 53 )
 	{
 		m_Valid = false;
 		CONSOLE_Print( "[MAP] invalid map_path detected" );
@@ -822,12 +931,7 @@ void CMap :: CheckValid( )
 	}
 
 	// todotodo: m_MapFlags
-
-	if( m_MapGameType != 1 && m_MapGameType != 2 && m_MapGameType != 9 )
-	{
-		m_Valid = false;
-		CONSOLE_Print( "[MAP] invalid map_gametype detected" );
-	}
+	// todotodo: m_MapFilterMaker, m_MapFilterType, m_MapFilterSize, m_MapFilterObs
 
 	if( m_MapWidth.size( ) != 2 )
 	{
@@ -879,7 +983,7 @@ uint32_t CMap :: XORRotateLeft( unsigned char *data, uint32_t length )
 	while( i < length )
 	{
 		Val = ROTL( Val ^ data[i], 3 );
-		i++;
+                ++i;
 	}
 
 	return Val;

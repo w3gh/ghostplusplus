@@ -26,10 +26,9 @@
 // CStats
 //
 
-CStats :: CStats( CBaseGame *nGame )
-	: MessageLogger( nGame )
+CStats :: CStats( CBaseGame *nGame ) : m_Game( nGame ), MessageLogger( nGame )
 {
-	m_Game = nGame;
+
 }
 
 CStats :: ~CStats( )

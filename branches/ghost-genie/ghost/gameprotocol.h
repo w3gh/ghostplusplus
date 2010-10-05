@@ -122,12 +122,12 @@ public:
 	// send functions
 
 	BYTEARRAY SEND_W3GS_PING_FROM_HOST( );
-	BYTEARRAY SEND_W3GS_SLOTINFOJOIN( unsigned char PID, BYTEARRAY port, BYTEARRAY externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots );
+	BYTEARRAY SEND_W3GS_SLOTINFOJOIN( unsigned char PID, BYTEARRAY port, BYTEARRAY externalIP, vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	BYTEARRAY SEND_W3GS_REJECTJOIN( uint32_t reason );
 	BYTEARRAY SEND_W3GS_PLAYERINFO( unsigned char PID, string name, BYTEARRAY externalIP, BYTEARRAY internalIP );
 	BYTEARRAY SEND_W3GS_PLAYERLEAVE_OTHERS( unsigned char PID, uint32_t leftCode );
 	BYTEARRAY SEND_W3GS_GAMELOADED_OTHERS( unsigned char PID );
-	BYTEARRAY SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots );
+	BYTEARRAY SEND_W3GS_SLOTINFO( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 	BYTEARRAY SEND_W3GS_COUNTDOWN_START( );
 	BYTEARRAY SEND_W3GS_COUNTDOWN_END( );
 	BYTEARRAY SEND_W3GS_INCOMING_ACTION( queue<CIncomingAction *> actions, uint16_t sendInterval );
@@ -135,7 +135,7 @@ public:
 	BYTEARRAY SEND_W3GS_START_LAG( vector<CGamePlayer *> players, bool loadInGame = false );
 	BYTEARRAY SEND_W3GS_STOP_LAG( CGamePlayer *player, bool loadInGame = false );
 	BYTEARRAY SEND_W3GS_SEARCHGAME( bool TFT, unsigned char war3Version );
-	BYTEARRAY SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter );
+	BYTEARRAY SEND_W3GS_GAMEINFO( bool TFT, unsigned char war3Version, BYTEARRAY mapGameType, BYTEARRAY mapFlags, BYTEARRAY mapWidth, BYTEARRAY mapHeight, string gameName, string hostName, uint32_t upTime, string mapPath, BYTEARRAY mapCRC, uint32_t slotsTotal, uint32_t slotsOpen, uint16_t port, uint32_t hostCounter, uint32_t entryKey );
 	BYTEARRAY SEND_W3GS_CREATEGAME( bool TFT, unsigned char war3Version );
 	BYTEARRAY SEND_W3GS_REFRESHGAME( uint32_t players, uint32_t playerSlots );
 	BYTEARRAY SEND_W3GS_DECREATEGAME( );
@@ -149,7 +149,7 @@ public:
 private:
 	bool AssignLength( BYTEARRAY &content );
 	bool ValidateLength( BYTEARRAY &content );
-	BYTEARRAY EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char gameType, unsigned char playerSlots );
+	BYTEARRAY EncodeSlotInfo( vector<CGameSlot> &slots, uint32_t randomSeed, unsigned char layoutStyle, unsigned char playerSlots );
 };
 
 //
@@ -160,14 +160,16 @@ class CIncomingJoinPlayer
 {
 private:
 	uint32_t m_HostCounter;
+	uint32_t m_EntryKey;
 	string m_Name;
 	BYTEARRAY m_InternalIP;
 
 public:
-	CIncomingJoinPlayer( uint32_t nHostCounter, string nName, BYTEARRAY &nInternalIP );
+	CIncomingJoinPlayer( uint32_t nHostCounter, uint32_t nEntryKey, string nName, BYTEARRAY &nInternalIP );
 	~CIncomingJoinPlayer( );
 
 	uint32_t GetHostCounter( )	{ return m_HostCounter; }
+	uint32_t GetEntryKey( )		{ return m_EntryKey; }
 	string GetName( )			{ return m_Name; }
 	BYTEARRAY GetInternalIP( )	{ return m_InternalIP; }
 };

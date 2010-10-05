@@ -27,10 +27,9 @@
 // CSaveGame
 //
 
-CSaveGame :: CSaveGame( MessageLogger* logger ) : CPacked( logger )
+CSaveGame :: CSaveGame( MessageLogger* logger ) : CPacked( logger ), m_NumSlots( 0 ), m_RandomSeed( 0 )
 {
-	m_NumSlots = 0;
-	m_RandomSeed = 0;
+
 }
 
 CSaveGame :: ~CSaveGame( )
