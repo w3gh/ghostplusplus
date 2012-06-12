@@ -2588,7 +2588,7 @@ void CBaseGame :: EventPlayerLoaded( CGamePlayer *player )
 
 bool CBaseGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
 {
-	if( !m_GameLoaded || action->GetLength( ) > 1452 )
+	if( !m_GameLoaded || action->GetLength( ) > 1027 )
 	{
 		delete action;
 		return false;
