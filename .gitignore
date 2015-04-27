@@ -1,0 +1,13 @@
+#IDE
+.idea
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+#Ghost++ generated files
+ghost.log
+ghost.dbs
+ghost.cfg
